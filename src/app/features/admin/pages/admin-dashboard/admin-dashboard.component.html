@@ -1,0 +1,2867 @@
+<div class="admin-layout">
+  
+  <!-- ========================================== -->
+  <!-- TOP ADMIN HEADER & PERSONA SWITCHER       -->
+  <!-- ========================================== -->
+  <header class="admin-topbar">
+    <div class="topbar-left">
+      <div class="admin-brand">
+        <div class="brand-shield-icon">
+          <span class="material-symbols-outlined">security</span>
+        </div>
+        <div class="brand-titles">
+          <h1 class="brand-title">MANNIDAM ADMIN PORTAL</h1>
+          <span class="brand-sub">Four-Eyes Architectural Registry &amp; Peer Review System</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Authenticated Administrator Badge -->
+    <div class="topbar-right">
+      <div class="active-admin-badge" [title]="'Authenticated Administrator: ' + (adminService.currentAdmin()?.name || adminService.activePersona().name)">
+        <span class="material-symbols-outlined badge-shield-icon">verified_user</span>
+        <span class="p-avatar" 
+          [class.ez]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'EZ'"
+          [class.ra]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'RA'"
+          [class.be]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'BE'">
+          {{ adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials }}
+        </span>
+        <div class="p-info">
+          <div class="p-name-row">
+            <span class="p-name">{{ adminService.currentAdmin()?.name || adminService.activePersona().name }}</span>
+            <span class="status-live-dot" title="Authenticated Session Active"></span>
+          </div>
+          <span class="p-role">{{ adminService.currentAdmin()?.title || adminService.activePersona().title }}</span>
+        </div>
+      </div>
+
+      <button 
+        type="button" 
+        class="btn-topbar-financials" 
+        [class.active]="activeTab() === 'financials'"
+        (click)="setTab('financials')"
+        title="View Razorpay & Financial Credits Ledger">
+        <span class="material-symbols-outlined">payments</span>
+        <span>Credits &amp; Revenue</span>
+      </button>
+
+      <a routerLink="/admin/profile" class="btn-admin-profile" title="View Admin Profile & Audit Logs">
+        <span class="material-symbols-outlined">shield_person</span>
+        <span>Profile &amp; Logs</span>
+      </a>
+
+      <a routerLink="/" class="btn-goto-market" title="Visit Public Marketplace">
+        <span class="material-symbols-outlined">storefront</span>
+        <span>Marketplace</span>
+      </a>
+
+      <button type="button" class="btn-admin-signout" (click)="onSignOut()" title="Sign out of administrative session">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- METRICS & KPI STRIP                       -->
+  <!-- ========================================== -->
+  <section class="admin-kpi-strip">
+    <div class="kpi-grid">
+      
+      <!-- Total Properties -->
+      <div class="kpi-card">
+        <div class="kpi-icon-box total">
+          <span class="material-symbols-outlined">real_estate_agent</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value">{{ adminService.stats().total }}</span>
+          <span class="kpi-label">Total Properties</span>
+        </div>
+      </div>
+
+      <!-- Pending Co-Admin Peer Reviews (Four-Eyes Principle) -->
+      <div class="kpi-card highlight-peer">
+        <div class="kpi-icon-box peer">
+          <span class="material-symbols-outlined">supervisor_account</span>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-val-row">
+            <span class="kpi-value text-purple">{{ adminService.stats().pendingPeerReviews }}</span>
+            <span class="kpi-tag-pulse">MAKER-CHECKER</span>
+          </div>
+          <span class="kpi-label">Co-Admin Peer Reviews</span>
+        </div>
+      </div>
+
+      <!-- Pending User Submissions -->
+      <div class="kpi-card">
+        <div class="kpi-icon-box user-rev">
+          <span class="material-symbols-outlined">pending_actions</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-amber">{{ adminService.stats().pendingUserReviews }}</span>
+          <span class="kpi-label">Pending User Reviews</span>
+        </div>
+      </div>
+
+      <!-- Published Live -->
+      <div class="kpi-card">
+        <div class="kpi-icon-box published">
+          <span class="material-symbols-outlined">verified</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-emerald">{{ adminService.stats().published }}</span>
+          <span class="kpi-label">Published &amp; Live</span>
+        </div>
+      </div>
+
+      <!-- Rejected / Returned -->
+      <div class="kpi-card">
+        <div class="kpi-icon-box rejected">
+          <span class="material-symbols-outlined">gavel</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-red">{{ adminService.stats().rejected }}</span>
+          <span class="kpi-label">Rejected / Returned</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- MAIN WORKSPACE & NAVIGATION TABS          -->
+  <!-- ========================================== -->
+  <main class="admin-main-container">
+    
+    <!-- Tab Controls -->
+    <div class="admin-tab-nav">
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'review_queue'"
+        (click)="activeTab.set('review_queue')">
+        <span class="material-symbols-outlined">fact_check</span>
+        <span>Review Queue</span>
+        @if (adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews > 0) {
+          <span class="tab-badge-alert">
+            {{ adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews }}
+          </span>
+        }
+      </button>
+
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'post_property'"
+        (click)="activeTab.set('post_property')">
+        <span class="material-symbols-outlined">add_business</span>
+        <span>Post New Property</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'plot_studio'"
+        (click)="setTab('plot_studio')">
+        <span class="material-symbols-outlined text-green">terrain</span>
+        <span>Plot Partition Studio</span>
+        <span class="tab-badge-studio">3D LIVE</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'all_directory'"
+        (click)="setTab('all_directory')">
+        <span class="material-symbols-outlined">table_view</span>
+        <span>All Properties &amp; Audit Trail</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'financials'"
+        (click)="setTab('financials')">
+        <span class="material-symbols-outlined">payments</span>
+        <span>Razorpay &amp; Credits</span>
+        @if (adminService.financialData()?.summary?.totalRevenueRupees) {
+          <span class="tab-badge-rev">
+            ₹{{ adminService.financialData()?.summary?.totalRevenueRupees | number:'1.0-0' }}
+          </span>
+        }
+      </button>
+    </div>
+
+    <!-- TAB CONTENT 1: REVIEW QUEUE (MAKER-CHECKER ENFORCEMENT) -->
+    @if (activeTab() === 'review_queue') {
+      <section class="tab-pane-section">
+        
+        <!-- Workflow Explanation Banner -->
+        <div class="policy-callout-banner">
+          <div class="policy-icon-col">
+            <span class="material-symbols-outlined">shield</span>
+          </div>
+          <div class="policy-text-col">
+            <h4 class="policy-title">Four-Eyes (Maker-Checker) Compliance Policy</h4>
+            <p class="policy-desc">
+              Properties posted by regular users require review and approval by any administrator. 
+              <strong>Properties posted or edited by an Admin CANNOT be approved by the same author</strong> — an independent Co-Admin must conduct a peer review before the listing goes live on the marketplace.
+            </p>
+          </div>
+          <div class="policy-action-col">
+            <span class="active-admin-tag">
+              Logged in as: <strong>{{ adminService.activePersona().name }}</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Pending Items List -->
+        <div class="review-items-list">
+          @for (prop of adminService.properties(); track prop.id) {
+            @if (prop.status === 'pending_peer_review' || prop.status === 'pending_review' || prop.status === 'revision_requested') {
+              <div class="review-item-card" [class.peer-review-item]="prop.status === 'pending_peer_review'">
+                
+                <!-- Card Left: Image & Badge -->
+                <div class="review-thumb-col">
+                  <img [src]="prop.mainImageUrl" [alt]="prop.title" class="prop-thumb-img" />
+                  <span class="thumb-type-tag">{{ prop.propertyType }}</span>
+                </div>
+
+                <!-- Card Middle: Details & Maker-Checker Attribution -->
+                <div class="review-info-col">
+                  <div class="prop-header-line">
+                    <span class="prop-id-code">#{{ prop.id }}</span>
+                    
+                    @if (prop.status === 'pending_peer_review') {
+                      <span class="status-pill peer-review-pill">
+                        <span class="material-symbols-outlined">group</span>
+                        <span>Co-Admin Peer Review Required</span>
+                      </span>
+                    } @else if (prop.status === 'pending_review') {
+                      <span class="status-pill user-review-pill">
+                        <span class="material-symbols-outlined">schedule</span>
+                        <span>User Submission Pending</span>
+                      </span>
+                    } @else {
+                      <span class="status-pill revision-pill">
+                        <span class="material-symbols-outlined">edit_note</span>
+                        <span>Revisions Requested</span>
+                      </span>
+                    }
+                  </div>
+
+                  <h3 class="prop-card-title">{{ prop.title }}</h3>
+                  
+                  <div class="prop-meta-bar">
+                    <span class="prop-price">{{ prop.price }}</span>
+                    <span class="meta-dot">&bull;</span>
+                    <span class="prop-location">{{ prop.localityName }}, {{ prop.cityName }}</span>
+                    <span class="meta-dot">&bull;</span>
+                    <span class="prop-spec">{{ prop.bhkBadge }} &bull; {{ prop.sqft }}</span>
+                    <span class="meta-dot">&bull;</span>
+                    <span class="prop-rera">RERA: {{ prop.reraNumber }}</span>
+                  </div>
+
+                  <!-- Submitter Details Box -->
+                  <div class="submitter-attribution-box">
+                    <span class="material-symbols-outlined">person_pin</span>
+                    <span class="submitter-text">
+                      Submitted by: <strong>{{ prop.submittedByName || 'User' }}</strong> 
+                      <span class="submitter-role-tag" [class.admin-role]="prop.submittedByRole === 'admin' || prop.submittedByRole === 'co_admin'">
+                        {{ prop.submittedByRole?.toUpperCase() || 'USER' }}
+                      </span>
+                    </span>
+                    <span class="submit-time">Created: {{ prop.createdAt }}</span>
+                  </div>
+
+                  <!-- Self-Review Guard Banner if logged in as the author -->
+                  @if (!adminService.canApprove(prop).allowed) {
+                    <div class="self-review-warning-box">
+                      <span class="material-symbols-outlined">block</span>
+                      <div class="warning-text">
+                        <strong>Self-Approval Blocked:</strong> You submitted this listing. To enforce the four-eyes security rule, please switch to <em>Arunachalam S. (Co-Admin)</em> using the switcher at the top to conduct the peer review.
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Card Right: Review Actions -->
+                <div class="review-actions-col">
+                  
+                  <!-- Approve Button -->
+                  <button 
+                    type="button" 
+                    class="btn-action-approve"
+                    [disabled]="!adminService.canApprove(prop).allowed || adminService.isSubmitting()"
+                    [title]="!adminService.canApprove(prop).allowed ? adminService.canApprove(prop).reason : 'Approve and publish live'"
+                    (click)="onApprove(prop)">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>Approve &amp; Publish</span>
+                  </button>
+
+                  <!-- Reject Button -->
+                  <button 
+                    type="button" 
+                    class="btn-action-reject"
+                    [disabled]="adminService.isSubmitting()"
+                    (click)="onReject(prop)">
+                    <span class="material-symbols-outlined">cancel</span>
+                    <span>Reject</span>
+                  </button>
+
+                  <!-- Inspect Details Button -->
+                  <button 
+                    type="button" 
+                    class="btn-action-inspect"
+                    (click)="openReviewModal(prop)">
+                    <span class="material-symbols-outlined">visibility</span>
+                    <span>Inspect &amp; Notes</span>
+                  </button>
+
+                </div>
+
+              </div>
+            }
+          }
+        </div>
+
+      </section>
+    }
+
+    <!-- TAB CONTENT 2: POST NEW PROPERTY (AS ADMIN) -->
+    @if (activeTab() === 'post_property') {
+      <section class="tab-pane-section">
+        
+        <div class="post-property-container">
+          <div class="form-header-box">
+            <h3 class="form-title">Post New Architectural Property</h3>
+            <p class="form-sub">
+              Logged in as <strong>{{ adminService.activePersona().name }}</strong> ({{ adminService.activePersona().title }}).
+              Properties submitted by administrators will be automatically flagged for peer review by your Co-Admin.
+            </p>
+          </div>
+
+          <form (submit)="$event.preventDefault(); onSubmitNewProperty()" class="post-property-form">
+            
+            <div class="form-grid-2">
+              <div class="form-field full-width">
+                <label class="field-label">Property Title *</label>
+                <input 
+                  type="text" 
+                  class="field-input" 
+                  [(ngModel)]="newProp().title" 
+                  name="title" 
+                  placeholder="e.g. Skyline Pavilion 4BHK Penthouse with Private Terrace" 
+                  required />
+              </div>
+
+              <!-- Property Classification: Visual Interactive Cards -->
+              <div class="form-field full-width">
+                <label class="field-label">Property Category &amp; Classification *</label>
+                <div class="admin-type-selector-grid">
+                  @for (item of propertyTypes; track item.id) {
+                    <div 
+                      class="admin-type-selector-card" 
+                      [class.selected]="newProp().propertyType === item.id"
+                      (click)="selectAdminPropertyType(item.id)">
+                      <div class="admin-type-icon-box">
+                        <span class="material-symbols-outlined">{{ item.icon }}</span>
+                      </div>
+                      <div class="admin-type-text-box">
+                        <span class="admin-type-title">{{ item.label }}</span>
+                        <span class="admin-type-desc">{{ item.desc }}</span>
+                      </div>
+                      @if (newProp().propertyType === item.id) {
+                        <span class="material-symbols-outlined admin-type-check">check_circle</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Listing Mode *</label>
+                <select class="field-select" [(ngModel)]="newProp().listingMode" name="listingMode">
+                  <option value="buy">Buy (Freehold Deed)</option>
+                  <option value="rent">Rent / Lease</option>
+                  <option value="plots">Plots / Land Parcel</option>
+                  <option value="commercial">Commercial Space</option>
+                </select>
+              </div>
+
+              <!-- BEDROOMS CONFIGURATION (ONLY FOR RESIDENTIAL PROPERTIES) -->
+              @if (isAdminResidential()) {
+                <div class="form-field">
+                  <label class="field-label">Bedrooms / Configuration *</label>
+                  <select class="field-select" [(ngModel)]="newProp().bhkBadge" name="bhkBadge">
+                    <option value="1 BHK">1 BHK</option>
+                    <option value="2 BHK">2 BHK</option>
+                    <option value="3 BHK">3 BHK</option>
+                    <option value="4 BHK">4 BHK</option>
+                    <option value="5+ BHK Villa">5+ BHK Mansion / Villa</option>
+                  </select>
+                </div>
+              }
+
+              <div class="form-field">
+                <label class="field-label">City *</label>
+                <select class="field-select" [(ngModel)]="newProp().cityName" name="cityName">
+                  <option value="Chennai">Chennai</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Coimbatore">Coimbatore</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Locality / Sector / Landmark *</label>
+                <input type="text" class="field-input" [(ngModel)]="newProp().localityName" name="localityName" placeholder="e.g. Anna Nagar West Extension" required />
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Expected Price *</label>
+                <input type="text" class="field-input" [(ngModel)]="newProp().price" name="price" placeholder="e.g. ₹ 2.65 Cr" required />
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">{{ getAdminPricePerUnitLabel() }}</label>
+                <input type="text" class="field-input" [(ngModel)]="newProp().pricePerSqft" name="pricePerSqft" [placeholder]="getAdminPricePerUnitPlaceholder()" />
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">{{ getAdminAreaLabel() }}</label>
+                <input type="text" class="field-input" [(ngModel)]="newProp().sqft" name="sqft" [placeholder]="getAdminAreaPlaceholder()" required />
+              </div>
+
+              <!-- DYNAMIC SPECIALIZED FIELDS: PLOTS & LAND (MASTER FACTSHEET & SUBDIVIDED UNITS) -->
+              @if (isAdminPlot()) {
+                <div class="form-field full-width">
+                  <div class="admin-plot-management-wrapper">
+
+                    <!-- SECTION HEADER -->
+                    <div class="plot-mgmt-banner">
+                      <div class="banner-title-box">
+                        <span class="material-symbols-outlined banner-icon">developer_board</span>
+                        <div>
+                          <h4 class="banner-title">Architectural Plot Factsheet &amp; Subdivided Partitioning</h4>
+                          <p class="banner-sub">
+                            Configure master layout compliance, legal approvals, infrastructure specs, and individual partitioned parcels for 3D/2D Masterplan rendering.
+                          </p>
+                        </div>
+                      </div>
+                      <div class="banner-actions">
+                        <button 
+                          type="button" 
+                          class="btn-plot-template" 
+                          (click)="autoPopulateDefaultPlots()" 
+                          title="Auto-fill 8 standard parcels along central avenue">
+                          <span class="material-symbols-outlined">auto_awesome</span>
+                          <span>Auto-Populate 8-Plot Layout</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- CARD 1: MASTER LAYOUT FACTSHEET -->
+                    <div class="plot-console-card">
+                      <div class="console-card-header">
+                        <div class="console-header-title">
+                          <span class="material-symbols-outlined text-sky">fact_check</span>
+                          <h5>1. Master Layout &amp; Sanction Factsheet</h5>
+                        </div>
+                        <span class="console-chip">CADASTRAL SPECIFICATIONS</span>
+                      </div>
+
+                      <div class="form-grid-3">
+                        <div class="form-field">
+                          <label class="field-label">Layout Sanction Number *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().layoutSanctionNo" 
+                            name="layoutSanctionNo" 
+                            placeholder="e.g. CMDA Sanctioned Layout PPD/LO No. 48/2023" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">RERA Layout Registration No *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().reraLayoutNo" 
+                            name="reraLayoutNo" 
+                            placeholder="e.g. TN/01/Layout/0291/2024" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Frontage Road Width *</label>
+                          <select class="field-select" [(ngModel)]="plotFactsheet().frontageRoadWidth" name="frontageRoadWidth">
+                            <option value="24 Feet Wide Bitumen Road">24 Feet Wide Bitumen Road</option>
+                            <option value="30 Feet Wide Blacktop Road">30 Feet Wide Blacktop Road</option>
+                            <option value="40 Feet Wide Bitumen Road">40 Feet Wide Bitumen Road (9M Avenue)</option>
+                            <option value="60 Feet Wide Avenue Corridor">60 Feet Wide Avenue Corridor</option>
+                            <option value="100+ Feet Wide Arterial Highway">100+ Feet Wide Arterial Highway</option>
+                          </select>
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Permissible FSI *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().fsiPermissible" 
+                            name="fsiPermissible" 
+                            placeholder="e.g. 2.0 FSI (G+3 Floors Permissible)" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Water Table Depth *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().waterTableDepth" 
+                            name="waterTableDepth" 
+                            placeholder="e.g. Sweet Potable Water at 18–24 Feet" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Soil Bearing Capacity *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().soilBearingCapacity" 
+                            name="soilBearingCapacity" 
+                            placeholder="e.g. Certified 220 kN/sq.m (IIT Tested)" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">EB Substation &amp; Power Grid *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().ebSubstation" 
+                            name="ebSubstation" 
+                            placeholder="e.g. Dedicated 11kV Substation Commissioned" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Boundary Wall &amp; Security *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().boundaryWall" 
+                            name="boundaryWall" 
+                            placeholder="e.g. 6-Foot Reinforced Perimeter Wall with Gated Security" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Drainage &amp; Sewerage *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().drainageSystem" 
+                            name="drainageSystem" 
+                            placeholder="e.g. Underground Stormwater & Sewerage Grid Ready" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Patta Registration Status *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().pattaStatus" 
+                            name="pattaStatus" 
+                            placeholder="e.g. Individual Computerized Patta Issued" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Dimension Ranges *</label>
+                          <input 
+                            type="text" 
+                            class="field-input" 
+                            [(ngModel)]="plotFactsheet().dimensionRanges" 
+                            name="dimensionRanges" 
+                            placeholder="e.g. 40 ft x 60 ft (2,400 sq.ft standard corner)" />
+                        </div>
+
+                        <div class="form-field">
+                          <label class="field-label">Approval Authority *</label>
+                          <select class="field-select" [(ngModel)]="newProp().plotApproval" name="plotApproval">
+                            <option value="CMDA Approved">CMDA Sanctioned Layout</option>
+                            <option value="DTCP Approved">DTCP Sanctioned Layout</option>
+                            <option value="RERA Registered">RERA Registered Layout</option>
+                            <option value="Panchayat Approved">Panchayat Approved</option>
+                            <option value="Freehold Patta Land">Freehold Patta Deed</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- CARD 2: SUBDIVIDED PARTITIONED PLOTS (INDIVIDUAL UNITS ON 3D GRID) -->
+                    <div class="plot-console-card">
+                      <div class="console-card-header">
+                        <div class="console-header-title">
+                          <span class="material-symbols-outlined text-green">grid_view</span>
+                          <div>
+                            <h5>2. Partitioned Subdivided Plot Parcels (Units on 3D Masterplan)</h5>
+                            <span class="console-sub-desc">Define each individual subdivided plot parcel with dimensions, orientation, pricing and status.</span>
+                          </div>
+                        </div>
+
+                        <div class="console-header-actions">
+                          <button 
+                            type="button" 
+                            class="btn-console-add" 
+                            (click)="openAddPlotModal()">
+                            <span class="material-symbols-outlined">add_circle</span>
+                            <span>Add Partitioned Plot</span>
+                          </button>
+
+                          <button 
+                            type="button" 
+                            class="btn-console-clear" 
+                            (click)="clearAllPlots()" 
+                            [disabled]="adminSubdividedPlots().length === 0">
+                            <span class="material-symbols-outlined">delete_sweep</span>
+                            <span>Clear</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- KPI RIBBON FOR PARTITIONED PLOTS -->
+                      <div class="plot-kpi-ribbon">
+                        <div class="pkpi-item">
+                          <span class="pkpi-label">Total Parcels</span>
+                          <span class="pkpi-val">{{ adminTotalPlotsCount() }}</span>
+                        </div>
+                        <div class="pkpi-divider"></div>
+                        <div class="pkpi-item">
+                          <span class="pkpi-label text-green">Available</span>
+                          <span class="pkpi-val text-green font-bold">{{ adminAvailablePlotsCount() }}</span>
+                        </div>
+                        <div class="pkpi-divider"></div>
+                        <div class="pkpi-item">
+                          <span class="pkpi-label text-rose">Sold Out</span>
+                          <span class="pkpi-val text-rose font-bold">{{ adminSoldPlotsCount() }}</span>
+                        </div>
+                        <div class="pkpi-divider"></div>
+                        <div class="pkpi-item">
+                          <span class="pkpi-label text-amber">Reserved</span>
+                          <span class="pkpi-val text-amber font-bold">{{ adminReservedPlotsCount() }}</span>
+                        </div>
+                        <div class="pkpi-divider"></div>
+                        <div class="pkpi-item">
+                          <span class="pkpi-label">Total Extent</span>
+                          <span class="pkpi-val">{{ adminTotalPlotAreaYards() | number:'1.0-1' }} <small>Yds</small> ({{ adminTotalPlotAreaSqft() | number:'1.0-0' }} <small>Sq.Ft</small>)</span>
+                        </div>
+                        <div class="pkpi-divider"></div>
+                        <div class="pkpi-item">
+                          <span class="pkpi-label">Project Inventory Value</span>
+                          <span class="pkpi-val text-sky font-bold">₹{{ adminTotalProjectValueLakhs() | number:'1.2-2' }} L</span>
+                        </div>
+                      </div>
+
+                      <!-- INTERACTIVE 2D MASTERPLAN SCHEMATIC PREVIEW -->
+                      <div class="plot-schematic-preview-box">
+                        <div class="schematic-header">
+                          <span class="material-symbols-outlined">view_in_ar</span>
+                          <span>Interactive Masterplan 2D Layout Preview (Avenue &amp; Dual-Row Parcels)</span>
+                          <span class="schematic-tip">Click any plot below to edit its configuration</span>
+                        </div>
+
+                        <div class="schematic-avenue-container">
+                          <!-- ROW 1 (NORTH ROW) -->
+                          <div class="schematic-row north-row">
+                            <span class="row-indicator">NORTH PARCELS</span>
+                            <div class="schematic-plots-strip">
+                              @for (plot of adminSubdividedPlots().slice(0, 4); track plot.id; let i = $index) {
+                                <div 
+                                  class="schematic-plot-box" 
+                                  [class.avail]="plot.status === 'available'" 
+                                  [class.sold]="plot.status === 'sold'"
+                                  [class.reserved]="plot.status === 'reserved'"
+                                  (click)="openEditPlotModal(i)" 
+                                  title="Plot {{ plot.plotNo }} • {{ plot.superBuiltUpYds }} Yds • Click to Edit">
+                                  <div class="sp-no">{{ plot.plotNo }}</div>
+                                  <div class="sp-sub">{{ plot.superBuiltUpYds }} Yds</div>
+                                  <div class="sp-status">{{ plot.status | uppercase }}</div>
+                                </div>
+                              }
+                            </div>
+                          </div>
+
+                          <!-- 9-METER CENTRAL BOULEVARD -->
+                          <div class="schematic-boulevard">
+                            <span class="boulevard-name">9.0-METER CENTRAL CMDA BOULEVARD (AVENUE PROMENADE)</span>
+                            <div class="road-center-stripe"></div>
+                          </div>
+
+                          <!-- ROW 2 (SOUTH ROW) -->
+                          <div class="schematic-row south-row">
+                            <span class="row-indicator">SOUTH PARCELS</span>
+                            <div class="schematic-plots-strip">
+                              @for (plot of adminSubdividedPlots().slice(4, 8); track plot.id; let i = $index) {
+                                <div 
+                                  class="schematic-plot-box" 
+                                  [class.avail]="plot.status === 'available'" 
+                                  [class.sold]="plot.status === 'sold'"
+                                  [class.reserved]="plot.status === 'reserved'"
+                                  (click)="openEditPlotModal(i + 4)" 
+                                  title="Plot {{ plot.plotNo }} • {{ plot.superBuiltUpYds }} Yds • Click to Edit">
+                                  <div class="sp-no">{{ plot.plotNo }}</div>
+                                  <div class="sp-sub">{{ plot.superBuiltUpYds }} Yds</div>
+                                  <div class="sp-status">{{ plot.status | uppercase }}</div>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- DATA TABLE OF PARTITIONED PLOTS -->
+                      <div class="table-responsive-box">
+                        <table class="admin-data-table plot-data-table">
+                          <thead>
+                            <tr>
+                              <th>Plot #</th>
+                              <th>Status</th>
+                              <th>Facing</th>
+                              <th>Super Built-up</th>
+                              <th>Net Area</th>
+                              <th>Dimensions (W × L)</th>
+                              <th>Estimated Price</th>
+                              <th>3D Coordinates (X, Y)</th>
+                              <th>Trees</th>
+                              <th class="text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (plot of adminSubdividedPlots(); track plot.id; let i = $index) {
+                              <tr class="plot-table-row">
+                                <td class="font-bold text-sky">
+                                  <span class="plot-number-badge">
+                                    {{ plot.plotNo }}
+                                    @if (plot.isCorner) {
+                                      <span class="badge-corner" title="Corner Plot">C</span>
+                                    }
+                                  </span>
+                                </td>
+                                <td>
+                                  <button 
+                                    type="button" 
+                                    class="status-pill-toggle" 
+                                    [class.pill-available]="plot.status === 'available'"
+                                    [class.pill-sold]="plot.status === 'sold'"
+                                    [class.pill-reserved]="plot.status === 'reserved'"
+                                    (click)="togglePlotStatus(i)" 
+                                    title="Click to toggle status (Available / Sold / Reserved)">
+                                    <span class="status-pulse-dot"></span>
+                                    <span>{{ plot.status | uppercase }}</span>
+                                  </button>
+                                </td>
+                                <td>
+                                  <span class="text-slate-200 font-medium">{{ plot.facing }}</span>
+                                </td>
+                                <td>
+                                  <span class="font-bold">{{ plot.superBuiltUpYds }} <small class="text-muted">Yds</small></span>
+                                  <span class="text-muted text-xs block">({{ plot.superBuiltUpSqft }} sq.ft)</span>
+                                </td>
+                                <td>
+                                  <span>{{ plot.netPlotAreaYds }} <small class="text-muted">Yds</small></span>
+                                </td>
+                                <td>
+                                  <span class="font-mono text-xs">{{ plot.widthMeters }}m × {{ plot.lengthMeters }}m</span>
+                                  <span class="text-muted text-xs block">({{ plot.widthFeet }}′ × {{ plot.lengthFeet }}′)</span>
+                                </td>
+                                <td>
+                                  <span class="font-bold text-amber">{{ plot.formattedPrice }}</span>
+                                </td>
+                                <td>
+                                  <span class="font-mono text-xs text-muted">x: {{ plot.x }}, y: {{ plot.y }}</span>
+                                </td>
+                                <td>
+                                  @if (plot.hasTrees) {
+                                    <span class="material-symbols-outlined text-green text-sm" title="Includes mature shade trees">park</span>
+                                  } @else {
+                                    <span class="text-muted text-xs">—</span>
+                                  }
+                                </td>
+                                <td class="text-right">
+                                  <div class="row-actions">
+                                    <button 
+                                      type="button" 
+                                      class="btn-row-action edit" 
+                                      (click)="openEditPlotModal(i)" 
+                                      title="Edit plot details">
+                                      <span class="material-symbols-outlined">edit</span>
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      class="btn-row-action duplicate" 
+                                      (click)="duplicatePlotItem(i)" 
+                                      title="Duplicate plot">
+                                      <span class="material-symbols-outlined">content_copy</span>
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      class="btn-row-action delete" 
+                                      (click)="deletePlotItem(i)" 
+                                      title="Remove plot">
+                                      <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            } @empty {
+                              <tr>
+                                <td colspan="10" class="text-center py-6 text-muted">
+                                  <div class="empty-plots-box">
+                                    <span class="material-symbols-outlined empty-icon">layers_clear</span>
+                                    <p>No partitioned plots configured yet.</p>
+                                    <button type="button" class="btn-console-add mt-2" (click)="autoPopulateDefaultPlots()">
+                                      <span class="material-symbols-outlined">auto_awesome</span>
+                                      <span>Auto-Populate 8 Standard Parcels</span>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              }
+
+              <!-- DYNAMIC SPECIALIZED FIELDS: COMMERCIAL SPACES -->
+              @if (isAdminCommercial()) {
+                <div class="form-field">
+                  <label class="field-label">Commercial Asset Type *</label>
+                  <select class="field-select" [(ngModel)]="newProp().commercialType" name="commercialType">
+                    <option value="Commercial Office Space">Grade-A Corporate Office Space</option>
+                    <option value="Retail Showroom / Shop">High-Street Retail Showroom / Shop</option>
+                    <option value="Bare Shell Floor">Bare Shell Commercial Floor Plate</option>
+                    <option value="Warehouse / Logistics">Industrial Warehouse / Logistics Hub</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Power Backup / DG Redundancy</label>
+                  <select class="field-select" [(ngModel)]="newProp().powerBackup" name="powerBackup">
+                    <option value="100% DG Redundancy">100% Full DG Redundancy (N+1)</option>
+                    <option value="Common Area Backup">Common Area &amp; Elevator Backup</option>
+                    <option value="Standard EB Grid">Standard 3-Phase Commercial EB</option>
+                  </select>
+                </div>
+              }
+
+              <!-- DYNAMIC SPECIALIZED FIELDS: FARM LAND & ESTATES -->
+              @if (isAdminFarmLand()) {
+                <div class="form-field">
+                  <label class="field-label">Water Source &amp; Irrigation *</label>
+                  <select class="field-select" [(ngModel)]="newProp().waterSource" name="waterSource">
+                    <option value="Dedicated Borewell & Canal">Dedicated Borewell &amp; Perennial Canal</option>
+                    <option value="Open Farm Well">Traditional Copious Open Well</option>
+                    <option value="Drip Irrigation Network">Fully Automated Drip Network</option>
+                    <option value="Seasonal Ground Water">Seasonal Ground Water</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Boundary &amp; Approach Road</label>
+                  <select class="field-select" [(ngModel)]="newProp().farmBoundary" name="farmBoundary">
+                    <option value="Solar Fenced Perimeter">Solar Electric Fenced Perimeter</option>
+                    <option value="Live Green Tree Bio-Fence">Live Green Tree Bio-Fence</option>
+                    <option value="Barbed Wire Fencing">Barbed Wire with Concrete Posts</option>
+                    <option value="Open Agricultural Stretch">Open Contiguous Acreage</option>
+                  </select>
+                </div>
+              }
+
+              <div class="form-field">
+                <label class="field-label">Facing / Direction</label>
+                <select class="field-select" [(ngModel)]="newProp().facingOrView" name="facingOrView">
+                  <option value="East Facing">East Facing</option>
+                  <option value="North Facing">North Facing</option>
+                  <option value="North-East Facing">North-East Facing</option>
+                  <option value="West Facing">West Facing</option>
+                  <option value="South Facing">South Facing</option>
+                  @if (isAdminPlot() || isAdminCommercial()) {
+                    <option value="Corner Double-Road Facing">Corner Double-Road Facing</option>
+                    <option value="Main Avenue Facing">Main Avenue Corridor Facing</option>
+                  } @else {
+                    <option value="Sea / Bay Facing">Sea / Bay Facing</option>
+                    <option value="Park Canopy Facing">Park Canopy Facing</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">RERA or Approval / Patta Reference</label>
+                <input type="text" class="field-input" [(ngModel)]="newProp().reraNumber" name="reraNumber" placeholder="e.g. TN/29/Building/0811/2026 or Patta #491" />
+              </div>
+
+              <!-- SECTION: PHOTOGRAPHY & MEDIA UPLOAD -->
+              <div class="form-field full-width media-upload-field">
+                <div class="media-field-header">
+                  <div>
+                    <label class="field-label media-main-label">
+                      <span class="material-symbols-outlined label-icon">photo_camera</span>
+                      <span>Architectural Photography &amp; Showcase Media</span>
+                    </label>
+                    <span class="media-field-sub">Upload high-resolution property photographs or specify an image URL.</span>
+                  </div>
+                  <span class="media-count-badge" *ngIf="adminUploadedImages().length > 0">
+                    {{ adminUploadedImages().length }} {{ adminUploadedImages().length === 1 ? 'Photo' : 'Photos' }} Added
+                  </span>
+                </div>
+
+                <!-- Mode Selector Tabs -->
+                <div class="media-tabs-nav">
+                  <button 
+                    type="button" 
+                    class="media-tab-btn" 
+                    [class.active]="adminMediaTab() === 'upload'" 
+                    (click)="setAdminMediaTab('upload')">
+                    <span class="material-symbols-outlined">cloud_upload</span>
+                    <span>Upload Photos</span>
+                    <span class="tab-badge-recommended">Recommended</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="media-tab-btn" 
+                    [class.active]="adminMediaTab() === 'url'" 
+                    (click)="setAdminMediaTab('url')">
+                    <span class="material-symbols-outlined">link</span>
+                    <span>Direct Image URL</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="media-tab-btn" 
+                    [class.active]="adminMediaTab() === 'presets'" 
+                    (click)="setAdminMediaTab('presets')">
+                    <span class="material-symbols-outlined">auto_awesome</span>
+                    <span>Curated Presets</span>
+                  </button>
+                </div>
+
+                <!-- TAB 1: FILE UPLOAD -->
+                <div *ngIf="adminMediaTab() === 'upload'" class="tab-content-panel">
+                  <!-- Hidden File Input -->
+                  <input 
+                    #adminFileInput 
+                    type="file" 
+                    multiple 
+                    accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/avif" 
+                    (change)="onAdminFilesSelected($event)" 
+                    style="display: none" />
+
+                  <!-- Drag and Drop Dropzone -->
+                  <div 
+                    class="upload-dropzone" 
+                    [class.drag-over]="adminIsDragging()"
+                    (dragover)="onAdminDragOver($event)"
+                    (dragleave)="onAdminDragLeave($event)"
+                    (drop)="onAdminDrop($event)"
+                    (click)="adminFileInput.click()">
+                    
+                    <div class="dropzone-icon-ring">
+                      <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
+                    </div>
+                    <h4 class="dropzone-title">Drag &amp; Drop property photos here</h4>
+                    <p class="dropzone-desc">or <button type="button" class="dropzone-browse-btn" (click)="$event.stopPropagation(); adminFileInput.click()">Browse from your device</button></p>
+                    
+                    <div class="dropzone-specs">
+                      <span class="spec-chip">JPG, PNG, WEBP, GIF, HEIC</span>
+                      <span class="spec-divider">•</span>
+                      <span class="spec-chip">Up to 15MB each</span>
+                      <span class="spec-divider">•</span>
+                      <span class="spec-chip">Multiple files supported</span>
+                    </div>
+                  </div>
+
+                  <!-- Uploading Status Banner -->
+                  <div *ngIf="adminIsUploadingAny()" class="uploading-status-banner">
+                    <div class="status-spinner-small"></div>
+                    <span>Uploading image(s) to registry media server...</span>
+                  </div>
+
+                  <!-- Uploaded Images Gallery Grid -->
+                  <div *ngIf="adminUploadedImages().length > 0" class="uploaded-gallery-wrapper">
+                    <div class="gallery-header-row">
+                      <span class="gallery-title">Uploaded Listing Gallery</span>
+                      <span class="gallery-hint">Click "Set Cover" to choose the primary listing card photograph.</span>
+                    </div>
+
+                    <div class="uploaded-grid">
+                      @for (item of adminUploadedImages(); track item.id) {
+                        <div class="upload-img-card" [class.is-cover]="item.isCover">
+                          <div class="img-preview-container">
+                            <img [src]="item.previewUrl" [alt]="item.name" class="uploaded-preview-img" />
+                            
+                            <div *ngIf="item.isCover" class="cover-photo-pill">
+                              <span class="material-symbols-outlined">star</span>
+                              <span>PRIMARY COVER</span>
+                            </div>
+
+                            <div *ngIf="item.isUploading" class="upload-card-spinner-overlay">
+                              <div class="status-spinner-small"></div>
+                              <span>Uploading...</span>
+                            </div>
+
+                            <div *ngIf="!item.isUploading && item.serverUrl && !item.isCover" class="cloud-synced-pill" title="Synced to secure server">
+                              <span class="material-symbols-outlined">cloud_done</span>
+                            </div>
+
+                            <button 
+                              type="button" 
+                              class="card-remove-btn" 
+                              (click)="$event.stopPropagation(); removeAdminImage(item.id)" 
+                              title="Delete photo">
+                              <span class="material-symbols-outlined">delete</span>
+                            </button>
+                          </div>
+
+                          <div class="img-card-meta">
+                            <div class="img-meta-info">
+                              <span class="img-filename" [title]="item.name">{{ item.name }}</span>
+                              <span class="img-filesize">{{ item.sizeFormatted }}</span>
+                            </div>
+
+                            <div class="img-card-actions">
+                              <button 
+                                *ngIf="!item.isCover" 
+                                type="button" 
+                                class="btn-set-cover" 
+                                (click)="setAdminCoverImage(item)">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                <span>Set Cover</span>
+                              </button>
+                              <span *ngIf="item.isCover" class="active-cover-indicator">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span>Active Cover</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Quick Add More Tile -->
+                      <div class="add-more-tile" (click)="adminFileInput.click()">
+                        <div class="add-tile-icon-box">
+                          <span class="material-symbols-outlined">add_photo_alternate</span>
+                        </div>
+                        <span class="add-tile-label">Add More Photos</span>
+                        <span class="add-tile-sub">Select files</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TAB 2: DIRECT URL -->
+                <div *ngIf="adminMediaTab() === 'url'" class="tab-content-panel">
+                  <div class="url-input-wrapper">
+                    <span class="material-symbols-outlined url-input-icon">link</span>
+                    <input 
+                      type="url" 
+                      class="field-input font-mono has-left-icon" 
+                      [(ngModel)]="newProp().mainImageUrl" 
+                      name="mainImageUrl" 
+                      placeholder="https://images.unsplash.com/... or https://domain.com/photo.jpg" />
+                  </div>
+                  <span class="field-hint">Paste an HTTPS image link hosted on Unsplash, AWS S3, Cloudinary, or your CDN.</span>
+
+                  <div *ngIf="newProp().mainImageUrl" class="url-live-preview-box">
+                    <span class="preview-box-label">Live Link Preview</span>
+                    <div class="url-preview-thumb">
+                      <img [src]="newProp().mainImageUrl" alt="Property Cover Preview" (error)="$any($event.target).src = 'assets/blueprint-bg.svg'" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TAB 3: CURATED PRESETS -->
+                <div *ngIf="adminMediaTab() === 'presets'" class="tab-content-panel">
+                  <div class="sample-images-grid">
+                    @for (img of sampleImages; track img.url) {
+                      <div 
+                        class="sample-img-card" 
+                        [class.selected]="newProp().mainImageUrl === img.url"
+                        (click)="selectAdminPreset(img.url)">
+                        <img [src]="img.url" [alt]="img.label" class="sample-img" />
+                        <span class="sample-label">{{ img.label }}</span>
+                        @if (newProp().mainImageUrl === img.url) {
+                          <span class="material-symbols-outlined check-badge">check_circle</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- ACTIVE PRIMARY COVER PREVIEW -->
+                <div class="active-cover-showcase-bar">
+                  <div class="showcase-thumb-box">
+                    <img [src]="adminActiveCoverPreview()" alt="Active Listing Cover" class="showcase-thumb" />
+                  </div>
+                  <div class="showcase-info">
+                    <div class="showcase-status">
+                      <span class="status-dot-pulse"></span>
+                      <span class="showcase-badge-text">MARKETPLACE COVER PREVIEW</span>
+                    </div>
+                    <h5 class="showcase-title">{{ newProp().title || 'Your Architectural Listing Title' }}</h5>
+                    <p class="showcase-location">{{ newProp().localityName || 'Locality' }}, {{ newProp().cityName }} • {{ newProp().price || 'Expected Price' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submission Footer -->
+            <div class="form-actions-row">
+              <div class="form-notice">
+                <span class="material-symbols-outlined">info</span>
+                <span>Clicking submit will route this listing into the Co-Admin peer review queue.</span>
+              </div>
+
+              <button 
+                type="submit" 
+                class="btn-submit-post" 
+                [disabled]="adminService.isSubmitting()">
+                <span class="material-symbols-outlined">publish</span>
+                <span>{{ adminService.isSubmitting() ? 'Submitting...' : 'Submit for Co-Admin Peer Review' }}</span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </section>
+    }
+
+    <!-- ============================================================== -->
+    <!-- TAB CONTENT: DEDICATED PLOT MASTERPLAN & PARTITION STUDIO      -->
+    <!-- ============================================================== -->
+    @if (activeTab() === 'plot_studio') {
+      <section class="tab-pane-section plot-studio-section">
+        
+        <!-- STUDIO TOP BANNER -->
+        <div class="studio-masthead-banner">
+          <div class="sm-left">
+            <div class="sm-icon-badge">
+              <span class="material-symbols-outlined">terrain</span>
+            </div>
+            <div>
+              <div class="sm-title-row">
+                <h3>Plot Masterplan &amp; Partition Studio</h3>
+                <span class="sm-badge">CADASTRAL DIGITAL TWIN</span>
+              </div>
+              <p class="sm-desc">Configure master layout factsheets, engineer individual subdivided parcels along the 9M boulevard, and inspect live 3D digital twin renderings in real time.</p>
+            </div>
+          </div>
+
+          <!-- PROJECT SELECTOR & QUICK ACTIONS -->
+          <div class="sm-right">
+            <div class="project-selector-wrap">
+              <label class="ps-label">
+                <span class="material-symbols-outlined">account_tree</span>
+                <span>Select Plot Layout:</span>
+              </label>
+              <select 
+                class="ps-select" 
+                [ngModel]="studioSelectedPropId()" 
+                (ngModelChange)="onSelectStudioProperty($event)">
+                <option value="new">+ Create New Gated Plot Masterplan</option>
+                @for (plotProp of studioPlotProperties(); track plotProp.id) {
+                  <option [value]="plotProp.id">{{ plotProp.title }} ({{ plotProp.localityName }})</option>
+                }
+              </select>
+            </div>
+
+            <div class="sm-action-buttons">
+              <button 
+                type="button" 
+                class="btn-studio-action" 
+                (click)="autoPopulateDefaultPlots()" 
+                title="Initialize 8 standard plots along dual-row avenue">
+                <span class="material-symbols-outlined">grid_view</span>
+                <span>Load 8 Flagship Plots</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="btn-studio-save" 
+                (click)="savePlotStudioChanges()" 
+                [disabled]="isSavingStudio()">
+                <span class="material-symbols-outlined">save</span>
+                <span>{{ isSavingStudio() ? 'Saving Layout...' : (studioSelectedPropId() === 'new' ? 'Proceed to Post' : 'Save & Sync Layout') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D / 2D REAL-TIME INSPECTION DOCK -->
+        <div class="studio-preview-dock">
+          <div class="spd-header">
+            <div class="spd-title">
+              <span class="material-symbols-outlined text-green">view_in_ar</span>
+              <div>
+                <h4>Interactive Masterplan Inspection View</h4>
+                <span class="spd-sub">Live visual rendering of the {{ adminTotalPlotsCount() }} subdivided parcels and 9M central boulevard</span>
+              </div>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="spd-tabs">
+              <button 
+                type="button" 
+                class="spd-tab" 
+                [class.active]="studioPreviewMode() === 'schematic'" 
+                (click)="studioPreviewMode.set('schematic')">
+                <span class="material-symbols-outlined">schema</span>
+                <span>2D Dual-Row Schematic</span>
+              </button>
+              <button 
+                type="button" 
+                class="spd-tab" 
+                [class.active]="studioPreviewMode() === 'plotex3d'" 
+                (click)="studioPreviewMode.set('plotex3d')">
+                <span class="material-symbols-outlined">3d_rotation</span>
+                <span>3D Plotex Digital Twin</span>
+              </button>
+              <button 
+                type="button" 
+                class="spd-tab" 
+                [class.active]="studioPreviewMode() === 'plan2d'" 
+                (click)="studioPreviewMode.set('plan2d')">
+                <span class="material-symbols-outlined">map</span>
+                <span>Aerial Masterplan</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="spd-body">
+            @if (studioPreviewMode() === 'schematic') {
+              <!-- INTERACTIVE 2D DUAL-ROW SCHEMATIC PREVIEW -->
+              <div class="plot-schematic-preview-box">
+                <div class="schematic-avenue-container">
+                  <!-- ROW 1 (NORTH ROW) -->
+                  <div class="schematic-row north-row">
+                    <span class="row-indicator">NORTH PARCELS</span>
+                    <div class="schematic-plots-strip">
+                      @for (plot of adminSubdividedPlots().slice(0, 4); track plot.id; let i = $index) {
+                        <div 
+                          class="schematic-plot-box" 
+                          [class.avail]="plot.status === 'available'" 
+                          [class.sold]="plot.status === 'sold'"
+                          [class.reserved]="plot.status === 'reserved'"
+                          (click)="openEditPlotModal(i)" 
+                          title="Plot {{ plot.plotNo }} • {{ plot.superBuiltUpYds }} Yds • Click to Edit">
+                          <div class="sp-no">{{ plot.plotNo }}</div>
+                          <div class="sp-sub">{{ plot.superBuiltUpYds }} Yds ({{ plot.superBuiltUpSqft }} Sq.Ft)</div>
+                          <div class="sp-price">{{ plot.formattedPrice }}</div>
+                          <div class="sp-status">{{ plot.status | uppercase }}</div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- 9-METER CENTRAL BOULEVARD -->
+                  <div class="schematic-boulevard">
+                    <span class="boulevard-name">9.0-METER CENTRAL CMDA BOULEVARD (AVENUE PROMENADE)</span>
+                    <div class="road-center-stripe"></div>
+                  </div>
+
+                  <!-- ROW 2 (SOUTH ROW) -->
+                  <div class="schematic-row south-row">
+                    <span class="row-indicator">SOUTH PARCELS</span>
+                    <div class="schematic-plots-strip">
+                      @for (plot of adminSubdividedPlots().slice(4, 8); track plot.id; let i = $index) {
+                        <div 
+                          class="schematic-plot-box" 
+                          [class.avail]="plot.status === 'available'" 
+                          [class.sold]="plot.status === 'sold'"
+                          [class.reserved]="plot.status === 'reserved'"
+                          (click)="openEditPlotModal(i + 4)" 
+                          title="Plot {{ plot.plotNo }} • {{ plot.superBuiltUpYds }} Yds • Click to Edit">
+                          <div class="sp-no">{{ plot.plotNo }}</div>
+                          <div class="sp-sub">{{ plot.superBuiltUpYds }} Yds ({{ plot.superBuiltUpSqft }} Sq.Ft)</div>
+                          <div class="sp-price">{{ plot.formattedPrice }}</div>
+                          <div class="sp-status">{{ plot.status | uppercase }}</div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            } @else if (studioPreviewMode() === 'plotex3d') {
+              <div class="studio-3d-wrapper">
+                <app-plotex-viewer 
+                  [propertyTitle]="newProp().title || 'Masterplan Layout'" 
+                  [locality]="newProp().localityName || 'Chennai'" 
+                  [customPlots]="adminSubdividedPlots()" />
+              </div>
+            } @else {
+              <div class="studio-2d-wrapper">
+                <app-interactive-plot-layout 
+                  [propertyTitle]="newProp().title || 'Masterplan Layout'" 
+                  [locality]="newProp().localityName || 'Chennai'" 
+                  [customPlots]="adminSubdividedPlots()" />
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- KPI SUMMARY METRICS RIBBON -->
+        <div class="plot-kpi-ribbon studio-kpi-ribbon">
+          <div class="pkpi-item">
+            <span class="pkpi-label">Total Parcels</span>
+            <span class="pkpi-val">{{ adminTotalPlotsCount() }}</span>
+          </div>
+          <div class="pkpi-divider"></div>
+          <div class="pkpi-item">
+            <span class="pkpi-label text-green">Available</span>
+            <span class="pkpi-val text-green font-bold">{{ adminAvailablePlotsCount() }}</span>
+          </div>
+          <div class="pkpi-divider"></div>
+          <div class="pkpi-item">
+            <span class="pkpi-label text-rose">Sold Out</span>
+            <span class="pkpi-val text-rose font-bold">{{ adminSoldPlotsCount() }}</span>
+          </div>
+          <div class="pkpi-divider"></div>
+          <div class="pkpi-item">
+            <span class="pkpi-label text-amber">Reserved</span>
+            <span class="pkpi-val text-amber font-bold">{{ adminReservedPlotsCount() }}</span>
+          </div>
+          <div class="pkpi-divider"></div>
+          <div class="pkpi-item">
+            <span class="pkpi-label">Total Extent</span>
+            <span class="pkpi-val">{{ adminTotalPlotAreaYards() | number:'1.0-1' }} <small>Yds</small> ({{ adminTotalPlotAreaSqft() | number:'1.0-0' }} <small>Sq.Ft</small>)</span>
+          </div>
+          <div class="pkpi-divider"></div>
+          <div class="pkpi-item">
+            <span class="pkpi-label">Total Inventory Value</span>
+            <span class="pkpi-val text-sky font-bold">₹{{ adminTotalProjectValueLakhs() | number:'1.2-2' }} L</span>
+          </div>
+        </div>
+
+        <!-- PARCEL MANAGEMENT DATA TABLE -->
+        <div class="plot-console-card">
+          <div class="console-card-header">
+            <div class="console-header-title">
+              <span class="material-symbols-outlined text-green">table_chart</span>
+              <div>
+                <h5>Partitioned Subdivided Plot Parcels</h5>
+                <span class="console-sub-desc">Manage parcel numbers, dimensions, orientation, pricing and inventory status.</span>
+              </div>
+            </div>
+
+            <div class="console-header-actions">
+              <button 
+                type="button" 
+                class="btn-console-add" 
+                (click)="openAddPlotModal()">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span>Add Partitioned Plot</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="btn-console-clear" 
+                (click)="clearAllPlots()" 
+                [disabled]="adminSubdividedPlots().length === 0">
+                <span class="material-symbols-outlined">delete_sweep</span>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive-box">
+            <table class="admin-data-table plot-data-table">
+              <thead>
+                <tr>
+                  <th>Plot #</th>
+                  <th>Status</th>
+                  <th>Facing</th>
+                  <th>Super Built-up</th>
+                  <th>Net Area</th>
+                  <th>Dimensions (W × L)</th>
+                  <th>Estimated Price</th>
+                  <th>3D Coordinates (X, Y)</th>
+                  <th>Trees</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (plot of adminSubdividedPlots(); track plot.id; let i = $index) {
+                  <tr class="plot-table-row">
+                    <td class="font-bold text-sky">
+                      <span class="plot-number-badge">
+                        {{ plot.plotNo }}
+                        @if (plot.isCorner) {
+                          <span class="badge-corner" title="Corner Plot">C</span>
+                        }
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        type="button" 
+                        class="status-pill-toggle" 
+                        [class.pill-available]="plot.status === 'available'"
+                        [class.pill-sold]="plot.status === 'sold'"
+                        [class.pill-reserved]="plot.status === 'reserved'"
+                        (click)="togglePlotStatus(i)" 
+                        title="Click to toggle status (Available / Sold / Reserved)">
+                        <span class="status-pulse-dot"></span>
+                        <span>{{ plot.status | uppercase }}</span>
+                      </button>
+                    </td>
+                    <td>{{ plot.facing }}</td>
+                    <td>
+                      <strong>{{ plot.superBuiltUpYds }} Yds</strong>
+                      <span class="text-muted block text-xs">({{ plot.superBuiltUpSqft }} Sq.Ft)</span>
+                    </td>
+                    <td>{{ plot.netPlotAreaYds }} Yds</td>
+                    <td>
+                      <span>{{ plot.widthMeters }}m × {{ plot.lengthMeters }}m</span>
+                      <span class="text-muted block text-xs">({{ plot.widthFeet }}' × {{ plot.lengthFeet }}')</span>
+                    </td>
+                    <td class="font-bold text-emerald">
+                      {{ plot.formattedPrice || ('₹' + (plot.priceInLakhs | number:'1.2-2') + ' L') }}
+                    </td>
+                    <td class="text-xs text-muted">
+                      X: {{ plot.x }}, Y: {{ plot.y }} ({{ plot.w }}×{{ plot.h }})
+                    </td>
+                    <td>
+                      @if (plot.hasTrees) {
+                        <span class="badge-tree" title="Landscaped with Avenue Trees">
+                          <span class="material-symbols-outlined text-xs">park</span> Trees
+                        </span>
+                      } @else {
+                        <span class="text-muted text-xs">—</span>
+                      }
+                    </td>
+                    <td class="text-right">
+                      <div class="row-actions-group">
+                        <button 
+                          type="button" 
+                          class="btn-row-action" 
+                          (click)="openEditPlotModal(i)" 
+                          title="Edit Plot">
+                          <span class="material-symbols-outlined">edit</span>
+                        </button>
+                        <button 
+                          type="button" 
+                          class="btn-row-action" 
+                          (click)="duplicatePlotItem(i)" 
+                          title="Duplicate Plot">
+                          <span class="material-symbols-outlined">content_copy</span>
+                        </button>
+                        <button 
+                          type="button" 
+                          class="btn-row-action btn-row-delete" 
+                          (click)="deletePlotItem(i)" 
+                          title="Delete Plot">
+                          <span class="material-symbols-outlined">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="10" class="empty-plots-cell">
+                      <div class="empty-plots-state">
+                        <span class="material-symbols-outlined">grid_off</span>
+                        <h6>No Partitioned Plots Added</h6>
+                        <p>Click "Add Partitioned Plot" or "Load 8 Flagship Plots" above to configure your masterplan layout.</p>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MASTER LAYOUT FACTSHEET FORM CARD -->
+        <div class="plot-console-card">
+          <div class="console-card-header">
+            <div class="console-header-title">
+              <span class="material-symbols-outlined text-sky">description</span>
+              <div>
+                <h5>Master Layout Cadastral Factsheet</h5>
+                <span class="console-sub-desc">Enter sanction approvals, civic infrastructure, and ground engineering parameters.</span>
+              </div>
+            </div>
+            <span class="console-chip">TECHNICAL SPECIFICATIONS</span>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label class="field-label">Layout Sanction Number *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().layoutSanctionNo" 
+                name="layoutSanctionNo" 
+                placeholder="e.g. CMDA Sanctioned Layout PPD/LO No. 48/2023" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">RERA Layout Registration No *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().reraLayoutNo" 
+                name="reraLayoutNo" 
+                placeholder="e.g. TN/01/Layout/0291/2024" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Frontage Road Width *</label>
+              <select class="field-select" [(ngModel)]="plotFactsheet().frontageRoadWidth" name="frontageRoadWidth">
+                <option value="24 Feet Wide Bitumen Road">24 Feet Wide Bitumen Road</option>
+                <option value="30 Feet Wide Blacktop Road">30 Feet Wide Blacktop Road</option>
+                <option value="40 Feet Wide Bitumen Road">40 Feet Wide Bitumen Road (9M Avenue)</option>
+                <option value="60 Feet Wide Avenue Corridor">60 Feet Wide Avenue Corridor</option>
+                <option value="100+ Feet Wide Arterial Highway">100+ Feet Wide Arterial Highway</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Permissible FSI *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().fsiPermissible" 
+                name="fsiPermissible" 
+                placeholder="e.g. 2.0 FSI (G+3 Floors Permissible)" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Water Table Depth *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().waterTableDepth" 
+                name="waterTableDepth" 
+                placeholder="e.g. Sweet Potable Water at 18–24 Feet" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Soil Bearing Capacity *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().soilBearingCapacity" 
+                name="soilBearingCapacity" 
+                placeholder="e.g. Certified 220 kN/sq.m (IIT Tested)" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">EB Substation &amp; Power Grid *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().ebSubstation" 
+                name="ebSubstation" 
+                placeholder="e.g. Dedicated 11kV Substation Commissioned" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Boundary Wall &amp; Security *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().boundaryWall" 
+                name="boundaryWall" 
+                placeholder="e.g. 6-Foot Reinforced Perimeter Wall with Gated Security" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Drainage &amp; Sewerage *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().drainageSystem" 
+                name="drainageSystem" 
+                placeholder="e.g. Underground Stormwater &amp; Sewerage Grid Ready" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Patta Registration Status *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().pattaStatus" 
+                name="pattaStatus" 
+                placeholder="e.g. Individual Computerized Patta Issued" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Dimension Ranges *</label>
+              <input 
+                type="text" 
+                class="field-input" 
+                [(ngModel)]="plotFactsheet().dimensionRanges" 
+                name="dimensionRanges" 
+                placeholder="e.g. 40 ft x 60 ft (2,400 sq.ft standard corner)" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Approval Authority *</label>
+              <select class="field-select" [(ngModel)]="newProp().plotApproval" name="plotApproval">
+                <option value="CMDA Approved">CMDA Sanctioned Layout</option>
+                <option value="DTCP Approved">DTCP Sanctioned Layout</option>
+                <option value="RERA Registered">RERA Registered Layout</option>
+                <option value="Panchayat Approved">Panchayat Approved</option>
+                <option value="Freehold Patta Land">Freehold Patta Deed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STICKY BOTTOM SAVE ACTION BAR -->
+        <div class="studio-bottom-bar">
+          <div class="sbb-info">
+            <span class="material-symbols-outlined text-green">verified</span>
+            <div>
+              <strong>{{ adminTotalPlotsCount() }} Partitioned Parcels Configured</strong>
+              <span class="sbb-sub">Total Inventory: ₹{{ adminTotalProjectValueLakhs() | number:'1.2-2' }} Lakhs • {{ adminAvailablePlotsCount() }} Available</span>
+            </div>
+          </div>
+
+          <div class="sbb-actions">
+            <button 
+              type="button" 
+              class="btn-studio-save-large" 
+              (click)="savePlotStudioChanges()" 
+              [disabled]="isSavingStudio()">
+              <span class="material-symbols-outlined">cloud_upload</span>
+              <span>{{ isSavingStudio() ? 'Saving Layout...' : (studioSelectedPropId() === 'new' ? 'Proceed to Post Listing' : 'Save Plot Details &amp; Parcels to Database') }}</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+    }
+
+    <!-- TAB CONTENT 3: ALL PROPERTIES DIRECTORY & AUDIT LOG -->
+    @if (activeTab() === 'all_directory') {
+      <section class="tab-pane-section">
+        
+        <div class="directory-controls-row">
+          <!-- Search box -->
+          <div class="dir-search-wrap">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input 
+              type="text" 
+              class="dir-search-input" 
+              placeholder="Search by title, locality, or author..." 
+              [value]="searchQuery()" 
+              (input)="onSearchChange($any($event.target).value)" />
+          </div>
+
+          <!-- Status Filters -->
+          <div class="dir-filter-chips">
+            <button 
+              type="button" 
+              class="dir-chip" 
+              [class.active]="directoryFilter() === 'all'" 
+              (click)="applyFilter('all')">
+              All ({{ adminService.stats().total }})
+            </button>
+            <button 
+              type="button" 
+              class="dir-chip" 
+              [class.active]="directoryFilter() === 'pending_peer_review'" 
+              (click)="applyFilter('pending_peer_review')">
+              Peer Review ({{ adminService.stats().pendingPeerReviews }})
+            </button>
+            <button 
+              type="button" 
+              class="dir-chip" 
+              [class.active]="directoryFilter() === 'pending_review'" 
+              (click)="applyFilter('pending_review')">
+              User Pending ({{ adminService.stats().pendingUserReviews }})
+            </button>
+            <button 
+              type="button" 
+              class="dir-chip" 
+              [class.active]="directoryFilter() === 'published'" 
+              (click)="applyFilter('published')">
+              Published ({{ adminService.stats().published }})
+            </button>
+            <button 
+              type="button" 
+              class="dir-chip" 
+              [class.active]="directoryFilter() === 'rejected'" 
+              (click)="applyFilter('rejected')">
+              Rejected ({{ adminService.stats().rejected }})
+            </button>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-container">
+          <table class="dir-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Category</th>
+                <th>Price &amp; Area</th>
+                <th>Submitted By</th>
+                <th>Status</th>
+                <th>Reviewed By</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (prop of adminService.properties(); track prop.id) {
+                <tr>
+                  <td>
+                    <div class="table-prop-cell">
+                      <img [src]="prop.mainImageUrl" [alt]="prop.title" class="table-prop-thumb" />
+                      <div class="table-prop-meta">
+                        <span class="t-title">{{ prop.title }}</span>
+                        <span class="t-sub">{{ prop.localityName }}, {{ prop.cityName }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="t-cat">{{ prop.propertyType }}</span>
+                  </td>
+                  <td>
+                    <div class="t-price-col">
+                      <span class="t-price">{{ prop.price }}</span>
+                      <span class="t-sqft">{{ prop.sqft }} &bull; {{ prop.bhkBadge }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="t-submitter-col">
+                      <span class="t-submitter-name">{{ prop.submittedByName || 'User' }}</span>
+                      <span class="t-role-badge" [class.admin]="prop.submittedByRole === 'admin' || prop.submittedByRole === 'co_admin'">
+                        {{ prop.submittedByRole || 'user' }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class]="'badge-' + prop.status">
+                      {{ prop.status.replace('_', ' ').toUpperCase() }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (prop.reviewedByName) {
+                      <div class="t-reviewer-col">
+                        <span class="t-rev-name">{{ prop.reviewedByName }}</span>
+                        <span class="t-rev-date">{{ prop.reviewedAt }}</span>
+                      </div>
+                    } @else {
+                      <span class="text-slate-400 text-xs italic">Awaiting Review</span>
+                    }
+                  </td>
+                  <td>
+                    <button 
+                      type="button" 
+                      class="btn-table-action" 
+                      (click)="openReviewModal(prop)">
+                      <span>Review / Audit</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+    }
+
+    <!-- ========================================== -->
+    <!-- TAB CONTENT 4: RAZORPAY & FINANCIAL CREDITS DASHBOARD -->
+    <!-- ========================================== -->
+    @if (activeTab() === 'financials') {
+      <section class="tab-pane-section financials-pane">
+        
+        <!-- Financial Header & Actions Banner -->
+        <div class="fin-header-banner">
+          <div class="fin-title-col">
+            <div class="fin-badge-pill">
+              <span class="material-symbols-outlined">payments</span>
+              <span>ADMINISTRATIVE SETTLEMENT CONSOLE</span>
+            </div>
+            <h3 class="fin-heading">Razorpay &amp; Payment Gateway Reconciliation</h3>
+            <p class="fin-sub">
+              Monitor real-time revenue collections, compare Razorpay versus alternate channels, and audit investor media point recharges.
+            </p>
+          </div>
+          
+          <div class="fin-actions-col">
+            <button 
+              type="button" 
+              class="btn-fin-action btn-wire"
+              (click)="openManualCreditModal()">
+              <span class="material-symbols-outlined">add_card</span>
+              <span>Issue Manual / Wire Credit</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="btn-fin-action btn-export"
+              (click)="exportFinancialsCsv()"
+              title="Download CSV for finance audits">
+              <span class="material-symbols-outlined">download</span>
+              <span>Export CSV Ledger</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="btn-fin-action btn-refresh"
+              [disabled]="adminService.isFinancialLoading()"
+              (click)="adminService.loadFinancials(financialGateway(), financialStatus(), financialTimeframe(), financialSearch())"
+              title="Refresh ledger">
+              <span class="material-symbols-outlined" [class.spin-anim]="adminService.isFinancialLoading()">
+                sync
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5-Card Financial KPI Strip -->
+        <div class="fin-kpi-grid">
+          
+          <!-- KPI 1: Total Revenue Collections -->
+          <div class="fin-kpi-card highlight-emerald">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-tag">TOTAL CREDITED</span>
+              <div class="fin-kpi-icon-box bg-emerald-dim">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+              </div>
+            </div>
+            <div class="fin-kpi-value-row">
+              <span class="fin-currency">₹</span>
+              <span class="fin-value">{{ (adminService.financialData()?.summary?.totalRevenueRupees || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="fin-kpi-footer">
+              <span class="material-symbols-outlined text-emerald">bolt</span>
+              <span>{{ adminService.financialData()?.summary?.totalPointsCredited || 0 }} Media Points in Circulation</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Razorpay Gateway Collections -->
+          <div class="fin-kpi-card highlight-blue">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-tag rzp-tag">
+                <span class="material-symbols-outlined">credit_score</span>
+                <span>RAZORPAY GATEWAY</span>
+              </span>
+              <div class="fin-kpi-icon-box bg-blue-dim">
+                <span class="material-symbols-outlined">verified</span>
+              </div>
+            </div>
+            <div class="fin-kpi-value-row text-blue">
+              <span class="fin-currency">₹</span>
+              <span class="fin-value">{{ (adminService.financialData()?.summary?.razorpayRevenueRupees || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="fin-kpi-footer">
+              <div class="fin-progress-tiny">
+                <div class="bar-fill bg-blue" [style.width.%]="adminService.financialData()?.summary?.razorpayPercentage || 0"></div>
+              </div>
+              <span class="fin-pct-label">{{ adminService.financialData()?.summary?.razorpayPercentage || 0 }}% Share ({{ adminService.financialData()?.summary?.razorpayOrdersCount || 0 }} Orders)</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: Other Channels (UPI, NetBanking, Cards) -->
+          <div class="fin-kpi-card highlight-purple">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-tag other-tag">
+                <span class="material-symbols-outlined">account_balance</span>
+                <span>OTHER CHANNELS</span>
+              </span>
+              <div class="fin-kpi-icon-box bg-purple-dim">
+                <span class="material-symbols-outlined">sync_alt</span>
+              </div>
+            </div>
+            <div class="fin-kpi-value-row text-purple">
+              <span class="fin-currency">₹</span>
+              <span class="fin-value">{{ (adminService.financialData()?.summary?.otherRevenueRupees || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div class="fin-kpi-footer">
+              <div class="fin-progress-tiny">
+                <div class="bar-fill bg-purple" [style.width.%]="adminService.financialData()?.summary?.otherPercentage || 0"></div>
+              </div>
+              <span class="fin-pct-label">{{ adminService.financialData()?.summary?.otherPercentage || 0 }}% Share ({{ adminService.financialData()?.summary?.otherOrdersCount || 0 }} Orders)</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: Average Order Value (AOV) -->
+          <div class="fin-kpi-card">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-tag">AVERAGE ORDER (AOV)</span>
+              <div class="fin-kpi-icon-box bg-amber-dim">
+                <span class="material-symbols-outlined">trending_up</span>
+              </div>
+            </div>
+            <div class="fin-kpi-value-row">
+              <span class="fin-currency">₹</span>
+              <span class="fin-value">{{ (adminService.financialData()?.summary?.averageOrderValue || 0) | number:'1.0-0' }}</span>
+            </div>
+            <div class="fin-kpi-footer">
+              <span class="material-symbols-outlined text-amber">shopping_bag</span>
+              <span>{{ adminService.financialData()?.summary?.totalOrdersCount || 0 }} Total Recharge Orders</span>
+            </div>
+          </div>
+
+          <!-- KPI 5: Active Paying Investors -->
+          <div class="fin-kpi-card">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-tag">PAYING INVESTORS</span>
+              <div class="fin-kpi-icon-box bg-cyan-dim">
+                <span class="material-symbols-outlined">groups</span>
+              </div>
+            </div>
+            <div class="fin-kpi-value-row text-cyan">
+              <span class="fin-value">{{ adminService.financialData()?.summary?.uniqueInvestorsCount || 0 }}</span>
+              <span class="fin-unit">Accounts</span>
+            </div>
+            <div class="fin-kpi-footer">
+              <span class="material-symbols-outlined text-cyan">military_tech</span>
+              <span>100% KYC &amp; Phone Verified</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Channel Share Visual Progress Bar & Cards Strip -->
+        <div class="gateway-distribution-box">
+          <div class="dist-header-row">
+            <span class="dist-title">
+              <span class="material-symbols-outlined">donut_large</span>
+              <span>Payment Gateway Market Share</span>
+            </span>
+            <div class="dist-legend">
+              <span class="legend-pill leg-rzp">
+                <span class="legend-dot bg-blue"></span>
+                <span>Razorpay Gateway ({{ adminService.financialData()?.summary?.razorpayPercentage || 0 }}%)</span>
+              </span>
+              <span class="legend-pill leg-other">
+                <span class="legend-dot bg-purple"></span>
+                <span>Other Channels / UPI ({{ adminService.financialData()?.summary?.otherPercentage || 0 }}%)</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Proportional Visual Bar -->
+          <div class="dist-bar-track">
+            <div 
+              class="dist-bar-segment seg-rzp" 
+              [style.width.%]="adminService.financialData()?.summary?.razorpayPercentage || 50"
+              title="Razorpay Gateway: ₹{{ adminService.financialData()?.summary?.razorpayRevenueRupees | number:'1.2-2' }}">
+            </div>
+            <div 
+              class="dist-bar-segment seg-other" 
+              [style.width.%]="adminService.financialData()?.summary?.otherPercentage || 50"
+              title="Other Channels: ₹{{ adminService.financialData()?.summary?.otherRevenueRupees | number:'1.2-2' }}">
+            </div>
+          </div>
+
+          <!-- Channel Breakdown Cards -->
+          <div class="channels-grid">
+            @for (ch of adminService.financialData()?.channels || []; track ch.name) {
+              <div 
+                class="channel-mini-card" 
+                [class.selected]="financialGateway() === (ch.isRazorpay ? 'razorpay' : 'others')"
+                (click)="filterFinancialsByGateway(ch.isRazorpay ? 'razorpay' : 'others')">
+                <div class="ch-icon-row">
+                  <div class="ch-icon-avatar" [class.rzp]="ch.isRazorpay" [class.upi]="ch.badgeTheme === 'emerald'" [class.nb]="ch.badgeTheme === 'purple'">
+                    <span class="material-symbols-outlined">
+                      {{ ch.isRazorpay ? 'credit_score' : (ch.name.includes('UPI') ? 'qr_code_2' : (ch.name.includes('Card') ? 'credit_card' : 'account_balance')) }}
+                    </span>
+                  </div>
+                  <span class="ch-badge" [class.rzp]="ch.isRazorpay">{{ ch.isRazorpay ? 'PRIMARY GATEWAY' : 'ALTERNATE CHANNEL' }}</span>
+                </div>
+                <div class="ch-name">{{ ch.name }}</div>
+                <div class="ch-amount">₹{{ ch.amountRupees | number:'1.2-2' }}</div>
+                <div class="ch-details-row">
+                  <span>{{ ch.count }} Orders</span>
+                  <span>•</span>
+                  <span>{{ ch.points }} Pts</span>
+                  <span>•</span>
+                  <span class="text-blue font-bold">{{ ch.percentage }}%</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Filter & Search Console -->
+        <div class="ledger-filter-console">
+          
+          <!-- Search box -->
+          <div class="fin-search-box">
+            <span class="material-symbols-outlined">search</span>
+            <input 
+              type="text" 
+              class="fin-search-input" 
+              [value]="financialSearch()" 
+              (input)="onFinancialSearch($any($event.target).value)" 
+              placeholder="Search by customer name, email, phone, Txn ID, or Razorpay Payment ID..." />
+            @if (financialSearch()) {
+              <button type="button" class="btn-clear-search" (click)="onFinancialSearch('')">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            }
+          </div>
+
+          <!-- Gateway Filter Buttons -->
+          <div class="fin-filter-group">
+            <span class="filter-lbl">Channel:</span>
+            <div class="filter-pills-row">
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialGateway() === 'all'"
+                (click)="filterFinancialsByGateway('all')">
+                All Gateways
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill pill-rzp" 
+                [class.active]="financialGateway() === 'razorpay'"
+                (click)="filterFinancialsByGateway('razorpay')">
+                <span class="material-symbols-outlined">verified</span>
+                <span>Razorpay Only</span>
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialGateway() === 'others'"
+                (click)="filterFinancialsByGateway('others')">
+                Other Channels
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialGateway() === 'upi'"
+                (click)="filterFinancialsByGateway('upi')">
+                Instant UPI
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialGateway() === 'cards'"
+                (click)="filterFinancialsByGateway('cards')">
+                Cards
+              </button>
+            </div>
+          </div>
+
+          <!-- Timeframe Filter -->
+          <div class="fin-filter-group">
+            <span class="filter-lbl">Timeframe:</span>
+            <div class="filter-pills-row">
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialTimeframe() === 'all'"
+                (click)="filterFinancialsByTimeframe('all')">
+                All Time
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialTimeframe() === 'today'"
+                (click)="filterFinancialsByTimeframe('today')">
+                Today
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialTimeframe() === '7days'"
+                (click)="filterFinancialsByTimeframe('7days')">
+                Past 7 Days
+              </button>
+              <button 
+                type="button" 
+                class="fin-pill" 
+                [class.active]="financialTimeframe() === '30days'"
+                (click)="filterFinancialsByTimeframe('30days')">
+                30 Days
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Ledger Table of Credit Transactions -->
+        <div class="fin-table-container">
+          <table class="fin-ledger-table">
+            <thead>
+              <tr>
+                <th>Txn ID &amp; Ref</th>
+                <th>Investor / Customer</th>
+                <th>Amount (INR)</th>
+                <th>Points Credited</th>
+                <th>Channel / Gateway</th>
+                <th>Razorpay Reference</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+                <th>Audit Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (txn of adminService.financialData()?.transactions || []; track txn.id) {
+                <tr class="fin-table-row" [class.rzp-row]="txn.isRazorpay">
+                  
+                  <!-- ID & Type -->
+                  <td>
+                    <div class="txn-id-col">
+                      <span class="txn-num">#{{ txn.id }}</span>
+                      <span class="txn-type-badge" [class.bonus]="txn.transactionType === 'bonus_credit'">
+                        {{ txn.transactionType === 'bonus_credit' ? 'PROMO' : 'PURCHASE' }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Customer Info -->
+                  <td>
+                    <div class="txn-user-col">
+                      <div class="user-avatar-mini" [class.admin-user]="txn.userRole === 'admin'">
+                        {{ txn.userName.slice(0, 2).toUpperCase() }}
+                      </div>
+                      <div class="user-meta">
+                        <span class="user-name">{{ txn.userName }}</span>
+                        <span class="user-email">{{ txn.userEmail }}</span>
+                        @if (txn.userPhone && txn.userPhone !== '—') {
+                          <span class="user-phone">{{ txn.userPhone }}</span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Amount in Rupees -->
+                  <td>
+                    <div class="txn-amount-col">
+                      <span class="txn-amount-val">₹{{ txn.amountRupees.toLocaleString('en-IN') }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Points Credited -->
+                  <td>
+                    <div class="txn-pts-col">
+                      <span class="pts-pill">
+                        <span class="material-symbols-outlined">bolt</span>
+                        <span>+{{ txn.points }} Pts</span>
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Payment Channel -->
+                  <td>
+                    <div class="txn-channel-badge" [class.rzp]="txn.isRazorpay" [class.upi]="txn.paymentMethod.includes('UPI')" [class.card]="txn.paymentMethod.includes('Card')">
+                      <span class="material-symbols-outlined ch-glyph">
+                        {{ txn.isRazorpay ? 'verified' : (txn.paymentMethod.includes('UPI') ? 'qr_code_2' : (txn.paymentMethod.includes('Card') ? 'credit_card' : 'payments')) }}
+                      </span>
+                      <span>{{ txn.paymentMethod }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Razorpay Payment ID with copy button -->
+                  <td>
+                    <div class="txn-ref-box">
+                      <span class="txn-ref-code" [title]="txn.razorpayPaymentId">
+                        {{ txn.razorpayPaymentId }}
+                      </span>
+                      @if (txn.razorpayPaymentId && txn.razorpayPaymentId !== '—') {
+                        <button 
+                          type="button" 
+                          class="btn-copy-ref" 
+                          [class.copied]="copiedRef() === txn.razorpayPaymentId"
+                          (click)="copyReference(txn.razorpayPaymentId)"
+                          title="Copy Razorpay Payment ID">
+                          <span class="material-symbols-outlined">
+                            {{ copiedRef() === txn.razorpayPaymentId ? 'check' : 'content_copy' }}
+                          </span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- Status -->
+                  <td>
+                    <span class="fin-status-tag" [class.success]="txn.status === 'success'" [class.failed]="txn.status === 'failed'">
+                      <span class="material-symbols-outlined">
+                        {{ txn.status === 'success' ? 'check_circle' : 'cancel' }}
+                      </span>
+                      <span>{{ txn.status.toUpperCase() }}</span>
+                    </span>
+                  </td>
+
+                  <!-- Date & Time -->
+                  <td>
+                    <div class="txn-date-col">
+                      <span class="txn-date">{{ txn.formattedDate }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Action -->
+                  <td>
+                    <button 
+                      type="button" 
+                      class="btn-view-receipt" 
+                      (click)="openTxnModal(txn)">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                      <span>Details</span>
+                    </button>
+                  </td>
+
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="empty-fin-cell">
+                    <div class="empty-fin-box">
+                      <span class="material-symbols-outlined">receipt</span>
+                      <h4>No financial transactions found</h4>
+                      <p>Adjust your search filters or channel selection to view credit records.</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+    }
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PROPERTY REVIEW & AUDIT INSPECTOR   -->
+  <!-- ========================================== -->
+  @if (isReviewModalOpen() && inspectingProperty()) {
+    <div class="modal-backdrop" (click)="closeReviewModal()">
+      <div class="modal-dialog-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        
+        <!-- Modal Header -->
+        <div class="modal-dialog-header">
+          <div class="dialog-titles">
+            <span class="dialog-prop-id">#{{ inspectingProperty()?.id }}</span>
+            <h3 class="dialog-heading">{{ inspectingProperty()?.title }}</h3>
+          </div>
+          <button type="button" class="btn-close-dialog" (click)="closeReviewModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-dialog-body">
+          <div class="modal-preview-grid">
+            
+            <!-- Left Preview Media -->
+            <div class="modal-media-col">
+              <img [src]="inspectingProperty()?.mainImageUrl" [alt]="inspectingProperty()?.title" class="modal-cover-img" />
+              
+              <div class="spec-pills-row">
+                <span class="spec-pill">{{ inspectingProperty()?.propertyType }}</span>
+                <span class="spec-pill">{{ inspectingProperty()?.bhkBadge }}</span>
+                <span class="spec-pill">{{ inspectingProperty()?.sqft }}</span>
+                <span class="spec-pill">{{ inspectingProperty()?.facingOrView }}</span>
+              </div>
+
+              <div class="info-block">
+                <span class="info-label">RERA Registration:</span>
+                <span class="info-val font-mono">{{ inspectingProperty()?.reraNumber }}</span>
+              </div>
+            </div>
+
+            <!-- Right Verification & Notes -->
+            <div class="modal-decision-col">
+              
+              <!-- Submitter Info -->
+              <div class="verification-card">
+                <h4 class="v-card-title">Origin &amp; Attribution</h4>
+                <div class="v-card-line">
+                  <span class="v-label">Author:</span>
+                  <span class="v-val font-bold">{{ inspectingProperty()?.submittedByName }} ({{ inspectingProperty()?.submittedByRole?.toUpperCase() }})</span>
+                </div>
+                <div class="v-card-line">
+                  <span class="v-label">Current Status:</span>
+                  <span class="status-badge" [class]="'badge-' + inspectingProperty()?.status">
+                    {{ inspectingProperty()?.status?.replace('_', ' ')?.toUpperCase() }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Maker-Checker Status Notice -->
+              @if (!adminService.canApprove(inspectingProperty()!).allowed) {
+                <div class="peer-guard-alert">
+                  <span class="material-symbols-outlined">gavel</span>
+                  <div>
+                    <strong>Four-Eyes Maker-Checker Rule in Effect:</strong>
+                    <p>{{ adminService.canApprove(inspectingProperty()!).reason }}</p>
+                  </div>
+                </div>
+              }
+
+              <!-- Reviewer Feedback & Audit Notes -->
+              <div class="review-notes-box">
+                <label class="notes-label">Review / Audit Notes (Will be logged in registry)</label>
+                <textarea 
+                  class="notes-textarea" 
+                  rows="3" 
+                  [value]="reviewNotes()" 
+                  (input)="reviewNotes.set($any($event.target).value)" 
+                  placeholder="Enter deed verification notes, cadastral reference, or rejection reason..."></textarea>
+              </div>
+
+              <!-- Past Review Log if available -->
+              @if (inspectingProperty()?.reviewNotes) {
+                <div class="past-audit-box">
+                  <span class="past-audit-title">Previous Audit Log:</span>
+                  <p class="past-audit-text">{{ inspectingProperty()?.reviewNotes }}</p>
+                </div>
+              }
+
+              <!-- Action Buttons -->
+              <div class="modal-actions-strip">
+                <button 
+                  type="button" 
+                  class="btn-modal-approve"
+                  [disabled]="!adminService.canApprove(inspectingProperty()!).allowed || adminService.isSubmitting()"
+                  (click)="onApprove(inspectingProperty()!)">
+                  <span class="material-symbols-outlined">verified</span>
+                  <span>Approve &amp; Publish Live</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-modal-revision"
+                  [disabled]="adminService.isSubmitting()"
+                  (click)="onRequestRevision(inspectingProperty()!)">
+                  <span class="material-symbols-outlined">edit_note</span>
+                  <span>Request Changes</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="btn-modal-reject"
+                  [disabled]="adminService.isSubmitting()"
+                  (click)="onReject(inspectingProperty()!)">
+                  <span class="material-symbols-outlined">cancel</span>
+                  <span>Reject Listing</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: TRANSACTION DETAILS & AUDIT RECEIPT  -->
+  <!-- ========================================== -->
+  @if (isTxnModalOpen() && inspectingTransaction()) {
+    <div class="modal-backdrop" (click)="closeTxnModal()">
+      <div class="modal-dialog-panel fin-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        
+        <div class="modal-dialog-header">
+          <div class="dialog-titles">
+            <span class="dialog-prop-id">TXN #{{ inspectingTransaction()?.id }}</span>
+            <h3 class="dialog-heading">Recharge Audit Dossier</h3>
+          </div>
+          <button type="button" class="btn-close-dialog" (click)="closeTxnModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-dialog-body">
+          <div class="fin-receipt-box">
+            
+            <div class="receipt-header">
+              <div class="receipt-brand">
+                <span class="material-symbols-outlined">verified</span>
+                <span>Mannidam Media Points Settlement</span>
+              </div>
+              <span class="receipt-status-pill success">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>{{ inspectingTransaction()?.status?.toUpperCase() }}</span>
+              </span>
+            </div>
+
+            <div class="receipt-amount-display">
+              <span class="rec-curr">₹</span>
+              <span class="rec-val">{{ inspectingTransaction()?.amountRupees?.toLocaleString('en-IN') }}</span>
+              <span class="rec-pts-badge">+{{ inspectingTransaction()?.points }} Media Points</span>
+            </div>
+
+            <div class="receipt-grid">
+              <div class="receipt-row">
+                <span class="rec-label">Investor Name</span>
+                <span class="rec-data">{{ inspectingTransaction()?.userName }}</span>
+              </div>
+              <div class="receipt-row">
+                <span class="rec-label">Account Email</span>
+                <span class="rec-data font-mono">{{ inspectingTransaction()?.userEmail }}</span>
+              </div>
+              <div class="receipt-row">
+                <span class="rec-label">Phone</span>
+                <span class="rec-data">{{ inspectingTransaction()?.userPhone || '—' }}</span>
+              </div>
+              <div class="receipt-row">
+                <span class="rec-label">Payment Channel</span>
+                <span class="rec-data flex items-center gap-1">
+                  <span class="material-symbols-outlined text-blue text-sm">
+                    {{ inspectingTransaction()?.isRazorpay ? 'verified' : 'payments' }}
+                  </span>
+                  <span>{{ inspectingTransaction()?.paymentMethod }}</span>
+                </span>
+              </div>
+              <div class="receipt-row">
+                <span class="rec-label">Razorpay Reference</span>
+                <span class="rec-data font-mono text-blue flex items-center gap-2">
+                  <span>{{ inspectingTransaction()?.razorpayPaymentId }}</span>
+                  @if (inspectingTransaction()?.razorpayPaymentId && inspectingTransaction()?.razorpayPaymentId !== '—') {
+                    <button type="button" class="btn-copy-mini" (click)="copyReference(inspectingTransaction()!.razorpayPaymentId)">
+                      <span class="material-symbols-outlined text-xs">content_copy</span>
+                    </button>
+                  }
+                </span>
+              </div>
+              <div class="receipt-row">
+                <span class="rec-label">Timestamp</span>
+                <span class="rec-data">{{ inspectingTransaction()?.formattedDate }}</span>
+              </div>
+              <div class="receipt-row full">
+                <span class="rec-label">Description / Purpose</span>
+                <span class="rec-data">{{ inspectingTransaction()?.description }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-dialog-footer">
+          <button type="button" class="btn-close-modal" (click)="closeTxnModal()">
+            Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: MANUAL / WIRE CREDIT ADJUSTMENT      -->
+  <!-- ========================================== -->
+  @if (isManualCreditModalOpen()) {
+    <div class="modal-backdrop" (click)="closeManualCreditModal()">
+      <div class="modal-dialog-panel fin-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        
+        <div class="modal-dialog-header">
+          <div class="dialog-titles">
+            <span class="dialog-prop-id">ADMINISTRATIVE ACTION</span>
+            <h3 class="dialog-heading">Issue Manual / Wire Transfer Credit</h3>
+          </div>
+          <button type="button" class="btn-close-dialog" (click)="closeManualCreditModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (submit)="$event.preventDefault(); submitManualCredit()" class="modal-dialog-body">
+          <p class="dialog-help-text">
+            Credit media points directly to an investor for offline payments (NEFT/RTGS bank wire, cheque, or administrative promotion). Audit attribution will be assigned to <strong>{{ adminService.activePersona().name }}</strong>.
+          </p>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label class="field-label">Target Customer User ID *</label>
+              <input 
+                type="number" 
+                class="form-input" 
+                [value]="manualCreditForm().userId" 
+                (input)="manualCreditForm.update(f => ({ ...f, userId: +$any($event.target).value }))" 
+                min="1" 
+                required />
+              <span class="field-hint">e.g. ID 1 for Demo Real Estate Investor</span>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Media Points to Credit *</label>
+              <input 
+                type="number" 
+                class="form-input" 
+                [value]="manualCreditForm().points" 
+                (input)="manualCreditForm.update(f => ({ ...f, points: +$any($event.target).value }))" 
+                min="1" 
+                required />
+              <span class="field-hint">e.g. 20, 40, 100 points</span>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Collection Amount (INR ₹)</label>
+              <input 
+                type="number" 
+                class="form-input" 
+                [value]="manualCreditForm().amountRupees" 
+                (input)="manualCreditForm.update(f => ({ ...f, amountRupees: +$any($event.target).value }))" 
+                min="0" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Payment Channel / Source *</label>
+              <select 
+                class="form-input" 
+                [value]="manualCreditForm().paymentMethod" 
+                (change)="manualCreditForm.update(f => ({ ...f, paymentMethod: $any($event.target).value }))">
+                <option value="Direct Bank Wire (NEFT/RTGS)">Direct Bank Wire (NEFT/RTGS)</option>
+                <option value="Corporate Escrow Account">Corporate Escrow Account</option>
+                <option value="Direct Cheque Clearance">Direct Cheque Clearance</option>
+                <option value="Cash Deposit / SRO Desk">Cash Deposit / SRO Desk</option>
+                <option value="Administrative Courtesy Grant">Administrative Courtesy Grant</option>
+              </select>
+            </div>
+
+            <div class="form-field full-width">
+              <label class="field-label">Bank Reference / UTR Number / Reason</label>
+              <textarea 
+                class="form-input form-textarea" 
+                rows="2" 
+                [value]="manualCreditForm().notes" 
+                (input)="manualCreditForm.update(f => ({ ...f, notes: $any($event.target).value }))" 
+                placeholder="UTR No: HDFCN2610167890 • Certified by Legal Desk"></textarea>
+            </div>
+          </div>
+
+          <div class="modal-dialog-footer">
+            <button type="button" class="btn-cancel" (click)="closeManualCreditModal()">
+              Cancel
+            </button>
+            <button type="submit" class="btn-submit-action" [disabled]="adminService.isSubmitting()">
+              <span class="material-symbols-outlined">{{ adminService.isSubmitting() ? 'sync' : 'verified_user' }}</span>
+              <span>{{ adminService.isSubmitting() ? 'Crediting Wallet...' : 'Authorize & Credit Points' }}</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: PARTITIONED PLOT UNIT EDITOR        -->
+  <!-- ========================================== -->
+  @if (isPlotModalOpen()) {
+    <div class="plot-modal-overlay" (click)="closePlotModal()">
+      <div class="plot-modal-container" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        
+        <!-- Modal Header -->
+        <div class="plot-modal-header">
+          <div class="pmh-left">
+            <div class="pmh-icon-box">
+              <span class="material-symbols-outlined">grid_view</span>
+            </div>
+            <div>
+              <h3 class="pmh-title">
+                {{ editingPlotIndex() !== null ? 'Edit Partitioned Parcel #' + plotModalForm().plotNo : 'Add Partitioned Plot Parcel' }}
+              </h3>
+              <p class="pmh-sub">Configure parcel dimensions, orientation, pricing and 3D digital twin coordinates.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-plot-modal" (click)="closePlotModal()" aria-label="Close dialog">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Form Body -->
+        <form (submit)="$event.preventDefault(); savePlotModal()" class="plot-modal-form-body">
+          <div class="pm-form-grid">
+
+            <!-- Plot Identifier -->
+            <div class="pm-field">
+              <label class="pm-label">Plot Number / Identifier *</label>
+              <div class="pm-input-wrap">
+                <span class="material-symbols-outlined pm-input-icon">pin</span>
+                <input 
+                  type="text" 
+                  class="pm-input with-icon" 
+                  [(ngModel)]="plotModalForm().plotNo" 
+                  name="plotNo" 
+                  placeholder="e.g. 248 or Plot 101" 
+                  required />
+              </div>
+            </div>
+
+            <!-- Availability Status -->
+            <div class="pm-field">
+              <label class="pm-label">Availability Status *</label>
+              <div class="pm-input-wrap">
+                <span class="material-symbols-outlined pm-input-icon text-green">circle</span>
+                <select class="pm-select with-icon" [(ngModel)]="plotModalForm().status" name="status">
+                  <option value="available">🟢 Available (For Sale)</option>
+                  <option value="sold">🔴 Sold Out (Booked)</option>
+                  <option value="reserved">🟡 Reserved (Under Hold)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Facing Direction -->
+            <div class="pm-field">
+              <label class="pm-label">Facing Direction *</label>
+              <div class="pm-input-wrap">
+                <span class="material-symbols-outlined pm-input-icon">explore</span>
+                <select class="pm-select with-icon" [(ngModel)]="plotModalForm().facing" name="facing">
+                  <option value="North Facing">North Facing</option>
+                  <option value="South Facing">South Facing</option>
+                  <option value="East Facing">East Facing</option>
+                  <option value="West Facing">West Facing</option>
+                  <option value="North-East Facing">North-East Facing (Ishan / Auspicious)</option>
+                  <option value="North-West Facing">North-West Facing</option>
+                  <option value="South-East Facing">South-East Facing</option>
+                  <option value="South-West Facing">South-West Facing</option>
+                  <option value="North Facing (Corner)">North Facing (Corner)</option>
+                  <option value="South Facing (Corner)">South Facing (Corner)</option>
+                  <option value="East Facing (Corner)">East Facing (Corner)</option>
+                  <option value="West Facing (Corner)">West Facing (Corner)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Corner Parcel Card Toggle -->
+            <div class="pm-field">
+              <label class="pm-label">Corner Property Status</label>
+              <label class="pm-toggle-card" [class.active]="plotModalForm().isCorner">
+                <input 
+                  type="checkbox" 
+                  class="pm-checkbox"
+                  [(ngModel)]="plotModalForm().isCorner" 
+                  name="isCorner" />
+                <div class="pm-toggle-text">
+                  <span class="pm-toggle-title">
+                    <span class="material-symbols-outlined pm-corner-icon">turn_right</span>
+                    Corner Parcel (Dual Road Access)
+                  </span>
+                  <span class="pm-toggle-desc">Commands premium valuation and dual street frontage</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Super Built-up Area -->
+            <div class="pm-field">
+              <label class="pm-label">Super Built-up Area (Sq. Yards) *</label>
+              <div class="pm-input-wrap">
+                <span class="material-symbols-outlined pm-input-icon">square_foot</span>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  class="pm-input with-icon" 
+                  [ngModel]="plotModalForm().superBuiltUpYds" 
+                  (ngModelChange)="onPlotSqYdsChange($event)" 
+                  name="superBuiltUpYds" 
+                  required />
+              </div>
+              <div class="pm-hint-pill">
+                <span>Calculated:</span>
+                <strong>{{ plotModalForm().superBuiltUpSqft | number:'1.0-0' }} Sq.Ft</strong>
+              </div>
+            </div>
+
+            <!-- Net Plot Area -->
+            <div class="pm-field">
+              <label class="pm-label">Net Plot Area (Sq. Yards) *</label>
+              <div class="pm-input-wrap">
+                <span class="material-symbols-outlined pm-input-icon">straighten</span>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  class="pm-input with-icon" 
+                  [(ngModel)]="plotModalForm().netPlotAreaYds" 
+                  name="netPlotAreaYds" 
+                  required />
+              </div>
+              <div class="pm-hint-pill">
+                <span>Net Carpet:</span>
+                <strong>{{ (plotModalForm().netPlotAreaYds * 9) | number:'1.0-0' }} Sq.Ft</strong>
+              </div>
+            </div>
+
+            <!-- Dimensions (Width x Length Meters) -->
+            <div class="pm-field">
+              <label class="pm-label">Dimensions (Width × Length in Meters) *</label>
+              <div class="pm-duo-inputs">
+                <div class="pm-input-wrap">
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    class="pm-input" 
+                    [ngModel]="plotModalForm().widthMeters" 
+                    (ngModelChange)="onPlotMetersChange($event, plotModalForm().lengthMeters)" 
+                    name="widthMeters" 
+                    placeholder="Width (m)" 
+                    required />
+                </div>
+                <span class="pm-duo-x">×</span>
+                <div class="pm-input-wrap">
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    class="pm-input" 
+                    [ngModel]="plotModalForm().lengthMeters" 
+                    (ngModelChange)="onPlotMetersChange(plotModalForm().widthMeters, $event)" 
+                    name="lengthMeters" 
+                    placeholder="Length (m)" 
+                    required />
+                </div>
+              </div>
+              <div class="pm-hint-pill">
+                <span>Imperial:</span>
+                <strong>{{ plotModalForm().widthFeet }} ft × {{ plotModalForm().lengthFeet }} ft</strong>
+              </div>
+            </div>
+
+            <!-- Price Estimate -->
+            <div class="pm-field">
+              <label class="pm-label">Price Estimate (in ₹ Lakhs) *</label>
+              <div class="pm-input-wrap">
+                <span class="material-symbols-outlined pm-input-icon text-amber">currency_rupee</span>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  class="pm-input with-icon" 
+                  [ngModel]="plotModalForm().priceInLakhs" 
+                  (ngModelChange)="onPlotPriceLakhsChange($event)" 
+                  name="priceInLakhs" 
+                  required />
+              </div>
+              <div class="pm-hint-pill highlight-amber">
+                <span>Display:</span>
+                <strong>{{ plotModalForm().formattedPrice }}</strong>
+              </div>
+            </div>
+
+            <!-- 3D Coordinates: Road Position (X) & Row (Y) -->
+            <div class="pm-field">
+              <label class="pm-label">3D Scene Coordinates (X East-West &amp; Y Offset)</label>
+              <div class="pm-duo-inputs">
+                <div class="pm-input-wrap">
+                  <input 
+                    type="number" 
+                    step="1" 
+                    class="pm-input" 
+                    [(ngModel)]="plotModalForm().x" 
+                    name="posX" 
+                    placeholder="X Offset" />
+                </div>
+                <span class="pm-duo-x">,</span>
+                <div class="pm-input-wrap">
+                  <input 
+                    type="number" 
+                    step="1" 
+                    class="pm-input" 
+                    [(ngModel)]="plotModalForm().y" 
+                    name="posY" 
+                    placeholder="Y Offset" />
+                </div>
+              </div>
+              <span class="pm-sub-hint">Placement along avenue: X (-30 to +30), Y (-15 for North, +15 for South)</span>
+            </div>
+
+            <!-- 3D Slab Footprint (W x H) -->
+            <div class="pm-field">
+              <label class="pm-label">3D Digital Twin Footprint (Width × Depth)</label>
+              <div class="pm-duo-inputs">
+                <div class="pm-input-wrap">
+                  <input 
+                    type="number" 
+                    step="1" 
+                    class="pm-input" 
+                    [(ngModel)]="plotModalForm().w" 
+                    name="sizeW" 
+                    placeholder="Width" />
+                </div>
+                <span class="pm-duo-x">×</span>
+                <div class="pm-input-wrap">
+                  <input 
+                    type="number" 
+                    step="1" 
+                    class="pm-input" 
+                    [(ngModel)]="plotModalForm().h" 
+                    name="sizeH" 
+                    placeholder="Depth" />
+                </div>
+              </div>
+              <span class="pm-sub-hint">Default 3D extruded slab: 13 × 11 meters scale</span>
+            </div>
+
+            <!-- Mature Trees Feature Card Toggle (Full width) -->
+            <div class="pm-field full-width">
+              <label class="pm-toggle-card" [class.active]="plotModalForm().hasTrees">
+                <input 
+                  type="checkbox" 
+                  class="pm-checkbox"
+                  [(ngModel)]="plotModalForm().hasTrees" 
+                  name="hasTrees" />
+                <div class="pm-toggle-text">
+                  <span class="pm-toggle-title">
+                    <span class="material-symbols-outlined text-green">park</span>
+                    Feature mature avenue trees and landscaped perimeter on this parcel
+                  </span>
+                  <span class="pm-toggle-desc">Renders photorealistic 3D foliage sprites and green buffer on the masterplan twin</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Live Plot Card Preview inside Modal -->
+            <div class="pm-field full-width">
+              <div class="pm-live-preview-box" [class.avail]="plotModalForm().status === 'available'" [class.sold]="plotModalForm().status === 'sold'" [class.reserved]="plotModalForm().status === 'reserved'">
+                <div class="pm-preview-top">
+                  <div class="pm-preview-id">
+                    <span class="material-symbols-outlined text-sm">terrain</span>
+                    <span>Parcel {{ plotModalForm().plotNo || '---' }}</span>
+                    @if (plotModalForm().isCorner) {
+                      <span class="pm-corner-tag">CORNER</span>
+                    }
+                  </div>
+                  <span class="pm-status-pill" [class.avail]="plotModalForm().status === 'available'" [class.sold]="plotModalForm().status === 'sold'" [class.reserved]="plotModalForm().status === 'reserved'">
+                    {{ plotModalForm().status | uppercase }}
+                  </span>
+                </div>
+                <div class="pm-preview-specs">
+                  <span class="pm-spec-item">
+                    <strong>{{ plotModalForm().superBuiltUpYds }} Yds</strong> ({{ plotModalForm().superBuiltUpSqft }} sq.ft)
+                  </span>
+                  <span class="pm-spec-dot">•</span>
+                  <span class="pm-spec-item">{{ plotModalForm().facing }}</span>
+                  <span class="pm-spec-dot">•</span>
+                  <span class="pm-spec-item font-mono">{{ plotModalForm().widthFeet }}' × {{ plotModalForm().lengthFeet }}'</span>
+                  <span class="pm-spec-dot">•</span>
+                  <span class="pm-spec-price">{{ plotModalForm().formattedPrice }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Modal Action Footer -->
+          <div class="plot-modal-footer">
+            <button type="button" class="btn-plot-modal-cancel" (click)="closePlotModal()">
+              Cancel
+            </button>
+            <button type="submit" class="btn-plot-modal-submit">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>{{ editingPlotIndex() !== null ? 'Save Plot Changes' : 'Add Plot to Layout' }}</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Toast Notifications -->
+  <app-toast />
+
+</div>

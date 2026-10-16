@@ -1,0 +1,1115 @@
+<div class="profile-page-root">
+  <!-- Top Concierge Bar -->
+  <app-top-concierge-bar />
+
+  <!-- Main Navigation Header -->
+  <app-header />
+
+  <!-- MAIN PROFILE WRAPPER -->
+  <div class="max-w-content profile-main-container">
+
+    <!-- BREADCRUMBS -->
+    <nav class="breadcrumb-bar" aria-label="Breadcrumb">
+      <a routerLink="/" class="breadcrumb-link">
+        <span class="material-symbols-outlined breadcrumb-home">home</span>
+        <span>Home</span>
+      </a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">Investor Dashboard &amp; Profile</span>
+    </nav>
+
+    <!-- TOP COMPACT HERO STRIP -->
+    <section class="profile-top-strip">
+      <div class="strip-user-details">
+        <div class="user-avatar-badge">
+          <span>{{ getUserInitials() }}</span>
+          <span class="verified-indicator" title="KYC &amp; Phone Verified">
+            <span class="material-symbols-outlined">verified</span>
+          </span>
+        </div>
+
+        <div class="user-meta-info">
+          <div class="user-name-line">
+            <h1 class="user-heading">{{ authService.currentUser()?.name || 'Verified Investor' }}</h1>
+            <span class="role-pill">
+              <span class="material-symbols-outlined">verified_user</span>
+              <span>Verified Buyer</span>
+            </span>
+          </div>
+          <div class="user-contact-pills">
+            <span class="contact-pill">
+              <span class="material-symbols-outlined">call</span>
+              <span>{{ authService.currentUser()?.phone || '+91 94441 00000' }}</span>
+            </span>
+            <span class="contact-pill">
+              <span class="material-symbols-outlined">mail</span>
+              <span>{{ authService.currentUser()?.email || 'investor@mannidam.com' }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Balance & Action Pills -->
+      <div class="strip-quick-actions">
+        <div class="wallet-pill" (click)="walletService.navigateToWallet()" title="Click to view full Wallet &amp; Payment Options">
+          <div class="wallet-icon-circle">
+            <span class="material-symbols-outlined">toll</span>
+          </div>
+          <div class="wallet-text">
+            <span class="wallet-pts">{{ walletService.balance() }} Points</span>
+            <span class="wallet-val">₹{{ walletService.balance() * 50 }} Media Credit</span>
+          </div>
+          <button type="button" class="btn-topup-mini" (click)="walletService.navigateToWallet(); $event.stopPropagation()" aria-label="Top up points">+ Top Up</button>
+        </div>
+
+        <button type="button" class="btn-logout-mini" (click)="onSignOut()" title="Sign Out">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- DASHBOARD 2-COLUMN LAYOUT -->
+    <div class="dashboard-grid-layout">
+
+      <!-- LEFT SIDEBAR NAVIGATION -->
+      <aside class="dashboard-sidebar" aria-label="Dashboard Navigation">
+        <div class="sidebar-user-card">
+          <div class="mini-avatar">{{ getUserInitials() }}</div>
+          <div class="mini-details">
+            <div class="mini-name">{{ authService.currentUser()?.name || 'Investor' }}</div>
+            <div class="mini-role">Active Investor Session</div>
+          </div>
+          <button type="button" class="btn-sidebar-edit" (click)="openEditModal()" title="Edit Personal Info">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <nav class="sidebar-menu">
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'profile'"
+            (click)="setSection('profile')">
+            <span class="material-symbols-outlined nav-icon">person</span>
+            <span class="nav-title">Profile &amp; Details</span>
+          </button>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'my_properties'"
+            (click)="setSection('my_properties')">
+            <span class="material-symbols-outlined nav-icon text-emerald">real_estate_agent</span>
+            <span class="nav-title">My Listed Properties</span>
+            @if (myPropertiesCount() > 0) {
+              <span class="nav-badge bg-emerald">{{ myPropertiesCount() }}</span>
+            }
+          </button>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'favourites'"
+            (click)="setSection('favourites')">
+            <span class="material-symbols-outlined nav-icon text-red">favorite</span>
+            <span class="nav-title">Favourites &amp; Shortlists</span>
+            @if (shortlistsCount() > 0) {
+              <span class="nav-badge bg-red">{{ shortlistsCount() }}</span>
+            }
+          </button>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'views'"
+            (click)="setSection('views')">
+            <span class="material-symbols-outlined nav-icon text-blue">history</span>
+            <span class="nav-title">Sites Viewed (History)</span>
+            @if (viewsCount() > 0) {
+              <span class="nav-badge bg-blue">{{ viewsCount() }}</span>
+            }
+          </button>
+
+          <a 
+            routerLink="/wallet" 
+            class="sidebar-nav-item" 
+            style="text-decoration: none;">
+            <span class="material-symbols-outlined nav-icon text-amber">account_balance_wallet</span>
+            <span class="nav-title">Media Wallet &amp; Recharge</span>
+            <span class="nav-badge bg-amber">{{ walletService.balance() }} Pts</span>
+          </a>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'transactions'" 
+            (click)="setSection('transactions')">
+            <span class="material-symbols-outlined nav-icon text-amber">receipt_long</span>
+            <span class="nav-title">Payment Ledger</span>
+          </button>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'visits'"
+            (click)="setSection('visits')">
+            <span class="material-symbols-outlined nav-icon text-emerald">event_available</span>
+            <span class="nav-title">Scheduled Site Visits</span>
+            @if (visitsCount() > 0) {
+              <span class="nav-badge bg-emerald">{{ visitsCount() }}</span>
+            }
+          </button>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'brochures'"
+            (click)="setSection('brochures')">
+            <span class="material-symbols-outlined nav-icon text-purple">description</span>
+            <span class="nav-title">Downloaded Brochures</span>
+            @if (brochuresCount() > 0) {
+              <span class="nav-badge bg-purple">{{ brochuresCount() }}</span>
+            }
+          </button>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="activeSection() === 'preferences'"
+            (click)="setSection('preferences')">
+            <span class="material-symbols-outlined nav-icon">notifications_active</span>
+            <span class="nav-title">Alerts &amp; Preferences</span>
+          </button>
+
+          <div class="sidebar-divider"></div>
+
+          <button 
+            type="button" 
+            class="sidebar-nav-item nav-danger" 
+            [class.active]="activeSection() === 'danger'"
+            (click)="setSection('danger')">
+            <span class="material-symbols-outlined nav-icon">delete_forever</span>
+            <span class="nav-title">Delete Account</span>
+          </button>
+        </nav>
+
+        <!-- Help Support Concierge Box -->
+        <div class="sidebar-support-card">
+          <div class="support-header">
+            <span class="material-symbols-outlined">support_agent</span>
+            <span>Concierge Desk</span>
+          </div>
+          <p class="support-text">Need assistance verifying a title deed or arranging site transport?</p>
+          <a href="tel:+919444100000" class="btn-support-call">
+            <span class="material-symbols-outlined">call</span>
+            <span>Call Relationship Mgr</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- RIGHT EXPANSIVE CONTENT PANEL -->
+      <main class="dashboard-content" role="main">
+
+        <!-- ========================================== -->
+        <!-- SECTION 1: PROFILE & PERSONAL DETAILS       -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'profile') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Investor Profile &amp; KYC Verification</h2>
+                <p class="section-subtitle">Manage your verified real estate investor identity and regional acquisition parameters.</p>
+              </div>
+              <button type="button" class="btn-primary-action" (click)="openEditModal()">
+                <span class="material-symbols-outlined">edit</span>
+                <span>Update Details</span>
+              </button>
+            </div>
+
+            <div class="details-cards-grid">
+              <!-- Card 1: Personal & Contact Information -->
+              <div class="info-card">
+                <div class="card-top">
+                  <div class="card-icon-title">
+                    <span class="material-symbols-outlined text-red">badge</span>
+                    <h3 class="card-title">Personal Credentials</h3>
+                  </div>
+                  <span class="status-chip success">Verified</span>
+                </div>
+
+                <div class="card-field-list">
+                  <div class="field-row">
+                    <span class="field-label">Full Legal Name</span>
+                    <span class="field-value">{{ authService.currentUser()?.name || 'Not provided' }}</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Primary Mobile Phone</span>
+                    <span class="field-value">{{ authService.currentUser()?.phone || 'Not provided' }}</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Official Email</span>
+                    <span class="field-value">{{ authService.currentUser()?.email || 'Not provided' }}</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Account Role</span>
+                    <span class="field-value text-capitalize">{{ authService.currentUser()?.role || 'Buyer / Investor' }}</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Registration Date</span>
+                    <span class="field-value">October 2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Investment Criteria -->
+              <div class="info-card">
+                <div class="card-top">
+                  <div class="card-icon-title">
+                    <span class="material-symbols-outlined text-blue">real_estate_agent</span>
+                    <h3 class="card-title">Acquisition Preferences</h3>
+                  </div>
+                  <span class="status-chip info">Tailored</span>
+                </div>
+
+                <div class="card-field-list">
+                  <div class="field-row">
+                    <span class="field-label">Target Hub / Corridor</span>
+                    <span class="field-value">{{ editCity() }} (OMR, ECR, Porur, Anna Nagar)</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Target Investment Budget</span>
+                    <span class="field-value font-semibold text-emerald">{{ editBudget() }}</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Asset Classification</span>
+                    <span class="field-value">{{ editPropertyType() }}</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">Title Requirement</span>
+                    <span class="field-value">Direct Owner / Zero-Brokerage Only</span>
+                  </div>
+                  <div class="field-row">
+                    <span class="field-label">RERA &amp; Cadastral Verification</span>
+                    <span class="field-value">Pre-screened Certified Titles</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security & Verification Strip -->
+            <div class="security-banner-card">
+              <div class="sec-icon-circle">
+                <span class="material-symbols-outlined">security</span>
+              </div>
+              <div class="sec-text">
+                <h4 class="sec-title">Two-Factor OTP Security Enabled</h4>
+                <p class="sec-desc">Your session is authenticated via verified SMS OTP token. Passwords are eliminated for enhanced security against credential harvesting.</p>
+              </div>
+              <div class="sec-status">
+                <span class="material-symbols-outlined text-emerald">lock</span>
+                <span>Active Encrypted Session</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION: MY LISTED PROPERTIES (USER POSTS)  -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'my_properties') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">My Listed Properties</h2>
+                <p class="section-subtitle">Properties you have posted for zero-brokerage direct registry listing.</p>
+              </div>
+              <a routerLink="/post-property" class="btn-primary-action" style="text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined">add_home</span>
+                <span>Post Another Property</span>
+              </a>
+            </div>
+
+            @if (myProperties().length > 0) {
+              <div class="user-properties-list">
+                @for (prop of myProperties(); track prop.id) {
+                  <div class="user-prop-card">
+                    <div class="user-prop-thumb-wrap">
+                      <img [src]="prop.mainImageUrl" [alt]="prop.title" class="user-prop-thumb" />
+                      <span class="prop-cat-badge">{{ prop.propertyType }}</span>
+                    </div>
+
+                    <div class="user-prop-details">
+                      <div class="user-prop-header">
+                        <span class="prop-ref-code">#{{ prop.id }}</span>
+                        
+                        <!-- Status Badges -->
+                        @if (prop.status === 'pending_review') {
+                          <span class="status-chip pending">
+                            <span class="material-symbols-outlined">schedule</span>
+                            <span>Pending Admin Verification</span>
+                          </span>
+                        } @else if (prop.status === 'published') {
+                          <span class="status-chip success">
+                            <span class="material-symbols-outlined">verified</span>
+                            <span>Live on Marketplace</span>
+                          </span>
+                        } @else if (prop.status === 'rejected') {
+                          <span class="status-chip danger">
+                            <span class="material-symbols-outlined">cancel</span>
+                            <span>Listing Rejected</span>
+                          </span>
+                        } @else if (prop.status === 'revision_requested') {
+                          <span class="status-chip warning">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            <span>Revisions Requested</span>
+                          </span>
+                        }
+                      </div>
+
+                      <h3 class="user-prop-title">{{ prop.title }}</h3>
+                      
+                      <div class="user-prop-meta">
+                        <span class="u-price">{{ prop.price }}</span>
+                        <span class="u-dot">&bull;</span>
+                        <span class="u-loc">{{ prop.localityName }}, {{ prop.cityName }}</span>
+                        <span class="u-dot">&bull;</span>
+                        <span class="u-spec">{{ prop.bhkBadge }} &bull; {{ prop.sqft }}</span>
+                        <span class="u-dot">&bull;</span>
+                        <span class="u-date">Submitted: {{ prop.createdAt }}</span>
+                      </div>
+
+                      <!-- Admin Feedback Box if reviewed or notes provided -->
+                      @if (prop.reviewNotes) {
+                        <div class="admin-feedback-box">
+                          <span class="material-symbols-outlined">rate_review</span>
+                          <div class="feedback-text">
+                            <strong>Compliance Desk Note:</strong> {{ prop.reviewNotes }}
+                          </div>
+                        </div>
+                      }
+
+                      @if (prop.rejectionReason) {
+                        <div class="admin-feedback-box rejection">
+                          <span class="material-symbols-outlined">error</span>
+                          <div class="feedback-text">
+                            <strong>Rejection Reason:</strong> {{ prop.rejectionReason }}
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-box">
+                <span class="material-symbols-outlined empty-icon">add_home_work</span>
+                <h4 class="empty-title">You haven't listed any properties yet</h4>
+                <p class="empty-sub">List your architectural residence, villa, plot, or commercial space with 0% brokerage and verified title registry.</p>
+                <a routerLink="/post-property" class="btn-post-first" style="margin-top: 1rem; display: inline-flex; align-items: center; gap: 6px; background: #0c2340; color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700;">
+                  <span class="material-symbols-outlined">add_circle</span>
+                  <span>Post Your First Property FREE</span>
+                </a>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 2: FAVOURITES & SHORTLISTS          -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'favourites') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Favourites &amp; Saved Shortlists</h2>
+                <p class="section-subtitle">Your private portfolio of zero-brokerage properties marked for investment consideration.</p>
+              </div>
+              <div class="counter-chip">
+                <span>{{ getShortlistedProperties().length }} Properties Saved</span>
+              </div>
+            </div>
+
+            @if (getShortlistedProperties().length > 0) {
+              <div class="shortlists-grid">
+                @for (prop of getShortlistedProperties(); track prop.id) {
+                  <div class="shortlist-property-card">
+                    <div class="card-media-wrapper">
+                      <img [src]="prop.imageUrl" [alt]="prop.title" class="prop-thumb" loading="lazy" />
+                      <span class="prop-tag-badge">{{ prop.propertyType }}</span>
+                      <button 
+                        type="button" 
+                        class="btn-remove-favourite" 
+                        (click)="removeFromShortlist(prop.id, $event)" 
+                        title="Remove from saved shortlist">
+                        <span class="material-symbols-outlined">heart_minus</span>
+                      </button>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="prop-pricing-row">
+                        <span class="price-val">{{ prop.price }}</span>
+                        <span class="price-rate">{{ prop.pricePerSqFt }}</span>
+                      </div>
+
+                      <h3 class="prop-title" [routerLink]="['/property', prop.id]">{{ prop.title }}</h3>
+                      
+                      <div class="prop-location">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <span>{{ prop.locality }}, {{ prop.city }}</span>
+                      </div>
+
+                      <div class="prop-specs-pills">
+                        <span class="spec-pill">{{ prop.bhkBadge }}</span>
+                        <span class="spec-pill">{{ prop.sqft }}</span>
+                        <span class="spec-pill">{{ prop.facingOrView }}</span>
+                      </div>
+
+                      <div class="prop-actions-row">
+                        <button type="button" class="btn-card-tour" (click)="onWatchTour(prop.id)">
+                          <span class="material-symbols-outlined">smart_display</span>
+                          <span>Virtual Tour</span>
+                        </button>
+                        <a [routerLink]="['/property', prop.id]" class="btn-card-dossier">
+                          <span>View Dossier</span>
+                          <span class="material-symbols-outlined">arrow_forward</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-card">
+                <div class="empty-icon-wrap">
+                  <span class="material-symbols-outlined">favorite_border</span>
+                </div>
+                <h3 class="empty-title">No Saved Properties Yet</h3>
+                <p class="empty-text">Click the heart icon on any verified property dossier across Chennai to save it here for instant side-by-side comparison.</p>
+                <a routerLink="/" class="btn-primary-action">
+                  <span class="material-symbols-outlined">search</span>
+                  <span>Explore Verified Properties</span>
+                </a>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 3: SITES VIEWED (BROWSING TRAIL)    -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'views') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Sites Viewed &amp; Browsing Trail</h2>
+                <p class="section-subtitle">Real-time trail of cadastral dossiers and properties you have recently inspected.</p>
+              </div>
+              <div class="header-action-group">
+                @if (getViewedItems().length > 0) {
+                  <button 
+                    type="button" 
+                    class="btn-clear-history" 
+                    [disabled]="isClearingViews()" 
+                    (click)="clearAllViews()">
+                    <span class="material-symbols-outlined">delete_sweep</span>
+                    <span>{{ isClearingViews() ? 'Clearing...' : 'Clear History' }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            @if (getViewedItems().length > 0) {
+              <div class="history-list-container">
+                @for (item of getViewedItems(); track item.id || item.propertyId) {
+                  <div class="history-item-row">
+                    <img [src]="item.imageUrl" [alt]="item.title" class="history-thumb" loading="lazy" />
+                    
+                    <div class="history-info">
+                      <div class="history-top-line">
+                        <span class="history-badge">{{ item.propertyType }}</span>
+                        <span class="history-timestamp">
+                          <span class="material-symbols-outlined">schedule</span>
+                          <span>Viewed: {{ item.viewedAt }}</span>
+                        </span>
+                      </div>
+
+                      <h3 class="history-title" [routerLink]="['/property', item.propertyId]">
+                        {{ item.title }}
+                      </h3>
+
+                      <div class="history-meta">
+                        <span class="meta-locality">
+                          <span class="material-symbols-outlined">location_on</span>
+                          {{ item.locality }}, {{ item.city }}
+                        </span>
+                        <span class="meta-dot">•</span>
+                        <span class="meta-specs">{{ item.bhkBadge }} • {{ item.sqft }}</span>
+                      </div>
+                    </div>
+
+                    <div class="history-pricing-box">
+                      <div class="history-price">{{ item.price }}</div>
+                      <div class="history-sqft">{{ item.pricePerSqFt }}</div>
+                      <a [routerLink]="['/property', item.propertyId]" class="btn-revisit">
+                        <span>Revisit</span>
+                        <span class="material-symbols-outlined">open_in_new</span>
+                      </a>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-card">
+                <div class="empty-icon-wrap">
+                  <span class="material-symbols-outlined">history</span>
+                </div>
+                <h3 class="empty-title">No Browsing Trail Yet</h3>
+                <p class="empty-text">Properties you explore will automatically record here so you can easily trace back and compare titles.</p>
+                <a routerLink="/" class="btn-primary-action">
+                  <span class="material-symbols-outlined">travel_explore</span>
+                  <span>Browse Direct Owner Properties</span>
+                </a>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 4: PAYMENT TRANSACTIONS & WALLET   -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'transactions') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Payment &amp; Media Transactions</h2>
+                <p class="section-subtitle">Complete ledger of your points recharges, direct UPI purchases, and unlocked 4K video walkthroughs.</p>
+              </div>
+              <button type="button" class="btn-topup-accent" (click)="walletService.navigateToWallet()">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                <span>Open Wallet &amp; Recharge</span>
+              </button>
+            </div>
+
+            <!-- Wallet Overview Card -->
+            <div class="wallet-stat-banner">
+              <div class="wallet-stat-left">
+                <div class="pts-big-display">
+                  <span class="pts-big-num">{{ walletService.balance() }}</span>
+                  <span class="pts-big-unit">Media Points</span>
+                </div>
+                <div class="pts-sub-details">
+                  <span class="pts-sub-val">Equivalent to ₹{{ walletService.balance() * 50 }} Media Credits</span>
+                  <span class="pts-rule">2 Points unlock 1 complete 4K HDR &amp; Drone Walkthrough</span>
+                </div>
+              </div>
+              <div class="wallet-stat-right">
+                <div class="stat-pill">
+                  <span class="stat-pill-label">Points Rate</span>
+                  <span class="stat-pill-val">2 Pts = ₹100</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="stat-pill-label">Validity</span>
+                  <span class="stat-pill-val text-emerald">Lifetime / Never Expire</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transactions Table -->
+            @if (getTransactions().length > 0) {
+              <div class="table-card-wrapper">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Transaction ID</th>
+                      <th>Date &amp; Time</th>
+                      <th>Description</th>
+                      <th>Points</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (tx of getTransactions(); track tx.id) {
+                      <tr>
+                        <td class="font-mono text-xs">#TXN-{{ tx.id }}</td>
+                        <td>{{ tx.createdAt }}</td>
+                        <td class="font-medium text-slate-900">{{ tx.description }}</td>
+                        <td>
+                          <span [class.text-emerald]="tx.transactionType === 'credit_purchase' || tx.transactionType === 'bonus_credit'"
+                                [class.text-red]="tx.transactionType === 'debit_unlock'"
+                                class="font-bold">
+                            {{ tx.points > 0 ? '+' : '' }}{{ tx.points }} Pts
+                          </span>
+                        </td>
+                        <td>
+                          @if (tx.amountRupees > 0) {
+                            <span class="font-semibold">₹{{ tx.amountRupees }}</span>
+                          } @else {
+                            <span class="text-slate-400">—</span>
+                          }
+                        </td>
+                        <td>
+                          <span class="status-chip success">
+                            <span class="material-symbols-outlined chip-icon">check_circle</span>
+                            <span>{{ tx.status | uppercase }}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <!-- Fallback Simulated Ledger Item -->
+              <div class="table-card-wrapper">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Transaction ID</th>
+                      <th>Date &amp; Time</th>
+                      <th>Description</th>
+                      <th>Points</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-mono text-xs">#TXN-101</td>
+                      <td>2026-10-15 17:01:48</td>
+                      <td class="font-medium text-slate-900">Welcome Starter Investor Credit (20 Free Tours)</td>
+                      <td class="text-emerald font-bold">+40 Pts</td>
+                      <td><span class="text-slate-400">— (Complimentary)</span></td>
+                      <td>
+                        <span class="status-chip success">
+                          <span class="material-symbols-outlined chip-icon">check_circle</span>
+                          <span>SUCCESS</span>
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 5: SCHEDULED SITE VISITS           -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'visits') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Scheduled Site Visits &amp; Inquiries</h2>
+                <p class="section-subtitle">Verified on-site property walkthroughs with assigned regional relationship executives.</p>
+              </div>
+            </div>
+
+            @if (getVisits().length > 0) {
+              <div class="visits-card-list">
+                @for (v of getVisits(); track v.id) {
+                  <div class="visit-card">
+                    <div class="visit-status-bar">
+                      <span class="status-chip" [class.success]="v.status === 'scheduled' || v.status === 'completed'" [class.info]="v.status === 'new' || v.status === 'contacted'">
+                        <span class="material-symbols-outlined chip-icon">event</span>
+                        <span>{{ v.status | uppercase }}</span>
+                      </span>
+                      <span class="visit-lead-type">On-Site Physical Inspection</span>
+                    </div>
+
+                    <div class="visit-body">
+                      <div class="visit-prop-details">
+                        <h3 class="visit-prop-title" [routerLink]="['/property', v.propertyId]">{{ v.propertyTitle }}</h3>
+                        <div class="visit-locality">
+                          <span class="material-symbols-outlined">location_on</span>
+                          <span>{{ v.locality || 'Chennai Urban Corridor' }}, {{ v.city || 'Tamil Nadu' }}</span>
+                        </div>
+                      </div>
+
+                      <div class="visit-timing-box">
+                        <div class="timing-label">Appointment Time</div>
+                        <div class="timing-val">
+                          <span class="material-symbols-outlined">calendar_today</span>
+                          <span>{{ v.preferredDate || 'Upcoming Weekend' }} ({{ v.visitSlot || 'Morning 10 AM - 1 PM' }})</span>
+                        </div>
+                      </div>
+
+                      <div class="visit-actions">
+                        <a href="tel:+919444100000" class="btn-visit-concierge">
+                          <span class="material-symbols-outlined">call</span>
+                          <span>Contact Escort</span>
+                        </a>
+                        <a [routerLink]="['/property', v.propertyId]" class="btn-visit-details">
+                          <span>View Property</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-card">
+                <div class="empty-icon-wrap">
+                  <span class="material-symbols-outlined">event_busy</span>
+                </div>
+                <h3 class="empty-title">No Site Visits Scheduled Yet</h3>
+                <p class="empty-text">Schedule free private property walkthroughs with cab pick-up options directly from any property page.</p>
+                <a routerLink="/" class="btn-primary-action">
+                  <span class="material-symbols-outlined">travel_explore</span>
+                  <span>Explore Properties to Visit</span>
+                </a>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 6: REGULATORY BROCHURES             -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'brochures') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Regulatory Brochures &amp; Legal Dossiers</h2>
+                <p class="section-subtitle">Verified RERA certificates, layout master plans, and cadastral survey approvals downloaded by you.</p>
+              </div>
+            </div>
+
+            @if (getBrochures().length > 0) {
+              <div class="brochures-grid">
+                @for (b of getBrochures(); track b.id) {
+                  <div class="brochure-card">
+                    <div class="brochure-icon-box">
+                      <span class="material-symbols-outlined">picture_as_pdf</span>
+                    </div>
+                    <div class="brochure-info">
+                      <h4 class="brochure-title">{{ b.propertyTitle }}</h4>
+                      <p class="brochure-meta">Verified Master Plan &amp; RERA Dossier • Downloaded on {{ b.createdAt }}</p>
+                    </div>
+                    <a [routerLink]="['/property', b.propertyId]" class="btn-download-again" title="Open Dossier">
+                      <span class="material-symbols-outlined">visibility</span>
+                      <span>View</span>
+                    </a>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-card">
+                <div class="empty-icon-wrap">
+                  <span class="material-symbols-outlined">folder_open</span>
+                </div>
+                <h3 class="empty-title">No Brochures Downloaded</h3>
+                <p class="empty-text">Whenever you download legal documents or floor brochures on property pages, they will stay preserved in this legal vault.</p>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 7: INVESTOR PREFERENCES             -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'preferences') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title">Notification &amp; Real Estate Alerts</h2>
+                <p class="section-subtitle">Configure real-time triggers for price corrections, newly listed direct-owner titles, and WhatsApp alerts.</p>
+              </div>
+              <button type="button" class="btn-primary-action" (click)="savePreferences()">
+                <span class="material-symbols-outlined">save</span>
+                <span>Save Preferences</span>
+              </button>
+            </div>
+
+            <div class="preferences-container">
+              <!-- Channel 1: WhatsApp -->
+              <div class="pref-item">
+                <div class="pref-icon bg-emerald-light">
+                  <span class="material-symbols-outlined text-emerald">chat</span>
+                </div>
+                <div class="pref-text">
+                  <h4 class="pref-title">WhatsApp Concierge Updates</h4>
+                  <p class="pref-desc">Receive instant verification updates, site visit confirmations, and GPS locations directly to your mobile.</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" [checked]="notifyWhatsApp()" (change)="notifyWhatsApp.set(!notifyWhatsApp())" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- Channel 2: Instant Price Drops -->
+              <div class="pref-item">
+                <div class="pref-icon bg-red-light">
+                  <span class="material-symbols-outlined text-red">trending_down</span>
+                </div>
+                <div class="pref-text">
+                  <h4 class="pref-title">Instant Price Drop Alerts</h4>
+                  <p class="pref-desc">Get notified immediately when sellers reduce the asking price on your shortlisted or viewed properties.</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" [checked]="notifyPriceDrops()" (change)="notifyPriceDrops.set(!notifyPriceDrops())" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- Channel 3: Email Summaries -->
+              <div class="pref-item">
+                <div class="pref-icon bg-blue-light">
+                  <span class="material-symbols-outlined text-blue">mail</span>
+                </div>
+                <div class="pref-text">
+                  <h4 class="pref-title">Weekly Chennai Corridor Digest</h4>
+                  <p class="pref-desc">Curated report on infrastructure milestones, metro expansions, and land valuation indices in your target corridor.</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" [checked]="notifyEmail()" (change)="notifyEmail.set(!notifyEmail())" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- Channel 4: New Direct Listings -->
+              <div class="pref-item">
+                <div class="pref-icon bg-purple-light">
+                  <span class="material-symbols-outlined text-purple">villa</span>
+                </div>
+                <div class="pref-text">
+                  <h4 class="pref-title">New Zero-Brokerage Listings</h4>
+                  <p class="pref-desc">First priority alert when a new direct-owner property matching your budget bracket is listed.</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" [checked]="notifyNewListings()" (change)="notifyNewListings.set(!notifyNewListings())" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- SECTION 8: DANGER ZONE (DELETE ACCOUNT)     -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'danger') {
+          <div class="content-section-block">
+            <div class="section-heading-bar">
+              <div>
+                <h2 class="section-title text-red">Account Danger Zone</h2>
+                <p class="section-subtitle">Permanently delete your investor account and wipe all historical records from our servers.</p>
+              </div>
+            </div>
+
+            <div class="danger-warning-card">
+              <div class="danger-card-header">
+                <span class="material-symbols-outlined danger-icon">warning</span>
+                <div>
+                  <h3 class="danger-title">Permanent Account Termination</h3>
+                  <p class="danger-lead">This operation cannot be undone. Please review what happens when you delete your account:</p>
+                </div>
+              </div>
+
+              <ul class="danger-consequences-list">
+                <li>
+                  <span class="material-symbols-outlined">close</span>
+                  <span><strong>Saved Shortlists &amp; Favorites:</strong> All {{ shortlistsCount() }} saved properties will be permanently purged.</span>
+                </li>
+                <li>
+                  <span class="material-symbols-outlined">close</span>
+                  <span><strong>Sites Viewed &amp; Browsing Trail:</strong> All {{ viewsCount() }} viewed properties and timestamps will be cleared from MySQL.</span>
+                </li>
+                <li>
+                  <span class="material-symbols-outlined">close</span>
+                  <span><strong>Remaining Media Balance:</strong> Your {{ walletService.balance() }} points balance (worth ₹{{ walletService.balance() * 50 }}) will be permanently forfeited.</span>
+                </li>
+                <li>
+                  <span class="material-symbols-outlined">close</span>
+                  <span><strong>Scheduled Visits &amp; Inquiries:</strong> Any open appointments with relationship managers will be cancelled.</span>
+                </li>
+                <li>
+                  <span class="material-symbols-outlined">close</span>
+                  <span><strong>Legal Brochures &amp; Unlocks:</strong> Your perpetual licenses to 4K walkthroughs will be revoked.</span>
+                </li>
+              </ul>
+
+              <div class="danger-action-footer">
+                <button type="button" class="btn-danger-proceed" (click)="openDeleteModal()">
+                  <span class="material-symbols-outlined">delete_forever</span>
+                  <span>Proceed to Delete Account...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: EDIT PROFILE MODAL                -->
+  <!-- ========================================== -->
+  @if (isEditModalOpen()) {
+    <div class="modal-backdrop" (click)="closeEditModal()">
+      <div class="modal-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
+        <div class="modal-header">
+          <div class="modal-title-box">
+            <span class="material-symbols-outlined modal-icon">person_edit</span>
+            <h3 id="edit-profile-title" class="modal-heading">Update Profile Details</h3>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closeEditModal()" aria-label="Close modal">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (submit)="onSaveProfile($event)" class="modal-form">
+          <div class="form-group">
+            <label for="edit-name" class="form-label">Full Name</label>
+            <input 
+              id="edit-name" 
+              type="text" 
+              class="form-input" 
+              [ngModel]="editName()" 
+              (ngModelChange)="editName.set($event)" 
+              name="name" 
+              placeholder="e.g. Arunachalam S." 
+              required />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-email" class="form-label">Email Address</label>
+            <input 
+              id="edit-email" 
+              type="email" 
+              class="form-input" 
+              [ngModel]="editEmail()" 
+              (ngModelChange)="editEmail.set($event)" 
+              name="email" 
+              placeholder="e.g. arun@gmail.com" 
+              required />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-phone" class="form-label">Mobile Phone Number</label>
+            <input 
+              id="edit-phone" 
+              type="tel" 
+              class="form-input" 
+              [ngModel]="editPhone()" 
+              (ngModelChange)="editPhone.set($event)" 
+              name="phone" 
+              placeholder="+91 94441 00000" />
+            <span class="form-hint">Used for 2-factor OTP verification and site visit concierge.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-city" class="form-label">Preferred City / Region</label>
+            <select 
+              id="edit-city" 
+              class="form-input" 
+              [ngModel]="editCity()" 
+              (ngModelChange)="editCity.set($event)" 
+              name="city">
+              <option value="Chennai">Chennai (OMR, ECR, Porur, Anna Nagar)</option>
+              <option value="Coimbatore">Coimbatore (Avinashi Rd, RS Puram)</option>
+              <option value="Bengaluru">Bengaluru (Whitefield, Indiranagar)</option>
+              <option value="Hyderabad">Hyderabad (Gachibowli, Hitec City)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-budget" class="form-label">Target Investment Budget</label>
+            <select 
+              id="edit-budget" 
+              class="form-input" 
+              [ngModel]="editBudget()" 
+              (ngModelChange)="editBudget.set($event)" 
+              name="budget">
+              <option value="₹50 L – ₹1 Cr">₹50 Lakhs – ₹1 Crore</option>
+              <option value="₹1 Cr – ₹2 Cr">₹1 Crore – ₹2 Crores</option>
+              <option value="₹2 Cr – ₹5 Cr">₹2 Crores – ₹5 Crores</option>
+              <option value="₹5 Cr+">₹5 Crores+ Ultra Luxury</option>
+            </select>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="isSavingProfile()">
+              <span class="material-symbols-outlined">check</span>
+              <span>{{ isSavingProfile() ? 'Saving Changes...' : 'Save & Update' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: TWO-STEP DELETE ACCOUNT CONFIRM   -->
+  <!-- ========================================== -->
+  @if (isDeleteModalOpen()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-panel modal-panel-danger" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="delete-account-title">
+        <div class="modal-header header-danger">
+          <div class="modal-title-box">
+            <span class="material-symbols-outlined modal-icon text-red">delete_forever</span>
+            <h3 id="delete-account-title" class="modal-heading text-red">Confirm Account Deletion</h3>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closeDeleteModal()" aria-label="Close modal">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="danger-callout">
+            <span class="material-symbols-outlined text-red">error</span>
+            <p><strong>Warning:</strong> This action is permanent and completely irreversible. All your shortlists, {{ viewsCount() }} viewed property history records, and {{ walletService.balance() }} points balance will be deleted immediately.</p>
+          </div>
+
+          <div class="confirmation-step">
+            <label for="confirm-delete-input" class="confirm-label">
+              To proceed, please type <span class="highlight-code">DELETE</span> in the box below:
+            </label>
+            <input 
+              id="confirm-delete-input" 
+              type="text" 
+              class="form-input input-danger" 
+              [ngModel]="deleteConfirmationInput()" 
+              (ngModelChange)="deleteConfirmationInput.set($event)" 
+              placeholder="Type DELETE" 
+              autocomplete="off" />
+          </div>
+
+          @if (deleteErrorMessage()) {
+            <div class="error-banner">
+              <span class="material-symbols-outlined">error</span>
+              <span>{{ deleteErrorMessage() }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeDeleteModal()" [disabled]="isDeletingAccount()">
+            Cancel &amp; Keep Account
+          </button>
+          <button 
+            type="button" 
+            class="btn-delete-confirm" 
+            [disabled]="deleteConfirmationInput().trim().toUpperCase() !== 'DELETE' || isDeletingAccount()"
+            (click)="confirmDeleteAccount()">
+            <span class="material-symbols-outlined">delete_forever</span>
+            <span>{{ isDeletingAccount() ? 'Deleting Account...' : 'Permanently Delete' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Footer Component -->
+  <app-footer />
+
+  <!-- Global Modals & Notifications -->
+  <app-property-media-modal />
+  <app-topup-dialog />
+  <app-toast />
+</div>

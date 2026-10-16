@@ -1,0 +1,465 @@
+<div class="admin-profile-layout">
+  <!-- ========================================== -->
+  <!-- TOP ADMIN HEADER & PERSONA SWITCHER       -->
+  <!-- ========================================== -->
+  <header class="admin-topbar">
+    <div class="topbar-left">
+      <div class="admin-brand">
+        <div class="brand-shield-icon">
+          <span class="material-symbols-outlined">shield_person</span>
+        </div>
+        <div class="brand-titles">
+          <h1 class="brand-title">MANNIDAM ADMIN PROFILE</h1>
+          <span class="brand-sub">Officer Dossier &amp; Comprehensive Governance Audit Trail</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Authenticated Officer Badge & Nav -->
+    <div class="topbar-right">
+      <div class="active-admin-badge" [title]="'Authenticated Administrator: ' + (adminService.currentAdmin()?.name || adminService.activePersona().name)">
+        <span class="material-symbols-outlined badge-shield-icon">verified_user</span>
+        <span class="p-avatar" 
+          [class.ez]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'EZ'"
+          [class.ra]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'RA'"
+          [class.be]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'BE'">
+          {{ adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials }}
+        </span>
+        <div class="p-info">
+          <div class="p-name-row">
+            <span class="p-name">{{ adminService.currentAdmin()?.name || adminService.activePersona().name }}</span>
+            <span class="status-live-dot" title="Authenticated Session Active"></span>
+          </div>
+          <span class="p-role">{{ adminService.currentAdmin()?.title || adminService.activePersona().title }}</span>
+        </div>
+      </div>
+
+      <a routerLink="/admin" class="btn-topbar-link" title="Open Four-Eyes Review Dashboard">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Review Queue</span>
+      </a>
+
+      <a routerLink="/" class="btn-topbar-link" title="Visit Public Marketplace">
+        <span class="material-symbols-outlined">storefront</span>
+        <span>Marketplace</span>
+      </a>
+
+      <button type="button" class="btn-admin-signout" (click)="onSignOut()" title="Sign out of administrative session">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- MAIN CONTAINER                             -->
+  <!-- ========================================== -->
+  <main class="profile-main-container">
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="loading-state-card">
+        <div class="spinner-ring"></div>
+        <p class="loading-title">Retrieving Audit Trail &amp; Dossier...</p>
+        <p class="loading-sub">Connecting to Mannidam cryptographic activity ledger</p>
+      </div>
+    } @else {
+
+      <!-- ========================================== -->
+      <!-- 1. OFFICER DOSSIER HERO BANNER             -->
+      <!-- ========================================== -->
+      @if (profileData()?.admin; as admin) {
+        <section class="officer-hero-card">
+          <div class="hero-bg-pattern"></div>
+          <div class="hero-content">
+            <div class="officer-avatar-wrapper">
+              <div class="officer-avatar">{{ admin.avatarInitials }}</div>
+              <span class="online-indicator" title="Active Four-Eyes Signing Session"></span>
+            </div>
+
+            <div class="officer-identity">
+              <div class="identity-header">
+                <h2 class="officer-name">{{ admin.name }}</h2>
+                <span class="clearance-badge">
+                  <span class="material-symbols-outlined">verified_user</span>
+                  <span>{{ admin.clearanceLevel || 'Level 3 — SRO Patta Authority' }}</span>
+                </span>
+                <span class="role-pill">
+                  <span class="material-symbols-outlined">policy</span>
+                  <span>{{ admin.role === 'admin' ? 'Primary Director' : 'Co-Admin Reviewer' }}</span>
+                </span>
+              </div>
+
+              <p class="officer-title">{{ admin.title }}</p>
+
+              <div class="officer-meta-row">
+                <div class="meta-item">
+                  <span class="material-symbols-outlined">mail</span>
+                  <span>{{ admin.email }}</span>
+                </div>
+                @if (admin.phone) {
+                  <div class="meta-item">
+                    <span class="material-symbols-outlined">call</span>
+                    <span>{{ admin.phone }}</span>
+                  </div>
+                }
+                <div class="meta-item">
+                  <span class="material-symbols-outlined">badge</span>
+                  <span>Officer ID: #{{ admin.id }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="material-symbols-outlined">event_available</span>
+                  <span>Registered: {{ admin.createdAt | date:'mediumDate' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-actions">
+              <button type="button" class="btn-refresh" (click)="loadProfileDetails()" title="Refresh live audit logs">
+                <span class="material-symbols-outlined">sync</span>
+                <span>Refresh Logs</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- ========================================== -->
+      <!-- 2. AUDIT KPI STATS STRIP                   -->
+      <!-- ========================================== -->
+      @if (profileData()?.summary; as summary) {
+        <section class="audit-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-primary">
+              <span class="material-symbols-outlined">assignment_turned_in</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-number">{{ summary.totalMyActions }}</span>
+              <span class="stat-label">My Total Involvements</span>
+              <span class="stat-hint">Actions recorded in audit ledger</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-success">
+              <span class="material-symbols-outlined">how_to_reg</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-number">{{ summary.myPeerApprovals }}</span>
+              <span class="stat-label">Peer Approvals Signed</span>
+              <span class="stat-hint">Co-admin submissions greenlit</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-info">
+              <span class="material-symbols-outlined">fact_check</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-number">{{ summary.myUserApprovals }}</span>
+              <span class="stat-label">User Listings Verified</span>
+              <span class="stat-hint">Public user properties approved</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-purple">
+              <span class="material-symbols-outlined">post_add</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-number">{{ summary.myPosts }}</span>
+              <span class="stat-label">Properties Posted</span>
+              <span class="stat-hint">Submitted for peer verification</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-amber">
+              <span class="material-symbols-outlined">rule_folder</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-number">{{ summary.myRejections }}</span>
+              <span class="stat-label">Flags / Rejections</span>
+              <span class="stat-hint">Compliance revisions enforced</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-coadmin">
+              <span class="material-symbols-outlined">group_work</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-number">{{ summary.coAdminTotalActions }}</span>
+              <span class="stat-label">Co-Admin Actions</span>
+              <span class="stat-hint">Colleague activities logged</span>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- ========================================== -->
+      <!-- 3. DUAL-STREAM AUDIT NAVIGATION TABS       -->
+      <!-- ========================================== -->
+      <section class="activity-streams-section">
+        <div class="streams-header-bar">
+          <div class="stream-tabs">
+            <button 
+              type="button" 
+              class="stream-tab-btn" 
+              [class.active]="activeTab() === 'my_activities'"
+              (click)="activeTab.set('my_activities')">
+              <span class="material-symbols-outlined">person_pin</span>
+              <span class="tab-text">My Involvements &amp; Audit Trail</span>
+              <span class="tab-badge">{{ profileData()?.myActivities?.length || 0 }}</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="stream-tab-btn" 
+              [class.active]="activeTab() === 'co_admin_activities'"
+              (click)="activeTab.set('co_admin_activities')">
+              <span class="material-symbols-outlined">groups</span>
+              <span class="tab-text">Co-Admin Activity Stream</span>
+              <span class="tab-badge badge-coadmin">{{ profileData()?.otherAdminActivities?.length || 0 }}</span>
+            </button>
+          </div>
+
+          <!-- Co-Admin Sub-Filter (shown when Co-Admin tab is active) -->
+          @if (activeTab() === 'co_admin_activities') {
+            <div class="co-admin-filters">
+              <span class="filter-label">Filter Colleague:</span>
+              <div class="filter-pills">
+                <button 
+                  type="button" 
+                  class="filter-pill"
+                  [class.active]="selectedCoAdminFilter() === null"
+                  (click)="filterByCoAdmin(null)">
+                  All Co-Admins
+                </button>
+                @for (p of personas; track p.id) {
+                  @if (p.id !== adminService.activePersona().id) {
+                    <button 
+                      type="button" 
+                      class="filter-pill"
+                      [class.active]="selectedCoAdminFilter() === p.id"
+                      (click)="filterByCoAdmin(p.id)">
+                      {{ p.name }}
+                    </button>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ========================================== -->
+        <!-- STREAM A: MY INVOLVEMENTS TAB              -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'my_activities') {
+          <div class="stream-container">
+            <div class="stream-intro-banner">
+              <div class="intro-icon">
+                <span class="material-symbols-outlined">history_edu</span>
+              </div>
+              <div class="intro-text">
+                <h3>Personal Audit Record — {{ adminService.activePersona().name }}</h3>
+                <p>Immutable log of every property you have submitted, peer approvals granted, user verifications signed, or revisions requested.</p>
+              </div>
+            </div>
+
+            @if (profileData()?.myActivities?.length === 0) {
+              <div class="empty-stream-card">
+                <span class="material-symbols-outlined empty-icon">folder_open</span>
+                <h4>No personal activity recorded yet</h4>
+                <p>Perform a property review or post a property from the Review Queue to generate cryptographic audit entries.</p>
+                <a routerLink="/admin" class="btn-action-primary">
+                  <span class="material-symbols-outlined">dashboard</span>
+                  <span>Go to Review Dashboard</span>
+                </a>
+              </div>
+            } @else {
+              <div class="activity-timeline">
+                @for (item of profileData()?.myActivities; track item.id) {
+                  <div class="timeline-entry" [ngClass]="getActionBadgeClass(item.actionType)">
+                    <div class="timeline-marker">
+                      <span class="material-symbols-outlined marker-icon">{{ getActionIcon(item.actionType) }}</span>
+                    </div>
+
+                    <div class="timeline-body">
+                      <div class="entry-header">
+                        <div class="entry-title-wrap">
+                          <span class="action-badge" [ngClass]="getActionBadgeClass(item.actionType)">
+                            <span class="material-symbols-outlined badge-icon">{{ getActionIcon(item.actionType) }}</span>
+                            <span>{{ getActionLabel(item.actionType) }}</span>
+                          </span>
+
+                          @if (item.propertyId) {
+                            <span class="property-tag">
+                              <span class="material-symbols-outlined">home_pin</span>
+                              <span>Property #{{ item.propertyId }}</span>
+                            </span>
+                          }
+                        </div>
+
+                        <span class="entry-timestamp">
+                          <span class="material-symbols-outlined">schedule</span>
+                          <span>{{ item.createdAt | date:'medium' }}</span>
+                        </span>
+                      </div>
+
+                      @if (item.propertyTitle) {
+                        <h4 class="entry-property-title">
+                          <a [routerLink]="['/property', item.propertyId]" class="property-link" title="View Property Details">
+                            {{ item.propertyTitle }}
+                          </a>
+                        </h4>
+                      }
+
+                      @if (item.targetUserName) {
+                        <div class="target-user-info">
+                          <span class="target-label">Listing Submitted By:</span>
+                          <span class="target-name">
+                            <span class="material-symbols-outlined">person</span>
+                            {{ item.targetUserName }} (User ID #{{ item.targetUserId }})
+                          </span>
+                        </div>
+                      }
+
+                      @if (item.notes) {
+                        <div class="entry-notes-box">
+                          <span class="notes-label">
+                            <span class="material-symbols-outlined">rate_review</span>
+                            <span>Official Sign-off Remarks:</span>
+                          </span>
+                          <p class="notes-text">"{{ item.notes }}"</p>
+                        </div>
+                      }
+
+                      <div class="entry-footer">
+                        <span class="actor-info">
+                          <span class="material-symbols-outlined">verified</span>
+                          <span>Signed by: <strong>{{ item.adminName }}</strong> (ID #{{ item.adminId }})</span>
+                        </span>
+                        <span class="entry-id-code">Log Audit #{{ item.id }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- STREAM B: CO-ADMIN ACTIVITIES TAB          -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'co_admin_activities') {
+          <div class="stream-container">
+            <div class="stream-intro-banner coadmin-banner">
+              <div class="intro-icon icon-coadmin">
+                <span class="material-symbols-outlined">supervisor_account</span>
+              </div>
+              <div class="intro-text">
+                <h3>Four-Eyes Oversight Stream — Colleague Activities</h3>
+                <p>Audit trail of all administrative decisions made by your co-directors (Ezhil, Ram, Benny). Enables full institutional transparency and dual-control cross checks.</p>
+              </div>
+            </div>
+
+            @if (profileData()?.otherAdminActivities?.length === 0) {
+              <div class="empty-stream-card">
+                <span class="material-symbols-outlined empty-icon">group_off</span>
+                <h4>No activities found for this co-admin filter</h4>
+                <p>Try selecting "All Co-Admins" or wait for colleagues to record review decisions.</p>
+                <button type="button" class="btn-action-primary" (click)="filterByCoAdmin(null)">
+                  <span class="material-symbols-outlined">refresh</span>
+                  <span>View All Co-Admins</span>
+                </button>
+              </div>
+            } @else {
+              <div class="activity-timeline coadmin-timeline">
+                @for (item of profileData()?.otherAdminActivities; track item.id) {
+                  <div class="timeline-entry coadmin-entry" [ngClass]="getActionBadgeClass(item.actionType)">
+                    <div class="timeline-marker">
+                      <span class="material-symbols-outlined marker-icon">{{ getActionIcon(item.actionType) }}</span>
+                    </div>
+
+                    <div class="timeline-body">
+                      <div class="entry-header">
+                        <div class="entry-title-wrap">
+                          <!-- Co-Admin Pill -->
+                          <span class="coadmin-name-pill">
+                            <span class="material-symbols-outlined">shield_person</span>
+                            <span>{{ item.adminName }}</span>
+                          </span>
+
+                          <span class="action-badge" [ngClass]="getActionBadgeClass(item.actionType)">
+                            <span class="material-symbols-outlined badge-icon">{{ getActionIcon(item.actionType) }}</span>
+                            <span>{{ getActionLabel(item.actionType) }}</span>
+                          </span>
+
+                          @if (item.propertyId) {
+                            <span class="property-tag">
+                              <span class="material-symbols-outlined">home_pin</span>
+                              <span>Property #{{ item.propertyId }}</span>
+                            </span>
+                          }
+                        </div>
+
+                        <span class="entry-timestamp">
+                          <span class="material-symbols-outlined">schedule</span>
+                          <span>{{ item.createdAt | date:'medium' }}</span>
+                        </span>
+                      </div>
+
+                      @if (item.propertyTitle) {
+                        <h4 class="entry-property-title">
+                          <a [routerLink]="['/property', item.propertyId]" class="property-link" title="Inspect Property Listing">
+                            {{ item.propertyTitle }}
+                          </a>
+                        </h4>
+                      }
+
+                      @if (item.targetUserName) {
+                        <div class="target-user-info">
+                          <span class="target-label">Associated Author / Target:</span>
+                          <span class="target-name">
+                            <span class="material-symbols-outlined">person</span>
+                            {{ item.targetUserName }} (User ID #{{ item.targetUserId }})
+                          </span>
+                        </div>
+                      }
+
+                      @if (item.notes) {
+                        <div class="entry-notes-box coadmin-notes">
+                          <span class="notes-label">
+                            <span class="material-symbols-outlined">quick_reference</span>
+                            <span>Peer Officer Justification:</span>
+                          </span>
+                          <p class="notes-text">"{{ item.notes }}"</p>
+                        </div>
+                      }
+
+                      <div class="entry-footer">
+                        <span class="actor-info">
+                          <span class="material-symbols-outlined">account_circle</span>
+                          <span>Executed By: <strong>{{ item.adminName }}</strong> (Admin #{{ item.adminId }})</span>
+                        </span>
+                        <span class="entry-id-code">Log Audit #{{ item.id }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+      </section>
+
+    }
+
+  </main>
+</div>
+
+<!-- Global Toast Notifications -->
+<app-toast></app-toast>

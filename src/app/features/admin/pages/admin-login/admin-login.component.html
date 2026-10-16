@@ -1,0 +1,121 @@
+<div class="admin-login-layout">
+  
+  <div class="login-card-container">
+    
+    <!-- Top Brand Shield & Heading -->
+    <div class="login-header">
+      <div class="shield-icon-wrap">
+        <span class="material-symbols-outlined">security</span>
+      </div>
+      <span class="portal-badge">ADMINISTRATIVE COMPLIANCE DESK</span>
+      <h1 class="portal-title">Mannidam Registry Authentication</h1>
+      <p class="portal-sub">
+        Sign in to review architectural listings, verify land patta &amp; SRO deeds, and enforce Four-Eyes Maker-Checker approvals.
+      </p>
+    </div>
+
+    <!-- Error Banner if any -->
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Main Authentication Form -->
+    <form (submit)="$event.preventDefault(); onSubmit()" class="login-form">
+      
+      <div class="form-group">
+        <label class="form-label">Admin Email or Username</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">account_circle</span>
+          <input 
+            type="text" 
+            class="form-input" 
+            [value]="loginId()" 
+            (input)="loginId.set($any($event.target).value)" 
+            placeholder="ezhil@mannidam.com or Ezhil" 
+            required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Administrative Password</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">lock</span>
+          <input 
+            type="password" 
+            class="form-input" 
+            [value]="password()" 
+            (input)="password.set($any($event.target).value)" 
+            placeholder="••••••••" 
+            required />
+        </div>
+        <span class="field-hint">Enter the unique password assigned to your administrator account</span>
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-login-submit" 
+        [disabled]="adminService.isLoading()">
+        <span class="material-symbols-outlined">
+          {{ adminService.isLoading() ? 'sync' : 'verified_user' }}
+        </span>
+        <span>{{ adminService.isLoading() ? 'Verifying Credentials...' : 'Authenticate & Open Compliance Portal' }}</span>
+      </button>
+
+    </form>
+
+    <!-- Separate Administrator Credentials Directory -->
+    <div class="quick-credentials-section">
+      <div class="quick-header">
+        <span class="material-symbols-outlined">badge</span>
+        <span>Designated Administrator Credentials</span>
+      </div>
+
+      <div class="admin-cards-grid">
+        @for (adm of adminAccounts; track adm.id) {
+          <div 
+            class="admin-quick-card" 
+            [class.selected]="loginId() === adm.email"
+            (click)="selectAdmin(adm)">
+            <div class="card-avatar" [class.ez]="adm.avatarInitials === 'EZ'" [class.ra]="adm.avatarInitials === 'RA'" [class.be]="adm.avatarInitials === 'BE'">
+              {{ adm.avatarInitials }}
+            </div>
+            <div class="card-text">
+              <div class="adm-name-row">
+                <span class="adm-name">{{ adm.name }}</span>
+                <span class="adm-role-tag">{{ adm.title }}</span>
+              </div>
+              @if (adm.responsibility) {
+                <div class="adm-resp-line">
+                  <span class="material-symbols-outlined resp-icon">verified</span>
+                  <span>{{ adm.responsibility }}</span>
+                </div>
+              }
+              <div class="adm-cred-row">
+                <span class="adm-email">{{ adm.email }}</span>
+                <span class="adm-pass-tag">Key: <code>{{ adm.defaultPassword }}</code></span>
+              </div>
+            </div>
+            <span class="btn-fast-login">Select &rarr;</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Security Footer -->
+    <div class="login-footer">
+      <div class="security-note">
+        <span class="material-symbols-outlined">lock</span>
+        <span>Authorized Personnel Only • Audit Logging Active</span>
+      </div>
+      <a routerLink="/" class="link-marketplace">&larr; Return to Public Marketplace</a>
+    </div>
+
+  </div>
+
+  <!-- Global Toast -->
+  <app-toast />
+
+</div>

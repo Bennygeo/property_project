@@ -1,0 +1,661 @@
+<div class="plot-masterplan-wrapper">
+
+  <!-- TOP HEADER / CONTROLS BAR -->
+  <div class="masterplan-topbar">
+    <div class="topbar-left">
+      <div class="badge-live-cadastral">
+        <span class="live-pulse"></span>
+        <span>Architectural Masterplan</span>
+      </div>
+      <h3 class="masterplan-title">Interactive 8-Plot Partitioned Layout</h3>
+      <p class="masterplan-sub">Hover or tap on any plot to inspect 3D dimensions, boundary survey, and live availability</p>
+    </div>
+
+    <div class="topbar-controls">
+      <!-- 3D / 2D View Mode Switcher -->
+      <button 
+        type="button" 
+        class="btn-control-toggle" 
+        [class.active]="is3dMode()" 
+        (click)="toggle3dMode()">
+        <span class="material-symbols-outlined">{{ is3dMode() ? 'view_in_ar' : 'layers' }}</span>
+        <span>{{ is3dMode() ? '3D Aerial View' : '2D Plan View' }}</span>
+      </button>
+
+      <!-- Unit Toggle (YDS / SQFT) -->
+      <div class="unit-toggle-group">
+        <span class="unit-label">Unit:</span>
+        <button 
+          type="button" 
+          class="btn-unit" 
+          [class.active]="unitMode() === 'yds'"
+          (click)="unitMode.set('yds')">
+          YDS
+        </button>
+        <button 
+          type="button" 
+          class="btn-unit" 
+          [class.active]="unitMode() === 'sqft'"
+          (click)="unitMode.set('sqft')">
+          SQ.FT
+        </button>
+      </div>
+
+      <!-- Filter Chips -->
+      <div class="filter-chips">
+        <button 
+          type="button" 
+          class="chip-btn" 
+          [class.active]="activeFilter() === 'all'" 
+          (click)="activeFilter.set('all')">
+          All ({{ plots().length }})
+        </button>
+        <button 
+          type="button" 
+          class="chip-btn chip-available" 
+          [class.active]="activeFilter() === 'available'" 
+          (click)="activeFilter.set('available')">
+          <span class="dot dot-green"></span>
+          Available ({{ availableCount() }})
+        </button>
+        <button 
+          type="button" 
+          class="chip-btn chip-sold" 
+          [class.active]="activeFilter() === 'sold'" 
+          (click)="activeFilter.set('sold')">
+          <span class="dot dot-red"></span>
+          Sold ({{ soldCount() }})
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D PERSPECTIVE VIEWPORT WITH OVERHEAD BIRDS -->
+  <div class="canvas-3d-viewport">
+
+    <!-- SUBTLE OVERHEAD FLYING BIRDS FLOCK (KEPT AS REQUESTED) -->
+    <div class="sky-birds-overlay">
+      <div class="overhead-birds">
+        <svg viewBox="0 0 140 45" width="100" height="36" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.8" stroke-linecap="round">
+          <path d="M5,16 Q13,8 21,16 Q29,8 37,16"/>
+          <path d="M48,26 Q56,18 64,26 Q72,18 80,26" stroke-width="1.5"/>
+          <path d="M92,14 Q99,7 106,14 Q113,7 120,14" stroke-width="1.3"/>
+          <path d="M68,36 Q73,30 78,36 Q83,30 88,36" stroke-width="1.1"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 3D Perspective Stage -->
+    <div class="perspective-stage">
+      
+      <!-- Transformable 3D Board -->
+      <div class="isometric-board" [class.board-3d-active]="is3dMode()">
+        
+        <svg 
+          class="masterplan-svg" 
+          viewBox="0 0 960 640" 
+          preserveAspectRatio="xMidYMid meet"
+          xmlns="http://www.w3.org/2000/svg">
+          
+          <defs>
+            <!-- 3D Sunlight & Shadow Filters -->
+            <filter id="shadow3d" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="12" dy="16" stdDeviation="10" flood-color="#0b1710" flood-opacity="0.45"/>
+            </filter>
+            
+            <filter id="treeCastShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+              <feOffset dx="12" dy="15" result="offsetblur"/>
+              <feFlood flood-color="#071b0d" flood-opacity="0.55"/>
+              <feComposite in2="offsetblur" operator="in"/>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+
+            <filter id="carShadow" x="-40%" y="-40%" width="180%" height="180%">
+              <feDropShadow dx="8" dy="10" stdDeviation="5" flood-color="#050b07" flood-opacity="0.65"/>
+            </filter>
+
+            <!-- Asphalt Road 3D Material Gradient -->
+            <linearGradient id="asphaltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#47515c"/>
+              <stop offset="40%" stop-color="#343d47"/>
+              <stop offset="100%" stop-color="#242b33"/>
+            </linearGradient>
+
+            <linearGradient id="sideRoadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#47515c"/>
+              <stop offset="100%" stop-color="#242b33"/>
+            </linearGradient>
+
+            <!-- Sidewalk Concrete Bevel Gradient -->
+            <linearGradient id="curbBevel" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#e2e8f0"/>
+              <stop offset="35%" stop-color="#cbd5e1"/>
+              <stop offset="100%" stop-color="#94a3b8"/>
+            </linearGradient>
+
+            <!-- Grass / Lawn Texture Gradient -->
+            <radialGradient id="lawnTexture" cx="50%" cy="50%" r="70%">
+              <stop offset="0%" stop-color="#73a670"/>
+              <stop offset="60%" stop-color="#5a8b57"/>
+              <stop offset="100%" stop-color="#466f44"/>
+            </radialGradient>
+
+            <!-- 3D Tree Canopy Spherical Radial Gradients -->
+            <radialGradient id="treeClusterLight" cx="30%" cy="28%" r="72%">
+              <stop offset="0%" stop-color="#a7f3d0"/>
+              <stop offset="25%" stop-color="#34d399"/>
+              <stop offset="60%" stop-color="#059669"/>
+              <stop offset="90%" stop-color="#064e3b"/>
+              <stop offset="100%" stop-color="#022c22"/>
+            </radialGradient>
+
+            <radialGradient id="treeClusterDark" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="#4ade80"/>
+              <stop offset="30%" stop-color="#16a34a"/>
+              <stop offset="70%" stop-color="#15803d"/>
+              <stop offset="100%" stop-color="#14532d"/>
+            </radialGradient>
+
+            <!-- Flowering Jacaranda / Blossom Tree Gradient -->
+            <radialGradient id="blossomTreeGrad" cx="32%" cy="28%" r="72%">
+              <stop offset="0%" stop-color="#fbcfe8"/>
+              <stop offset="30%" stop-color="#f472b6"/>
+              <stop offset="70%" stop-color="#db2777"/>
+              <stop offset="100%" stop-color="#831843"/>
+            </radialGradient>
+
+            <!-- Palm Tree Foliage Gradient -->
+            <radialGradient id="palmGrad" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#bef264"/>
+              <stop offset="45%" stop-color="#65a30d"/>
+              <stop offset="100%" stop-color="#365314"/>
+            </radialGradient>
+
+            <!-- Plot Gradients -->
+            <linearGradient id="availableGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#52c47a"/>
+              <stop offset="100%" stop-color="#38a169"/>
+            </linearGradient>
+
+            <linearGradient id="soldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fc8181"/>
+              <stop offset="100%" stop-color="#e53e3e"/>
+            </linearGradient>
+
+            <linearGradient id="activeGoldenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fde047"/>
+              <stop offset="60%" stop-color="#facc15"/>
+              <stop offset="100%" stop-color="#eab308"/>
+            </linearGradient>
+
+            <!-- REUSABLE MASTER STATIC 3D REAL TREE TEMPLATES (Photorealistic Cutout Sprites) -->
+            <g id="masterStaticTree">
+              <image [attr.href]="realTreeCanopy" x="-26" y="-26" width="52" height="52" preserveAspectRatio="xMidYMid meet" />
+            </g>
+
+            <g id="compactStaticTree">
+              <image [attr.href]="realTreeCanopy" x="-18" y="-18" width="36" height="36" preserveAspectRatio="xMidYMid meet" />
+            </g>
+
+            <g id="palmStaticTree">
+              <image [attr.href]="realTreePalm" x="-24" y="-24" width="48" height="48" preserveAspectRatio="xMidYMid meet" />
+            </g>
+          </defs>
+
+          <!-- 1. BASE LANDSCAPE (Lush Greenery & Boundary) -->
+          <rect width="100%" height="100%" fill="url(#lawnTexture)" rx="16" />
+
+          <!-- Perimeter boundary hedges / borders -->
+          <rect x="18" y="18" width="924" height="604" fill="none" stroke="#2d522c" stroke-width="6" rx="12" opacity="0.6"/>
+
+          <!-- 2. ROADS WITH 3D CONCRETE CURBS & SHADOWS -->
+          <g class="road-infrastructure">
+            <!-- Road Depth Ground Shadows -->
+            <rect x="20" y="244" width="920" height="98" fill="#1b3020" opacity="0.65" rx="4"/>
+            <rect x="238" y="24" width="82" height="590" fill="#1b3020" opacity="0.65" rx="4"/>
+
+            <!-- SIDEWALK CURB BEVEL LAYER (Concrete Walkway Borders) -->
+            <rect x="20" y="238" width="920" height="92" fill="url(#curbBevel)" rx="4"/>
+            <rect x="238" y="20" width="82" height="600" fill="url(#curbBevel)" rx="4"/>
+
+            <!-- MAIN 9-METER ASPHALT ROAD -->
+            <rect x="20" y="243" width="920" height="82" fill="url(#asphaltGrad)" />
+
+            <!-- CROSS CONNECTING ACCESS ROAD -->
+            <rect x="243" y="20" width="72" height="600" fill="url(#sideRoadGrad)" />
+
+            <!-- Center Intersection Junction Plate -->
+            <rect x="243" y="243" width="72" height="82" fill="#2d3748" />
+
+            <!-- ROAD MARKINGS: Dashed Center Divider Lines -->
+            <line x1="25" y1="284" x2="235" y2="284" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="16,14" opacity="0.85"/>
+            <line x1="322" y1="284" x2="930" y2="284" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="16,14" opacity="0.85"/>
+            
+            <line x1="279" y1="25" x2="279" y2="235" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="16,14" opacity="0.85"/>
+            <line x1="279" y1="332" x2="279" y2="615" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="16,14" opacity="0.85"/>
+
+            <!-- Road Signage & Typographic Stencils -->
+            <g transform="translate(600, 288)">
+              <text 
+                x="0" y="0" 
+                fill="#ffffff" 
+                font-size="15" 
+                font-weight="900" 
+                letter-spacing="2.5" 
+                text-anchor="middle"
+                opacity="0.9"
+                style="text-shadow: 0 2px 4px rgba(0,0,0,0.6); font-family: 'Plus Jakarta Sans', sans-serif;">
+                — 9 METER ROAD —
+              </text>
+            </g>
+
+            <g transform="translate(279, 130) rotate(-90)">
+              <text 
+                x="0" y="0" 
+                fill="#ffffff" 
+                font-size="12" 
+                font-weight="800" 
+                letter-spacing="1.5" 
+                text-anchor="middle"
+                opacity="0.75"
+                style="text-shadow: 0 2px 4px rgba(0,0,0,0.6); font-family: 'Plus Jakarta Sans', sans-serif;">
+                7.5 M ACCESS ROAD
+              </text>
+            </g>
+          </g>
+
+          <!-- 3. REALISTIC VEHICLES (Visual Scale) -->
+          <g class="vehicles-layer" filter="url(#carShadow)">
+            <!-- Modern White SUV parked on curb near Plot 247 -->
+            <g transform="translate(420, 252)">
+              <rect x="0" y="0" width="38" height="18" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+              <rect x="7" y="2" width="22" height="14" rx="3" fill="#1e293b"/>
+              <rect x="9" y="3" width="18" height="12" rx="2" fill="#38bdf8" opacity="0.7"/>
+              <rect x="3" y="1" width="3" height="3" fill="#fbbf24"/>
+              <rect x="3" y="14" width="3" height="3" fill="#fbbf24"/>
+              <rect x="33" y="1" width="3" height="3" fill="#ef4444"/>
+              <rect x="33" y="14" width="3" height="3" fill="#ef4444"/>
+            </g>
+
+            <!-- Metallic Blue Sedan on 9M Road heading East -->
+            <g transform="translate(680, 296)">
+              <rect x="0" y="0" width="34" height="16" rx="4" fill="#0284c7" stroke="#0369a1" stroke-width="0.8"/>
+              <rect x="6" y="2" width="18" height="12" rx="2" fill="#0f172a"/>
+              <rect x="8" y="3" width="14" height="10" rx="1.5" fill="#bae6fd" opacity="0.6"/>
+              <rect x="2" y="1" width="2.5" height="2.5" fill="#fde047"/>
+              <rect x="2" y="12.5" width="2.5" height="2.5" fill="#fde047"/>
+              <rect x="30" y="1" width="2.5" height="2.5" fill="#ef4444"/>
+              <rect x="30" y="12.5" width="2.5" height="2.5" fill="#ef4444"/>
+            </g>
+          </g>
+
+          <!-- 4. STREET LIGHTING POLES WITH AMBIENT POOLS -->
+          <g class="street-lights">
+            <circle cx="200" cy="235" r="4" fill="#facc15" stroke="#475569" stroke-width="1.5"/>
+            <circle cx="200" cy="235" r="14" fill="#fef08a" opacity="0.18"/>
+            <circle cx="500" cy="235" r="4" fill="#facc15" stroke="#475569" stroke-width="1.5"/>
+            <circle cx="500" cy="235" r="14" fill="#fef08a" opacity="0.18"/>
+            <circle cx="760" cy="235" r="4" fill="#facc15" stroke="#475569" stroke-width="1.5"/>
+            <circle cx="760" cy="235" r="14" fill="#fef08a" opacity="0.18"/>
+
+            <circle cx="200" cy="330" r="4" fill="#facc15" stroke="#475569" stroke-width="1.5"/>
+            <circle cx="200" cy="330" r="14" fill="#fef08a" opacity="0.18"/>
+            <circle cx="500" cy="330" r="4" fill="#facc15" stroke="#475569" stroke-width="1.5"/>
+            <circle cx="500" cy="330" r="14" fill="#fef08a" opacity="0.18"/>
+            <circle cx="760" cy="330" r="4" fill="#facc15" stroke="#475569" stroke-width="1.5"/>
+            <circle cx="760" cy="330" r="14" fill="#fef08a" opacity="0.18"/>
+          </g>
+
+          <!-- 5. 3D NORTH ARCHITECTURAL COMPASS (Top Left) -->
+          <g class="compass-rose" transform="translate(65, 55)">
+            <circle cx="0" cy="0" r="22" fill="#0f172a" opacity="0.85" stroke="#e2e8f0" stroke-width="1.5"/>
+            <!-- North Needle (Red) -->
+            <polygon points="0,-16 4,0 0,4 -4,0" fill="#ef4444"/>
+            <!-- South Needle (Silver) -->
+            <polygon points="0,16 4,0 0,-4 -4,0" fill="#cbd5e1"/>
+            <text x="0" y="-19" fill="#f8fafc" font-size="9" font-weight="900" text-anchor="middle">N</text>
+            <circle cx="0" cy="0" r="2" fill="#ffffff"/>
+          </g>
+
+          <!-- 6. RICH STATIC 3D ARCHITECTURAL TREES & PLANTINGS -->
+          <g class="architectural-static-trees" filter="url(#treeCastShadow)">
+            
+            <!-- A. NORTH PERIMETER BOUNDARY TREES (Evenly spaced static line) -->
+            <use href="#compactStaticTree" x="90" y="45"/>
+            <use href="#masterStaticTree" x="170" y="42"/>
+            <use href="#compactStaticTree" x="370" y="45"/>
+            <use href="#masterStaticTree" x="460" y="42"/>
+            <use href="#compactStaticTree" x="550" y="45"/>
+            <use href="#masterStaticTree" x="650" y="42"/>
+            <use href="#compactStaticTree" x="780" y="45"/>
+
+            <!-- B. SOUTH PERIMETER BOUNDARY TREES -->
+            <use href="#compactStaticTree" x="90" y="580"/>
+            <use href="#masterStaticTree" x="180" y="582"/>
+            <use href="#compactStaticTree" x="380" y="580"/>
+            <use href="#masterStaticTree" x="470" y="582"/>
+            <use href="#compactStaticTree" x="560" y="580"/>
+            <use href="#masterStaticTree" x="660" y="582"/>
+            <use href="#compactStaticTree" x="780" y="580"/>
+
+            <!-- C. WEST & EAST PERIMETER BORDER TREES -->
+            <use href="#compactStaticTree" x="36" y="140"/>
+            <use href="#masterStaticTree" x="34" y="210"/>
+            <use href="#compactStaticTree" x="36" y="360"/>
+            <use href="#masterStaticTree" x="34" y="490"/>
+
+            <use href="#compactStaticTree" x="924" y="140"/>
+            <use href="#masterStaticTree" x="922" y="210"/>
+            <use href="#compactStaticTree" x="924" y="360"/>
+            <use href="#masterStaticTree" x="922" y="490"/>
+
+            <!-- D. 9-METER ROADSIDE AVENUE TREES (Top & Bottom Curbs - matching reference image) -->
+            <use href="#masterStaticTree" x="140" y="225"/>
+            <use href="#masterStaticTree" x="370" y="225"/>
+            <use href="#masterStaticTree" x="580" y="225"/>
+            <use href="#masterStaticTree" x="820" y="225"/>
+
+            <use href="#masterStaticTree" x="140" y="342"/>
+            <use href="#masterStaticTree" x="370" y="342"/>
+            <use href="#masterStaticTree" x="580" y="342"/>
+            <use href="#masterStaticTree" x="820" y="342"/>
+
+            <!-- E. 7.5M ACCESS ROAD AVENUE TREES -->
+            <use href="#compactStaticTree" x="228" y="90"/>
+            <use href="#compactStaticTree" x="228" y="160"/>
+            <use href="#compactStaticTree" x="228" y="420"/>
+            <use href="#compactStaticTree" x="228" y="520"/>
+
+            <!-- F. CORNER AMENITY PARK TREES -->
+            <use href="#palmStaticTree" x="885" y="65"/>
+            <use href="#palmStaticTree" x="890" y="560"/>
+            <use href="#palmStaticTree" x="325" y="75"/>
+            <use href="#palmStaticTree" x="325" y="545"/>
+          </g>
+
+          <!-- 7. SUBDIVIDED PLOTS (8 ARCHITECTURAL LOTS) -->
+          <g class="subdivided-plots-3d">
+            
+            <!-- ROW 1: NORTH PARCELS (Plot 248, 247, 221, 222) -->
+            
+            <!-- Plot 248 (Corner, Sold) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '248'" 
+               (click)="selectPlot(plots()[1])"
+               (mouseenter)="hoverPlot(plots()[1])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="75" y="105" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="70" y="100" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[1]) ? 'url(#activeGoldenGrad)' : 'url(#soldGrad)'"
+                    stroke="#b91c1c" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="142" y="166" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">248</text>
+              <!-- Real Tree in Plot 248 -->
+              <use href="#compactStaticTree" x="90" y="122"/>
+            </g>
+
+            <!-- Plot 247 (Sold) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '247'"
+               (click)="selectPlot(plots()[0])"
+               (mouseenter)="hoverPlot(plots()[0])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="345" y="105" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="340" y="100" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[0]) ? 'url(#activeGoldenGrad)' : 'url(#soldGrad)'"
+                    stroke="#b91c1c" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="412" y="166" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">247</text>
+            </g>
+
+            <!-- Plot 221 (Sold) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '221'"
+               (click)="selectPlot(plots()[2])"
+               (mouseenter)="hoverPlot(plots()[2])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="525" y="105" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="520" y="100" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[2]) ? 'url(#activeGoldenGrad)' : 'url(#soldGrad)'"
+                    stroke="#b91c1c" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="592" y="166" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">221</text>
+              <!-- Real Tree in Plot 221 -->
+              <use href="#compactStaticTree" x="635" y="122"/>
+            </g>
+
+            <!-- Plot 222 (Corner, Sold) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '222'"
+               (click)="selectPlot(plots()[3])"
+               (mouseenter)="hoverPlot(plots()[3])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="695" y="105" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="690" y="100" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[3]) ? 'url(#activeGoldenGrad)' : 'url(#soldGrad)'"
+                    stroke="#b91c1c" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="762" y="166" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">222</text>
+            </g>
+
+
+            <!-- ROW 2: SOUTH PARCELS (Plot 249, 246, 245, 250 - PRIMARY AVAILABLE SHOWCASE) -->
+            
+            <!-- Plot 249 (Corner, Available) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '249'"
+               (click)="selectPlot(plots()[5])"
+               (mouseenter)="hoverPlot(plots()[5])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="75" y="355" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="70" y="350" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[5]) ? 'url(#activeGoldenGrad)' : 'url(#availableGrad)'"
+                    stroke="#15803d" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="142" y="416" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">249</text>
+              <!-- Real Tree in Plot 249 -->
+              <use href="#compactStaticTree" x="90" y="440" />
+            </g>
+
+            <!-- Plot 246 (Available - HERO PLOT WITH 3D TREE & DIMENSION CALLOUTS LIKE USER REFERENCE) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '246'"
+               (click)="selectPlot(plots()[4])"
+               (mouseenter)="hoverPlot(plots()[4])"
+               (mouseleave)="hoverPlot(null)">
+              
+              <!-- Ambient 3D Cast Shadow -->
+              <rect x="348" y="358" width="145" height="120" rx="4" fill="#022c22" opacity="0.6" filter="url(#shadow3d)" />
+              
+              <!-- 3D Raised Tile -->
+              <rect x="340" y="350" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[4]) ? 'url(#activeGoldenGrad)' : 'url(#availableGrad)'"
+                    [attr.stroke]="isPlotActive(plots()[4]) ? '#b45309' : '#15803d'"
+                    [attr.stroke-width]="isPlotActive(plots()[4]) ? 3 : 1.5"
+                    [attr.stroke-dasharray]="isPlotActive(plots()[4]) ? '6,3' : 'none'"
+                    class="plot-3d-tile hero-tile" />
+              
+              <!-- Plot Number -->
+              <text x="412" y="416" [attr.fill]="isPlotActive(plots()[4]) ? '#78350f' : '#ffffff'" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">
+                246
+              </text>
+
+              <!-- Plot 246 Real Photorealistic Tree (matching user image top-right quadrant) -->
+              <use href="#masterStaticTree" x="456" y="376" />
+
+              <!-- Real-time Dimension Callout Tags (matching reference image) -->
+              @if (isPlotActive(plots()[4])) {
+                <g class="dimension-survey-overlay">
+                  <!-- Top Edge Tag -->
+                  <rect x="382" y="337" width="62" height="17" rx="3" fill="#0f172a" opacity="0.9"/>
+                  <text x="413" y="349" fill="#fde047" font-size="10" font-weight="900" text-anchor="middle">
+                    {{ unitMode() === 'yds' ? '11.37 m' : '37.3 ft' }}
+                  </text>
+
+                  <!-- Bottom Edge Tag -->
+                  <rect x="382" y="474" width="62" height="17" rx="3" fill="#0f172a" opacity="0.9"/>
+                  <text x="413" y="486" fill="#fde047" font-size="10" font-weight="900" text-anchor="middle">
+                    {{ unitMode() === 'yds' ? '11.37 m' : '37.3 ft' }}
+                  </text>
+
+                  <!-- Left Edge Tag -->
+                  <rect x="312" y="402" width="56" height="17" rx="3" fill="#0f172a" opacity="0.9"/>
+                  <text x="340" y="414" fill="#fde047" font-size="10" font-weight="900" text-anchor="middle">
+                    {{ unitMode() === 'yds' ? '7.59 m' : '24.9 ft' }}
+                  </text>
+
+                  <!-- Right Edge Tag -->
+                  <rect x="458" y="402" width="56" height="17" rx="3" fill="#0f172a" opacity="0.9"/>
+                  <text x="486" y="414" fill="#fde047" font-size="10" font-weight="900" text-anchor="middle">
+                    {{ unitMode() === 'yds' ? '7.59 m' : '24.9 ft' }}
+                  </text>
+
+                  <!-- 4 Corner Survey Boundary Pins -->
+                  <circle cx="340" cy="350" r="4.5" fill="#f59e0b" stroke="#78350f" stroke-width="1.5"/>
+                  <circle cx="485" cy="350" r="4.5" fill="#f59e0b" stroke="#78350f" stroke-width="1.5"/>
+                  <circle cx="485" cy="470" r="4.5" fill="#f59e0b" stroke="#78350f" stroke-width="1.5"/>
+                  <circle cx="340" cy="470" r="4.5" fill="#f59e0b" stroke="#78350f" stroke-width="1.5"/>
+                </g>
+              }
+            </g>
+
+            <!-- Plot 245 (Available) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '245'"
+               (click)="selectPlot(plots()[6])"
+               (mouseenter)="hoverPlot(plots()[6])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="525" y="355" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="520" y="350" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[6]) ? 'url(#activeGoldenGrad)' : 'url(#availableGrad)'"
+                    stroke="#15803d" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="592" y="416" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">245</text>
+              <!-- Real Tree in Plot 245 -->
+              <use href="#compactStaticTree" x="635" y="442" />
+            </g>
+
+            <!-- Plot 250 (Corner, Available) -->
+            <g class="plot-interactive-unit" 
+               [class.active]="selectedPlot()?.plotNo === '250'"
+               (click)="selectPlot(plots()[7])"
+               (mouseenter)="hoverPlot(plots()[7])"
+               (mouseleave)="hoverPlot(null)">
+              <rect x="695" y="355" width="145" height="120" rx="4" fill="#142918" opacity="0.4" />
+              <rect x="690" y="350" width="145" height="120" rx="4" 
+                    [attr.fill]="isPlotActive(plots()[7]) ? 'url(#activeGoldenGrad)' : 'url(#availableGrad)'"
+                    stroke="#15803d" stroke-width="1.5" class="plot-3d-tile" />
+              <text x="762" y="416" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">250</text>
+            </g>
+
+          </g>
+
+        </svg>
+
+      </div> <!-- /isometric-board -->
+
+    </div> <!-- /perspective-stage -->
+
+    <!-- 8. FLOATING 3D GLASSMOROHIC POPOVER CARD (Matching user reference) -->
+    @if (selectedPlot(); as activePlot) {
+      <div class="plot-popover-card-3d">
+        <!-- Card Header -->
+        <div class="popover-header">
+          <div class="popover-title-row">
+            <span class="plot-title-label">Plot No. {{ activePlot.plotNo }}</span>
+            <button type="button" class="btn-close-popover" (click)="closeDetails()" title="Close details">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Big Metric Number -->
+          <div class="popover-metric-block">
+            <div class="metric-value">
+              {{ unitMode() === 'yds' ? activePlot.superBuiltUpYds : activePlot.superBuiltUpSqft }}
+            </div>
+            <div class="metric-unit-label">
+              SUPER BUILT-UP AREA IN {{ unitMode() === 'yds' ? 'YDS.' : 'SQ.FT' }}
+            </div>
+          </div>
+
+          <!-- Status Pill -->
+          <div class="status-pill-wrap">
+            <span 
+              class="status-pill"
+              [class.pill-available]="activePlot.status === 'available'"
+              [class.pill-sold]="activePlot.status === 'sold'"
+              [class.pill-reserved]="activePlot.status === 'reserved'">
+              {{ activePlot.status === 'available' ? 'Available' : (activePlot.status === 'sold' ? 'Sold' : 'Reserved') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Specifications Table -->
+        <div class="popover-specs">
+          <div class="spec-row">
+            <span class="spec-key">SUPER BUILT-UP AREA IN {{ unitMode() === 'yds' ? 'YDS.' : 'SQ.FT' }}</span>
+            <span class="spec-val">{{ unitMode() === 'yds' ? activePlot.superBuiltUpYds : activePlot.superBuiltUpSqft }}</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">NET PLOT AREA IN {{ unitMode() === 'yds' ? 'YDS.' : 'SQ.FT' }}</span>
+            <span class="spec-val">{{ unitMode() === 'yds' ? activePlot.netPlotAreaYds : (activePlot.netPlotAreaYds * 9 | number:'1.0-0') }}</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">DIMENSIONS</span>
+            <span class="spec-val">
+              {{ unitMode() === 'yds' ? (activePlot.widthMeters + 'm × ' + activePlot.lengthMeters + 'm') : (activePlot.widthFeet + 'ft × ' + activePlot.lengthFeet + 'ft') }}
+            </span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">FACING</span>
+            <span class="spec-val">{{ activePlot.facing }}</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">ESTIMATED PRICE</span>
+            <span class="spec-val text-brand">{{ activePlot.formattedPrice }}</span>
+          </div>
+          <div class="spec-row spec-directions">
+            <span class="spec-key">GET DIRECTIONS.</span>
+            <span class="material-symbols-outlined arrow-icon">north_east</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="popover-actions">
+          @if (activePlot.status === 'available') {
+            <a 
+              [href]="getWhatsAppLink(activePlot)" 
+              target="_blank" 
+              rel="noopener" 
+              class="btn-popover-wa">
+              <span class="material-symbols-outlined">chat</span>
+              <span>Inquire on WhatsApp</span>
+            </a>
+          } @else {
+            <button type="button" class="btn-popover-disabled" disabled>
+              <span>Plot Currently Sold</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- 9. HORIZONTAL QUICK PLOT SELECTOR STRIP -->
+  <div class="plot-quick-strip">
+    <span class="strip-label">Select Plot:</span>
+    <div class="strip-buttons">
+      @for (p of plots(); track p.id) {
+        <button 
+          type="button" 
+          class="plot-strip-btn"
+          [class.active]="selectedPlot()?.id === p.id"
+          [class.is-available]="p.status === 'available'"
+          [class.is-sold]="p.status === 'sold'"
+          (click)="selectPlot(p)">
+          Plot {{ p.plotNo }}
+        </button>
+      }
+    </div>
+  </div>
+
+</div>

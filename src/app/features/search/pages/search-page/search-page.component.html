@@ -1,0 +1,588 @@
+<div class="search-page-wrapper">
+  <!-- Top Concierge Bar -->
+  <app-top-concierge-bar />
+
+  <!-- Navigation Header -->
+  <app-header />
+
+  <!-- Search Hero Sub-Header Bar -->
+  <section class="search-subheader">
+    <div class="max-w-content subheader-inner">
+      <!-- Breadcrumbs -->
+      <nav class="search-breadcrumbs">
+        <a routerLink="/" class="crumb-link">
+          <span class="material-symbols-outlined">home</span>
+          <span>Home</span>
+        </a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Verified Cadastral Registry Search</span>
+      </nav>
+
+      <!-- Main Omnibox Search Field -->
+      <div class="search-omnibox-row">
+        <div class="search-omnibox">
+          <span class="material-symbols-outlined omnibox-icon">search</span>
+          <input 
+            type="text" 
+            class="omnibox-input" 
+            [value]="searchQuery()"
+            (input)="onSearchInput($any($event.target).value)"
+            placeholder="Search by locality (e.g. OMR, Whitefield, Powai), project, or title keyword...">
+          @if (searchQuery()) {
+            <button type="button" class="omnibox-clear-btn" (click)="clearSearchQuery()" aria-label="Clear keyword search">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Preset Filter Pills -->
+      <div class="preset-pills-row">
+        <span class="preset-label">Quick Class:</span>
+        <div class="preset-pills-list">
+          <button 
+            type="button" 
+            class="preset-chip" 
+            [class.active]="selectedType() === 'all' && selectedBudget() === 'all' && !videoOnly() && !droneOnly()"
+            (click)="selectAllAssets()">
+            All Assets
+          </button>
+          <button 
+            type="button" 
+            class="preset-chip" 
+            [class.active]="selectedType() === 'Apartments & Flats'"
+            (click)="setType('Apartments & Flats')">
+            <span class="material-symbols-outlined">apartment</span>
+            Apartments &amp; Flats
+          </button>
+          <button 
+            type="button" 
+            class="preset-chip" 
+            [class.active]="selectedType() === 'Gated CMDA Plots'"
+            (click)="setType('Gated CMDA Plots')">
+            <span class="material-symbols-outlined">terrain</span>
+            Plots &amp; Land
+          </button>
+          <button 
+            type="button" 
+            class="preset-chip" 
+            [class.active]="selectedType() === 'Independent Villas'"
+            (click)="setType('Independent Villas')">
+            <span class="material-symbols-outlined">villa</span>
+            Independent Villas
+          </button>
+          <button 
+            type="button" 
+            class="preset-chip" 
+            [class.active]="selectedBudget() === 'under-50l'"
+            (click)="setBudget(selectedBudget() === 'under-50l' ? 'all' : 'under-50l')">
+            <span class="material-symbols-outlined">payments</span>
+            Under ₹50 Lakh
+          </button>
+          <button 
+            type="button" 
+            class="preset-chip" 
+            [class.active]="videoOnly()"
+            (click)="toggleVideoOnly()">
+            <span class="material-symbols-outlined">smart_display</span>
+            4K Video Tours
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Search Workspace (Two Column Layout) -->
+  <main class="max-w-content search-workspace">
+    <!-- LEFT SIDEBAR: Sticky Filters -->
+    <aside class="search-sidebar">
+      <div class="sidebar-card">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+          <div class="sidebar-title-group">
+            <span class="material-symbols-outlined sidebar-icon">tune</span>
+            <h3 class="sidebar-title">Filters</h3>
+            @if (activeFilterCount() > 0) {
+              <span class="active-badge">{{ activeFilterCount() }}</span>
+            }
+          </div>
+          @if (activeFilterCount() > 0) {
+            <button type="button" class="btn-reset-filters" (click)="resetAllFilters()">
+              Clear All
+            </button>
+          }
+        </div>
+
+        <div class="sidebar-scrollable">
+          <!-- 1. Metro Jurisdiction -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">location_city</span>
+              <span>Metro Jurisdiction</span>
+            </label>
+            <div class="chips-stack">
+              @for (c of cities; track c.value) {
+                <button 
+                  type="button" 
+                  class="choice-chip"
+                  [class.selected]="selectedCity() === c.value"
+                  (click)="setCity(c.value)">
+                  <span class="material-symbols-outlined chip-icon">{{ c.icon }}</span>
+                  <span>{{ c.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 2. Asset Class / Property Type -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">category</span>
+              <span>Property Class</span>
+            </label>
+            <div class="chips-stack">
+              @for (t of propertyTypes; track t.value) {
+                <button 
+                  type="button" 
+                  class="choice-chip"
+                  [class.selected]="selectedType() === t.value"
+                  (click)="setType(t.value)">
+                  <span class="material-symbols-outlined chip-icon">{{ t.icon }}</span>
+                  <span>{{ t.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 3. Budget Bracket -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">payments</span>
+              <span>Budget Bracket</span>
+            </label>
+            <div class="budget-grid">
+              @for (b of budgetOptions; track b.value) {
+                <button 
+                  type="button" 
+                  class="budget-pill"
+                  [class.selected]="selectedBudget() === b.value"
+                  (click)="setBudget(b.value)">
+                  {{ b.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 4. Configuration (BHK / Plots) -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">bed</span>
+              <span>Configuration / BHK</span>
+            </label>
+            <div class="bhk-grid">
+              @for (bhk of bhkOptions; track bhk.value) {
+                <button 
+                  type="button" 
+                  class="bhk-pill"
+                  [class.selected]="selectedBhk() === bhk.value"
+                  (click)="setBhk(bhk.value)">
+                  {{ bhk.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 5. Verification & Regulatory Badges -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">verified</span>
+              <span>Verified Title &amp; SRO</span>
+            </label>
+            <div class="toggle-list">
+              <label class="toggle-item" (click)="toggleRera()">
+                <div class="custom-checkbox" [class.checked]="reraOnly()">
+                  @if (reraOnly()) {
+                    <span class="material-symbols-outlined check-icon">check</span>
+                  }
+                </div>
+                <div class="toggle-text">
+                  <span class="toggle-title">RERA Approved</span>
+                  <span class="toggle-sub">State RERA sanctioned dossiers</span>
+                </div>
+              </label>
+
+              <label class="toggle-item" (click)="toggleCmda()">
+                <div class="custom-checkbox" [class.checked]="cmdaOnly()">
+                  @if (cmdaOnly()) {
+                    <span class="material-symbols-outlined check-icon">check</span>
+                  }
+                </div>
+                <div class="toggle-text">
+                  <span class="toggle-title">CMDA / DTCP Sanctioned</span>
+                  <span class="toggle-sub">Sanctioned land layouts &amp; patta</span>
+                </div>
+              </label>
+
+              <label class="toggle-item" (click)="toggleZeroBrokerage()">
+                <div class="custom-checkbox" [class.checked]="zeroBrokerageOnly()">
+                  @if (zeroBrokerageOnly()) {
+                    <span class="material-symbols-outlined check-icon">check</span>
+                  }
+                </div>
+                <div class="toggle-text">
+                  <span class="toggle-title">Zero Brokerage</span>
+                  <span class="toggle-sub">100% direct owner listings</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 6. Media Availability -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">play_circle</span>
+              <span>Media &amp; Virtual Tours</span>
+            </label>
+            <div class="toggle-list">
+              <label class="toggle-item" (click)="toggleVideoOnly()">
+                <div class="custom-checkbox" [class.checked]="videoOnly()">
+                  @if (videoOnly()) {
+                    <span class="material-symbols-outlined check-icon">check</span>
+                  }
+                </div>
+                <div class="toggle-text">
+                  <span class="toggle-title">4K Walkthrough Video</span>
+                  <span class="toggle-sub">Full architectural video tour</span>
+                </div>
+              </label>
+
+              <label class="toggle-item" (click)="toggleDroneOnly()">
+                <div class="custom-checkbox" [class.checked]="droneOnly()">
+                  @if (droneOnly()) {
+                    <span class="material-symbols-outlined check-icon">check</span>
+                  }
+                </div>
+                <div class="toggle-text">
+                  <span class="toggle-title">Drone Cadastral Survey</span>
+                  <span class="toggle-sub">Aerial boundary scan footage</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 7. Ready / Possession -->
+          <div class="filter-group">
+            <label class="filter-group-label">
+              <span class="material-symbols-outlined label-icon">key</span>
+              <span>Possession Status</span>
+            </label>
+            <label class="toggle-item" (click)="toggleReadyToMove()">
+              <div class="custom-checkbox" [class.checked]="readyToMoveOnly()">
+                @if (readyToMoveOnly()) {
+                  <span class="material-symbols-outlined check-icon">check</span>
+                }
+              </div>
+              <div class="toggle-text">
+                <span class="toggle-title">Ready to Move / Patta Clear</span>
+                <span class="toggle-sub">Immediate registration available</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT CONTENT: Results Grid & Controls -->
+    <section class="search-results-section">
+      <!-- Results Controls Row -->
+      <div class="results-controls-row">
+        <!-- Results Counter & Active Pills -->
+        <div class="controls-left">
+          <h1 class="results-heading">
+            <span class="results-count">{{ filteredProperties().length }}</span>
+            <span class="results-label">Properties &amp; Land Found</span>
+          </h1>
+
+          <!-- Active Filter Tags -->
+          <div class="active-tags-row">
+            @if (selectedCity() !== 'all') {
+              <div class="active-tag-pill">
+                <span>City: {{ selectedCity() | uppercase }}</span>
+                <button type="button" (click)="setCity('all')">&times;</button>
+              </div>
+            }
+            @if (selectedType() !== 'all') {
+              <div class="active-tag-pill">
+                <span>Type: {{ selectedType() }}</span>
+                <button type="button" (click)="setType('all')">&times;</button>
+              </div>
+            }
+            @if (selectedBudget() !== 'all') {
+              <div class="active-tag-pill">
+                <span>Budget: {{ selectedBudget() }}</span>
+                <button type="button" (click)="setBudget('all')">&times;</button>
+              </div>
+            }
+            @if (selectedBhk() !== 'all') {
+              <div class="active-tag-pill">
+                <span>{{ selectedBhk() === 'plot' ? 'Plots Only' : selectedBhk() + ' BHK' }}</span>
+                <button type="button" (click)="setBhk('all')">&times;</button>
+              </div>
+            }
+            @if (videoOnly()) {
+              <div class="active-tag-pill">
+                <span>4K Video</span>
+                <button type="button" (click)="toggleVideoOnly()">&times;</button>
+              </div>
+            }
+            @if (droneOnly()) {
+              <div class="active-tag-pill">
+                <span>Drone Survey</span>
+                <button type="button" (click)="toggleDroneOnly()">&times;</button>
+              </div>
+            }
+            @if (reraOnly()) {
+              <div class="active-tag-pill">
+                <span>RERA</span>
+                <button type="button" (click)="toggleRera()">&times;</button>
+              </div>
+            }
+            @if (cmdaOnly()) {
+              <div class="active-tag-pill">
+                <span>CMDA/DTCP</span>
+                <button type="button" (click)="toggleCmda()">&times;</button>
+              </div>
+            }
+            @if (readyToMoveOnly()) {
+              <div class="active-tag-pill">
+                <span>Ready to Move</span>
+                <button type="button" (click)="toggleReadyToMove()">&times;</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Controls Right: Sort & View Toggle -->
+        <div class="controls-right">
+          <!-- Sort Dropdown -->
+          <div class="sort-selector-wrapper">
+            <label class="sort-label" for="sort-dropdown">Sort by:</label>
+            <div class="sort-select-box">
+              <select 
+                id="sort-dropdown"
+                class="sort-select" 
+                [ngModel]="sortBy()" 
+                (ngModelChange)="setSort($event)">
+                <option value="featured">Featured / Curated</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rate-asc">Rate / sq.ft: Low to High</option>
+                <option value="rate-desc">Rate / sq.ft: High to Low</option>
+              </select>
+              <span class="material-symbols-outlined sort-arrow">expand_more</span>
+            </div>
+          </div>
+
+          <!-- View Mode Toggle -->
+          <div class="view-mode-toggle" role="group" aria-label="View Mode">
+            <button 
+              type="button" 
+              class="btn-view-mode" 
+              [class.active]="viewMode() === 'grid'"
+              (click)="setViewMode('grid')"
+              title="Grid View">
+              <span class="material-symbols-outlined">grid_view</span>
+            </button>
+            <button 
+              type="button" 
+              class="btn-view-mode" 
+              [class.active]="viewMode() === 'list'"
+              (click)="setViewMode('list')"
+              title="Compact List View">
+              <span class="material-symbols-outlined">view_list</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUEST VIEW LIMIT ALERT IN SEARCH -->
+      @if (authService.hasReachedGuestLimit()) {
+        <div class="search-guest-alert">
+          <div class="alert-left-content">
+            <div class="alert-icon-wrap">
+              <span class="material-symbols-outlined alert-lock-icon">lock</span>
+            </div>
+            <div class="alert-text-block">
+              <strong class="alert-bold">1 Free Guest Preview Used</strong>
+              <p class="alert-desc">You have explored 1 free property dossier. Please sign in to unlock all verified property blueprints, floor plans, and seller contacts.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-search-signin" (click)="authService.openOtpModal('guest_limit')">
+            <span class="material-symbols-outlined">login</span>
+            <span>Sign In to Unlock All</span>
+          </button>
+        </div>
+      }
+
+      <!-- RESULTS CONTAINER -->
+      @if (filteredProperties().length > 0) {
+        <!-- 1. GRID VIEW -->
+        @if (viewMode() === 'grid') {
+          <div class="results-grid">
+            @for (prop of filteredProperties(); track prop.id) {
+              <app-property-card [property]="prop" />
+            }
+          </div>
+        }
+
+        <!-- 2. COMPACT LIST DOSSIER VIEW -->
+        @if (viewMode() === 'list') {
+          <div class="results-list">
+            @for (prop of filteredProperties(); track prop.id) {
+              <article class="list-dossier-card">
+                <!-- Thumbnail with Badges (Links to Details) -->
+                <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
+                  <img 
+                    [src]="prop.imageUrl" 
+                    [alt]="prop.title" 
+                    (error)="onImgError($event)"
+                    class="list-thumb-img">
+                  <span class="list-photo-count">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    {{ prop.freePhotos?.length || 0 }} Photos
+                  </span>
+                  @if (prop.isMediaUnlocked) {
+                    <span class="list-unlocked-badge">
+                      <span class="material-symbols-outlined">smart_display</span>
+                      4K Unlocked
+                    </span>
+                  }
+                </div>
+
+                <!-- Info Section -->
+                <div class="list-info">
+                  <div class="list-meta-top">
+                    <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
+                    <span class="badge-tag-sm">{{ prop.badges?.specialTag || prop.badges?.brokerage || '0% Brokerage' }}</span>
+                    <span class="badge-pts-sm">{{ prop.mediaPoints || 2 }} Pts 4K</span>
+                    @if (!authService.canViewProperty(prop.id)) {
+                      <span class="badge-tag-sm" style="background: linear-gradient(135deg, #78350f, #451a03); color: #fef3c7; border: 1px solid #f59e0b; font-weight: 800;">
+                        🔒 Sign In to View
+                      </span>
+                    }
+                  </div>
+
+                  <h3 class="list-title">
+                    <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
+                  </h3>
+
+                  <div class="list-locality">
+                    <span class="material-symbols-outlined text-red">location_on</span>
+                    <span>{{ prop.locality }}, {{ prop.city }}</span>
+                  </div>
+
+                  <div class="list-highlights-row">
+                    <span class="dimension-tag">{{ prop.sqft }}</span>
+                    <span class="dot-sep">•</span>
+                    <span>{{ prop.facingOrView }}</span>
+                    <span class="dot-sep">•</span>
+                    @for (hl of prop.highlights; track $index; let last = $last) {
+                      <span class="hl-item">{{ hl }}</span>
+                      @if (!last) { <span class="dot-sep">•</span> }
+                    }
+                  </div>
+                </div>
+
+                <!-- Price & Action Section -->
+                <div class="list-price-action">
+                  <div class="list-price-block">
+                    <div class="list-main-price">{{ prop.price }}</div>
+                    <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+                  </div>
+
+                  <div class="list-actions-stack">
+                    <button 
+                      type="button" 
+                      class="btn-list-media" 
+                      [class.unlocked]="prop.isMediaUnlocked"
+                      (click)="propertyService.openMediaModal(prop, prop.isMediaUnlocked ? 'premium' : 'free')">
+                      <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'photo_library' }}</span>
+                      <span>{{ prop.isMediaUnlocked ? 'Watch 4K Tour' : 'Photos & 4K' }}</span>
+                    </button>
+
+                    <div class="list-secondary-actions">
+                      <a 
+                        class="btn-list-wa" 
+                        [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" 
+                        target="_blank" 
+                        rel="noopener">
+                        <span class="material-symbols-outlined">chat</span>
+                        <span>Concierge</span>
+                      </a>
+
+                      <button 
+                        type="button" 
+                        class="btn-list-shortlist"
+                        [class.shortlisted]="prop.isShortlisted"
+                        (click)="propertyService.toggleShortlist(prop.id)"
+                        [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                        <span class="material-symbols-outlined">
+                          {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      } @else {
+        <!-- 3. EMPTY STATE -->
+        <div class="empty-state-card">
+          <div class="empty-icon-circle">
+            <span class="material-symbols-outlined">search_off</span>
+          </div>
+          <h2 class="empty-title">No Matching Cadastral Records Found</h2>
+          <p class="empty-desc">
+            We couldn't find any verified deeds matching your current filter criteria. Try adjusting your budget, selecting all metros, or resetting active filters.
+          </p>
+
+          <div class="empty-actions">
+            <button type="button" class="btn-empty-reset" (click)="resetAllFilters()">
+              <span class="material-symbols-outlined">restart_alt</span>
+              <span>Reset All Filters</span>
+            </button>
+          </div>
+
+          <!-- Suggested Quick Searches -->
+          <div class="empty-suggestions">
+            <span class="suggestions-label">Try searching for:</span>
+            <div class="suggestion-chips">
+              <button type="button" class="sugg-chip" (click)="setType('Gated CMDA Plots'); setCity('chennai')">
+                CMDA Plots in Chennai
+              </button>
+              <button type="button" class="sugg-chip" (click)="setType('Apartments & Flats'); setCity('bengaluru')">
+                Flats in Bengaluru
+              </button>
+              <button type="button" class="sugg-chip" (click)="setType('Independent Villas'); setCity('hyderabad')">
+                Villas in Hyderabad
+              </button>
+              <button type="button" class="sugg-chip" (click)="setBudget('under-50l')">
+                Properties under ₹50 Lakh
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  </main>
+
+  <!-- Comprehensive Footer -->
+  <app-footer />
+
+  <!-- Global Modals & Notifications -->
+  <app-property-media-modal />
+  <app-topup-dialog />
+  <app-toast />
+</div>

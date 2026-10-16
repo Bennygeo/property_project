@@ -1,0 +1,846 @@
+<div class="property-details-wrapper">
+  <!-- Top Concierge Bar -->
+  <app-top-concierge-bar />
+
+  <!-- Navigation Header -->
+  <app-header />
+
+  @if (property(); as prop) {
+    <!-- Sticky Navigation Sub-Bar (State-Preserving Back Button + Breadcrumbs + Share) -->
+    <nav class="details-nav-subbar">
+      <div class="max-w-content nav-subbar-inner">
+        <!-- Back Button with Dynamic Label -->
+        <button type="button" class="btn-back-state" (click)="goBack()">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Back to Search Registry</span>
+        </button>
+
+        <!-- Breadcrumbs -->
+        <div class="details-breadcrumbs">
+          <a routerLink="/" class="crumb-link">Home</a>
+          <span class="crumb-sep">/</span>
+          <a [routerLink]="propertyService.lastSearchUrl()" class="crumb-link">Search Registry</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">{{ prop.title }}</span>
+        </div>
+
+        <!-- Right Quick Actions -->
+        <div class="subbar-actions">
+          <button 
+            type="button" 
+            class="btn-subbar-action" 
+            (click)="shareProperty()" 
+            title="Share Property Dossier">
+            <span class="material-symbols-outlined">share</span>
+            <span class="action-btn-text">Share</span>
+          </button>
+
+          <button 
+            type="button" 
+            class="btn-action-round" 
+            [class.shortlisted]="prop.isShortlisted"
+            (click)="propertyService.toggleShortlist(prop.id)"
+            [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+            <span class="material-symbols-outlined">
+              {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 1. GUEST PREVIEW BANNER (Shown for 1 allowed free guest view) -->
+    @if (isFirstGuestPreview()) {
+      <div class="guest-preview-banner">
+        <div class="max-w-content preview-banner-inner">
+          <div class="banner-pill-left">
+            <span class="preview-badge-chip">FREE GUEST PREVIEW (1/1)</span>
+            <span class="preview-banner-text">
+              You are exploring this property dossier as a guest. Sign in anytime to unlock unlimited verified listings.
+            </span>
+          </div>
+          <button type="button" class="btn-banner-login" (click)="promptLogin()">
+            <span class="material-symbols-outlined">login</span>
+            <span>Sign In for Unlimited Access</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- 2. GUEST VIEWING BLOCKED SECTION (Triggered on subsequent views) -->
+    @if (isBlockedForGuest()) {
+      <section class="guest-blocked-section">
+        <div class="max-w-content">
+          <div class="blocked-card-wrapper">
+            <!-- Glowing Lock Emblem -->
+            <div class="blocked-lock-badge">
+              <span class="material-symbols-outlined">lock</span>
+            </div>
+
+            <div class="blocked-header-pill">
+              <span class="material-symbols-outlined">shield_person</span>
+              <span>1 FREE GUEST PREVIEW USED</span>
+            </div>
+
+            <h1 class="blocked-headline">Sign In to Continue Exploring Verified Properties</h1>
+            
+            <p class="blocked-subheadline">
+              You have already viewed <strong>1 free property dossier</strong> as a guest. To protect verified architectural blueprints, CMDA/DTCP legal records, and direct seller contacts, please sign in or register your free buyer account to continue.
+            </p>
+
+            <!-- Locked Property Teaser Card -->
+            <div class="locked-property-card">
+              <div class="locked-card-thumb" [style.background-image]="'url(' + prop.imageUrl + ')'">
+                <div class="locked-thumb-overlay">
+                  <span class="material-symbols-outlined">lock</span>
+                </div>
+              </div>
+              <div class="locked-card-info">
+                <span class="locked-prop-type">{{ prop.propertyType }}</span>
+                <h3 class="locked-prop-title">{{ prop.title }}</h3>
+                <p class="locked-prop-meta">
+                  <span class="material-symbols-outlined text-red">location_on</span>
+                  <span>{{ prop.locality }}, {{ prop.city }} • {{ prop.price }}</span>
+                </p>
+                <div class="locked-status-pill">
+                  <span class="material-symbols-outlined text-amber">verified</span>
+                  <span>Full Architectural Dossier &amp; Seller Contact Locked</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Value Proposition Grid -->
+            <div class="blocked-benefits-grid">
+              <div class="benefit-box">
+                <div class="benefit-icon-box text-emerald">
+                  <span class="material-symbols-outlined">savings</span>
+                </div>
+                <div>
+                  <h4 class="benefit-title">100% Free &amp; Zero Brokerage</h4>
+                  <p class="benefit-desc">No buyer commission or subscription fee. Direct owner and builder verified listings.</p>
+                </div>
+              </div>
+
+              <div class="benefit-box">
+                <div class="benefit-icon-box text-blue">
+                  <span class="material-symbols-outlined">architecture</span>
+                </div>
+                <div>
+                  <h4 class="benefit-title">Full Architectural Blueprints</h4>
+                  <p class="benefit-desc">Unlock CAD floor plans, sanction numbers, carpet area specs, and approvals.</p>
+                </div>
+              </div>
+
+              <div class="benefit-box">
+                <div class="benefit-icon-box text-amber">
+                  <span class="material-symbols-outlined">smart_display</span>
+                </div>
+                <div>
+                  <h4 class="benefit-title">Complimentary Media Points</h4>
+                  <p class="benefit-desc">Receive free Media Points to stream 4K video walkthroughs and 360° drone surveys.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Call to Actions -->
+            <div class="blocked-actions-row">
+              <button type="button" class="btn-primary-sign-in" (click)="promptLogin()">
+                <span class="material-symbols-outlined">login</span>
+                <span>Sign In with Mobile OTP</span>
+              </button>
+
+              <button type="button" class="btn-instant-demo-unlock" (click)="quickLoginAndUnlock()">
+                <span class="material-symbols-outlined">bolt</span>
+                <span>⚡ 1-Click Instant Demo Login</span>
+              </button>
+
+              <button type="button" class="btn-back-registry" (click)="goBack()">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Back to Search Registry</span>
+              </button>
+            </div>
+
+            <div class="blocked-security-tagline">
+              <span class="material-symbols-outlined text-emerald">verified_user</span>
+              <span>Secure mobile verification • No password needed • Zero promotional spam</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    } @else {
+      <!-- 3. UNLOCKED: CLEAN, STRONG HANU REDDY REALTY STYLE DETAIL SHOWCASE -->
+      <div class="max-w-content hanu-property-page">
+
+        <!-- HEADER SUMMARY BLOCK -->
+        <header class="hanu-header-block">
+          <div class="hanu-header-top">
+            <div class="hanu-ref-badges">
+              <span class="hanu-ref-id">REF #{{ prop.id | uppercase }}</span>
+              <span class="hanu-badge-type">{{ prop.propertyType }}</span>
+              <span class="hanu-badge-rera">
+                <span class="material-symbols-outlined">verified</span>
+                {{ prop.badges.rera }}
+              </span>
+              <span class="hanu-badge-nobroker">0% Brokerage</span>
+            </div>
+
+            <div class="hanu-header-price">
+              <span class="hanu-main-price">{{ prop.price }}</span>
+              <span class="hanu-unit-price">{{ prop.pricePerSqFt }}</span>
+            </div>
+          </div>
+
+          <h1 class="hanu-title">{{ prop.title }}</h1>
+
+          <div class="hanu-loc-row">
+            <span class="material-symbols-outlined text-red">location_on</span>
+            <span class="hanu-loc-text">{{ prop.locality }}, {{ prop.city }}</span>
+            <span class="hanu-dot">•</span>
+            <span>{{ prop.facingOrView }}</span>
+            <span class="hanu-dot">•</span>
+            <span>{{ prop.sqft }}</span>
+            @if (prop.bhkBadge && !prop.propertyType.includes('Plots')) {
+              <span class="hanu-dot">•</span>
+              <span>{{ prop.bhkBadge }}</span>
+            }
+          </div>
+        </header>
+
+        <!-- TWO-COLUMN WORKSPACE: MAIN CONTENT + STICKY SIDEBAR -->
+        <div class="hanu-two-col-layout">
+          
+          <!-- LEFT / MAIN CONTENT (Simple & Strong) -->
+          <div class="hanu-main-column">
+
+            <!-- MEDIA STAGE (Photo Gallery, 4K Walkthrough, 360° Drone Survey) -->
+            <section class="hanu-media-card">
+              <!-- Media Mode Selector Ribbon -->
+              <div class="hanu-media-tabs">
+                <button 
+                  type="button" 
+                  class="hanu-tab-btn" 
+                  [class.active]="activeMediaTab() === 'photos'"
+                  (click)="setMediaTab('photos')">
+                  <span class="material-symbols-outlined">photo_library</span>
+                  <span>Photos ({{ prop.freePhotos.length }})</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  class="hanu-tab-btn" 
+                  [class.active]="activeMediaTab() === 'walkthrough'"
+                  [class.unlocked]="prop.isMediaUnlocked"
+                  (click)="setMediaTab('walkthrough')">
+                  <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'lock' }}</span>
+                  <span>4K Walkthrough</span>
+                  @if (!prop.isMediaUnlocked) {
+                    <span class="pts-badge">{{ prop.mediaPoints }} Pts</span>
+                  }
+                </button>
+
+                <button 
+                  type="button" 
+                  class="hanu-tab-btn" 
+                  [class.active]="activeMediaTab() === 'drone'"
+                  [class.unlocked]="prop.isMediaUnlocked"
+                  (click)="setMediaTab('drone')">
+                  <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'flight' : 'lock' }}</span>
+                  <span>Drone Aerial Survey</span>
+                  @if (!prop.isMediaUnlocked) {
+                    <span class="pts-badge">{{ prop.mediaPoints }} Pts</span>
+                  }
+                </button>
+              </div>
+
+              <!-- VIEWPORTS -->
+              <div class="hanu-stage-viewport">
+                <!-- 1. PHOTOS STAGE -->
+                @if (activeMediaTab() === 'photos') {
+                  <div class="hanu-photo-frame">
+                    <img 
+                      [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" 
+                      [alt]="prop.title" 
+                      (error)="onImgError($event)"
+                      (click)="openFullscreen()"
+                      class="hanu-main-img"
+                      title="Click to view fullscreen">
+
+                    <!-- Arrows -->
+                    @if (prop.freePhotos.length > 1) {
+                      <button type="button" class="hanu-arrow arrow-prev" (click)="prevPhoto()" aria-label="Previous">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                      </button>
+                      <button type="button" class="hanu-arrow arrow-next" (click)="nextPhoto()" aria-label="Next">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                      </button>
+                    }
+
+                    <div class="hanu-photo-meta">
+                      <span class="hanu-photo-counter">{{ currentPhotoIdx() + 1 }} / {{ prop.freePhotos.length }}</span>
+                      <button type="button" class="hanu-btn-fs" (click)="openFullscreen()">
+                        <span class="material-symbols-outlined">fullscreen</span>
+                        <span>View Fullscreen</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Thumbnails -->
+                  <div class="hanu-thumb-strip">
+                    @for (photo of prop.freePhotos; track $index) {
+                      <div 
+                        class="hanu-thumb-box" 
+                        [class.active]="$index === currentPhotoIdx()"
+                        (click)="selectPhoto($index)">
+                        <img [src]="photo" [alt]="'Photo ' + ($index + 1)" (error)="onImgError($event)">
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- 2. 4K WALKTHROUGH VIDEO -->
+                @if (activeMediaTab() === 'walkthrough') {
+                  <div class="hanu-video-frame">
+                    @if (prop.isMediaUnlocked && getWalkthroughVideo(); as video) {
+                      <video controls autoplay playsinline class="hanu-html5-video" [src]="video.url" [poster]="video.thumbnailUrl"></video>
+                    } @else {
+                      <div class="hanu-locked-media">
+                        <img [src]="prop.imageUrl" alt="Locked video preview" class="hanu-locked-bg">
+                        <div class="hanu-lock-overlay">
+                          <span class="material-symbols-outlined lock-icon-big">lock</span>
+                          <h3>4K Ultra-HD Interior Walkthrough</h3>
+                          <p>Unlock high-definition cinematic virtual tour of every room and balcony.</p>
+                          <div class="lock-btn-group">
+                            <button type="button" class="btn-unlock-pts" (click)="unlockMedia()">
+                              <span class="material-symbols-outlined">smart_display</span>
+                              <span>Unlock 4K Tour ({{ prop.mediaPoints }} Points)</span>
+                            </button>
+                            @if (walletService.balance() < prop.mediaPoints) {
+                              <a routerLink="/wallet" class="btn-topup-link">Top Up Points (Balance: {{ walletService.balance() }})</a>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- 3. DRONE SURVEY -->
+                @if (activeMediaTab() === 'drone') {
+                  <div class="hanu-video-frame">
+                    @if (prop.isMediaUnlocked && getDroneVideo(); as drone) {
+                      <video controls autoplay playsinline class="hanu-html5-video" [src]="drone.url" [poster]="drone.thumbnailUrl"></video>
+                    } @else {
+                      <div class="hanu-locked-media">
+                        <img [src]="prop.imageUrl" alt="Locked drone preview" class="hanu-locked-bg">
+                        <div class="hanu-lock-overlay">
+                          <span class="material-symbols-outlined lock-icon-big">flight</span>
+                          <h3>360° Drone Aerial Survey</h3>
+                          <p>High-altitude topological scan verifying boundaries, approach roads, and neighborhood access.</p>
+                          <div class="lock-btn-group">
+                            <button type="button" class="btn-unlock-pts" (click)="unlockMedia()">
+                              <span class="material-symbols-outlined">flight_takeoff</span>
+                              <span>Unlock Drone Survey ({{ prop.mediaPoints }} Points)</span>
+                            </button>
+                            @if (walletService.balance() < prop.mediaPoints) {
+                              <a routerLink="/wallet" class="btn-topup-link">Top Up Points (Balance: {{ walletService.balance() }})</a>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+
+            <!-- THE HANU REDDY CORE: KEY PROPERTY DETAILS / SPECIFICATIONS TABLE -->
+            <section class="hanu-card">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">real_estate_agent</span>
+                <h2>Property Details &amp; Specifications</h2>
+              </div>
+
+              <div class="hanu-specs-grid">
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Property Code / ID</span>
+                  <span class="spec-value font-mono font-bold">#{{ prop.id | uppercase }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Property Category</span>
+                  <span class="spec-value">{{ prop.propertyType }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Total Extent / Area</span>
+                  <span class="spec-value font-bold text-slate-900">{{ prop.sqft }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Valuation Rate</span>
+                  <span class="spec-value font-bold text-red">{{ prop.pricePerSqFt }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Facing Direction</span>
+                  <span class="spec-value">{{ prop.facingOrView }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Configuration</span>
+                  <span class="spec-value">{{ prop.bhkBadge }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">RERA Registration</span>
+                  <span class="spec-value">{{ prop.cadastralAudit?.reraRegNo || prop.badges.rera }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Possession Status</span>
+                  <span class="spec-value text-emerald font-semibold">{{ prop.projectStatus || prop.possessionDate || 'Ready for Possession' }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Title Deed &amp; Encumbrance</span>
+                  <span class="spec-value">Clear 30-Yr Nil Encumbrance (Direct Freehold)</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Frontage Road Width</span>
+                  <span class="spec-value">{{ prop.plotDetails?.frontageRoadWidth || '60 Feet Wide Bitumen Road' }}</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Water &amp; Power</span>
+                  <span class="spec-value">3-Phase Commercial EB + Borewell &amp; Metro Water</span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Brokerage Fee</span>
+                  <span class="spec-value text-emerald font-bold">0% (Zero Brokerage)</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- PROPERTY OVERVIEW & HIGHLIGHTS -->
+            <section class="hanu-card">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">description</span>
+                <h2>Overview &amp; Highlights</h2>
+              </div>
+
+              <div class="hanu-overview-text">
+                <p>
+                  {{ prop.developer?.aboutText || (prop.title + ' is a verified property situated in the highly coveted corridor of ' + prop.locality + ', ' + prop.city + '. Featuring excellent frontage, direct road access, and clear legal title documents, this asset represents a prime opportunity for investors, home buyers, and commercial operators seeking high-growth real estate.') }}
+                </p>
+              </div>
+
+              @if (prop.highlights && prop.highlights.length > 0) {
+                <div class="hanu-highlights-block">
+                  <h3 class="highlights-heading">Key Advantages:</h3>
+                  <div class="highlights-grid">
+                    @for (hl of prop.highlights; track $index) {
+                      <div class="highlight-chip">
+                        <span class="material-symbols-outlined text-emerald">check_circle</span>
+                        <span>{{ hl }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </section>
+
+            <!-- AMENITIES (Simple & Clean Grid) -->
+            @if (prop.amenitiesList && prop.amenitiesList.length > 0) {
+              <section class="hanu-card">
+                <div class="hanu-card-header">
+                  <span class="material-symbols-outlined text-red">stars</span>
+                  <h2>Amenities &amp; Infrastructure</h2>
+                </div>
+
+                <div class="hanu-amenities-grid">
+                  @for (amenity of prop.amenitiesList; track amenity.name) {
+                    <div class="amenity-item-card">
+                      <span class="material-symbols-outlined amenity-icon">{{ amenity.icon || 'verified' }}</span>
+                      <span class="amenity-name">{{ amenity.name }}</span>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+            <!-- FLOOR PLAN / LAYOUT SCHEMATIC (Simple preview & download) -->
+            @if (prop.floorPlans && prop.floorPlans.length > 0) {
+              <section class="hanu-card">
+                <div class="hanu-card-header">
+                  <span class="material-symbols-outlined text-red">architecture</span>
+                  <h2>Floor Plan &amp; Layout</h2>
+                </div>
+
+                @if (prop.floorPlans[selectedFloorPlanIndex()]; as plan) {
+                  <div class="hanu-fp-box">
+                    <div class="hanu-fp-img-wrap" (click)="openFloorPlanModal(plan)">
+                      <img [src]="plan.imageUrl" [alt]="plan.name" (error)="onImgError($event)">
+                      <div class="fp-hover-overlay">
+                        <span class="material-symbols-outlined">zoom_in</span>
+                        <span>Click to Enlarge</span>
+                      </div>
+                    </div>
+
+                    <div class="hanu-fp-info">
+                      <div>
+                        <h4 class="fp-title">{{ plan.name }}</h4>
+                        <p class="fp-meta">{{ plan.superArea }} Super Area • {{ plan.carpetArea }} Carpet Area • {{ plan.priceEstimate }}</p>
+                      </div>
+
+                      <div class="fp-actions">
+                        <button type="button" class="btn-download-fp" (click)="downloadFloorPlan(plan)">
+                          <span class="material-symbols-outlined">download</span>
+                          <span>Download Blueprint PDF</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </section>
+            }
+
+            <!-- INTERACTIVE 8-PLOT PARTITIONED MASTERPLAN & 3D PLOTEX VIEWER -->
+            <section class="masterplan-section-container" id="site-layout">
+              <div class="masterplan-tab-switch">
+                <button 
+                  type="button" 
+                  class="tab-switch-btn" 
+                  [class.active]="plotViewMode() === 'plotex3d'"
+                  (click)="plotViewMode.set('plotex3d')">
+                  <span class="material-symbols-outlined">view_in_ar</span>
+                  <span>Plotex 3D WebGL (360° Orbit)</span>
+                  <span class="pulse-chip">3D</span>
+                </button>
+                <button 
+                  type="button" 
+                  class="tab-switch-btn" 
+                  [class.active]="plotViewMode() === 'plan2d'"
+                  (click)="plotViewMode.set('plan2d')">
+                  <span class="material-symbols-outlined">map</span>
+                  <span>Aerial Masterplan View</span>
+                </button>
+              </div>
+
+              @if (plotViewMode() === 'plotex3d') {
+                <app-plotex-viewer 
+                  [propertyTitle]="prop.title" 
+                  [locality]="prop.locality"
+                  [customPlots]="prop.subdividedPlots" />
+              } @else {
+                <app-interactive-plot-layout 
+                  [propertyTitle]="prop.title" 
+                  [locality]="prop.locality"
+                  [customPlots]="prop.subdividedPlots" />
+              }
+            </section>
+
+            <!-- INTERACTIVE EMI CALCULATOR (KEPT AS REQUESTED) -->
+            <section class="hanu-card" id="emi-calculator">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">calculate</span>
+                <div>
+                  <h2>Home Loan &amp; EMI Calculator</h2>
+                  <p class="hanu-card-subtitle">Estimate monthly mortgage commitments based on current bank interest rates.</p>
+                </div>
+              </div>
+
+              <div class="hanu-emi-calculator">
+                <div class="emi-sliders-col">
+                  <!-- Loan Amount Slider -->
+                  <div class="slider-group">
+                    <div class="slider-header-row">
+                      <label for="emi-loan-amount">Loan Amount (₹)</label>
+                      <span class="slider-val text-red">₹{{ (loanAmount() / 100000).toFixed(1) }} Lakhs</span>
+                    </div>
+                    <input 
+                      id="emi-loan-amount"
+                      type="range" 
+                      min="500000" 
+                      max="100000000" 
+                      step="500000" 
+                      [value]="loanAmount()" 
+                      (input)="onLoanAmountChange($event)"
+                      class="custom-slider">
+                    <div class="slider-scale">
+                      <span>₹5 Lakhs</span>
+                      <span>₹5 Cr</span>
+                      <span>₹10 Cr</span>
+                    </div>
+                  </div>
+
+                  <!-- Tenure Slider -->
+                  <div class="slider-group">
+                    <div class="slider-header-row">
+                      <label for="emi-tenure">Loan Tenure</label>
+                      <span class="slider-val">{{ loanTenureYears() }} Years</span>
+                    </div>
+                    <input 
+                      id="emi-tenure"
+                      type="range" 
+                      min="5" 
+                      max="30" 
+                      step="1" 
+                      [value]="loanTenureYears()" 
+                      (input)="onTenureChange($event)"
+                      class="custom-slider">
+                    <div class="slider-scale">
+                      <span>5 Years</span>
+                      <span>15 Years</span>
+                      <span>30 Years</span>
+                    </div>
+                  </div>
+
+                  <!-- Interest Rate Slider -->
+                  <div class="slider-group">
+                    <div class="slider-header-row">
+                      <label for="emi-interest">Interest Rate (% p.a.)</label>
+                      <span class="slider-val">{{ interestRate() }}%</span>
+                    </div>
+                    <input 
+                      id="emi-interest"
+                      type="range" 
+                      min="7.0" 
+                      max="14.0" 
+                      step="0.1" 
+                      [value]="interestRate()" 
+                      (input)="onInterestRateChange($event)"
+                      class="custom-slider">
+                    <div class="slider-scale">
+                      <span>7.0%</span>
+                      <span>9.5%</span>
+                      <span>14.0%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- EMI Result Card -->
+                <div class="emi-result-col">
+                  <div class="emi-result-box">
+                    <span class="emi-box-title">Estimated Monthly EMI</span>
+                    <div class="emi-number-display">₹{{ computedMonthlyEmi().toLocaleString('en-IN') }}<span class="per-mo">/mo</span></div>
+                    
+                    <div class="emi-breakdown-list">
+                      <div class="breakdown-item">
+                        <span>Principal Amount:</span>
+                        <strong>₹{{ loanAmount().toLocaleString('en-IN') }}</strong>
+                      </div>
+                      <div class="breakdown-item">
+                        <span>Total Interest Payable:</span>
+                        <strong class="text-amber">₹{{ computedTotalInterest().toLocaleString('en-IN') }}</strong>
+                      </div>
+                      <div class="breakdown-item total-item">
+                        <span>Total Amount Payable:</span>
+                        <strong>₹{{ computedTotalPayment().toLocaleString('en-IN') }}</strong>
+                      </div>
+                    </div>
+
+                    <button type="button" class="btn-emi-prequalify" (click)="scrollToSection('inquiry-box')">
+                      <span class="material-symbols-outlined">verified</span>
+                      <span>Apply with Pre-Approved Bank Partners</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
+          <aside class="hanu-sidebar-column" id="inquiry-box">
+            
+            <!-- REALTOR / CONCIERGE CARD -->
+            <div class="hanu-realtor-card">
+              <div class="realtor-profile-top">
+                <div class="realtor-avatar-circle">
+                  <span class="material-symbols-outlined">person_pin</span>
+                </div>
+                <div>
+                  <h3 class="realtor-name">Mannidam Property Concierge</h3>
+                  <p class="realtor-title">Verified Cadastral Real Estate Desk</p>
+                  <span class="realtor-badge">
+                    <span class="material-symbols-outlined">verified</span>
+                    Zero Brokerage Assured
+                  </span>
+                </div>
+              </div>
+
+              <!-- Quick Communication Action Buttons -->
+              <div class="realtor-contact-actions">
+                <a 
+                  class="btn-contact-wa" 
+                  [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Mannidam,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'" 
+                  target="_blank" 
+                  rel="noopener">
+                  <span class="material-symbols-outlined">chat</span>
+                  <span>WhatsApp</span>
+                </a>
+
+                <a class="btn-contact-call" href="tel:18004196266">
+                  <span class="material-symbols-outlined">call</span>
+                  <span>Call 1800-419-6266</span>
+                </a>
+              </div>
+
+              <div class="sidebar-divider"></div>
+
+              <!-- SCHEDULE SITE VISIT FORM -->
+              <form class="hanu-visit-form" (submit)="scheduleVisit($event)">
+                <h4 class="form-title">Schedule a Site Inspection</h4>
+                <p class="form-sub">Pick your preferred date to visit the property in person.</p>
+
+                <div class="form-group">
+                  <label for="visit-name">Your Full Name</label>
+                  <input 
+                    id="visit-name" 
+                    type="text" 
+                    class="hanu-form-input" 
+                    [value]="buyerName()"
+                    (input)="buyerName.set($any($event.target).value)" 
+                    placeholder="e.g. Anand Sundaram" 
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label for="visit-phone">Mobile Number</label>
+                  <input 
+                    id="visit-phone" 
+                    type="tel" 
+                    class="hanu-form-input" 
+                    [value]="buyerPhone()"
+                    (input)="buyerPhone.set($any($event.target).value)" 
+                    placeholder="+91 94441 00000" 
+                    required>
+                </div>
+
+                <div class="form-row-half">
+                  <div class="form-group">
+                    <label for="visit-date">Date</label>
+                    <input 
+                      id="visit-date" 
+                      type="date" 
+                      class="hanu-form-input" 
+                      [value]="visitDate()"
+                      (input)="visitDate.set($any($event.target).value)" 
+                      required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="visit-slot">Slot</label>
+                    <select 
+                      id="visit-slot" 
+                      class="hanu-form-input" 
+                      [value]="visitTimeSlot()" 
+                      (change)="visitTimeSlot.set($any($event.target).value)">
+                      <option value="morning">Morning (10 AM - 1 PM)</option>
+                      <option value="afternoon">Afternoon (1 PM - 4 PM)</option>
+                      <option value="evening">Evening (4 PM - 7 PM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-submit-visit" [disabled]="isSubmittingVisit()">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                  <span>{{ isSubmittingVisit() ? 'Confirming Visit...' : 'Request Site Visit' }}</span>
+                </button>
+              </form>
+
+              <!-- Download Brochure Action -->
+              <button type="button" class="btn-sidebar-brochure" (click)="downloadBrochure()">
+                <span class="material-symbols-outlined">download</span>
+                <span>Download Property Dossier (PDF)</span>
+              </button>
+            </div>
+
+            <!-- SIMILAR PROPERTIES IN SAME CORRIDOR -->
+            @if (similarProperties().length > 0) {
+              <div class="hanu-similar-card">
+                <h4 class="similar-heading">Similar Verified Properties</h4>
+                <div class="similar-list">
+                  @for (sim of similarProperties(); track sim.id) {
+                    <a [routerLink]="['/property', sim.id]" class="similar-item-link">
+                      <img [src]="sim.imageUrl" [alt]="sim.title" (error)="onImgError($event)">
+                      <div class="similar-info">
+                        <span class="sim-type">{{ sim.propertyType }}</span>
+                        <h5 class="sim-title">{{ sim.title }}</h5>
+                        <div class="sim-price-row">
+                          <span class="sim-price">{{ sim.price }}</span>
+                          <span class="sim-sqft">{{ sim.sqft }}</span>
+                        </div>
+                      </div>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+
+          </aside>
+        </div>
+
+      </div>
+    }
+  } @else {
+    <!-- PROPERTY NOT FOUND STATE -->
+    <div class="max-w-content not-found-box">
+      <span class="material-symbols-outlined not-found-icon">search_off</span>
+      <h2>Property Not Found</h2>
+      <p>The requested property could not be found in our verified registry.</p>
+      <a routerLink="/search" class="btn-back-state">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Return to Search Registry</span>
+      </a>
+    </div>
+  }
+
+  <!-- FULLSCREEN PHOTO LIGHTBOX MODAL -->
+  @if (isFullscreenOpen() && property(); as prop) {
+    <div class="fullscreen-lightbox-modal" (click)="closeFullscreen()">
+      <button type="button" class="btn-close-lightbox" (click)="closeFullscreen()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <img [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" [alt]="prop.title">
+      </div>
+    </div>
+  }
+
+  <!-- FLOOR PLAN MODAL -->
+  @if (isFloorPlanModalOpen() && activeModalFloorPlan(); as modalPlan) {
+    <div class="fullscreen-lightbox-modal" (click)="closeFloorPlanModal()">
+      <button type="button" class="btn-close-lightbox" (click)="closeFloorPlanModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="lightbox-content floorplan-modal-box" (click)="$event.stopPropagation()">
+        <div class="fp-modal-header">
+          <div>
+            <h3 class="fp-modal-title">{{ modalPlan.name }}</h3>
+            <p class="fp-modal-sub">{{ modalPlan.superArea }} • {{ modalPlan.carpetArea }} • {{ modalPlan.priceEstimate }}</p>
+          </div>
+          <button type="button" class="btn-fp-download" (click)="downloadFloorPlan(modalPlan)">
+            <span class="material-symbols-outlined">download</span>
+            <span>Download Blueprint</span>
+          </button>
+        </div>
+        <div class="fp-modal-img-container">
+          <img [src]="modalPlan.imageUrl" [alt]="modalPlan.name">
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Footer -->
+  <app-footer />
+
+  <!-- Global Modals & Notifications -->
+  <app-property-media-modal />
+  <app-topup-dialog />
+  <app-toast />
+</div>

@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /demo1/
+
+  # If an existing asset or directory is requested, serve directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # All other routes go to index.html for Angular SPA client routing
+  RewriteRule ^ index.html [L]
+</IfModule>

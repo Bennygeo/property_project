@@ -1,0 +1,629 @@
+<div class="post-property-page-layout">
+  
+  <!-- Header Bar -->
+  <app-top-concierge-bar />
+  <app-header />
+
+  <!-- Hero Header Strip -->
+  <section class="post-hero-section">
+    <div class="hero-inner-container">
+      <div class="hero-badge">
+        <span class="material-symbols-outlined">add_home_work</span>
+        <span>ZERO BROKERAGE DIRECT REGISTRY</span>
+      </div>
+      <h1 class="hero-main-title">List Your Architectural Property For Free</h1>
+      <p class="hero-sub-title">
+        Connect directly with high-net-worth investors across Chennai, Bengaluru, and Hyderabad. Every listing undergoes a four-eyes title deed and cadastral survey audit to ensure 100% buyer confidence.
+      </p>
+
+      <!-- Trust Badges Row -->
+      <div class="trust-pills-row">
+        <div class="t-pill">
+          <span class="material-symbols-outlined text-emerald">money_off</span>
+          <span>100% Free • No Commission</span>
+        </div>
+        <div class="t-pill">
+          <span class="material-symbols-outlined text-blue">verified_user</span>
+          <span>Admin Deed Verification</span>
+        </div>
+        <div class="t-pill">
+          <span class="material-symbols-outlined text-purple">visibility</span>
+          <span>Free High-Res Showcase</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Form Content -->
+  <main class="post-form-main">
+    <div class="form-sheet-card">
+      
+      <div class="sheet-header">
+        <div>
+          <h2 class="sheet-title">Property Details &amp; Specifications</h2>
+          <p class="sheet-sub">Fill in the accurate information from your sale deed or approved plan.</p>
+        </div>
+        <span class="step-counter">Step 1 of 1</span>
+      </div>
+
+      <form (submit)="$event.preventDefault(); onSubmit()" class="user-post-form">
+
+        <!-- SECTION 1: CORE CATEGORY -->
+        <div class="form-block">
+          <h3 class="block-heading">
+            <span class="material-symbols-outlined block-icon">category</span>
+            <span>1. Property Type &amp; Transaction Mode</span>
+          </h3>
+          <p class="section-subtext">
+            Select the property classification. The specifications below will automatically adapt to your property type.
+          </p>
+
+          <!-- Visual Interactive Property Type Cards -->
+          <div class="type-selector-grid">
+            @for (item of propertyTypes; track item.id) {
+              <div 
+                class="type-selector-card" 
+                [class.selected]="form.propertyType === item.id"
+                (click)="selectPropertyType(item.id)">
+                <div class="type-icon-box">
+                  <span class="material-symbols-outlined">{{ item.icon }}</span>
+                </div>
+                <div class="type-text-box">
+                  <span class="type-title">{{ item.label }}</span>
+                  <span class="type-desc">{{ item.desc }}</span>
+                </div>
+                @if (form.propertyType === item.id) {
+                  <span class="material-symbols-outlined type-check">check_circle</span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="form-grid-2 mode-select-row">
+            <div class="input-group">
+              <label class="input-label">Listing Mode *</label>
+              <select class="form-select" [(ngModel)]="form.listingMode" name="listingMode">
+                <option value="buy">Sell Property (Outright Purchase)</option>
+                <option value="rent">Rent / Long-term Lease</option>
+                <option value="plots">Plot / Land Parcel</option>
+                <option value="commercial">Commercial Space</option>
+              </select>
+            </div>
+
+            @if (isResidential()) {
+              <div class="input-group">
+                <label class="input-label">Bedrooms / Configuration *</label>
+                <select class="form-select" [(ngModel)]="form.bhkBadge" name="bhkBadge">
+                  <option value="1 BHK">1 BHK</option>
+                  <option value="2 BHK">2 BHK</option>
+                  <option value="3 BHK">3 BHK</option>
+                  <option value="4 BHK">4 BHK</option>
+                  <option value="5+ BHK Villa">5+ BHK Mansion / Villa</option>
+                </select>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- SECTION 2: TITLE & LOCATION -->
+        <div class="form-block">
+          <h3 class="block-heading">
+            <span class="material-symbols-outlined block-icon">pin_drop</span>
+            <span>2. Title &amp; Geographical Location</span>
+          </h3>
+
+          <div class="form-grid-2">
+            <div class="input-group full-col">
+              <label class="input-label">Property Title / Project Name *</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="form.title" 
+                name="title" 
+                placeholder="e.g. Elegant 3BHK East-Facing Apartment with Lake View" 
+                required />
+              <span class="field-hint">A descriptive title gets 3x more investor walkthrough unlocks.</span>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">City *</label>
+              <select class="form-select" [(ngModel)]="form.cityName" name="cityName">
+                <option value="Chennai">Chennai</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Coimbatore">Coimbatore</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Locality / Sector / Landmark *</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="form.localityName" 
+                name="localityName" 
+                placeholder="e.g. Anna Nagar West Extension" 
+                required />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- SECTION 3: PRICING & MEASUREMENTS -->
+        <div class="form-block">
+          <h3 class="block-heading">
+            <span class="material-symbols-outlined block-icon">currency_rupee</span>
+            <span>3. Valuation &amp; Built-up Specifications</span>
+          </h3>
+
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label class="input-label">Expected Total Price *</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="form.price" 
+                name="price" 
+                placeholder="e.g. ₹ 1.45 Cr or ₹ 65,000/mo" 
+                required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">{{ getPricePerUnitLabel() }}</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="form.pricePerSqft" 
+                name="pricePerSqft" 
+                [placeholder]="getPricePerUnitPlaceholder()" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">{{ getAreaLabel() }}</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="form.sqft" 
+                name="sqft" 
+                [placeholder]="getAreaPlaceholder()" 
+                required />
+            </div>
+
+            <!-- Dynamic Specialized Fields for Plots & Land -->
+            @if (isPlot()) {
+              <div class="input-group">
+                <label class="input-label">Approval Authority *</label>
+                <select class="form-select" [(ngModel)]="form.plotApproval" name="plotApproval">
+                  <option value="CMDA Approved">CMDA Sanctioned Layout</option>
+                  <option value="DTCP Approved">DTCP Sanctioned Layout</option>
+                  <option value="RERA Registered">RERA Registered Layout</option>
+                  <option value="Panchayat Approved">Panchayat Approved</option>
+                  <option value="Freehold Patta Land">Freehold Patta Deed</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Frontage Road Width</label>
+                <select class="form-select" [(ngModel)]="form.roadWidth" name="roadWidth">
+                  <option value="24 Feet Road">24 Feet Internal Road</option>
+                  <option value="30 Feet Road">30 Feet Blacktop Road</option>
+                  <option value="40 Feet Road">40 Feet Main Sector Road</option>
+                  <option value="60 Feet Road">60 Feet Avenue Corridor</option>
+                  <option value="100+ Feet Road">100+ Feet Arterial Highway</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Plot Dimensions (L x W)</label>
+                <input 
+                  type="text" 
+                  class="form-input" 
+                  [(ngModel)]="form.plotDimensions" 
+                  name="plotDimensions" 
+                  placeholder="e.g. 40 ft x 60 ft (2,400 sq.ft)" />
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Boundary Wall &amp; Fencing</label>
+                <select class="form-select" [(ngModel)]="form.boundaryWall" name="boundaryWall">
+                  <option value="Gated & Compounded">Full Brick Compound Wall</option>
+                  <option value="Fenced Boundary">Stone Pillar &amp; Wire Fenced</option>
+                  <option value="Corner Open Plot">Corner Double-Road Open</option>
+                  <option value="Open Layout">Marked Survey Stones</option>
+                </select>
+              </div>
+            }
+
+            <!-- Dynamic Specialized Fields for Commercial Spaces -->
+            @if (isCommercial()) {
+              <div class="input-group">
+                <label class="input-label">Commercial Asset Type *</label>
+                <select class="form-select" [(ngModel)]="form.commercialType" name="commercialType">
+                  <option value="Commercial Office Space">Grade-A Corporate Office Space</option>
+                  <option value="Retail Showroom / Shop">High-Street Retail Showroom / Shop</option>
+                  <option value="Bare Shell Floor">Bare Shell Commercial Floor Plate</option>
+                  <option value="Warehouse / Logistics">Industrial Warehouse / Logistics Hub</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Power Backup / DG Redundancy</label>
+                <select class="form-select" [(ngModel)]="form.powerBackup" name="powerBackup">
+                  <option value="100% DG Redundancy">100% Full DG Redundancy (N+1)</option>
+                  <option value="Common Area Backup">Common Area &amp; Elevator Backup</option>
+                  <option value="Standard EB Grid">Standard 3-Phase Commercial EB</option>
+                </select>
+              </div>
+            }
+
+            <!-- Dynamic Specialized Fields for Farm Land & Estates -->
+            @if (isFarmLand()) {
+              <div class="input-group">
+                <label class="input-label">Water Source &amp; Irrigation *</label>
+                <select class="form-select" [(ngModel)]="form.waterSource" name="waterSource">
+                  <option value="Dedicated Borewell & Canal">Dedicated Borewell &amp; Perennial Canal</option>
+                  <option value="Open Farm Well">Traditional Copious Open Well</option>
+                  <option value="Drip Irrigation Network">Fully Automated Drip Network</option>
+                  <option value="Seasonal Ground Water">Seasonal Ground Water</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Boundary &amp; Approach Road</label>
+                <select class="form-select" [(ngModel)]="form.boundaryWall" name="farmBoundary">
+                  <option value="Solar Fenced Perimeter">Solar Electric Fenced Perimeter</option>
+                  <option value="Live Green Bio-fence">Live Green Tree Bio-Fence</option>
+                  <option value="Barbed Wire Fencing">Barbed Wire with Concrete Posts</option>
+                  <option value="Open Agricultural Stretch">Open Contiguous Acreage</option>
+                </select>
+              </div>
+            }
+
+            <div class="input-group">
+              <label class="input-label">Facing / Direction</label>
+              <select class="form-select" [(ngModel)]="form.facingOrView" name="facingOrView">
+                <option value="East Facing">East Facing</option>
+                <option value="North Facing">North Facing</option>
+                <option value="North-East Facing">North-East Facing</option>
+                <option value="West Facing">West Facing</option>
+                <option value="South Facing">South Facing</option>
+                @if (isPlot() || isCommercial()) {
+                  <option value="Corner Double-Road Facing">Corner Double-Road Facing</option>
+                  <option value="Main Avenue Facing">Main Avenue Corridor Facing</option>
+                } @else {
+                  <option value="Sea / Bay Facing">Sea / Bay Facing</option>
+                  <option value="Park Canopy Facing">Park Canopy Facing</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">RERA or CMDA / Patta Reference</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="form.reraNumber" 
+                name="reraNumber" 
+                placeholder="e.g. TN/29/Building/0192/2026 or Patta #491" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- SECTION 4: PHOTOGRAPHY & MEDIA SHOWCASE -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">photo_camera</span>
+              <span>4. Architectural Photography &amp; Showcase Media</span>
+            </h3>
+            <span class="media-count-badge" *ngIf="uploadedImages().length > 0">
+              {{ uploadedImages().length }} {{ uploadedImages().length === 1 ? 'Photo' : 'Photos' }} Added
+            </span>
+          </div>
+          <p class="section-subtext">
+            Upload genuine high-resolution photographs of your property. Listings with verified, crisp architectural photos receive over 3.8x more buyer walkthrough inquiries.
+          </p>
+
+          <!-- Media Mode Selector Tabs -->
+          <div class="media-tabs-nav">
+            <button 
+              type="button" 
+              class="media-tab-btn" 
+              [class.active]="activeMediaTab() === 'upload'" 
+              (click)="setMediaTab('upload')">
+              <span class="material-symbols-outlined">cloud_upload</span>
+              <span>Upload Photos</span>
+              <span class="tab-badge-recommended">Recommended</span>
+            </button>
+            <button 
+              type="button" 
+              class="media-tab-btn" 
+              [class.active]="activeMediaTab() === 'url'" 
+              (click)="setMediaTab('url')">
+              <span class="material-symbols-outlined">link</span>
+              <span>Direct Image URL</span>
+            </button>
+            <button 
+              type="button" 
+              class="media-tab-btn" 
+              [class.active]="activeMediaTab() === 'presets'" 
+              (click)="setMediaTab('presets')">
+              <span class="material-symbols-outlined">auto_awesome</span>
+              <span>Curated Presets</span>
+            </button>
+          </div>
+
+          <!-- TAB 1: DIRECT FILE UPLOAD -->
+          <div *ngIf="activeMediaTab() === 'upload'" class="tab-content-panel">
+            
+            <!-- Hidden File Input -->
+            <input 
+              #fileInput 
+              type="file" 
+              multiple 
+              accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/avif" 
+              (change)="onFilesSelected($event)" 
+              style="display: none" />
+
+            <!-- Drag and Drop Zone -->
+            <div 
+              class="upload-dropzone" 
+              [class.drag-over]="isDragging()"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="fileInput.click()">
+              
+              <div class="dropzone-icon-ring">
+                <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
+              </div>
+              <h4 class="dropzone-title">Drag &amp; Drop property photos here</h4>
+              <p class="dropzone-desc">or <button type="button" class="dropzone-browse-btn" (click)="$event.stopPropagation(); fileInput.click()">Browse from your device</button></p>
+              
+              <div class="dropzone-specs">
+                <span class="spec-chip">JPG, PNG, WEBP, GIF, HEIC</span>
+                <span class="spec-divider">•</span>
+                <span class="spec-chip">Up to 15MB each</span>
+                <span class="spec-divider">•</span>
+                <span class="spec-chip">Multiple files supported</span>
+              </div>
+            </div>
+
+            <!-- Uploading Progress Bar -->
+            <div *ngIf="isUploadingAny()" class="uploading-status-banner">
+              <div class="status-spinner-small"></div>
+              <span>Uploading image(s) to secure registry media storage...</span>
+            </div>
+
+            <!-- Uploaded Images Gallery Grid -->
+            <div *ngIf="uploadedImages().length > 0" class="uploaded-gallery-wrapper">
+              <div class="gallery-header-row">
+                <span class="gallery-title">Uploaded Listing Gallery</span>
+                <span class="gallery-hint">Click "Set Cover" to change which photo appears on investor search cards.</span>
+              </div>
+
+              <div class="uploaded-grid">
+                @for (item of uploadedImages(); track item.id) {
+                  <div class="upload-img-card" [class.is-cover]="item.isCover">
+                    <div class="img-preview-container">
+                      <img [src]="item.previewUrl" [alt]="item.name" class="uploaded-preview-img" />
+                      
+                      <!-- Cover Badge -->
+                      <div *ngIf="item.isCover" class="cover-photo-pill">
+                        <span class="material-symbols-outlined">star</span>
+                        <span>PRIMARY COVER</span>
+                      </div>
+
+                      <!-- Uploading Overlay -->
+                      <div *ngIf="item.isUploading" class="upload-card-spinner-overlay">
+                        <div class="status-spinner-small"></div>
+                        <span>Uploading...</span>
+                      </div>
+
+                      <!-- Cloud Synced Checkmark -->
+                      <div *ngIf="!item.isUploading && item.serverUrl && !item.isCover" class="cloud-synced-pill" title="Synced to secure server">
+                        <span class="material-symbols-outlined">cloud_done</span>
+                      </div>
+
+                      <!-- Delete Button -->
+                      <button 
+                        type="button" 
+                        class="card-remove-btn" 
+                        (click)="$event.stopPropagation(); removeImage(item.id)" 
+                        title="Delete photo">
+                        <span class="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+
+                    <div class="img-card-meta">
+                      <div class="img-meta-info">
+                        <span class="img-filename" [title]="item.name">{{ item.name }}</span>
+                        <span class="img-filesize">{{ item.sizeFormatted }}</span>
+                      </div>
+
+                      <div class="img-card-actions">
+                        <button 
+                          *ngIf="!item.isCover" 
+                          type="button" 
+                          class="btn-set-cover" 
+                          (click)="setCoverImage(item)">
+                          <span class="material-symbols-outlined">check_circle</span>
+                          <span>Set Cover</span>
+                        </button>
+                        <span *ngIf="item.isCover" class="active-cover-indicator">
+                          <span class="material-symbols-outlined">verified</span>
+                          <span>Active Cover</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- Quick Add More Tile -->
+                <div class="add-more-tile" (click)="fileInput.click()">
+                  <div class="add-tile-icon-box">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                  </div>
+                  <span class="add-tile-label">Add More Photos</span>
+                  <span class="add-tile-sub">Select files</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TAB 2: EXTERNAL URL -->
+          <div *ngIf="activeMediaTab() === 'url'" class="tab-content-panel">
+            <div class="input-group full-col">
+              <label class="input-label">Public Image URL *</label>
+              <div class="url-input-wrapper">
+                <span class="material-symbols-outlined url-input-icon">link</span>
+                <input 
+                  type="url" 
+                  class="form-input font-mono has-left-icon" 
+                  [(ngModel)]="form.mainImageUrl" 
+                  name="mainImageUrl" 
+                  placeholder="https://images.unsplash.com/... or https://domain.com/photo.jpg" />
+              </div>
+              <span class="field-hint">Paste an HTTPS image link hosted on Unsplash, AWS S3, Cloudinary, or your CDN.</span>
+            </div>
+
+            <!-- URL Live Preview Box -->
+            <div *ngIf="form.mainImageUrl" class="url-live-preview-box">
+              <span class="preview-box-label">Live Link Preview</span>
+              <div class="url-preview-thumb">
+                <img [src]="form.mainImageUrl" alt="Property Cover Preview" (error)="$any($event.target).src = 'assets/blueprint-bg.svg'" />
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: CURATED PRESETS -->
+          <div *ngIf="activeMediaTab() === 'presets'" class="tab-content-panel">
+            <span class="field-hint mb-2">Select from our architectural portfolio presets if your photography shoot is pending:</span>
+            <div class="sample-images-grid">
+              @for (img of sampleImages; track img.url) {
+                <div 
+                  class="sample-img-card" 
+                  [class.selected]="form.mainImageUrl === img.url"
+                  (click)="selectImage(img.url)">
+                  <img [src]="img.url" [alt]="img.label" class="sample-img" />
+                  <span class="sample-label">{{ img.label }}</span>
+                  @if (form.mainImageUrl === img.url) {
+                    <span class="material-symbols-outlined check-badge">check_circle</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- ACTIVE PRIMARY SHOWCASE BANNER -->
+          <div class="active-cover-showcase-bar">
+            <div class="showcase-thumb-box">
+              <img [src]="activeCoverPreview()" alt="Active Listing Cover" class="showcase-thumb" />
+            </div>
+            <div class="showcase-info">
+              <div class="showcase-status">
+                <span class="status-dot-pulse"></span>
+                <span class="showcase-badge-text">MARKETPLACE COVER PREVIEW</span>
+              </div>
+              <h5 class="showcase-title">{{ form.title || 'Your Architectural Listing Title' }}</h5>
+              <p class="showcase-location">{{ form.localityName || 'Locality' }}, {{ form.cityName }} • {{ form.price || 'Expected Price' }}</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- FOUR-EYES REVIEW DISCLOSURE -->
+        <div class="compliance-callout-card">
+          <div class="callout-icon-box">
+            <span class="material-symbols-outlined">security</span>
+          </div>
+          <div class="callout-content">
+            <h4 class="callout-title">Four-Eyes Security &amp; Registry Verification</h4>
+            <p class="callout-desc">
+              To preserve our 100% verified registry standard, your listing will be routed into our 
+              <strong>Admin Review Queue</strong> upon submission. Our compliance team verifies title encumbrance and RERA records before the property is published live. You can monitor the review progress at any time in your <strong>Investor Profile</strong>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-submit-row">
+          <a routerLink="/" class="btn-cancel-post">Cancel &amp; Return</a>
+
+          <button 
+            type="submit" 
+            class="btn-execute-post" 
+            [disabled]="isSubmitting()">
+            <span class="material-symbols-outlined">
+              {{ isSubmitting() ? 'sync' : 'publish' }}
+            </span>
+            <span>{{ isSubmitting() ? 'Submitting to Registry Desk...' : 'Submit Property for Admin Review' }}</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SUCCESSFUL SUBMISSION CONFIRMATION  -->
+  <!-- ========================================== -->
+  @if (isSuccessModalOpen()) {
+    <div class="modal-backdrop">
+      <div class="success-modal-panel">
+        <div class="success-icon-wrap">
+          <span class="material-symbols-outlined success-check">verified</span>
+        </div>
+
+        <h3 class="modal-title">Property Submitted Successfully!</h3>
+        <p class="modal-sub">
+          Your listing reference <strong>#{{ submittedPropId() }}</strong> has been registered and is now under audit by the Mannidam compliance desk.
+        </p>
+
+        <div class="status-summary-box">
+          <div class="s-line">
+            <span class="s-k">Status:</span>
+            <span class="status-chip pending">
+              <span class="material-symbols-outlined">schedule</span>
+              <span>Pending Admin Review</span>
+            </span>
+          </div>
+          <div class="s-line">
+            <span class="s-k">Review SLA:</span>
+            <span class="s-v">Within 2 to 4 business hours</span>
+          </div>
+          <div class="s-line">
+            <span class="s-k">Assigned Desk:</span>
+            <span class="s-v">Mannidam Legal &amp; Architectural Registry</span>
+          </div>
+        </div>
+
+        <div class="modal-btn-row">
+          <button type="button" class="btn-primary-action" (click)="goToProfileListings()">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>View in My Profile</span>
+          </button>
+
+          <a routerLink="/" class="btn-secondary-action">
+            <span>Go to Marketplace</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Footer -->
+  <app-footer />
+
+  <!-- Global Toast -->
+  <app-toast />
+
+</div>

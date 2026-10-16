@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Architectural City Skyline Silhouette -->
+  <!-- Layer 1: Background Muted Silhouettes -->
+  <path d="M 0 120 
+           L 40 120 L 40 65 L 75 65 L 75 120 
+           L 95 120 L 95 45 L 140 45 L 140 120 
+           L 180 120 L 180 30 L 220 30 L 220 120 
+           L 260 120 L 260 55 L 310 55 L 310 120 
+           L 350 120 L 350 20 L 390 20 L 390 120 
+           L 430 120 L 430 40 L 480 40 L 480 120 
+           L 520 120 L 520 25 L 560 10 L 580 10 L 580 120 
+           L 620 120 L 620 50 L 670 50 L 670 120 
+           L 710 120 L 710 35 L 755 35 L 755 120 
+           L 800 120 L 800 15 L 840 15 L 840 120 
+           L 880 120 L 880 45 L 930 45 L 930 120 
+           L 970 120 L 970 25 L 1010 25 L 1010 120 
+           L 1050 120 L 1050 60 L 1100 60 L 1100 120 
+           L 1140 120 L 1140 38 L 1180 38 L 1180 120 
+           L 1200 120 Z" fill="url(#skyGrad)"/>
+
+  <!-- Layer 2: Foreground Crisp Outlines with Architectural Lines -->
+  <g stroke="#94a3b8" stroke-width="1" fill="#f8fafc" fill-opacity="0.8">
+    <!-- Building 1 -->
+    <rect x="50" y="70" width="35" height="50" rx="1"/>
+    <!-- Building 2 (Tower) -->
+    <rect x="110" y="50" width="45" height="70" rx="1"/>
+    <line x1="120" y1="58" x2="145" y2="58" stroke="#cbd5e1"/>
+    <line x1="120" y1="68" x2="145" y2="68" stroke="#cbd5e1"/>
+    <line x1="120" y1="78" x2="145" y2="78" stroke="#cbd5e1"/>
+
+    <!-- Building 3 (High-Rise with Spire) -->
+    <rect x="190" y="38" width="50" height="82" rx="1"/>
+    <line x1="215" y1="20" x2="215" y2="38" stroke="#c73434" stroke-width="1.5"/>
+
+    <!-- Building 4 (Pitched Villa) -->
+    <polygon points="275,120 275,80 300,65 325,80 325,120" fill="#ffffff"/>
+
+    <!-- Building 5 (Commercial Block) -->
+    <rect x="360" y="32" width="55" height="88" rx="1"/>
+    <line x1="372" y1="42" x2="403" y2="42" stroke="#cbd5e1"/>
+    <line x1="372" y1="54" x2="403" y2="54" stroke="#cbd5e1"/>
+    <line x1="372" y1="66" x2="403" y2="66" stroke="#cbd5e1"/>
+
+    <!-- Building 6 (Modern Stepped Tower) -->
+    <polygon points="445,120 445,60 460,60 460,45 485,45 485,60 500,60 500,120" fill="#ffffff"/>
+
+    <!-- Building 7 (Signature Tower with Red Keystone) -->
+    <rect x="535" y="22" width="60" height="98" rx="1"/>
+    <rect x="555" y="10" width="20" height="12" fill="#c73434" stroke="#a82424"/>
+    <line x1="565" y1="0" x2="565" y2="10" stroke="#c73434" stroke-width="1.5"/>
+
+    <!-- Building 8 (Modern Minimalist Cube) -->
+    <rect x="630" y="58" width="50" height="62" rx="1"/>
+
+    <!-- Building 9 (Residential Loft) -->
+    <polygon points="720,120 720,50 745,35 770,50 770,120" fill="#ffffff"/>
+
+    <!-- Building 10 (Skyscraper) -->
+    <rect x="815" y="26" width="48" height="94" rx="1"/>
+    <line x1="825" y1="36" x2="853" y2="36" stroke="#cbd5e1"/>
+    <line x1="825" y1="48" x2="853" y2="48" stroke="#cbd5e1"/>
+
+    <!-- Building 11 (Terrace Complex) -->
+    <polygon points="895,120 895,65 915,65 915,50 945,50 945,120" fill="#ffffff"/>
+
+    <!-- Building 12 (Bay View Tower) -->
+    <rect x="980" y="35" width="52" height="85" rx="1"/>
+
+    <!-- Building 13 (Duplex Villa) -->
+    <polygon points="1060,120 1060,75 1080,62 1100,75 1100,120" fill="#ffffff"/>
+
+    <!-- Building 14 (Glass High Rise) -->
+    <rect x="1120" y="48" width="45" height="72" rx="1"/>
+  </g>
+
+  <!-- Ground Datum Line -->
+  <line x1="0" y1="119.5" x2="1200" y2="119.5" stroke="#cbd5e1" stroke-width="1"/>
+</svg>

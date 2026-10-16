@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" width="100%" height="100%">
+  <defs>
+    <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#cbd5e1" stroke-width="0.5" stroke-opacity="0.35"/>
+    </pattern>
+    <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <rect width="100" height="100" fill="url(#smallGrid)"/>
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#94a3b8" stroke-width="0.9" stroke-opacity="0.45"/>
+    </pattern>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1600" height="800" fill="#f8fafc"/>
+  <rect width="1600" height="800" fill="url(#grid)"/>
+
+  <!-- Architectural CAD & Drafting Lines -->
+  <g stroke="#94a3b8" stroke-width="0.8" opacity="0.65" fill="none">
+    <!-- Isometric Elevation 1 (Left) -->
+    <path d="M 150 400 L 320 280 L 490 400 L 320 520 Z" stroke-dasharray="4 2"/>
+    <path d="M 320 280 L 320 180 L 490 300 L 490 400" />
+    <path d="M 320 180 L 150 300 L 150 400" />
+    <!-- Dimension arrows -->
+    <line x1="120" y1="300" x2="120" y2="400" stroke="#c73434" stroke-width="1"/>
+    <line x1="115" y1="300" x2="125" y2="300" stroke="#c73434" stroke-width="1"/>
+    <line x1="115" y1="400" x2="125" y2="400" stroke="#c73434" stroke-width="1"/>
+    
+    <!-- Floorplate Grid 2 (Center-Right) -->
+    <path d="M 850 550 L 1150 380 L 1450 550 L 1150 720 Z" stroke="#64748b" stroke-width="1"/>
+    <line x1="950" y1="490" x2="1250" y2="660" />
+    <line x1="1050" y1="435" x2="1350" y2="605" />
+    <line x1="1000" y1="635" x2="1300" y2="465" />
+    <line x1="900" y1="580" x2="1200" y2="410" />
+
+    <!-- Cadastral Lot Boundary Polygon -->
+    <polygon points="600,200 780,180 840,320 680,360" stroke="#c73434" stroke-width="1.2" stroke-dasharray="6 3"/>
+    <circle cx="600" cy="200" r="3" fill="#c73434"/>
+    <circle cx="780" cy="180" r="3" fill="#c73434"/>
+    <circle cx="840" cy="320" r="3" fill="#c73434"/>
+    <circle cx="680" cy="360" r="3" fill="#c73434"/>
+
+    <!-- Compass Rose -->
+    <circle cx="1400" cy="180" r="45" stroke="#94a3b8" stroke-dasharray="2 2"/>
+    <polygon points="1400,140 1406,178 1400,174 1394,178" fill="#c73434" stroke="none"/>
+    <polygon points="1400,220 1406,182 1400,186 1394,182" fill="#64748b" stroke="none"/>
+    <polygon points="1360,180 1398,186 1394,180 1398,174" fill="#64748b" stroke="none"/>
+    <polygon points="1440,180 1402,186 1406,180 1402,174" fill="#64748b" stroke="none"/>
+  </g>
+</svg>

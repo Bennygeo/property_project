@@ -1,0 +1,524 @@
+/* ==========================================================================
+   MANNIDAM ARCHITECTURAL REAL ESTATE - DESIGN SYSTEM
+   Discipline, Structural Precision, Monochromatic Restraint & High Contrast
+   ========================================================================== */
+
+:root {
+  /* Brand & Core Palette */
+  --brand-red: #c73434;
+  --brand-red-hover: #b52d2d;
+  --brand-red-dark: #a82424;
+  --brand-red-subtle: #fef2f2;
+  --brand-red-border: #fecaca;
+
+  /* Surfaces & Planar Tones */
+  --surface-canvas: #ffffff;
+  --surface-subdued: #fafafa;
+  --surface-muted: #f4f4f5;
+  --surface-slate-50: #f8fafc;
+  --surface-slate-100: #f1f5f9;
+  --surface-slate-200: #e2e8f0;
+  --surface-slate-800: #1e293b;
+  --surface-slate-900: #0f172a;
+  --surface-slate-950: #020617;
+
+  /* Hairline Divisions & Borders */
+  --hairline-grid: #e5e5e5;
+  --hairline-border: #e2e8f0;
+  --hairline-dark: #0a0a0a;
+
+  /* Typographic Hierarchy */
+  --text-slate-950: #020617;
+  --text-slate-900: #0f172a;
+  --text-slate-800: #1e293b;
+  --text-slate-700: #334155;
+  --text-slate-600: #475569;
+  --text-slate-500: #64748b;
+  --text-slate-400: #94a3b8;
+  --text-slate-300: #cbd5e1;
+
+  /* Semantics */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
+  --color-amber-950: #451a03;
+
+  /* Fonts: Use the primary header font ('Plus Jakarta Sans') everywhere across the application */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-slate-900);
+  background-color: var(--surface-canvas);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+button, input, select, textarea, optgroup {
+  font-family: var(--font-sans);
+}
+
+/* Material Symbols Outlined: Preserve icon glyph font */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+}
+
+/* Selection Color */
+::selection {
+  background-color: var(--brand-red);
+  color: #ffffff;
+}
+
+/* Structural Container */
+.max-w-content {
+  max-width: 1600px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .max-w-content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .max-w-content {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Editorial Typography */
+.editorial-tag {
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.font-mono-numbers {
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ==========================================================================
+   GOOGLE MATERIAL DESIGN (M3) CONTROLS & FORM FIELDS
+   Engineered for Structural Precision with Mannidam Theme Styling
+   ========================================================================== */
+
+.mat-field-outlined {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.mat-field-outlined:hover {
+  border-color: #64748b;
+  background: #f8fafc;
+}
+
+.mat-field-outlined:focus-within {
+  border-color: var(--brand-red);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.15), 0 2px 4px rgba(15, 23, 42, 0.05);
+}
+
+.mat-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-slate-500);
+  margin-bottom: 0.25rem;
+  transition: color 0.15s ease;
+  pointer-events: none;
+}
+
+.mat-field-outlined:focus-within .mat-field-label {
+  color: var(--brand-red);
+}
+
+.mat-field-control-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  position: relative;
+}
+
+.mat-leading-icon {
+  font-size: 22px;
+  color: var(--text-slate-500);
+  transition: color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.mat-field-outlined:focus-within .mat-leading-icon {
+  color: var(--brand-red);
+  transform: scale(1.05);
+}
+
+.mat-input-text {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-slate-900);
+  font-family: inherit;
+  padding: 0;
+}
+
+.mat-input-text::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.mat-select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-slate-900);
+  font-family: inherit;
+  padding: 0;
+  padding-right: 1.5rem;
+  cursor: pointer;
+  appearance: none;
+}
+
+.mat-chevron-icon {
+  position: absolute;
+  right: 0;
+  pointer-events: none;
+  font-size: 20px;
+  color: var(--text-slate-500);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
+}
+
+.mat-field-outlined:focus-within .mat-chevron-icon {
+  color: var(--brand-red);
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   GOOGLE MATERIAL (M3) CUSTOM DROPDOWN COMBOBOX & FLOATING PANELS
+   ========================================================================== */
+
+.mat-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.mat-dropdown-trigger {
+  cursor: pointer;
+  user-select: none;
+}
+
+.mat-dropdown-trigger:hover {
+  background: #f8fafc;
+  border-color: #64748b;
+}
+
+.mat-dropdown-container.is-open {
+  z-index: 1000;
+}
+
+.mat-dropdown-container.is-open .mat-dropdown-trigger {
+  border-color: var(--brand-red);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.15), 0 2px 4px rgba(15, 23, 42, 0.05);
+}
+
+.mat-dropdown-container.is-open .mat-field-label {
+  color: var(--brand-red);
+}
+
+.mat-dropdown-container.is-open .mat-leading-icon {
+  color: var(--brand-red);
+  transform: scale(1.05);
+}
+
+.mat-chevron-icon.rotated {
+  transform: rotate(180deg);
+  color: var(--brand-red);
+}
+
+.mat-selected-value {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-slate-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 1.5rem;
+  line-height: 1.4;
+}
+
+/* Material 3 Floating Panel */
+.mat-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 250px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 14px 28px -4px rgba(15, 23, 42, 0.16), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+  z-index: 1050;
+  padding: 6px;
+  animation: matDropdownIn 0.18s cubic-bezier(0, 0, 0.2, 1) forwards;
+  transform-origin: top center;
+}
+
+@keyframes matDropdownIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.mat-dropdown-panel-inner {
+  max-height: 290px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Material 3 Menu Items */
+.mat-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.mat-dropdown-item:hover {
+  background: #f1f5f9;
+}
+
+.mat-dropdown-item.selected {
+  background: var(--brand-red-subtle);
+}
+
+.mat-dropdown-item .item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mat-dropdown-item .item-icon {
+  font-size: 20px;
+  color: var(--text-slate-500);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.mat-dropdown-item:hover .item-icon {
+  color: var(--text-slate-900);
+}
+
+.mat-dropdown-item.selected .item-icon {
+  color: var(--brand-red);
+}
+
+.mat-dropdown-item .item-text-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mat-dropdown-item .item-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-slate-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-dropdown-item.selected .item-label {
+  color: var(--brand-red);
+  font-weight: 700;
+}
+
+.mat-dropdown-item .item-sub {
+  font-size: 11px;
+  color: var(--text-slate-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-dropdown-item .item-check {
+  font-size: 18px;
+  color: var(--brand-red);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Material Filter Chips */
+.mat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: var(--text-slate-700);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.mat-chip:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: var(--text-slate-950);
+}
+
+.mat-chip.active {
+  background: var(--brand-red-subtle);
+  border-color: var(--brand-red-border);
+  color: var(--brand-red);
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(199, 52, 52, 0.1);
+}
+
+.mat-chip .chip-icon {
+  font-size: 16px;
+}
+
+/* Modal Overlay & Backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-dialog {
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid var(--surface-slate-200);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
