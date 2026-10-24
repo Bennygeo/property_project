@@ -100,6 +100,7 @@ $sql = "
         p.total_land_parcel AS totalLandParcel,
         p.total_units AS totalUnits,
         p.whatsapp_url AS whatsappUrl,
+        p.interactive_map_url AS interactiveMapUrl,
         p.is_featured AS isFeatured
     FROM properties p
     JOIN cities c ON p.city_id = c.id

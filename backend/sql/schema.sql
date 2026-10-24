@@ -127,6 +127,7 @@ CREATE TABLE `properties` (
   `total_units` VARCHAR(100) DEFAULT '32 Exclusive Residences',
   `media_points` INT DEFAULT 4,
   `whatsapp_url` VARCHAR(500) DEFAULT NULL,
+  `interactive_map_url` VARCHAR(500) DEFAULT NULL,
   `is_featured` TINYINT(1) DEFAULT 0,
 
   -- Administrative Review & Maker-Checker / Four-Eyes Columns

@@ -290,6 +290,7 @@ $response = array_merge([
     'freePhotos'        => $freePhotos,
     'premiumMedia'      => $premiumMedia,
     'whatsappUrl'       => $prop['whatsapp_url'],
+    'interactiveMapUrl' => $prop['interactive_map_url'] ?? null,
     'possessionDate'    => $prop['possession_date'],
     'projectStatus'     => $prop['project_status'],
     'totalLandParcel'   => $prop['total_land_parcel'],
