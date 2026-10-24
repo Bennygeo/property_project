@@ -52,7 +52,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
               [class.active]="propertyService.activeMediaTab() === 'free'"
               (click)="propertyService.setMediaTab('free')">
               <span class="material-symbols-outlined">photo_library</span>
-              <span>Free Photos ({{ prop.freePhotos.length }})</span>
+              <span>Free Photos ({{ prop.freePhotos?.length || 0 }})</span>
             </button>
 
             <button 
@@ -61,9 +61,9 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
               [class.active]="propertyService.activeMediaTab() === 'premium'"
               (click)="propertyService.setMediaTab('premium')">
               <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'lock' }}</span>
-              <span>Premium 4K Videos &amp; Drone ({{ prop.premiumMedia.length }})</span>
+              <span>Premium 4K Videos &amp; Drone ({{ prop.premiumMedia?.length || 0 }})</span>
               @if (!prop.isMediaUnlocked) {
-                <span class="tab-cost-badge">{{ prop.mediaPoints }} Pts</span>
+                <span class="tab-cost-badge">{{ prop.mediaPoints || 50 }} Pts</span>
               }
             </button>
           </div>
@@ -74,9 +74,11 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
               <!-- Active Featured Photo -->
               <div class="featured-photo-stage">
                 <img 
-                  [src]="activePhotoUrl() || prop.freePhotos[0]" 
+                  [src]="activePhotoUrl() || prop.freePhotos?.[0] || prop.imageUrl || 'hero-bg.jpg'" 
                   [alt]="prop.title" 
-                  class="stage-img">
+                  class="stage-img"
+                  loading="lazy"
+                  decoding="async">
                 <div class="photo-overlay-badge">
                   <span class="material-symbols-outlined">visibility</span>
                   <span>100% Free Architectural View</span>
@@ -84,17 +86,19 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
               </div>
 
               <!-- Thumbnails Grid -->
-              <div class="thumbnails-track">
-                @for (photo of prop.freePhotos; track $index) {
-                  <button 
-                    type="button" 
-                    class="thumb-btn" 
-                    [class.active]="(activePhotoUrl() || prop.freePhotos[0]) === photo"
-                    (click)="setActivePhoto(photo)">
-                    <img [src]="photo" [alt]="'Photo ' + ($index + 1)" class="thumb-img">
-                  </button>
-                }
-              </div>
+              @if (prop.freePhotos?.length) {
+                <div class="thumbnails-track">
+                  @for (photo of prop.freePhotos; track $index) {
+                    <button 
+                      type="button" 
+                      class="thumb-btn" 
+                      [class.active]="(activePhotoUrl() || prop.freePhotos[0]) === photo"
+                      (click)="setActivePhoto(photo)">
+                      <img [src]="photo" [alt]="'Photo ' + ($index + 1)" class="thumb-img" loading="lazy" decoding="async">
+                    </button>
+                  }
+                </div>
+              }
             </div>
           }
 
@@ -103,70 +107,80 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
             <div class="tab-content premium-media-pane">
               @if (prop.isMediaUnlocked) {
                 <!-- UNLOCKED VIEW: Full Video Player & Media Playlist -->
-                <div class="unlocked-video-stage">
-                  @if (selectedMediaItem()?.type === 'video') {
-                    <div class="video-player-box">
-                      <video 
-                        controls 
-                        autoplay 
-                        playsinline
-                        [src]="selectedMediaItem()?.url || prop.premiumMedia[0].url" 
-                        class="html5-video">
-                        Your browser does not support high-definition video playback.
-                      </video>
-                    </div>
-                  } @else {
-                    <div class="hd-photo-box">
-                      <img 
-                        [src]="selectedMediaItem()?.url || prop.premiumMedia[0].url" 
-                        [alt]="selectedMediaItem()?.title" 
-                        class="hd-stage-photo">
-                    </div>
-                  }
+                @if (prop.premiumMedia?.length) {
+                  <div class="unlocked-video-stage">
+                    @if (selectedMediaItem()?.type === 'video') {
+                      <div class="video-player-box">
+                        <video 
+                          controls 
+                          autoplay 
+                          playsinline
+                          [src]="selectedMediaItem()?.url || prop.premiumMedia[0].url" 
+                          class="html5-video">
+                          Your browser does not support high-definition video playback.
+                        </video>
+                      </div>
+                    } @else {
+                      <div class="hd-photo-box">
+                        <img 
+                          [src]="selectedMediaItem()?.url || prop.premiumMedia[0].url" 
+                          [alt]="selectedMediaItem()?.title" 
+                          class="hd-stage-photo"
+                          loading="lazy"
+                          decoding="async">
+                      </div>
+                    }
 
-                  <div class="unlocked-media-info">
-                    <div>
-                      <h4 class="media-title">{{ selectedMediaItem()?.title || prop.premiumMedia[0].title }}</h4>
-                      <p class="media-tag">{{ selectedMediaItem()?.tag || prop.premiumMedia[0].tag }}</p>
+                    <div class="unlocked-media-info">
+                      <div>
+                        <h4 class="media-title">{{ selectedMediaItem()?.title || prop.premiumMedia[0].title }}</h4>
+                        <p class="media-tag">{{ selectedMediaItem()?.tag || prop.premiumMedia[0].tag }}</p>
+                      </div>
+                      <span class="badge-lifetime">
+                        <span class="material-symbols-outlined">all_inclusive</span>
+                        Permanently Unlocked for Your Account
+                      </span>
                     </div>
-                    <span class="badge-lifetime">
-                      <span class="material-symbols-outlined">all_inclusive</span>
-                      Permanently Unlocked for Your Account
-                    </span>
-                  </div>
 
-                  <!-- Playlist of Videos & Media -->
-                  <div class="media-playlist">
-                    <span class="playlist-header">Included Premium Dossier Media ({{ prop.premiumMedia.length }})</span>
-                    <div class="playlist-grid">
-                      @for (item of prop.premiumMedia; track item.id) {
-                        <button 
-                          type="button"
-                          class="playlist-card"
-                          [class.active]="(selectedMediaItem()?.id || prop.premiumMedia[0].id) === item.id"
-                          (click)="selectMediaItem(item)">
-                          <div class="playlist-thumb-box">
-                            <img [src]="item.thumbnailUrl" [alt]="item.title" class="playlist-thumb-img">
-                            <span class="material-symbols-outlined playlist-type-icon">
-                              {{ item.type === 'video' ? 'play_arrow' : 'photo' }}
-                            </span>
-                            @if (item.duration) {
-                              <span class="duration-badge">{{ item.duration }}</span>
-                            }
-                          </div>
-                          <div class="playlist-details">
-                            <span class="item-name">{{ item.title }}</span>
-                            <span class="item-tag">{{ item.tag }}</span>
-                          </div>
-                        </button>
-                      }
+                    <!-- Playlist of Videos & Media -->
+                    <div class="media-playlist">
+                      <span class="playlist-header">Included Premium Dossier Media ({{ prop.premiumMedia.length }})</span>
+                      <div class="playlist-grid">
+                        @for (item of prop.premiumMedia; track item.id) {
+                          <button 
+                            type="button"
+                            class="playlist-card"
+                            [class.active]="(selectedMediaItem()?.id || prop.premiumMedia[0].id) === item.id"
+                            (click)="selectMediaItem(item)">
+                            <div class="playlist-thumb-box">
+                              <img [src]="item.thumbnailUrl" [alt]="item.title" class="playlist-thumb-img" loading="lazy" decoding="async">
+                              <span class="material-symbols-outlined playlist-type-icon">
+                                {{ item.type === 'video' ? 'play_arrow' : 'photo' }}
+                              </span>
+                              @if (item.duration) {
+                                <span class="duration-badge">{{ item.duration }}</span>
+                              }
+                            </div>
+                            <div class="playlist-details">
+                              <span class="item-name">{{ item.title }}</span>
+                              <span class="item-tag">{{ item.tag }}</span>
+                            </div>
+                          </button>
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
+                } @else {
+                  <div class="empty-media-notice">
+                    <span class="material-symbols-outlined empty-icon">videocam</span>
+                    <h4>4K Walkthrough Processing</h4>
+                    <p>Exclusive drone surveys and interior video dossiers for this property are currently being authenticated by our survey team.</p>
+                  </div>
+                }
               } @else {
                 <!-- LOCKED VIEW: Frosted Blur Preview + Point Unlock Call To Action -->
                 <div class="locked-video-preview">
-                  <div class="blur-underlay" [style.background-image]="'url(' + prop.premiumMedia[0].thumbnailUrl + ')'"></div>
+                  <div class="blur-underlay" [style.background-image]="'url(' + (prop.premiumMedia?.[0]?.thumbnailUrl || prop.imageUrl || 'hero-bg.jpg') + ')'"></div>
                   <div class="lock-card-overlay">
                     <div class="lock-icon-circle">
                       <span class="material-symbols-outlined lock-glyph">lock</span>
@@ -293,7 +307,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       color: #ffffff;
       border-radius: 9999px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
     }
     .badge-asset-type span { font-size: 13px; }
     .badge-rera {
@@ -306,7 +320,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       border: 1px solid #a7f3d0;
       border-radius: 9999px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
     }
     .badge-rera span { font-size: 14px; }
     .badge-unlocked {
@@ -319,12 +333,12 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       border: 1px solid #bfdbfe;
       border-radius: 9999px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
     }
     .badge-unlocked span { font-size: 14px; }
     .dialog-title {
       font-size: 1.25rem;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--text-slate-900);
       letter-spacing: -0.02em;
       margin: 0;
@@ -387,14 +401,14 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       background: var(--brand-red-subtle);
       border-color: var(--brand-red-border);
       color: var(--brand-red);
-      font-weight: 700;
+      font-weight: 600;
     }
     .media-tab-btn span.material-symbols-outlined { font-size: 18px; }
     .tab-cost-badge {
       background: var(--brand-red);
       color: #ffffff;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 600;
       padding: 0.1rem 0.45rem;
       border-radius: 9999px;
       letter-spacing: 0.04em;
@@ -508,7 +522,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
     }
     .media-title {
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-900);
       margin: 0;
     }
@@ -526,7 +540,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       background: #ecfdf5;
       color: #047857;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       border: 1px solid #a7f3d0;
     }
     .badge-lifetime span { font-size: 14px; }
@@ -536,7 +550,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
     .playlist-header {
       display: block;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-500);
@@ -609,7 +623,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
     }
     .item-name {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-900);
       white-space: nowrap;
       overflow: hidden;
@@ -665,7 +679,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
     .lock-glyph { font-size: 28px; }
     .lock-title {
       font-size: 1.35rem;
-      font-weight: 800;
+      font-weight: 600;
       color: #ffffff;
       letter-spacing: -0.02em;
       margin: 0 0 0.5rem 0;
@@ -712,7 +726,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       border-radius: 10px;
       background: var(--brand-red);
       color: #ffffff;
-      font-weight: 800;
+      font-weight: 600;
       font-size: 13px;
       display: flex;
       align-items: center;
@@ -733,7 +747,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.3);
       color: #ffffff;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 12px;
       display: flex;
       align-items: center;
@@ -794,7 +808,7 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
       padding: 0.65rem 1.15rem;
       background: #25d366;
       color: #ffffff;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 13px;
       border-radius: 8px;
       text-decoration: none;
@@ -804,6 +818,44 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
     .btn-concierge-wa:hover {
       background: #1eb855;
       transform: translateY(-1px);
+    }
+
+    @media (max-width: 640px) {
+      .media-dialog {
+        max-height: 94vh;
+        border-radius: 1rem;
+      }
+      .dialog-header {
+        padding: 1rem;
+      }
+      .dialog-title {
+        font-size: 1.05rem;
+      }
+      .media-tabs-bar {
+        padding: 0.5rem 0.75rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .media-tab-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .tab-content {
+        padding: 0.875rem;
+      }
+      .featured-photo-stage {
+        height: 220px;
+      }
+      .dialog-footer {
+        padding: 0.875rem 1rem;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-concierge-wa {
+        width: 100%;
+        justify-content: center;
+      }
     }
   `]
 })

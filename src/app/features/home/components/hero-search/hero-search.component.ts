@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
 import { ListingMode, Property } from '../../../../core/models/property.model';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { DealsScrollingBannerComponent } from '../deals-scrolling-banner/deals-scrolling-banner.component';
+import { LandIntentStripComponent } from '../land-intent-strip/land-intent-strip.component';
 
 export interface LocationSuggestion {
   name: string;
@@ -22,385 +24,298 @@ export interface PropertyTypeOption {
 @Component({
   selector: 'app-hero-search',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DealsScrollingBannerComponent, LandIntentStripComponent],
   template: `
     <section class="hero-section" id="search-section">
-      <!-- Architectural Landscape & Skyline Background Overlay -->
-      <div class="blueprint-bg">
-        <img 
-          alt="Architectural Lake & Skyline Landscape" 
-          class="bg-hero-img" 
-          src="/hero-bg.jpg">
+      <!-- Creative Architectural Clean Background -->
+      <div class="blueprint-bg" aria-hidden="true">
+        <!-- 1. Creative Duo-tone Architectural Color Grading (Soft Warm/Cool Balance) -->
+        <div class="hero-bg-tint"></div>
+
+        <!-- 3. Creative Subtle Drafting Coordinate Linework (Hairline Blueprint Grid) -->
+        <div class="hero-bg-drafting-grid"></div>
+
+        <!-- 4. Multi-Stop Vertical Vignette (Seamless header to white transition) -->
         <div class="overlay-gradient-vertical"></div>
+
+        <!-- 5. Radial Focus Spotlight (Crystal-Clear Contrast for Search Console) -->
         <div class="overlay-gradient-horizontal"></div>
+
+        <!-- 6. Bottom Seamless Melt into Content -->
+        <div class="hero-bg-bottom-melt"></div>
       </div>
+
+      <!-- Docked Header Banner (Directly below header) -->
+      <app-deals-scrolling-banner />
+
+      <!-- Direct Registry Gateway & Buyer Matchmaking Cards (Below Banner, Above Search Console) -->
+      <app-land-intent-strip />
 
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
         <div class="hero-text-center">
-          <div class="badge-hero-verified">
-            <span class="material-symbols-outlined icon-verified">verified_user</span>
-            <span>Zero Brokerage • 100% Survey-Verified Deeds</span>
-          </div>
           <h1 class="hero-headline">
-            Find verified architectural homes, flats &amp; plots 
-            <span class="highlight-red">with zero brokerage.</span>
+            See Every Detail. 
+            <span class="highlight-red">Choose with Confidence.</span>
           </h1>
           <p class="hero-subline">
-            Direct owner properties, CMDA/DTCP sanctioned land, and RERA certified residences across Chennai, Bengaluru, and Southern high-growth metros.
+            Explore survey-verified plots and homes through stunning 4K drone views and authenticated cadastral deeds.
           </p>
         </div>
 
-        <!-- Comprehensive 100acress-Style Search Console Box -->
-        <div class="search-console-box">
-          <!-- 1. Expanded Asset Class Ribbon Tabs -->
-          <div class="hero-tabs-bar">
-            @for (tab of assetRibbonTabs; track tab.id) {
-              <button 
-                type="button" 
-                class="tab-btn" 
-                [class.active]="activeRibbonTab() === tab.id"
-                (click)="onSelectRibbonTab(tab.id)">
-                <span class="material-symbols-outlined">{{ tab.icon }}</span>
-                <span>{{ tab.label }}</span>
-                @if (tab.badge) {
-                  <span class="tab-badge">{{ tab.badge }}</span>
-                }
-              </button>
-            }
-          </div>
+        <!-- Sleek Minimalist Floating Search Pill -->
+        <div class="search-pill-wrapper">
+          <div class="search-pill-bar">
+            
+            <!-- Segment 1: Locality / Project -->
+            <div class="pill-segment segment-locality" (click)="$event.stopPropagation()">
+              <div class="segment-input-wrap">
+                <label class="segment-label" for="hero-locality-input">Location / Project</label>
+                <input 
+                  id="hero-locality-input"
+                  name="hero-locality-search"
+                  type="text" 
+                  class="pill-input-text" 
+                  [value]="propertyService.searchQuery()"
+                  (focus)="openLocationSuggest()"
+                  (input)="onSearchInput($event)"
+                  (keydown.enter)="onInputEnter($event)"
+                  autocomplete="off"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  [attr.aria-expanded]="isLocationSuggestOpen()"
+                  placeholder="City, locality or project...">
+              </div>
 
-          <!-- 2. Possession & Project Status Sub-strip -->
-          <div class="possession-strip">
-            <span class="possession-label">Project Status:</span>
-            <div class="possession-chips">
-              <button 
-                type="button" 
-                class="possession-chip"
-                [class.active]="selectedStatus() === 'all'"
-                (click)="setStatus('all')">
-                All Properties
-              </button>
-              <button 
-                type="button" 
-                class="possession-chip"
-                [class.active]="selectedStatus() === 'ready'"
-                (click)="setStatus('ready')">
-                <span class="material-symbols-outlined">key</span>
-                Ready to Move / Clear Patta
-              </button>
-              <button 
-                type="button" 
-                class="possession-chip"
-                [class.active]="selectedStatus() === 'under-construction'"
-                (click)="setStatus('under-construction')">
-                <span class="material-symbols-outlined">construction</span>
-                Under Construction
-              </button>
-              <button 
-                type="button" 
-                class="possession-chip"
-                [class.active]="selectedStatus() === 'new-launch'"
-                (click)="setStatus('new-launch')">
-                <span class="material-symbols-outlined">rocket_launch</span>
-                New Launch
-              </button>
-            </div>
-          </div>
+              <!-- Clear Input Button -->
+              @if (propertyService.searchQuery()) {
+                <button type="button" class="btn-pill-clear" (click)="clearSearchInput()" aria-label="Clear location input">
+                  <span class="clear-cross">&times;</span>
+                </button>
+              }
 
-          <!-- 3. Console Main Inputs Grid -->
-          <div class="console-body">
-            <div class="console-grid">
-              
-              <!-- Field 1: Locality / Project with Auto-Suggest & Voice Search -->
-              <div class="mat-field-outlined col-locality" (click)="$event.stopPropagation()">
-                <label class="mat-field-label" for="hero-locality-input">Locality / Project / Landmark</label>
-                <div class="mat-field-control-row">
-                  <span class="material-symbols-outlined mat-leading-icon">location_on</span>
-                  <input 
-                    id="hero-locality-input"
-                    type="text" 
-                    class="mat-input-text" 
-                    [value]="propertyService.searchQuery()"
-                    (focus)="openLocationSuggest()"
-                    (input)="onSearchInput($event)"
-                    (keydown.enter)="onInputEnter($event)"
-                    placeholder="Search city, locality (e.g. OMR, Whitefield, Powai) or project...">
-                  
-                  <!-- Clear Input Button -->
-                  @if (propertyService.searchQuery()) {
-                    <button type="button" class="btn-input-clear" (click)="clearSearchInput()" aria-label="Clear location input">
-                      <span class="material-symbols-outlined">close</span>
-                    </button>
+              <!-- Trending & Auto-Suggest Dropdown Panel -->
+              @if (isLocationSuggestOpen()) {
+                <div class="suggest-dropdown-panel" (click)="$event.stopPropagation()">
+                  <!-- 1. Matched Real-Time Properties Section -->
+                  @if (matchedProperties().length > 0) {
+                    <div class="suggest-section">
+                      <div class="suggest-header suggest-header-props">
+                        <span>Verified Properties &amp; Projects ({{ matchedProperties().length }})</span>
+                      </div>
+                      <div class="suggest-list suggest-list-props">
+                        @for (prop of matchedProperties(); track prop.id) {
+                          <div class="suggest-prop-item" (click)="selectProperty(prop)">
+                            <div class="prop-thumb-wrap">
+                              <img 
+                                [src]="prop.imageUrl || 'hero-bg.jpg'" 
+                                [alt]="prop.title" 
+                                class="prop-thumb"
+                                loading="lazy"
+                                decoding="async"
+                                (error)="onThumbError($event)">
+                              @if (prop.bhkBadge) {
+                                <span class="prop-bhk-tag">{{ prop.bhkBadge }}</span>
+                              }
+                            </div>
+                            <div class="prop-info">
+                              <div class="prop-title-row">
+                                <span class="prop-title" [title]="prop.title">{{ prop.title }}</span>
+                                <span class="prop-price">{{ prop.price }}</span>
+                              </div>
+                              <div class="prop-meta-row">
+                                <span class="prop-loc">
+                                  {{ prop.locality }}, {{ prop.city }}
+                                </span>
+                                <span class="prop-type-pill">{{ prop.propertyType }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
                   }
 
-                  <!-- Voice Search Microphone Button -->
-                  <button 
-                    type="button" 
-                    class="btn-voice-search" 
-                    [class.listening]="isListening()"
-                    (click)="startVoiceSearch()"
-                    title="Voice Search">
-                    <span class="material-symbols-outlined">{{ isListening() ? 'graphic_eq' : 'mic' }}</span>
-                  </button>
-                </div>
-
-                <!-- Trending & Auto-Suggest Dropdown Panel -->
-                @if (isLocationSuggestOpen()) {
-                  <div class="suggest-dropdown-panel" (click)="$event.stopPropagation()">
-                    
-                    <!-- 1. Matched Real-Time Properties Section -->
-                    @if (matchedProperties().length > 0) {
-                      <div class="suggest-section">
-                        <div class="suggest-header suggest-header-props">
-                          <span class="material-symbols-outlined">home_work</span>
-                          <span>Verified Properties &amp; Projects ({{ matchedProperties().length }})</span>
-                        </div>
-                        <div class="suggest-list suggest-list-props">
-                          @for (prop of matchedProperties(); track prop.id) {
-                            <div class="suggest-prop-item" (click)="selectProperty(prop)">
-                              <div class="prop-thumb-wrap">
-                                <img 
-                                  [src]="prop.imageUrl || '/hero-bg.jpg'" 
-                                  [alt]="prop.title" 
-                                  class="prop-thumb"
-                                  (error)="onThumbError($event)">
-                                @if (prop.bhkBadge) {
-                                  <span class="prop-bhk-tag">{{ prop.bhkBadge }}</span>
-                                }
+                  <!-- 2. Corridors & Localities Section -->
+                  @if (filteredTrendingLocations().length > 0) {
+                    <div class="suggest-section">
+                      <div class="suggest-header">
+                        <span>{{ propertyService.searchQuery() ? 'Matching Corridors & Localities' : 'Trending High-Growth Corridors' }}</span>
+                      </div>
+                      <div class="suggest-list">
+                        @for (loc of filteredTrendingLocations(); track loc.name) {
+                          <div class="suggest-item" (click)="selectLocation(loc)">
+                            <div class="suggest-item-left">
+                              <div class="suggest-item-texts">
+                                <span class="suggest-name">{{ loc.name }}</span>
+                                <span class="suggest-sub">{{ loc.sub }} • {{ loc.city }}</span>
                               </div>
-                              <div class="prop-info">
-                                <div class="prop-title-row">
-                                  <span class="prop-title" [title]="prop.title">{{ prop.title }}</span>
-                                  <span class="prop-price">{{ prop.price }}</span>
-                                </div>
-                                <div class="prop-meta-row">
-                                  <span class="prop-loc">
-                                    <span class="material-symbols-outlined">location_on</span>
-                                    {{ prop.locality }}, {{ prop.city }}
-                                  </span>
-                                  <span class="prop-type-pill">{{ prop.propertyType }}</span>
-                                </div>
-                              </div>
-                              <span class="material-symbols-outlined arrow-icon">chevron_right</span>
                             </div>
-                          }
-                        </div>
-                      </div>
-                    }
-
-                    <!-- 2. Corridors & Localities Section -->
-                    @if (filteredTrendingLocations().length > 0) {
-                      <div class="suggest-section">
-                        <div class="suggest-header">
-                          <span class="material-symbols-outlined">trending_up</span>
-                          <span>{{ propertyService.searchQuery() ? 'Matching Corridors & Localities' : 'Trending High-Growth Corridors' }}</span>
-                        </div>
-                        <div class="suggest-list">
-                          @for (loc of filteredTrendingLocations(); track loc.name) {
-                            <div class="suggest-item" (click)="selectLocation(loc)">
-                              <div class="suggest-item-left">
-                                <span class="material-symbols-outlined loc-pin">location_on</span>
-                                <div class="suggest-item-texts">
-                                  <span class="suggest-name">{{ loc.name }}</span>
-                                  <span class="suggest-sub">{{ loc.sub }} • {{ loc.city }}</span>
-                                </div>
-                              </div>
-                              <span class="suggest-tag">{{ loc.tag }}</span>
-                            </div>
-                          }
-                        </div>
-                      </div>
-                    }
-
-                    <!-- 3. Empty State when query matches neither property nor corridor -->
-                    @if (propertyService.searchQuery() && matchedProperties().length === 0 && filteredTrendingLocations().length === 0) {
-                      <div class="suggest-empty-state">
-                        <span class="material-symbols-outlined empty-icon">search_off</span>
-                        <div class="empty-texts">
-                          <p class="empty-title">No matching properties for "{{ propertyService.searchQuery() }}"</p>
-                          <p class="empty-sub">Press SEARCH or Enter to check the entire registry, or try searching by city or area name.</p>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-
-              <!-- Field 2: Multi-Select Property Type Popover -->
-              <div 
-                class="mat-dropdown-container col-type"
-                [class.is-open]="isTypeDropdownOpen()"
-                (click)="$event.stopPropagation()">
-                <div 
-                  class="mat-field-outlined mat-dropdown-trigger"
-                  role="combobox"
-                  [attr.aria-expanded]="isTypeDropdownOpen()"
-                  aria-haspopup="listbox"
-                  aria-label="Select Property Type"
-                  tabindex="0"
-                  (click)="toggleTypeDropdown()"
-                  (keydown.enter)="toggleTypeDropdown()"
-                  (keydown.space)="toggleTypeDropdown(); $event.preventDefault()">
-                  <label class="mat-field-label">Property Types</label>
-                  <div class="mat-field-control-row">
-                    <span class="material-symbols-outlined mat-leading-icon">{{ getSelectedTypeIcon() }}</span>
-                    <span class="mat-selected-value">{{ getSelectedTypeDisplay() }}</span>
-                    @if (selectedTypes().length > 1) {
-                      <span class="type-count-badge">+{{ selectedTypes().length - 1 }}</span>
-                    }
-                    <span class="material-symbols-outlined mat-chevron-icon" [class.rotated]="isTypeDropdownOpen()">expand_more</span>
-                  </div>
-                </div>
-
-                <!-- Multi-Select Popover Panel (100acress Style) -->
-                @if (isTypeDropdownOpen()) {
-                  <div class="mat-dropdown-panel type-popover-panel" role="listbox" aria-label="Property Types">
-                    <div class="popover-panel-header">
-                      <span class="popover-title">Select Property Classes</span>
-                      <div class="popover-header-actions">
-                        <button type="button" class="btn-text-action" (click)="selectAllTypes()">All</button>
-                        <span class="divider">|</span>
-                        <button type="button" class="btn-text-action" (click)="clearAllTypes()">Clear</button>
-                      </div>
-                    </div>
-
-                    <div class="popover-checklist">
-                      @for (item of propertyTypes; track item.value) {
-                        <div 
-                          class="popover-check-row"
-                          (click)="toggleTypeSelection(item.value)">
-                          <div class="custom-chkbox" [class.checked]="isTypeChecked(item.value)">
-                            @if (isTypeChecked(item.value)) {
-                              <span class="material-symbols-outlined check-mark">check</span>
-                            }
+                            <span class="suggest-tag">{{ loc.tag }}</span>
                           </div>
-                          <span class="material-symbols-outlined item-icon">{{ item.icon }}</span>
-                          <div class="check-texts">
-                            <span class="check-label">{{ item.label }}</span>
-                            <span class="check-sub">{{ item.desc }}</span>
-                          </div>
-                        </div>
-                      }
-                    </div>
-
-                    <div class="popover-footer">
-                      <span class="selection-summary">{{ selectedTypes().length }} Classes Selected</span>
-                      <button type="button" class="btn-apply-popover" (click)="applyTypeDropdown()">
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <!-- Field 3: Flexible Budget Popover (Tiered + Min/Max) -->
-              <div 
-                class="mat-dropdown-container col-budget"
-                [class.is-open]="isBudgetDropdownOpen()"
-                (click)="$event.stopPropagation()">
-                <div 
-                  class="mat-field-outlined mat-dropdown-trigger"
-                  role="combobox"
-                  [attr.aria-expanded]="isBudgetDropdownOpen()"
-                  aria-haspopup="listbox"
-                  aria-label="Select Budget Range"
-                  tabindex="0"
-                  (click)="toggleBudgetDropdown()"
-                  (keydown.enter)="toggleBudgetDropdown()"
-                  (keydown.space)="toggleBudgetDropdown(); $event.preventDefault()">
-                  <label class="mat-field-label">Budget Range</label>
-                  <div class="mat-field-control-row">
-                    <span class="material-symbols-outlined mat-leading-icon">payments</span>
-                    <span class="mat-selected-value">{{ propertyService.selectedBudget() }}</span>
-                    <span class="material-symbols-outlined mat-chevron-icon" [class.rotated]="isBudgetDropdownOpen()">expand_more</span>
-                  </div>
-                </div>
-
-                <!-- Budget Popover Panel -->
-                @if (isBudgetDropdownOpen()) {
-                  <div class="mat-dropdown-panel budget-popover-panel" role="listbox" aria-label="Budget Ranges">
-                    <div class="popover-panel-header">
-                      <span class="popover-title">Choose Budget Bracket</span>
-                    </div>
-
-                    <!-- Quick Tiered Brackets Grid -->
-                    <div class="budget-tiers-grid">
-                      @for (item of budgetRanges; track item.value) {
-                        <button 
-                          type="button" 
-                          class="tier-pill"
-                          [class.selected]="propertyService.selectedBudget() === item.value"
-                          (click)="selectBudget(item.value)">
-                          <span class="tier-label">{{ item.label }}</span>
-                        </button>
-                      }
-                    </div>
-
-                    <!-- Custom Min / Max Selectors -->
-                    <div class="custom-minmax-section">
-                      <span class="minmax-title">Custom Range (Min – Max)</span>
-                      <div class="minmax-row">
-                        <div class="minmax-field">
-                          <label>Min</label>
-                          <select [value]="customMinBudget()" (change)="onMinBudgetChange($any($event.target).value)">
-                            <option value="any">Min Price</option>
-                            <option value="25l">₹25 Lakh</option>
-                            <option value="50l">₹50 Lakh</option>
-                            <option value="1cr">₹1.00 Cr</option>
-                            <option value="2cr">₹2.00 Cr</option>
-                            <option value="3cr">₹3.00 Cr</option>
-                            <option value="5cr">₹5.00 Cr</option>
-                          </select>
-                        </div>
-                        <span class="minmax-divider">to</span>
-                        <div class="minmax-field">
-                          <label>Max</label>
-                          <select [value]="customMaxBudget()" (change)="onMaxBudgetChange($any($event.target).value)">
-                            <option value="any">Max Price</option>
-                            <option value="50l">₹50 Lakh</option>
-                            <option value="1cr">₹1.00 Cr</option>
-                            <option value="1.5cr">₹1.50 Cr</option>
-                            <option value="3cr">₹3.00 Cr</option>
-                            <option value="5cr">₹5.00 Cr</option>
-                            <option value="10cr">₹10.00 Cr+</option>
-                          </select>
-                        </div>
+                        }
                       </div>
                     </div>
+                  }
 
-                    <div class="popover-footer">
-                      <button type="button" class="btn-text-action" (click)="resetBudget()">Reset</button>
-                      <button type="button" class="btn-apply-popover" (click)="applyCustomBudget()">
-                        Apply
-                      </button>
+                  <!-- 3. Empty State -->
+                  @if (propertyService.searchQuery() && matchedProperties().length === 0 && filteredTrendingLocations().length === 0) {
+                    <div class="suggest-empty-state">
+                      <div class="empty-texts">
+                        <p class="empty-title">No matching properties for "{{ propertyService.searchQuery() }}"</p>
+                        <p class="empty-sub">Press SEARCH or Enter to check the entire registry.</p>
+                      </div>
                     </div>
-                  </div>
-                }
-              </div>
-
-              <!-- Field 4: Search Action CTA Button -->
-              <div class="col-action">
-                <button type="button" class="btn-hero-search" (click)="executeSearch()">
-                  <span class="material-symbols-outlined">search</span>
-                  <span>SEARCH</span>
-                </button>
-              </div>
-
+                  }
+                </div>
+              }
             </div>
-          </div>
-        </div>
 
-        <!-- Sanctioned Structural Skyline Silhouette -->
-        <div class="skyline-wrapper">
-          <div class="skyline-label">
-            <span>Sanctioned Structural &amp; Cadastral Registry Skyline</span>
-          </div>
-          <div class="skyline-img-container">
-            <img 
-              alt="Sanctioned Structural & Cadastral Registry Skyline" 
-              class="skyline-img" 
-              src="/skyline.svg">
+            <!-- Vertical Hairline Divider -->
+            <div class="pill-divider"></div>
+
+            <!-- Segment 2: Property Type -->
+            <div 
+              class="pill-segment segment-dropdown" 
+              [class.is-open]="isTypeDropdownOpen()"
+              (click)="$event.stopPropagation()">
+              <div 
+                class="segment-trigger"
+                (click)="toggleTypeDropdown()"
+                role="button"
+                tabindex="0">
+                <div class="segment-texts">
+                  <span class="segment-label">Property Type</span>
+                  <span class="segment-value">{{ getSelectedTypeDisplay() }}</span>
+                </div>
+              </div>
+
+              <!-- Multi-Select Popover Panel -->
+              @if (isTypeDropdownOpen()) {
+                <div class="mat-dropdown-panel type-popover-panel" role="listbox" aria-label="Property Types">
+                  <div class="popover-panel-header">
+                    <span class="popover-title">Select Property Classes</span>
+                    <div class="popover-header-actions">
+                      <button type="button" class="btn-text-action" (click)="selectAllTypes()">All</button>
+                      <span class="divider">|</span>
+                      <button type="button" class="btn-text-action" (click)="clearAllTypes()">Clear</button>
+                    </div>
+                  </div>
+
+                  <div class="popover-checklist">
+                    @for (item of propertyTypes; track item.value) {
+                      <div 
+                        class="popover-check-row"
+                        (click)="toggleTypeSelection(item.value)">
+                        <div class="custom-chkbox" [class.checked]="isTypeChecked(item.value)">
+                          @if (isTypeChecked(item.value)) {
+                            <span class="chkbox-mark">✓</span>
+                          }
+                        </div>
+                        <div class="check-texts">
+                          <span class="check-label">{{ item.label }}</span>
+                          <span class="check-sub">{{ item.desc }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="popover-footer">
+                    <span class="selection-summary">{{ selectedTypes().length }} Selected</span>
+                    <button type="button" class="btn-apply-popover" (click)="applyTypeDropdown()">
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Vertical Hairline Divider -->
+            <div class="pill-divider"></div>
+
+            <!-- Segment 3: Budget Range -->
+            <div 
+              class="pill-segment segment-dropdown" 
+              [class.is-open]="isBudgetDropdownOpen()"
+              (click)="$event.stopPropagation()">
+              <div 
+                class="segment-trigger"
+                (click)="toggleBudgetDropdown()"
+                role="button"
+                tabindex="0">
+                <div class="segment-texts">
+                  <span class="segment-label">Budget</span>
+                  <span class="segment-value">{{ propertyService.selectedBudget() }}</span>
+                </div>
+              </div>
+
+              <!-- Budget Popover Panel -->
+              @if (isBudgetDropdownOpen()) {
+                <div class="mat-dropdown-panel budget-popover-panel" role="listbox" aria-label="Budget Ranges">
+                  <div class="popover-panel-header">
+                    <span class="popover-title">Choose Budget Bracket</span>
+                  </div>
+
+                  <div class="budget-tiers-grid">
+                    @for (item of budgetRanges; track item.value) {
+                      <button 
+                        type="button" 
+                        class="tier-pill"
+                        [class.selected]="propertyService.selectedBudget() === item.value"
+                        (click)="selectBudget(item.value)">
+                        <span class="tier-label">{{ item.label }}</span>
+                      </button>
+                    }
+                  </div>
+
+                  <div class="custom-minmax-section">
+                    <span class="minmax-title">Custom Range (Min – Max)</span>
+                    <div class="minmax-row">
+                      <div class="minmax-field">
+                        <label>Min</label>
+                        <select [value]="customMinBudget()" (change)="onMinBudgetChange($any($event.target).value)">
+                          <option value="any">Min Price</option>
+                          <option value="25l">₹25 Lakh</option>
+                          <option value="50l">₹50 Lakh</option>
+                          <option value="1cr">₹1.00 Cr</option>
+                          <option value="2cr">₹2.00 Cr</option>
+                          <option value="3cr">₹3.00 Cr</option>
+                          <option value="5cr">₹5.00 Cr</option>
+                        </select>
+                      </div>
+                      <span class="minmax-divider">to</span>
+                      <div class="minmax-field">
+                        <label>Max</label>
+                        <select [value]="customMaxBudget()" (change)="onMaxBudgetChange($any($event.target).value)">
+                          <option value="any">Max Price</option>
+                          <option value="50l">₹50 Lakh</option>
+                          <option value="1cr">₹1.00 Cr</option>
+                          <option value="1.5cr">₹1.50 Cr</option>
+                          <option value="3cr">₹3.00 Cr</option>
+                          <option value="5cr">₹5.00 Cr</option>
+                          <option value="10cr">₹10.00 Cr+</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="popover-footer">
+                    <button type="button" class="btn-text-action" (click)="resetBudget()">Reset</button>
+                    <button type="button" class="btn-apply-popover" (click)="applyCustomBudget()">
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Segment 4: Search Button -->
+            <div class="pill-action-wrap">
+              <button type="button" class="btn-pill-search" (click)="executeSearch()" id="hero-search-btn">
+                <span class="search-btn-text">Search</span>
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -410,65 +325,107 @@ export interface PropertyTypeOption {
     :host {
       display: block;
       position: relative;
-      z-index: 50;
+      z-index: 10;
     }
     .hero-section {
       position: relative;
-      z-index: 50;
+      z-index: 10;
       background-color: #ffffff;
-      padding-top: 3rem;
-      padding-bottom: 3.5rem;
-      border-bottom: 1px solid var(--hairline-border);
+      padding-top: 0;
+      margin-top: 0;
+      border-bottom: none;
     }
+    app-deals-scrolling-banner {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    app-land-intent-strip {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      position: relative;
+      z-index: 15;
+    }
+    /* Creative Architectural Image View with Opacity (Static • High Contrast) */
     .blueprint-bg {
       position: absolute;
       inset: 0;
       pointer-events: none;
       overflow: hidden;
       z-index: 0;
+      background-color: #f8fafc;
     }
-    @keyframes heroImageFadeIn {
-      0% {
-        opacity: 0;
-        transform: scale(1.04);
-        filter: blur(4px);
-      }
-      100% {
-        opacity: 0.3;
-        transform: scale(1);
-        filter: blur(0px);
-      }
-    }
+
     .bg-hero-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 35%;
-      opacity: 0.3;
-      animation: heroImageFadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      will-change: opacity, transform, filter;
+      object-position: center 30%;
+      opacity: 0.38;
+      filter: saturate(1.12) contrast(1.05);
+      will-change: opacity;
     }
+
+    /* Architectural Duo-tone Color Tint */
+    .hero-bg-tint {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 12% 20%, rgba(199, 52, 52, 0.04) 0%, transparent 45%),
+        radial-gradient(circle at 88% 20%, rgba(15, 23, 42, 0.035) 0%, transparent 45%);
+      pointer-events: none;
+    }
+
+    /* Subtle Hairline Blueprint Drafting Grid (Creative Architectural Motif) */
+    .hero-bg-drafting-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    /* Multi-Stop Vertical Vignette (Seamless Header to Crisp Base) */
     .overlay-gradient-vertical {
       position: absolute;
       inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(255, 255, 255, 0.6) 0%,
-        rgba(255, 255, 255, 0.35) 45%,
-        rgba(255, 255, 255, 0.85) 75%,
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(255, 255, 255, 0.15) 30%,
+        rgba(255, 255, 255, 0.70) 65%,
         #ffffff 100%
       );
       pointer-events: none;
     }
+
+    /* Radial Focus Spotlight (Clean, Crisp Foreground Readability) */
     .overlay-gradient-horizontal {
       position: absolute;
       inset: 0;
       background: radial-gradient(
-        ellipse 90% 70% at 50% 25%,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.65) 70%,
-        #ffffff 100%
+        ellipse 75% 65% at 50% 48%,
+        rgba(255, 255, 255, 0.94) 0%,
+        rgba(255, 255, 255, 0.65) 55%,
+        transparent 100%
       );
+      pointer-events: none;
+    }
+
+    /* Bottom Seamless Gradient Melt */
+    .hero-bg-bottom-melt {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to bottom, transparent 0%, #ffffff 100%);
       pointer-events: none;
     }
     .hero-content {
@@ -477,44 +434,99 @@ export interface PropertyTypeOption {
     }
     .hero-text-center {
       text-align: center;
-      max-width: 56rem;
+      /* max-width: 56rem; */
       margin-left: auto;
       margin-right: auto;
       margin-bottom: 2.5rem;
+      margin-top: 4.5rem;
     }
     .badge-hero-verified {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.25rem 0.75rem;
+      gap: 0.625rem;
+      padding: 0.3rem 0.85rem 0.3rem 0.35rem;
       border-radius: 9999px;
-      background: var(--brand-red-subtle);
-      border: 1px solid var(--brand-red-border);
-      color: var(--brand-red);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 1rem;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      /* box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04); */
+      margin-bottom: 1.25rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default;
     }
-    .icon-verified {
-      font-size: 16px;
+    .badge-hero-verified:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.12);
+      transform: translateY(-1px);
+    }
+    .badge-tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.65rem;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 9999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+    }
+    .badge-camera-icon {
+      font-size: 13px;
+      color: #f87171;
+    }
+    .badge-main-text {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #1e293b;
+      letter-spacing: -0.01em;
+    }
+    .badge-arrow-icon {
+      font-size: 14px;
+      color: #94a3b8;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .badge-hero-verified:hover .badge-arrow-icon {
+      color: var(--brand-red);
+      transform: translateX(2px);
+    }
+    @media (max-width: 640px) {
+      .badge-hero-verified {
+        padding: 0.25rem 0.65rem 0.25rem 0.3rem;
+        gap: 0.4rem;
+        max-width: 100%;
+      }
+      .badge-tag-pill {
+        padding: 0.2rem 0.5rem;
+        font-size: 9.5px;
+      }
+      .badge-main-text {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .badge-arrow-icon {
+        display: none;
+      }
     }
     .hero-headline {
-      font-size: 2rem;
-      font-weight: 800;
+      font-size: clamp(1.4rem, 5.5vw, 1.65rem);
+      font-weight: 600;
       color: var(--text-slate-950);
       letter-spacing: -0.025em;
-      line-height: 1.15;
+      line-height: 1.22;
+      word-break: break-word;
     }
     @media (min-width: 640px) {
       .hero-headline {
-        font-size: 3rem;
+        font-size: 2rem;
+        line-height: 1.15;
       }
     }
     @media (min-width: 1024px) {
       .hero-headline {
-        font-size: 3.25rem;
+        font-size: 2rem;
       }
     }
     .highlight-red {
@@ -522,241 +534,287 @@ export interface PropertyTypeOption {
     }
     .hero-subline {
       color: var(--text-slate-600);
-      font-size: 1rem;
-      margin-top: 0.75rem;
+      font-size: 0.95rem;
+      margin-top: 0.65rem;
       font-weight: 400;
-      max-width: 48rem;
+      /* max-width: 46rem; */
       margin-left: auto;
       margin-right: auto;
-      line-height: 1.6;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
     }
     @media (min-width: 640px) {
       .hero-subline {
-        font-size: 1.125rem;
+        font-size: 1rem;
+        margin-top: 0.75rem;
+        line-height: 1.65;
+      }
+    }
+    @media (max-width: 640px) {
+      .hero-section {
+        padding-top: 1.25rem;
+      }
+      .hero-text-center {
+        margin-bottom: 1.25rem;
+        padding: 0 0.25rem;
+      }
+      .hero-subline {
+        font-size: 0.88rem;
+        line-height: 1.55;
+        margin-top: 0.5rem;
+      }
+      .badge-hero-verified {
+        font-size: 10px;
+        padding: 0.2rem 0.6rem;
+        margin-bottom: 0.75rem;
       }
     }
 
-    /* Search Console Box */
-    .search-console-box {
+    /* Sleek Minimalist Floating Search Pill */
+    .search-pill-wrapper {
       width: 100%;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(12px);
-      border-radius: 1.25rem;
-      border: 1px solid rgba(203, 213, 225, 0.85);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      max-width: 58rem;
+      margin: 0 auto;
       position: relative;
       z-index: 30;
     }
 
-    /* 1. Asset Ribbon Tabs */
-    .hero-tabs-bar {
+    .search-pill-bar {
       display: flex;
       align-items: center;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--hairline-border);
-      background: #f8fafc;
-      padding: 0.625rem 1.25rem;
-      gap: 0.5rem;
-      border-top-left-radius: 1.25rem;
-      border-top-right-radius: 1.25rem;
-      scrollbar-width: none;
-    }
-    .hero-tabs-bar::-webkit-scrollbar {
-      display: none;
-    }
-    .tab-btn {
-      padding: 0.5rem 1rem;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      color: var(--text-slate-600);
-      border: 1px solid transparent;
-      background: transparent;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .tab-btn:hover {
-      color: var(--text-slate-950);
-      background: #f1f5f9;
-    }
-    .tab-btn.active {
-      color: var(--brand-red);
-      font-weight: 700;
       background: #ffffff;
-      border-color: #cbd5e1;
-      /* box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); */
-    }
-    .tab-btn span.material-symbols-outlined {
-      font-size: 18px;
-    }
-    .tab-badge {
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: #fef2f2;
-      color: var(--brand-red);
-      padding: 1px 5px;
-      border-radius: 4px;
-      border: 1px solid #fecaca;
-    }
-
-    /* 2. Possession & Project Status Sub-strip */
-    .possession-strip {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.5rem 1.5rem;
-      background: #ffffff;
-      border-bottom: 1px solid #f1f5f9;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .possession-strip::-webkit-scrollbar {
-      display: none;
-    }
-    .possession-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-slate-400);
-      white-space: nowrap;
-    }
-    .possession-chips {
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-    }
-    .possession-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0.25rem 0.625rem;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-slate-600);
-      background: #f8fafc;
       border: 1px solid #e2e8f0;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s;
+      border-radius: 9999px;
+      padding: 0.35rem 0.5rem 0.35rem 1.25rem;
+      box-shadow: 0 16px 36px -12px rgba(15, 23, 42, 0.10), 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .possession-chip:hover {
-      background: #f1f5f9;
-      color: var(--text-slate-900);
-    }
-    .possession-chip.active {
-      background: #0f172a;
-      border-color: #0f172a;
-      color: #ffffff;
-    }
-    .possession-chip span.material-symbols-outlined {
-      font-size: 14px;
+    .search-pill-bar:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.14), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
     }
 
-    /* 3. Console Main Inputs Grid */
-    .console-body {
-      padding: 1.25rem 1.5rem 1.5rem;
-    }
-    .console-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      align-items: center;
-    }
-    @media (min-width: 768px) {
-      .console-grid {
-        grid-template-columns: repeat(12, 1fr);
-      }
-      .col-locality { grid-column: span 5; }
-      .col-type { grid-column: span 3; }
-      .col-budget { grid-column: span 2; }
-      .col-action { grid-column: span 2; }
-    }
-
-    /* Field Inputs */
-    .mat-field-control-row {
+    .pill-segment {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      position: relative;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      transition: background 0.15s ease;
+      cursor: pointer;
     }
-    .mat-leading-icon {
-      font-size: 20px;
-      color: var(--brand-red);
+    .pill-segment:hover {
+      background: #f8fafc;
+    }
+
+    .segment-locality {
+      flex: 2.2;
+      min-width: 0;
+      cursor: text;
+    }
+    .segment-dropdown {
+      flex: 1.4;
+      min-width: 0;
+    }
+
+    .segment-icon {
+      font-size: 1.25rem;
+      color: var(--brand-green, #5e8f72);
+      margin-right: 0.65rem;
       flex-shrink: 0;
     }
-    .mat-input-text {
+
+    .segment-input-wrap,
+    .segment-texts {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .segment-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.1rem;
+      white-space: nowrap;
+    }
+
+    .pill-input-text {
       width: 100%;
       border: none;
       background: transparent;
       outline: none;
-      font-size: 14px;
+      font-size: 0.88rem;
       font-weight: 600;
-      color: var(--text-slate-950);
+      color: #0f172a;
       font-family: inherit;
+      padding: 0;
     }
-    .mat-input-text::placeholder {
+    .pill-input-text::placeholder {
       color: #94a3b8;
       font-weight: 400;
     }
-    .btn-input-clear {
-      background: transparent;
-      border: none;
-      color: var(--text-slate-400);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      padding: 2px;
-      border-radius: 9999px;
-    }
-    .btn-input-clear:hover {
-      color: var(--text-slate-900);
-    }
-    .btn-input-clear span {
-      font-size: 16px;
+
+    .segment-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* Voice Search Button */
-    .btn-voice-search {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: var(--text-slate-600);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s;
+    .chevron-icon {
+      font-size: 1.15rem;
+      color: #94a3b8;
+      margin-left: 0.35rem;
+      transition: transform 0.2s ease;
       flex-shrink: 0;
     }
-    .btn-voice-search:hover {
-      background: #fef2f2;
-      color: var(--brand-red);
-      border-color: #fca5a5;
+    .chevron-icon.rotated {
+      transform: rotate(180deg);
     }
-    .btn-voice-search.listening {
-      background: var(--brand-red);
-      color: #ffffff;
-      border-color: var(--brand-red);
-      animation: pulseMic 1.2s infinite;
+
+    .segment-trigger {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-width: 0;
     }
-    @keyframes pulseMic {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(199, 52, 52, 0.4); }
-      70% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(199, 52, 52, 0); }
-      100% { transform: scale(1); }
+
+    .pill-divider {
+      width: 1px;
+      height: 32px;
+      background: #e2e8f0;
+      margin: 0 0.25rem;
+      flex-shrink: 0;
     }
-    .btn-voice-search span {
-      font-size: 18px;
+
+    .btn-pill-clear {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      margin-right: 0.25rem;
+    }
+    .btn-pill-clear:hover {
+      color: #0f172a;
+    }
+    .clear-cross {
+      font-size: 1.15rem;
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .pill-action-wrap {
+      flex-shrink: 0;
+      margin-left: 0.35rem;
+    }
+
+    .btn-pill-search {
+      margin-right: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 38px;
+      padding: 0 1.5rem;
+      border-radius: 9999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--brand-green);
+      background: #ffffff;
+      border: 2px solid var(--brand-green);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-pill-search:hover {
+      /* background: #fef2f2; */
+      border-color: var(--brand-green);
+      color: var(--brand-green);
+      transform: translateY(-1px);
+    }
+    .btn-pill-search:active {
+      transform: translateY(0);
+      background: var(--brand-green-subtle, #e5f7ec);
+    }
+
+    /* Popover Panels Base */
+    .mat-dropdown-panel {
+      position: absolute;
+      top: calc(100% + 12px);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.18), 0 6px 12px -2px rgba(15, 23, 42, 0.06);
+      z-index: 100;
+      animation: fadeInDown 0.18s ease-out;
+    }
+    .type-popover-panel {
+      left: 0;
+      min-width: 340px;
+    }
+    .budget-popover-panel {
+      right: 0;
+      min-width: 340px;
+    }
+
+    /* Mobile Responsive Pill Stack */
+    @media (max-width: 768px) {
+      .search-pill-bar {
+        flex-direction: column;
+        border-radius: 18px;
+        padding: 0.75rem;
+        gap: 0.625rem;
+        box-sizing: border-box;
+      }
+      .pill-segment {
+        width: 100%;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        padding: 0.65rem 0.85rem;
+        box-sizing: border-box;
+      }
+      .type-popover-panel,
+      .budget-popover-panel {
+        position: absolute;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        top: calc(100% + 4px) !important;
+        z-index: 150 !important;
+      }
+      .pill-divider {
+        display: none;
+      }
+      .pill-action-wrap {
+        width: 100%;
+        margin-left: 0;
+        display: flex;
+        justify-content: left;
+      }
+      .btn-pill-search {
+        width: auto;
+        min-width: 130px;
+        justify-content: center;
+        padding: 0 1.5rem;
+        height: 38px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1.5px solid var(--brand-green, #5e8f72);
+        border-radius: 9999px;
+      }
     }
 
     /* Trending Auto-Suggest Dropdown */
@@ -765,7 +823,8 @@ export interface PropertyTypeOption {
       top: calc(100% + 6px);
       left: 0;
       width: 100%;
-      min-width: 340px;
+      min-width: 0;
+      max-width: 100%;
       max-height: 440px;
       background: #ffffff;
       border: 1px solid #cbd5e1;
@@ -776,6 +835,11 @@ export interface PropertyTypeOption {
       animation: fadeInDown 0.15s ease-out;
       scrollbar-width: thin;
       scrollbar-color: #cbd5e1 #f8fafc;
+    }
+    @media (max-width: 640px) {
+      .suggest-dropdown-panel {
+        max-height: 340px;
+      }
     }
     .suggest-dropdown-panel::-webkit-scrollbar {
       width: 6px;
@@ -798,7 +862,7 @@ export interface PropertyTypeOption {
       background: #f8fafc;
       border-bottom: 1px solid #f1f5f9;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-700);
@@ -807,9 +871,9 @@ export interface PropertyTypeOption {
       z-index: 2;
     }
     .suggest-header.suggest-header-props {
-      background: #fef2f2;
-      color: var(--brand-red);
-      border-bottom: 1px solid #fee2e2;
+      background: var(--brand-green-subtle, #e5f7ec);
+      color: var(--brand-green-dark, #2c4938);
+      border-bottom: 1px solid rgba(61, 104, 78, 0.2);
     }
     .suggest-header span.material-symbols-outlined {
       font-size: 16px;
@@ -840,7 +904,7 @@ export interface PropertyTypeOption {
     }
     .loc-pin {
       font-size: 18px;
-      color: var(--brand-red);
+      color: var(--brand-green, #5e8f72);
     }
     .suggest-item-texts {
       display: flex;
@@ -848,7 +912,7 @@ export interface PropertyTypeOption {
     }
     .suggest-name {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-900);
     }
     .suggest-sub {
@@ -857,9 +921,10 @@ export interface PropertyTypeOption {
     }
     .suggest-tag {
       font-size: 10px;
-      font-weight: 700;
-      color: #047857;
-      background: #ecfdf5;
+      font-weight: 600;
+      color: var(--brand-green, #5e8f72);
+      background: var(--brand-green-subtle, #e5f7ec);
+      border: 1px solid rgba(94, 143, 114, 0.25);
       padding: 2px 6px;
       border-radius: 4px;
       white-space: nowrap;
@@ -876,7 +941,7 @@ export interface PropertyTypeOption {
       transition: background 0.15s ease;
     }
     .suggest-prop-item:hover {
-      background: #fef2f2;
+      background: var(--brand-green-subtle, #e5f7ec);
     }
     .suggest-prop-item:last-child {
       border-bottom: none;
@@ -903,7 +968,7 @@ export interface PropertyTypeOption {
       background: rgba(15, 23, 42, 0.85);
       color: #ffffff;
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 600;
       padding: 1px 4px;
       border-radius: 3px;
       line-height: 1.1;
@@ -927,7 +992,7 @@ export interface PropertyTypeOption {
     }
     .prop-title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-900);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -935,8 +1000,8 @@ export interface PropertyTypeOption {
     }
     .prop-price {
       font-size: 13px;
-      font-weight: 800;
-      color: var(--brand-red);
+      font-weight: 600;
+      color: var(--brand-green, #5e8f72);
       white-space: nowrap;
       font-family: ui-monospace, monospace;
     }
@@ -977,7 +1042,7 @@ export interface PropertyTypeOption {
     }
     .suggest-prop-item:hover .arrow-icon {
       transform: translateX(2px);
-      color: var(--brand-red);
+      color: var(--brand-green, #5e8f72);
     }
 
     /* Suggest Empty State */
@@ -1000,7 +1065,7 @@ export interface PropertyTypeOption {
     }
     .empty-title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-800);
       margin: 0;
     }
@@ -1014,7 +1079,17 @@ export interface PropertyTypeOption {
     /* Popover Panels (Multi-Select & Budget) */
     .type-popover-panel, .budget-popover-panel {
       min-width: 320px;
+      max-width: 100%;
       padding: 1rem;
+    }
+    @media (max-width: 640px) {
+      .type-popover-panel, .budget-popover-panel {
+        min-width: 0;
+        width: 100%;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+      }
     }
     .popover-panel-header {
       display: flex;
@@ -1026,7 +1101,7 @@ export interface PropertyTypeOption {
     }
     .popover-title {
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-800);
@@ -1040,8 +1115,8 @@ export interface PropertyTypeOption {
       background: transparent;
       border: none;
       font-size: 11px;
-      font-weight: 700;
-      color: var(--brand-red);
+      font-weight: 600;
+      color: var(--brand-green, #5e8f72);
       cursor: pointer;
       padding: 2px 4px;
     }
@@ -1084,12 +1159,15 @@ export interface PropertyTypeOption {
       transition: all 0.15s;
     }
     .custom-chkbox.checked {
-      background: var(--brand-red);
-      border-color: var(--brand-red);
+      background: var(--brand-green, #5e8f72);
+      border-color: var(--brand-green, #5e8f72);
       color: #ffffff;
     }
-    .check-mark {
-      font-size: 14px;
+    .chkbox-mark {
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 600;
+      color: #ffffff;
     }
     .check-texts {
       display: flex;
@@ -1097,7 +1175,7 @@ export interface PropertyTypeOption {
     }
     .check-label {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-900);
     }
     .check-sub {
@@ -1110,10 +1188,10 @@ export interface PropertyTypeOption {
       justify-content: center;
       padding: 1px 6px;
       border-radius: 9999px;
-      background: #fef2f2;
-      color: var(--brand-red);
+      background: var(--brand-green-subtle, #e5f7ec);
+      color: var(--brand-green-dark, #2c4938);
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 600;
       margin-left: auto;
       margin-right: 4px;
     }
@@ -1133,10 +1211,10 @@ export interface PropertyTypeOption {
     .btn-apply-popover {
       padding: 0.375rem 1rem;
       border-radius: 6px;
-      background: var(--brand-red);
+      background: var(--brand-green, #5e8f72);
       color: #ffffff;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border: none;
@@ -1144,7 +1222,7 @@ export interface PropertyTypeOption {
       transition: background 0.15s;
     }
     .btn-apply-popover:hover {
-      background: var(--brand-red-hover);
+      background: var(--brand-green-hover, #497259);
     }
 
     /* Budget Tiers Grid */
@@ -1171,10 +1249,10 @@ export interface PropertyTypeOption {
       border-color: #cbd5e1;
     }
     .tier-pill.selected {
-      background: #0f172a;
-      border-color: #0f172a;
+      background: var(--brand-green, #5e8f72);
+      border-color: var(--brand-green, #5e8f72);
       color: #ffffff;
-      font-weight: 700;
+      font-weight: 600;
     }
 
     /* Custom Min-Max Section */
@@ -1184,7 +1262,7 @@ export interface PropertyTypeOption {
     }
     .minmax-title {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-500);
@@ -1204,7 +1282,7 @@ export interface PropertyTypeOption {
     }
     .minmax-field label {
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-400);
       text-transform: uppercase;
     }
@@ -1231,9 +1309,9 @@ export interface PropertyTypeOption {
       width: 100%;
       height: 56px;
       padding: 0.875rem 1.5rem;
-      background-color: var(--brand-red);
+      background-color: var(--brand-green, #5e8f72);
       color: #ffffff;
-      font-weight: 800;
+      font-weight: 600;
       font-size: 14px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -1244,54 +1322,24 @@ export interface PropertyTypeOption {
       gap: 0.5rem;
       border: none;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(199, 52, 52, 0.25), 0 4px 10px rgba(199, 52, 52, 0.2);
+      /* box-shadow: 0 2px 4px rgba(94, 143, 114, 0.25), 0 4px 10px rgba(94, 143, 114, 0.2); */
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-hero-search:hover {
-      background-color: var(--brand-red-hover);
-      box-shadow: 0 4px 14px rgba(199, 52, 52, 0.4), 0 8px 22px rgba(199, 52, 52, 0.25);
+      background-color: var(--brand-green-hover, #497259);
+      box-shadow: 0 4px 14px rgba(94, 143, 114, 0.4), 0 8px 22px rgba(94, 143, 114, 0.25);
       transform: translateY(-1px);
     }
     .btn-hero-search:active {
       transform: scale(0.98);
-      box-shadow: 0 1px 2px rgba(199, 52, 52, 0.3);
+      box-shadow: 0 1px 2px rgba(94, 143, 114, 0.3);
     }
-
-    /* Skyline Footer */
-    .skyline-wrapper {
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid #f1f5f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .skyline-label {
-      font-size: 10px;
-      font-family: ui-monospace, monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: #94a3b8;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-    .skyline-img-container {
-      width: 100%;
-      max-width: 56rem;
-      height: 6rem;
-      overflow: hidden;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .skyline-img {
-      width: 100%;
-      max-width: 60rem;
-      margin: 0 auto;
-      height: 7rem;
-      object-fit: contain;
-      opacity: 0.75;
+    @media (max-width: 640px) {
+      .btn-hero-search {
+        height: 48px;
+        font-size: 13px;
+        border-radius: 10px;
+      }
     }
 
     @keyframes fadeInDown {
@@ -1385,7 +1433,7 @@ export class HeroSearchComponent {
   }
 
   onThumbError(event: Event): void {
-    (event.target as HTMLImageElement).src = '/hero-bg.jpg';
+    (event.target as HTMLImageElement).src = 'hero-bg.jpg';
   }
 
   onInputEnter(event: Event): void {

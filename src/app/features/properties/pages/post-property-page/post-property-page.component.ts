@@ -9,6 +9,7 @@ import { HeaderComponent } from '../../../home/components/header/header.componen
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
+import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
 import { PlotDetails } from '../../../../core/models/property.model';
 import { SubdividedPlot } from '../../../../core/models/subdivided-plot.model';
 
@@ -34,7 +35,8 @@ export interface UploadedImageItem {
     HeaderComponent,
     FooterComponent,
     TopConciergeBarComponent,
-    ToastComponent
+    ToastComponent,
+    PropertyMediaModalComponent
   ],
   templateUrl: './post-property-page.component.html',
   styleUrls: ['./post-property-page.component.css']
@@ -48,6 +50,10 @@ export class PostPropertyPageComponent {
   readonly isSubmitting = signal<boolean>(false);
   readonly submittedPropId = signal<string | null>(null);
   readonly isSuccessModalOpen = signal<boolean>(false);
+
+  // Advertisement State (Supports Left or Right Side Display)
+  readonly isAdVisible = signal<boolean>(true);
+  readonly adPosition = signal<'left' | 'right'>('right');
 
   // Media Tab: 'upload' | 'url' | 'presets'
   readonly activeMediaTab = signal<'upload' | 'url' | 'presets'>('upload');
@@ -77,7 +83,8 @@ export class PostPropertyPageComponent {
     boundaryWall: 'Gated & Compounded',
     commercialType: 'Commercial Office Space',
     powerBackup: '100% DG Redundancy',
-    waterSource: 'Dedicated Borewell & Canal'
+    waterSource: 'Dedicated Borewell & Canal',
+    interactiveMapUrl: 'assets/secura-masterplan-3d.html'
   };
 
   // Property Type Visual Card Selector Definitions
@@ -628,7 +635,7 @@ export class PostPropertyPageComponent {
 
     const user = this.authService.currentUser();
     const userId = user?.id || 1;
-    const userName = user?.name || 'Verified Investor';
+    const userName = user?.name || 'Verified User';
 
     // Ensure appropriate badge for non-residential properties without bedrooms
     let finalBhkBadge = this.form.bhkBadge;
@@ -689,6 +696,27 @@ export class PostPropertyPageComponent {
         });
       }
     });
+  }
+
+  toggleAdPosition(): void {
+    this.adPosition.update(pos => pos === 'right' ? 'left' : 'right');
+    this.notificationService.show({
+      type: 'info',
+      title: 'Ad Position Updated',
+      message: `Sponsored showcase moved to the ${this.adPosition()} side.`,
+      icon: 'swap_horiz'
+    });
+  }
+
+  dismissAd(): void {
+    this.isAdVisible.set(false);
+  }
+
+  openSampleShoot(): void {
+    const plot = this.propertyService.properties().find(p => p.propertyType === 'Gated CMDA Plots') || this.propertyService.properties()[0];
+    if (plot) {
+      this.propertyService.openMediaModal(plot, 'premium');
+    }
   }
 
   goToProfileListings(): void {

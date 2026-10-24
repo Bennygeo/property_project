@@ -147,8 +147,23 @@ export class UserProfilePageComponent implements OnInit {
     window.scrollTo({ top: 180, behavior: 'smooth' });
   }
 
+  getUserGenderIcon(): string {
+    const user = this.authService.currentUser();
+    const gender = (user as any)?.gender;
+    if (gender === 'female') return 'woman';
+    if (gender === 'male') return 'man';
+    const name = (user?.name || '').toLowerCase();
+    if (/anita|priya|lakshmi|deepa|kavitha|pooja|swetha|sneha|divya|sharmila|shreya|radha|geetha|female|she|her|woman/i.test(name)) {
+      return 'woman';
+    }
+    if (/arun|kumar|rahul|raj|vijay|suresh|ramesh|karthik|ajay|male|he|his|man/i.test(name)) {
+      return 'man';
+    }
+    return 'person';
+  }
+
   getUserInitials(): string {
-    const name = this.authService.currentUser()?.name || 'Investor';
+    const name = this.authService.currentUser()?.name || 'User';
     const parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -194,7 +209,7 @@ export class UserProfilePageComponent implements OnInit {
     this.notificationService.show({
       type: 'success',
       title: 'Preferences Saved',
-      message: 'Your investor alert and notification channels have been updated.',
+      message: 'Your alert and notification channels have been updated.',
       icon: 'notifications_active'
     });
   }

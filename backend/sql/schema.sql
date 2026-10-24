@@ -4,11 +4,14 @@
 -- Charset: utf8mb4 / utf8mb4_unicode_ci
 -- =====================================================================
 
-CREATE DATABASE IF NOT EXISTS `mannidam_property_db` 
+-- Target Database: `onenesgw_property_project`
+-- In phpMyAdmin, select your database `onenesgw_property_project` and click Import.
+-- The statement below ensures compatibility if run directly:
+CREATE DATABASE IF NOT EXISTS `onenesgw_property_project` 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
-USE `mannidam_property_db`;
+USE `onenesgw_property_project`;
 
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `admin_activity_logs`;
@@ -499,3 +502,20 @@ CREATE TABLE IF NOT EXISTS `admin_activity_logs` (
   INDEX `idx_admin_logs_action` (`action_type`),
   INDEX `idx_admin_logs_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------------------
+-- 24. GUEST / UNREGISTERED DEVICE VIEW RESTRICTIONS (Cross-Browser Limit)
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `guest_device_views` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `ip_address` VARCHAR(45) NOT NULL,
+  `device_hash` VARCHAR(64) NOT NULL,
+  `property_id` VARCHAR(50) NOT NULL,
+  `viewed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_active_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `idx_guest_view` (`ip_address`, `device_hash`, `property_id`),
+  KEY `idx_ip` (`ip_address`),
+  KEY `idx_device` (`device_hash`),
+  KEY `idx_viewed_at` (`viewed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

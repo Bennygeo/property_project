@@ -1,0 +1,183 @@
+<!-- Simplistic Floating Buyer Mindset Pill -->
+<aside class="mindset-pill" (click)="toggleDrawer()" [class.active]="behaviorService.browsingHistory().length > 0" aria-label="Buyer Mindset">
+  <span class="pill-dot" [class.logged-in]="behaviorService.isLoggedIn()"></span>
+  
+  <div class="pill-text">
+    <span class="pill-phone">{{ behaviorService.displayIdentifier() }}</span>
+    <span class="pill-sep">•</span>
+    <span class="pill-stats" *ngIf="behaviorService.browsingHistory().length > 0; else defaultSummary">
+      {{ behaviorService.plotsPercentage() }}% Plots, {{ behaviorService.flatsPercentage() }}% Flats ({{ behaviorService.priceRange().text }})
+    </span>
+    <ng-template #defaultSummary>
+      <span class="pill-stats">Buyer Mindset</span>
+    </ng-template>
+  </div>
+
+  <svg class="pill-arrow" [class.rotated]="behaviorService.isMindsetDrawerOpen()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</aside>
+
+<!-- Backdrop on small screens / focus -->
+<div class="mindset-backdrop" *ngIf="behaviorService.isMindsetDrawerOpen()" (click)="closeDrawer()"></div>
+
+<!-- Simplistic Mindset Intelligence Card -->
+<section class="mindset-card" *ngIf="behaviorService.isMindsetDrawerOpen()" role="dialog" aria-modal="true" aria-labelledby="mindset-card-title">
+  
+  <!-- Header -->
+  <header class="card-header">
+    <div class="header-info">
+      <h3 id="mindset-card-title" class="card-title">Buyer Mindset</h3>
+      <span class="buyer-tag" [class.is-auth]="behaviorService.isLoggedIn()">
+        {{ behaviorService.displayIdentifier() }}
+      </span>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Clear History Button in Header -->
+      <button *ngIf="behaviorService.browsingHistory().length > 0" 
+              type="button" 
+              class="btn-header-clear" 
+              (click)="clearHistory()" 
+              title="Clear user browsing history">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>Clear History</span>
+      </button>
+
+      <button type="button" class="btn-card-close" (click)="closeDrawer()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notice when History is Cleared -->
+  <div class="notice-cleared" *ngIf="showClearNotice()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Browsing history and mindset data cleared.</span>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+    
+    <!-- Phone Switcher (collapsible / compact) -->
+    <div class="phone-bar">
+      <span class="phone-label">Active User:</span>
+      <div *ngIf="!isEditingPhone(); else editPhoneTpl" class="phone-active-wrap">
+        <strong [class.auth-text]="behaviorService.isLoggedIn()">
+          {{ behaviorService.displayFullTitle() }}
+        </strong>
+        <span *ngIf="behaviorService.isLoggedIn()" class="auth-pill">Verified</span>
+        <button *ngIf="!behaviorService.isLoggedIn()" type="button" class="btn-text-edit" (click)="startEditPhone()">Change</button>
+      </div>
+      <ng-template #editPhoneTpl>
+        <div class="phone-edit-inline">
+          <input type="text" [(ngModel)]="editPhoneInput" placeholder="Mobile number" class="input-phone-sm" />
+          <button type="button" class="btn-save-sm" (click)="savePhone()">Save</button>
+          <button type="button" class="btn-cancel-sm" (click)="cancelEditPhone()">✕</button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Mindset Executive Brief -->
+    <div class="brief-box">
+      <div class="brief-tag-row">
+        <span class="brief-tag">{{ behaviorService.buyerArchetype() }}</span>
+      </div>
+      <p class="brief-text">
+        "{{ behaviorService.mindsetBrief() }}"
+      </p>
+    </div>
+
+    <!-- 3 Simple Metrics -->
+    <div class="metrics-row">
+      <div class="metric-item">
+        <span class="metric-val">{{ behaviorService.plotsPercentage() }}%</span>
+        <span class="metric-lbl">Plots ({{ behaviorService.plotsCount() }})</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-val">{{ behaviorService.flatsPercentage() }}%</span>
+        <span class="metric-lbl">Flats ({{ behaviorService.flatsCount() }})</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-val">{{ behaviorService.priceRange().text }}</span>
+        <span class="metric-lbl">Budget Range</span>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="recommendation-row" *ngIf="behaviorService.recommendedAction()">
+      <span class="rec-label">Next Action:</span>
+      <span class="rec-text">{{ behaviorService.recommendedAction() }}</span>
+    </div>
+
+    <!-- Recent Browsing Footprint -->
+    <div class="footprint-section">
+      <div class="footprint-header">
+        <span>Recent Views ({{ behaviorService.browsingHistory().length }})</span>
+        <button *ngIf="behaviorService.browsingHistory().length > 0" 
+                type="button" 
+                (click)="clearHistory()" 
+                class="btn-text-clear" 
+                title="Clear browsing footprint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Clear History
+        </button>
+      </div>
+
+      <div class="footprint-list" *ngIf="behaviorService.browsingHistory().length > 0; else noFootprint">
+        <div class="footprint-row" *ngFor="let item of behaviorService.browsingHistory() | slice:0:5">
+          <div class="footprint-main">
+            <span class="footprint-type" [class.is-plot]="item.propertyType.toLowerCase().includes('plot')">
+              {{ item.propertyType.toLowerCase().includes('plot') ? 'Plot' : 'Flat' }}
+            </span>
+            <span class="footprint-title">{{ item.title }}</span>
+          </div>
+          <div class="footprint-right">
+            <span class="footprint-price">{{ item.price }}</span>
+            <a [routerLink]="['/property', item.propertyId]" (click)="closeDrawer()" class="footprint-link">View</a>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noFootprint>
+        <p class="empty-footprint-msg">No properties in history. Browse properties or use demo presets below.</p>
+      </ng-template>
+    </div>
+
+    <!-- Simulator Presets & Action Footer -->
+    <div class="card-footer">
+      <div class="footer-left">
+        <span class="footer-label">Demo presets:</span>
+        <div class="preset-buttons">
+          <button type="button" class="btn-ghost" (click)="loadUserPromptScenario()">9486140936 (4 Plots + 1 Flat)</button>
+          <button type="button" class="btn-ghost" (click)="loadFlatScenario()">Flat Buyer</button>
+        </div>
+      </div>
+
+      <button *ngIf="behaviorService.browsingHistory().length > 0" 
+              type="button" 
+              class="btn-footer-clear" 
+              (click)="clearHistory()" 
+              title="Clear all recorded history">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>Clear History</span>
+      </button>
+    </div>
+
+  </div>
+
+</section>

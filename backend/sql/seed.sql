@@ -4,7 +4,7 @@
 -- Factsheets, Media, and Media Economy Packages
 -- =====================================================================
 
-USE `mannidam_property_db`;
+USE `onenesgw_property_project`;
 
 -- 1. CITIES
 INSERT INTO `cities` (`id`, `city_key`, `name`, `state`, `avg_rate_sqft`, `yoy_growth`, `deed_count`) VALUES
@@ -82,6 +82,18 @@ INSERT INTO `properties` (
   'TN/01/Layout/0291/2024', 'CMDA & RERA Approved Plot', 'Clear Title 30-Yr Nil EC', 2,
   'Immediate Registration', 'Ready for Construction', '18.5 Acres Master Layout', '124 Sanctioned Plots', 2,
   'https://wa.me/919444100000', 1
+),
+(
+  'prop-secura-9', 2, 1, 4,
+  'SECURA - Premium Gated Community Villa Plots',
+  'Gated CMDA Plots', 'plots',
+  'Poonamallee (Outer Ring Road)', 'Chennai',
+  '₹56.0 Lakhs', '₹4,947 /sq.ft', '1,132 - 1,922 sq.ft',
+  '29 Villa Plots', 'North & East Facing • ORR Corridor',
+  'https://www.gobroker.co.in/uploads/amenities_image/banner27.png',
+  'TNRERA/29/LO/3195/2025', '0% Direct SRO Deed', 'Outer Ring Road Plotted Community', 4,
+  '2026', 'Ready to Construct', '1.18 Acres Plotted Community', '29 Exclusive Villa Plots', 4,
+  NULL, 1
 );
 
 -- 5. PROPERTY HIGHLIGHTS

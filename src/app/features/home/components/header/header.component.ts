@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, inject, signal, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { WalletService } from '../../../../core/services/wallet.service';
@@ -10,20 +10,19 @@ import { AuthService } from '../../../../core/services/auth.service';
   selector: 'app-header',
   standalone: true,
   imports: [CommonModule, RouterModule],
+  host: {
+    '[class.drawer-open]': 'isMobileMenuOpen()'
+  },
   template: `
-    <header class="main-header">
+    <header class="main-header" [class.is-scrolled]="isScrolled()">
       <div class="max-w-content header-inner">
         <!-- Brand & City Switcher -->
         <div class="header-brand-group">
           <a class="brand-link" routerLink="/">
             <img 
-              alt="Mannidam Real Estate Marketplace Logo" 
+              alt="Find a Plot Real Estate Marketplace Logo" 
               class="brand-logo" 
-              src="/logo.svg">
-            <div class="brand-text">
-              <span class="editorial-tag brand-name">MANNIDAM</span>
-              <span class="brand-tagline">Registry &amp; No-Brokerage</span>
-            </div>
+              src="logo.svg">
           </a>
 
           <!-- City Selector (Google Material Dropdown Combobox) -->
@@ -41,7 +40,6 @@ import { AuthService } from '../../../../core/services/auth.service';
               (click)="toggleCityDropdown()"
               (keydown.enter)="toggleCityDropdown()"
               (keydown.space)="toggleCityDropdown(); $event.preventDefault()">
-              <span class="material-symbols-outlined text-red loc-icon">location_on</span>
               <span class="city-selected-name">{{ getSelectedCityLabel() }}</span>
               <span class="material-symbols-outlined expand-icon" [class.rotated]="isCityDropdownOpen()">expand_more</span>
             </div>
@@ -76,79 +74,50 @@ import { AuthService } from '../../../../core/services/auth.service';
 
         <!-- Navigation Links -->
         <nav class="nav-links">
-          <a 
-            class="nav-link" 
-            [class.active]="propertyService.activeTab() === 'buy'" 
-            (click)="setTab('buy')">Buy</a>
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }">Plots &amp; Land</a>
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }">Commercial</a>
-          <a class="nav-link hot-link" routerLink="/search">
-            Search Registry
-            <span class="badge-hot">LIVE</span>
-          </a>
+          <a class="nav-link" routerLink="/search">Search Registry</a>
         </nav>
 
         <!-- Right Actions -->
         <div class="header-actions">
-          <!-- Interactive Points Wallet Balance Pill -->
+          <!-- Minimalistic Points View -->
           <a 
             routerLink="/wallet" 
             (click)="walletService.navigateToWallet()" 
-            class="wallet-pill-wrapper" 
-            title="Click to view full Wallet &amp; Payment Options" 
-            style="text-decoration: none; color: inherit; display: inline-block; cursor: pointer;">
-            <div class="wallet-pill">
-              <span class="coin-icon">🪙</span>
-              <div class="wallet-details">
-                <div class="wallet-top-line">
-                  <span class="pts-number">{{ walletService.balance() }} Pts</span>
-                  <span class="topup-btn">+ TOP UP</span>
-                </div>
-                <span class="wallet-rate">2 Pts = ₹100</span>
-              </div>
-            </div>
-
-            <!-- Hover Tooltip -->
-            <div class="wallet-tooltip">
-              <div class="tooltip-header">
-                <span>Media Points Wallet</span>
-                <span>{{ walletService.balance() }} Points Available</span>
-              </div>
-              <p class="tooltip-body">
-                2 Pts = ₹100 • 10 Pts = ₹500 via Razorpay. Click anywhere on this button to open dedicated wallet recharge &amp; payment options.
-              </p>
-              <div class="tooltip-footer">
-                ✓ Click to open Media Wallet &amp; Payments →
-              </div>
-            </div>
+            class="minimal-points-pill" 
+            title="Media Points Balance: {{ walletService.balance() }} (Click for Wallet)">
+            <span class="material-symbols-outlined points-glyph">token</span>
+            <span class="points-val">{{ walletService.balance() }}</span>
+            <span class="points-lbl">Pts</span>
           </a>
 
           <!-- Shortlist Counter -->
-          <a class="shortlist-btn" href="#featured-section">
+          <a class="shortlist-btn" href="#featured-section" title="Saved Properties">
             <span class="material-symbols-outlined text-red">favorite_border</span>
             <span class="hidden-sm">Shortlist</span>
             <span class="shortlist-count">{{ propertyService.shortlistCount() }}</span>
           </a>
 
-          <!-- Post Property FREE CTA -->
-          <button class="post-property-btn" (click)="onPostPropertyClick()">
-            <span>Post Property</span>
+          <!-- Post Property CTA (Desktop Only) -->
+          <button class="post-property-btn desktop-only-btn" (click)="onPostPropertyClick()">
+            <span class="material-symbols-outlined">add_home</span>
+            <span>POST PROPERTY</span>
             <span class="badge-free">FREE</span>
           </button>
 
-          <!-- Account / User Menu Dropdown -->
+          <!-- Account / User Menu Dropdown (Desktop Only) -->
           @if (authService.isLoggedIn()) {
-            <div class="user-menu-wrapper" (click)="$event.stopPropagation()">
+            <div class="user-menu-wrapper desktop-only-user" (click)="$event.stopPropagation()">
               <button 
                 class="user-profile-btn" 
                 aria-label="User Account Menu" 
                 (click)="toggleUserMenu()">
-                <div class="user-avatar-mini">
-                  {{ getUserInitials() }}
+                <div class="user-avatar-mini" aria-hidden="true">
+                  <span class="material-symbols-outlined avatar-gender-icon">{{ getUserGenderIcon() }}</span>
                 </div>
                 <div class="user-btn-details">
                   <span class="user-btn-name">{{ getFirstName() }}</span>
-                  <span class="user-btn-role">Investor</span>
                 </div>
                 <span class="material-symbols-outlined user-expand-icon" [class.rotated]="isUserMenuOpen()">expand_more</span>
               </button>
@@ -175,7 +144,7 @@ import { AuthService } from '../../../../core/services/auth.service';
                     </a>
                     <a routerLink="/profile" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined">dashboard</span>
-                      <span>Investor Dashboard</span>
+                      <span>My Dashboard</span>
                     </a>
                     <a routerLink="/profile" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined">favorite</span>
@@ -195,32 +164,195 @@ import { AuthService } from '../../../../core/services/auth.service';
               }
             </div>
           } @else {
-            <button class="signin-btn" (click)="authService.openOtpModal()">
+            <button class="signin-btn desktop-only-signin" (click)="authService.openOtpModal()">
               <span class="material-symbols-outlined">login</span>
               <span>Sign In</span>
             </button>
           }
+
+          <!-- Mobile Menu Hamburger Button -->
+          <button 
+            type="button" 
+            class="mobile-menu-btn" 
+            [class.is-active]="isMobileMenuOpen()"
+            (click)="toggleMobileMenu(); $event.stopPropagation()"
+            aria-label="Toggle navigation menu">
+            <span class="material-symbols-outlined">{{ isMobileMenuOpen() ? 'close' : 'menu' }}</span>
+          </button>
         </div>
       </div>
     </header>
+
+    <!-- Mobile Navigation Drawer (mounted outside header to prevent backdrop-filter trap) -->
+    @if (isMobileMenuOpen()) {
+      <div class="mobile-drawer-backdrop" (click)="closeMobileMenu()">
+        <div class="mobile-drawer-panel" (click)="$event.stopPropagation()">
+            <!-- Drawer Header -->
+            <div class="drawer-header">
+              <div class="drawer-brand">
+                <img src="logo.svg" alt="Find a Plot Logo" class="drawer-logo">
+              </div>
+              <button type="button" class="drawer-close-btn" (click)="closeMobileMenu()" aria-label="Close menu">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div class="drawer-scroll-body">
+              <!-- User / Auth Banner inside Drawer -->
+              @if (authService.isLoggedIn()) {
+                <div class="drawer-user-card">
+                  <div class="drawer-user-avatar">
+                    <span class="material-symbols-outlined">{{ getUserGenderIcon() }}</span>
+                  </div>
+                  <div class="drawer-user-info">
+                    <span class="drawer-user-name">{{ authService.currentUser()?.name }}</span>
+                    <span class="drawer-user-role">{{ authService.currentUser()?.phone }}</span>
+                    <div class="drawer-user-pts" (click)="walletService.navigateToWallet(); closeMobileMenu()">
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="drawer-btn-signin" (click)="authService.openOtpModal(); closeMobileMenu()">
+                  <span class="material-symbols-outlined">login</span>
+                  <span>Sign In</span>
+                </button>
+              }
+
+              <!-- City Jurisdiction Picker in Drawer -->
+              <div class="drawer-section">
+                <span class="drawer-section-title">Cadastral Jurisdiction</span>
+                <div class="drawer-cities-list">
+                  @for (city of cities; track city.value) {
+                    <button 
+                      type="button" 
+                      class="drawer-city-chip" 
+                      [class.active]="propertyService.selectedCity() === city.value"
+                      (click)="selectCity(city.value); closeMobileMenu()">
+                      <div class="city-texts">
+                        <span class="city-title">{{ city.label }}</span>
+                        <span class="city-sub">{{ city.sub }}</span>
+                      </div>
+                      @if (propertyService.selectedCity() === city.value) {
+                        <span class="material-symbols-outlined check-icon">check</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Main Navigation Links in Drawer -->
+              <div class="drawer-section">
+                <span class="drawer-section-title">Explore Registry</span>
+                <nav class="drawer-nav">
+                  <a class="drawer-nav-item" routerLink="/" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined">home</span>
+                    <span>Home Registry</span>
+                  </a>
+                  <a class="drawer-nav-item" routerLink="/search" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined text-red">search</span>
+                    <span>Search Verified Registry</span>
+                  </a>
+                  <a class="drawer-nav-item" (click)="setTab('buy'); closeMobileMenu()">
+                    <span class="material-symbols-outlined">apartment</span>
+                    <span>Buy Apartments &amp; Flats</span>
+                  </a>
+                  <a class="drawer-nav-item" routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined">terrain</span>
+                    <span>Plots &amp; Land (CMDA)</span>
+                  </a>
+                  <a class="drawer-nav-item" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined">domain</span>
+                    <span>Commercial Spaces</span>
+                  </a>
+                  <a class="drawer-nav-item" routerLink="/wallet" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined text-amber">account_balance_wallet</span>
+                    <span>Media Points Wallet</span>
+                    <span class="pts-badge">{{ walletService.balance() }} Pts</span>
+                  </a>
+                  <a class="drawer-nav-item" href="#featured-section" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined text-red">favorite</span>
+                    <span>Saved Shortlists</span>
+                    <span class="pts-badge">{{ propertyService.shortlistCount() }}</span>
+                  </a>
+                  @if (authService.isLoggedIn()) {
+                    <a class="drawer-nav-item" routerLink="/profile" (click)="closeMobileMenu()">
+                      <span class="material-symbols-outlined">dashboard</span>
+                      <span>My Dashboard</span>
+                    </a>
+                    <a class="drawer-nav-item" routerLink="/admin" (click)="closeMobileMenu()">
+                      <span class="material-symbols-outlined text-purple">admin_panel_settings</span>
+                      <span>Compliance Portal</span>
+                    </a>
+                  }
+                </nav>
+              </div>
+
+              <!-- Post Property FREE CTA Card -->
+              <div class="drawer-post-card">
+                <div class="post-card-texts">
+                  <div class="post-card-tag">DIRECT OWNER PLATFORM</div>
+                  <div class="post-card-title">List Property with Verified Title</div>
+                </div>
+                <button type="button" class="btn-drawer-post" (click)="onPostPropertyClick(); closeMobileMenu()">
+                  <span class="material-symbols-outlined">add_home</span>
+                  <span>Post Property</span>
+                  <span class="badge-free">FREE</span>
+                </button>
+              </div>
+
+              <!-- Sign Out (if logged in) -->
+              @if (authService.isLoggedIn()) {
+                <div class="drawer-signout-row">
+                  <button type="button" class="btn-drawer-signout" (click)="onSignOut(); closeMobileMenu()">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
   `,
   styles: [`
-    .main-header {
+    :host {
+      display: block;
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 1000;
       width: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
+    }
+    :host.drawer-open {
+      z-index: 999999 !important;
+    }
+    .main-header {
+      position: relative;
+      z-index: 1000;
+      width: 100%;
+      background: #ffffff;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--hairline-border);
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      box-shadow: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .main-header.is-scrolled {
+      background: #ffffff;
+      border-bottom-color: #cbd5e1;
+      box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.06);
     }
     .header-inner {
-      height: 80px;
+      height: 62px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.5rem;
+      gap: 0.75rem;
+    }
+    @media (min-width: 768px) {
+      .header-inner {
+        height: 68px;
+        gap: 1.5rem;
+      }
     }
     .header-brand-group {
       display: flex;
@@ -246,10 +378,23 @@ import { AuthService } from '../../../../core/services/auth.service';
     }
     .brand-name {
       color: var(--text-slate-950);
-      letter-spacing: 0.2em;
+      letter-spacing: 0.12em;
       font-size: 13px;
       font-weight: 900;
       line-height: 1.1;
+      display: inline-flex;
+      align-items: center;
+    }
+    .brand-plot-bracket {
+      display: inline-block;
+      margin-left: 3px;
+      padding: 0 4px;
+      color: var(--brand-green, #5e8f72);
+      background: rgba(94, 143, 114, 0.12);
+      border: 1px dashed rgba(94, 143, 114, 0.4);
+      border-radius: 3px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
     }
     .brand-tagline {
       font-size: 10px;
@@ -273,10 +418,11 @@ import { AuthService } from '../../../../core/services/auth.service';
       min-width: 250px;
       left: 0;
       top: calc(100% + 6px);
+      z-index: 1200;
     }
     .city-selected-name {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-800);
       white-space: nowrap;
       user-select: none;
@@ -284,24 +430,22 @@ import { AuthService } from '../../../../core/services/auth.service';
     .city-selector-box {
       display: flex;
       align-items: center;
-      background: #ffffff;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 0.375rem 0.625rem;
-      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.35rem 0.75rem;
+      gap: 5px;
       position: relative;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
     }
     .city-selector-box:hover {
-      background: #f8fafc;
-      border-color: #64748b;
+      background: #f1f5f9;
+      border-color: #cbd5e1;
     }
     .header-city-dropdown.is-open .city-selector-box {
       background: #ffffff;
       border-color: var(--brand-red);
-      box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.15);
     }
     .loc-icon {
       font-size: 18px;
@@ -356,23 +500,8 @@ import { AuthService } from '../../../../core/services/auth.service';
     }
     .nav-link.active {
       color: var(--brand-red);
-      font-weight: 700;
+      font-weight: 600;
       border-bottom-color: var(--brand-red);
-    }
-    .hot-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .badge-hot {
-      padding: 2px 6px;
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: #fef3c7;
-      color: #92400e;
-      border-radius: 4px;
     }
     .header-actions {
       display: flex;
@@ -382,127 +511,94 @@ import { AuthService } from '../../../../core/services/auth.service';
     }
     @media (min-width: 640px) {
       .header-actions {
-        gap: 1rem;
+        gap: 0.85rem;
       }
     }
-    .wallet-pill-wrapper {
-      position: relative;
-      cursor: pointer;
+    @media (max-width: 640px) {
+      .header-inner {
+        height: 58px;
+        gap: 0.5rem;
+      }
+      .brand-logo {
+        height: 30px;
+      }
+      .brand-name {
+        font-size: 11.5px;
+        letter-spacing: 0.15em;
+      }
+      .header-actions {
+        gap: 0.45rem;
+      }
+      .minimal-points-pill {
+        padding: 0.3rem 0.55rem;
+      }
+      .points-lbl {
+        display: none;
+      }
+      .signin-btn {
+        height: 36px;
+        padding: 0 0.65rem;
+        font-size: 12px;
+      }
     }
-    .wallet-pill {
-      display: flex;
+    @media (max-width: 440px) {
+      .brand-tagline {
+        display: none;
+      }
+      .signin-btn span:not(.material-symbols-outlined) {
+        display: none;
+      }
+      .signin-btn {
+        padding: 0 0.5rem;
+      }
+    }
+
+    /* Minimalistic Points Pill */
+    .minimal-points-pill {
+      display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.375rem 0.75rem;
+      gap: 5px;
+      padding: 0.35rem 0.75rem;
       border-radius: 9999px;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      transition: all 0.15s;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .wallet-pill-wrapper:hover .wallet-pill {
-      background: #fef3c7;
-      border-color: #fcd34d;
+    .minimal-points-pill:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
     }
-    .coin-icon {
+    .points-glyph {
       font-size: 16px;
-      line-height: 1;
+      color: var(--brand-red);
     }
-    .wallet-details {
-      display: flex;
-      flex-direction: column;
-      line-height: 1;
-    }
-    .wallet-top-line {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .pts-number {
-      font-size: 12px;
-      font-weight: 900;
-      color: #451a03;
-    }
-    .topup-btn {
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      background: #f59e0b;
-      color: #ffffff;
-      border: none;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .topup-btn:hover {
-      background: #d97706;
-    }
-    .wallet-rate {
-      display: none;
-      font-size: 9px;
-      font-family: ui-monospace, monospace;
-      color: #92400e;
+    .points-val {
+      font-size: 12.5px;
       font-weight: 600;
-      margin-top: 2px;
+      color: #0f172a;
     }
-    @media (min-width: 640px) {
-      .wallet-rate {
-        display: inline;
-      }
-    }
-    .wallet-tooltip {
-      position: absolute;
-      right: 0;
-      top: 100%;
-      margin-top: 8px;
-      display: none;
-      flex-direction: column;
-      width: 240px;
-      padding: 0.75rem;
-      border-radius: 0.75rem;
-      background: #020617;
-      color: #ffffff;
-      font-size: 12px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-      border: 1px solid #1e293b;
-      z-index: 100;
-      pointer-events: none;
-    }
-    .wallet-pill-wrapper:hover .wallet-tooltip {
-      display: flex;
-    }
-    .tooltip-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 700;
-      color: #fbbf24;
-      margin-bottom: 4px;
-    }
-    .tooltip-body {
+    .points-lbl {
       font-size: 11px;
-      color: #cbd5e1;
-      line-height: 1.4;
+      font-weight: 600;
+      color: #64748b;
     }
-    .tooltip-footer {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #1e293b;
-      font-size: 10px;
-      color: #34d399;
-      font-family: ui-monospace, monospace;
-    }
+
+    /* Shortlist Button */
     .shortlist-btn {
       display: none;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-size: 12px;
       font-weight: 600;
       color: var(--text-slate-700);
-      padding: 0.5rem 0.625rem;
-      border-radius: 8px;
+      padding: 0.4rem 0.65rem;
+      border-radius: 9999px;
       text-decoration: none;
-      transition: all 0.15s;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
     }
     @media (min-width: 640px) {
       .shortlist-btn {
@@ -510,7 +606,8 @@ import { AuthService } from '../../../../core/services/auth.service';
       }
     }
     .shortlist-btn:hover {
-      background: #f1f5f9;
+      background: #f8fafc;
+      border-color: #e2e8f0;
       color: var(--text-slate-950);
     }
     .shortlist-count {
@@ -518,58 +615,75 @@ import { AuthService } from '../../../../core/services/auth.service';
       background: #e2e8f0;
       color: #0f172a;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 600;
       border-radius: 9999px;
     }
+
+    /* Post Property CTA Button */
     .post-property-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 0.625rem 1rem;
-      border-radius: 8px;
+      justify-content: center;
+      gap: 0.45rem;
+      height: 38px;
+      padding: 0 0.875rem;
+      border-radius: 6px;
       color: #ffffff;
       font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
+      font-size: 11.5px;
       letter-spacing: 0.05em;
-      background: #0f172a;
+      text-transform: uppercase;
+      background: var(--brand-green, #5e8f72);
       border: none;
+      outline: none;
       cursor: pointer;
-      transition: all 0.15s;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    .post-property-btn .material-symbols-outlined {
+      font-size: 18px;
+      line-height: 1;
     }
     .post-property-btn:hover {
-      background: #020617;
+      background: var(--brand-green, #5e8f72);
+      transform: translateY(-1px);
+    }
+    .post-property-btn:active {
+      transform: translateY(0);
     }
     .badge-free {
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      background: #10b981;
-      color: #ffffff;
+      background: #ffffff;
+      color: var(--brand-green, #5e8f72);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 2.5px 7px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      transition: transform 0.15s ease;
+    }
+    .post-property-btn:hover .badge-free {
+      transform: scale(1.05);
     }
     .signin-btn {
-      height: 40px;
-      padding: 0 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--hairline-border);
-      background: #f8fafc;
+      height: 38px;
+      padding: 0 1.25rem;
+      border-radius: 9999px;
+      border: 1.5px solid var(--brand-red);
+      background: #ffffff;
       display: inline-flex;
       align-items: center;
       gap: 0.375rem;
       font-size: 13px;
-      font-weight: 700;
-      color: var(--text-slate-800);
+      font-weight: 600;
+      color: var(--brand-red);
       cursor: pointer;
       transition: all 0.15s;
     }
     .signin-btn:hover {
-      background: #fee2e2;
-      border-color: #fca5a5;
-      color: var(--brand-red);
+      background: #fef2f2;
+      border-color: var(--brand-red-hover);
+      color: var(--brand-red-hover);
     }
     .signin-btn span.material-symbols-outlined {
       font-size: 18px;
@@ -580,16 +694,16 @@ import { AuthService } from '../../../../core/services/auth.service';
       position: relative;
     }
     .user-profile-btn {
-      height: 42px;
-      padding: 0 0.75rem 0 0.375rem;
-      border-radius: 9999px;
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      transition: all 0.15s;
+          height: 42px;
+    padding: 0 0.75rem 0 0.375rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
     }
     .user-profile-btn:hover {
       border-color: var(--brand-red);
@@ -599,10 +713,16 @@ import { AuthService } from '../../../../core/services/auth.service';
       width: 32px;
       height: 32px;
       border-radius: 9999px;
-      background: linear-gradient(135deg, #b91c1c, #450a0a);
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 800;
+      background: #eeeeee;
+      color: #0c0c0cff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .avatar-gender-icon {
+      font-size: 20px;
+      line-height: 1;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -614,20 +734,13 @@ import { AuthService } from '../../../../core/services/auth.service';
       line-height: 1.15;
     }
     .user-btn-name {
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text-slate-900);
-      max-width: 90px;
+      max-width: 100px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-    .user-btn-role {
-      font-size: 10px;
-      color: #059669;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
     }
     .user-expand-icon {
       font-size: 16px;
@@ -647,7 +760,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
       border: 1px solid #e2e8f0;
       overflow: hidden;
-      z-index: 100;
+      z-index: 1200;
       animation: ddFadeIn 0.15s ease-out;
     }
     @keyframes ddFadeIn {
@@ -661,7 +774,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     }
     .dd-name {
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--text-slate-950);
     }
     .dd-phone {
@@ -679,7 +792,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       border: 1px solid #fde68a;
       border-radius: 6px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       color: #92400e;
     }
     .user-dropdown-body {
@@ -695,7 +808,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       padding: 0.625rem 0.75rem;
       border-radius: 0.5rem;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: normal;
       color: var(--text-slate-700);
       text-decoration: none;
       background: none;
@@ -723,25 +836,497 @@ import { AuthService } from '../../../../core/services/auth.service';
       background: #f1f5f9;
       margin: 0.25rem 0;
     }
+
+    .desktop-only-btn {
+      display: none !important;
+    }
+    @media (min-width: 768px) {
+      .desktop-only-btn {
+        display: inline-flex !important;
+      }
+    }
+    .desktop-only-user, .desktop-only-signin {
+      display: none !important;
+    }
+    @media (min-width: 640px) {
+      .desktop-only-user, .desktop-only-signin {
+        display: inline-flex !important;
+      }
+    }
+    .mobile-menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: var(--text-slate-800);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mobile-menu-btn:hover, .mobile-menu-btn.is-active {
+      background: #fef2f2;
+      border-color: var(--brand-red);
+      color: var(--brand-red);
+    }
+    @media (min-width: 1024px) {
+      .mobile-menu-btn {
+        display: none !important;
+      }
+    }
+
+    /* Mobile Drawer */
+    .mobile-drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background: rgba(2, 6, 23, 0.65);
+      z-index: 99999;
+      display: flex;
+      justify-content: flex-end;
+      animation: fadeInDrawer 0.2s ease-out;
+      touch-action: pan-y;
+    }
+    .mobile-drawer-panel {
+      position: relative;
+      width: 86vw;
+      max-width: 340px;
+      height: 100vh;
+      height: 100dvh;
+      background: #ffffff;
+      box-shadow: none !important;
+      border-left: 1px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100000;
+      overflow: hidden;
+      border-radius: 9px 0 0 9px;
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    @keyframes fadeInDrawer {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .drawer-header {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      flex-shrink: 0;
+    }
+    .drawer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+    .drawer-logo {
+      height: 28px;
+      width: auto;
+    }
+    .drawer-brand-name {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text-slate-950);
+      -webkit-font-smoothing: antialiased;
+    }
+    .drawer-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: var(--text-slate-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .drawer-close-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: var(--brand-red);
+    }
+    .drawer-scroll-body {
+      padding: 1rem 1.25rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .drawer-user-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+    }
+    .drawer-user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #eeeeee;
+      color: #303030ff;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .drawer-user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .drawer-user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-slate-950);
+    }
+    .drawer-user-role {
+      font-size: 11px;
+      color: var(--text-slate-500);
+    }
+    .drawer-user-pts {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #92400e;
+      background: #fef3c7;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+      width: fit-content;
+      cursor: pointer;
+    }
+    .drawer-btn-signin {
+      font-family: var(--font-sans);
+      width: 100%;
+      height: 42px;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: var(--brand-red);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1.5px solid var(--brand-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      -webkit-font-smoothing: antialiased;
+    }
+    .drawer-btn-signin:hover {
+      background: #fef2f2;
+      border-color: var(--brand-red-hover);
+      color: var(--brand-red-hover);
+    }
+    .drawer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-family: var(--font-sans);
+    }
+    .drawer-section-title {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-slate-400);
+      -webkit-font-smoothing: antialiased;
+    }
+    .drawer-cities-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-family: var(--font-sans);
+    }
+    .drawer-city-chip {
+      font-family: var(--font-sans);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 0.875rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .drawer-city-chip.active {
+      border-color: var(--brand-red);
+      background: #fffafa;
+    }
+    .drawer-city-chip .city-icon {
+      font-size: 16px;
+      color: var(--brand-red);
+    }
+    .city-texts {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      font-family: var(--font-sans);
+    }
+    .city-title {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-slate-900);
+      -webkit-font-smoothing: antialiased;
+    }
+    .city-sub {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--text-slate-500);
+      -webkit-font-smoothing: antialiased;
+    }
+    .check-icon {
+      font-size: 16px;
+      color: var(--brand-red);
+      margin-left: auto;
+    }
+    .drawer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-family: var(--font-sans);
+    }
+    .drawer-nav-item {
+      font-family: var(--font-sans);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-slate-800);
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-font-smoothing: antialiased;
+      font-weight: normal;
+    }
+    .drawer-nav-item:hover {
+      background: #f1f5f9;
+      color: var(--text-slate-950);
+    }
+    .drawer-nav-item span.material-symbols-outlined {
+      font-size: 18px;
+      color: var(--text-slate-500);
+    }
+    .pts-badge {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      color: var(--text-slate-700);
+      font-family: ui-monospace, monospace;
+    }
+    .drawer-post-card {
+      padding: 0.875rem;
+      border-radius: 10px;
+      background: var(--brand-teal);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+    .post-card-tag {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: #34d399;
+      text-transform: uppercase;
+    }
+    .post-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .post-card-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.35;
+    }
+    .btn-drawer-post {
+      height: 36px;
+      border-radius: 6px;
+      background: var(--brand-red);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      cursor: pointer;
+    }
+    .drawer-help-box {
+      padding: 0.75rem;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+    .drawer-help-title {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-slate-400);
+      margin-bottom: 2px;
+    }
+    .drawer-help-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-slate-700);
+      text-decoration: none;
+    }
+    .drawer-signout-row {
+      padding-top: 0.5rem;
+      border-top: 1px solid #e2e8f0;
+    }
+    .btn-drawer-signout {
+      width: 100%;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid #fee2e2;
+      background: #fff5f5;
+      color: var(--brand-sold);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      cursor: pointer;
+    }
+    @media (max-width: 1023px) {
+      .main-header {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+      }
+      .main-header.is-scrolled {
+        box-shadow: none !important;
+      }
+      .mobile-menu-btn {
+        box-shadow: none !important;
+      }
+      .city-selector-box {
+        box-shadow: none !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .brand-tagline { display: none; }
+      .brand-name { font-size: 12px; }
+      .brand-logo { height: 30px; }
+      .wallet-pill { padding: 0.25rem 0.5rem; gap: 0.35rem; }
+      .pts-number { font-size: 11px; }
+      .topup-btn { padding: 1px 4px; font-size: 9px; }
+    }
     @media (max-width: 640px) {
       .hidden-sm { display: none; }
     }
   `]
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   readonly walletService = inject(WalletService);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
 
   readonly isCityDropdownOpen = signal<boolean>(false);
+  readonly isMobileMenuOpen = signal<boolean>(false);
+  readonly isScrolled = signal<boolean>(false);
+
+  ngOnInit(): void {
+    this.checkScroll();
+    this.router.events.subscribe(() => {
+      if (this.isMobileMenuOpen()) {
+        this.closeMobileMenu();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.setBodyScroll(true);
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.checkScroll();
+  }
+
+  private checkScroll(): void {
+    if (typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      this.isScrolled.set(scrollY > 15);
+    }
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(v => {
+      const next = !v;
+      this.setBodyScroll(!next);
+      return next;
+    });
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+    this.setBodyScroll(true);
+  }
+
+  private setBodyScroll(enableScroll: boolean): void {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = enableScroll ? '' : 'hidden';
+      document.documentElement.style.overflow = enableScroll ? '' : 'hidden';
+    }
+  }
 
   readonly cities = [
-    { value: 'chennai', label: 'Chennai (HQ)', sub: 'CMDA Jurisdiction' },
-    { value: 'bengaluru', label: 'Bengaluru', sub: 'BDA / BMRDA Jurisdiction' },
-    { value: 'hyderabad', label: 'Hyderabad', sub: 'HMDA Jurisdiction' },
-    { value: 'mumbai', label: 'Mumbai', sub: 'MMRDA Jurisdiction' },
-    { value: 'delhi-ncr', label: 'Delhi NCR', sub: 'DDA / NOIDA Jurisdiction' }
+    { value: 'chennai', label: 'Chennai (HQ)', sub: 'CMDA Jurisdiction' }
   ];
 
   toggleCityDropdown(): void {
@@ -771,8 +1356,24 @@ export class HeaderComponent {
     this.isUserMenuOpen.update(v => !v);
   }
 
+  getUserGenderIcon(): string {
+    const user = this.authService.currentUser();
+    const gender = (user as any)?.gender;
+    if (gender === 'female') return 'woman';
+    if (gender === 'male') return 'man';
+    const name = (user?.name || '').toLowerCase();
+    // Feminine names or keywords
+    if (/anita|priya|lakshmi|deepa|kavitha|pooja|swetha|sneha|divya|sharmila|shreya|radha|geetha|female|she|her|woman/i.test(name)) {
+      return 'woman';
+    }
+    if (/arun|kumar|rahul|raj|vijay|suresh|ramesh|karthik|ajay|male|he|his|man/i.test(name)) {
+      return 'man';
+    }
+    return 'person';
+  }
+
   getUserInitials(): string {
-    const name = this.authService.currentUser()?.name || 'Investor';
+    const name = this.authService.currentUser()?.name || 'User';
     const parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -781,7 +1382,7 @@ export class HeaderComponent {
   }
 
   getFirstName(): string {
-    const name = this.authService.currentUser()?.name || 'Investor';
+    const name = this.authService.currentUser()?.name || 'User';
     return name.split(' ')[0];
   }
 
@@ -801,6 +1402,7 @@ export class HeaderComponent {
   onEscape(): void {
     this.isCityDropdownOpen.set(false);
     this.isUserMenuOpen.set(false);
+    this.closeMobileMenu();
   }
 
   setTab(tab: 'buy' | 'rent'): void {

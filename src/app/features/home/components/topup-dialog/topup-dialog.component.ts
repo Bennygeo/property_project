@@ -137,7 +137,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .dialog-title {
       font-size: 1.35rem;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--text-slate-950);
       margin-top: 0.25rem;
     }
@@ -182,7 +182,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       border: 1px solid #bfdbfe;
       color: #1d4ed8;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
     }
     .spinner {
       width: 18px;
@@ -219,7 +219,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       background: var(--brand-red);
       color: #ffffff;
       font-size: 9px;
-      font-weight: 800;
+      font-weight: 600;
       letter-spacing: 0.08em;
       padding: 2px 8px;
       border-radius: 9999px;
@@ -232,7 +232,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .pack-category {
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-500);
@@ -242,7 +242,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .pack-name {
       font-size: 1.05rem;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--text-slate-950);
       margin: 0;
     }
@@ -258,7 +258,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .pts-val {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--color-emerald-700);
       font-family: ui-monospace, monospace;
     }
@@ -272,7 +272,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       padding: 0.65rem 1rem;
       border-radius: 0.5rem;
       font-size: 0.8rem;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -313,7 +313,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .custom-title {
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-800);
@@ -343,7 +343,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       padding: 0.4rem 0.75rem;
     }
     .currency-symbol {
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-500);
       margin-right: 0.25rem;
     }
@@ -351,7 +351,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       border: none;
       outline: none;
       width: 100%;
-      font-weight: 800;
+      font-weight: 600;
       font-size: 15px;
       color: var(--text-slate-900);
     }
@@ -362,7 +362,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .result-label {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-500);
       text-transform: uppercase;
     }
@@ -379,7 +379,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       background: #0f172a;
       color: #ffffff;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 600;
       border: none;
       cursor: pointer;
       display: flex;
@@ -414,6 +414,35 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .text-emerald {
       color: var(--color-emerald-600);
+    }
+
+    @media (max-width: 640px) {
+      .dialog-header {
+        padding: 1rem 1.25rem;
+      }
+      .dialog-body {
+        padding: 1.25rem 1rem;
+        gap: 1rem;
+      }
+      .pack-card {
+        padding: 0.875rem 1rem;
+      }
+      .pack-name {
+        font-size: 0.95rem;
+      }
+      .custom-recharge-box {
+        padding: 0.875rem 1rem;
+      }
+      .dialog-guarantees {
+        grid-template-columns: 1fr;
+        gap: 0.625rem;
+        text-align: left;
+      }
+      .g-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+      }
     }
   `]
 })

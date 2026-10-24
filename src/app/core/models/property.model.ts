@@ -167,4 +167,5 @@ export interface Property {
   cadastralAudit?: CadastralAudit;
   faqs?: FaqItem[];
   subdividedPlots?: SubdividedPlot[];
+  interactiveMapUrl?: string;
 }

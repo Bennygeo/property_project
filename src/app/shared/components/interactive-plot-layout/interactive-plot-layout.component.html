@@ -206,11 +206,12 @@
             </g>
           </defs>
 
-          <!-- 1. BASE LANDSCAPE (Lush Greenery & Boundary) -->
-          <rect width="100%" height="100%" fill="url(#lawnTexture)" rx="16" />
+          @if (!isMasterCommunity()) {
+            <!-- 1. BASE LANDSCAPE (Lush Greenery & Boundary) -->
+            <rect width="100%" height="100%" fill="url(#lawnTexture)" rx="16" />
 
-          <!-- Perimeter boundary hedges / borders -->
-          <rect x="18" y="18" width="924" height="604" fill="none" stroke="#2d522c" stroke-width="6" rx="12" opacity="0.6"/>
+            <!-- Perimeter boundary hedges / borders -->
+            <rect x="18" y="18" width="924" height="604" fill="none" stroke="#2d522c" stroke-width="6" rx="12" opacity="0.6"/>
 
           <!-- 2. ROADS WITH 3D CONCRETE CURBS & SHADOWS -->
           <g class="road-infrastructure">
@@ -248,7 +249,7 @@
                 letter-spacing="2.5" 
                 text-anchor="middle"
                 opacity="0.9"
-                style="text-shadow: 0 2px 4px rgba(0,0,0,0.6); font-family: 'Plus Jakarta Sans', sans-serif;">
+                style="text-shadow: 0 2px 4px rgba(0,0,0,0.6); font-family: 'Montserrat', sans-serif;">
                 — 9 METER ROAD —
               </text>
             </g>
@@ -260,9 +261,9 @@
                 font-size="12" 
                 font-weight="800" 
                 letter-spacing="1.5" 
-                text-anchor="middle"
+                text-anchor="middle" 
                 opacity="0.75"
-                style="text-shadow: 0 2px 4px rgba(0,0,0,0.6); font-family: 'Plus Jakarta Sans', sans-serif;">
+                style="text-shadow: 0 2px 4px rgba(0,0,0,0.6); font-family: 'Montserrat', sans-serif;">
                 7.5 M ACCESS ROAD
               </text>
             </g>
@@ -533,7 +534,7 @@
               <use href="#compactStaticTree" x="635" y="442" />
             </g>
 
-            <!-- Plot 250 (Corner, Available) -->
+            <!-- Plot 250 (Available) -->
             <g class="plot-interactive-unit" 
                [class.active]="selectedPlot()?.plotNo === '250'"
                (click)="selectPlot(plots()[7])"
@@ -545,26 +546,33 @@
                     stroke="#15803d" stroke-width="1.5" class="plot-3d-tile" />
               <text x="762" y="416" fill="#ffffff" font-size="22" font-weight="900" text-anchor="middle" class="plot-label">250</text>
             </g>
-
-          </g>
-
+          </g> <!-- /subdivided-plots-3d -->
+          } @else {
+            <rect width="100%" height="100%" fill="#101d24" rx="16" />
+            <image href="assets/master-plan.png" xlink:href="assets/master-plan.png" x="0" y="0" width="960" height="640" preserveAspectRatio="xMidYMid meet" />
+            <g class="masterplan-parcels-layer">
+              @for (plot of filteredPlots(); track plot.id) {
+                <g class="plot-parcel-group" [class.plot-parcel-selected]="selectedPlot()?.id === plot.id" (click)="selectPlot(plot)" style="cursor: pointer;">
+                  <rect [attr.x]="(plot.u !== undefined ? plot.u * 960 : 480 + plot.x * 5.6) - 10" [attr.y]="(plot.v !== undefined ? plot.v * 640 : 320 + plot.y * 5.2) - 7" width="20" height="14" rx="2.5" [attr.fill]="isPlotActive(plot) ? 'rgba(250, 204, 21, 0.75)' : (plot.status === 'available' ? 'rgba(94, 143, 114, 0.55)' : (plot.status === 'reserved' ? 'rgba(234, 179, 8, 0.55)' : 'rgba(199, 111, 86, 0.45)'))" [attr.stroke]="isPlotActive(plot) ? '#facc15' : (plot.status === 'available' ? '#4ade80' : '#ef4444')" stroke-width="1.5" />
+                  <circle [attr.cx]="plot.u !== undefined ? plot.u * 960 : 480 + plot.x * 5.6" [attr.cy]="plot.v !== undefined ? plot.v * 640 : 320 + plot.y * 5.2" r="7" [attr.fill]="isPlotActive(plot) ? '#facc15' : '#0f172a'" stroke="#ffffff" stroke-width="1" />
+                  <text [attr.x]="plot.u !== undefined ? plot.u * 960 : 480 + plot.x * 5.6" [attr.y]="(plot.v !== undefined ? plot.v * 640 : 320 + plot.y * 5.2) + 2.5" text-anchor="middle" [attr.fill]="isPlotActive(plot) ? '#0f172a' : '#ffffff'" font-size="6.5" font-weight="bold">{{ plot.plotNo }}</text>
+                </g>
+              }
+            </g>
+          }
         </svg>
-
       </div> <!-- /isometric-board -->
-
     </div> <!-- /perspective-stage -->
 
-    <!-- 8. FLOATING 3D GLASSMOROHIC POPOVER CARD (Matching user reference) -->
+    <!-- FLOATING PLOT FACTSHEET MODAL / POPOVER -->
     @if (selectedPlot(); as activePlot) {
       <div class="plot-popover-card-3d">
-        <!-- Card Header -->
         <div class="popover-header">
-          <div class="popover-title-row">
-            <span class="plot-title-label">Plot No. {{ activePlot.plotNo }}</span>
-            <button type="button" class="btn-close-popover" (click)="closeDetails()" title="Close details">
-              <span class="material-symbols-outlined">close</span>
-            </button>
-          </div>
+          <span class="plot-title-label">Plot No. {{ activePlot.plotNo }}</span>
+          <button type="button" class="btn-close-popover" (click)="closeDetails()" title="Close details">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
 
           <!-- Big Metric Number -->
           <div class="popover-metric-block">
@@ -586,7 +594,6 @@
               {{ activePlot.status === 'available' ? 'Available' : (activePlot.status === 'sold' ? 'Sold' : 'Reserved') }}
             </span>
           </div>
-        </div>
 
         <!-- Specifications Table -->
         <div class="popover-specs">

@@ -34,7 +34,7 @@ try {
 
     Response::success([
         'connection' => 'SUCCESS',
-        'database'   => 'mannidam_property_db',
+        'database'   => 'onenesgw_property_project',
         'tables'     => $tables,
         'recordCounts' => $counts
     ], 'MySQL database connection verified successfully');

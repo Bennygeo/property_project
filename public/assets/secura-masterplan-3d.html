@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase I & Phase II — 3D Three.js Interactive Masterplan</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <!-- Attempt external Three.js CDN when opened in standard browser; built-in CSP-safe THREE WebGL/3D engine below guarantees 100% functionality inside Antigravity preview -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="window.__useBuiltinThree=true"></script>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #070b12;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+    #appViewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #threeContainer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    canvas.dragging-pan { cursor: grabbing; }
+    canvas.dragging-orbit { cursor: move; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.93);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      box-shadow: 0 12px 32px -6px rgba(15, 23, 42, 0.18), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    }
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.90);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      box-shadow: 0 14px 36px -4px rgba(2, 6, 23, 0.5);
+    }
+    .pill-btn {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pill-btn:hover { transform: translateY(-1px); }
+    .pill-btn.active {
+      background: #070b12;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    }
+    .mode-btn.active {
+      background: #059669;
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(5, 150, 105, 0.35);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.35); border-radius: 9999px; }
+
+    /* Map-Only View: Hide all controls, headers, sidebars, drawers, docks and buttons */
+    header,
+    aside,
+    #dragBadge,
+    .glass-card,
+    [id*="btn"],
+    #inspectorDrawer,
+    .fixed.bottom-3 {
+      display: none !important;
+      pointer-events: none !important;
+    }
+    #hoverTooltip {
+      display: none;
+    }
+    #hoverTooltip:not(.hidden) {
+      display: block !important;
+    }
+  </style>
+</head>
+<body class="antialiased text-slate-900">
+  <div id="appViewport">
+    <!-- Three.js 3D Viewport Container -->
+    <div id="threeContainer"></div>
+
+    <!-- Live Drag Mode Feedback Pill -->
+    <div id="dragBadge" class="fixed top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none hidden glass-dark rounded-full px-4 py-1.5 text-xs font-semibold flex items-center gap-2">
+      <span id="dragBadgeIcon" class="text-amber-400 text-sm">🔄</span>
+      <span id="dragBadgeText">Orbiting 3D Masterplan</span>
+    </div>
+
+    <!-- TOP BAR: Title, Inventory Stats, Drag Mode & Camera Presets -->
+    <header class="fixed top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+      <!-- Brand + Live Plot Counter -->
+      <div class="glass-card rounded-2xl px-3.5 py-2 flex items-center gap-3 pointer-events-auto">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-lime-600 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0 border border-emerald-400/30">
+          3D
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-sm tracking-tight text-slate-900">Phase I &amp; Phase II — 3D Masterplan</h1>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">Three.js 3D</span>
+          </div>
+          <div class="flex items-center gap-3 mt-0.5 text-xs font-medium">
+            <span class="text-slate-700"><strong id="statTotalPlots" class="text-slate-950">74</strong> Numbered Plots</span>
+            <span class="text-emerald-700">● <strong>Phase I:</strong> Plots 01–29 + 5 Shops</span>
+            <span class="text-teal-700">● <strong>Phase II:</strong> Plots 01–45 + O.S.R.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Primary Mouse Action Switcher -->
+      <div class="glass-card rounded-2xl p-1.5 flex items-center gap-1 pointer-events-auto">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 px-2 hidden xl:inline">Left-Drag:</span>
+        <button id="btnModeOrbit" class="mode-btn active text-xs font-semibold px-3 py-1.5 rounded-xl text-slate-700 flex items-center gap-1.5" title="Left-click drag rotates 3D view; Right-click drag pans">
+          <span>🔄</span> 3D Orbit / Rotate
+        </button>
+        <button id="btnModePan" class="mode-btn text-xs font-semibold px-3 py-1.5 rounded-xl text-slate-700 flex items-center gap-1.5" title="Left-click drag pans map Left/Right/Up/Down; Right-click drag rotates">
+          <span>✋</span> Pan / Slide Map
+        </button>
+      </div>
+
+      <!-- Camera View Presets & Search -->
+      <div class="glass-card rounded-2xl p-1.5 flex flex-wrap items-center gap-1 pointer-events-auto">
+        <button id="presetOverview" class="pill-btn active text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-700">Full 3D</button>
+        <button id="presetPhase1" class="pill-btn text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-700">Phase I</button>
+        <button id="presetPhase2" class="pill-btn text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-700">Phase II</button>
+        <button id="presetShops" class="pill-btn text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-700">ORR &amp; Shops</button>
+        <button id="presetBridge" class="pill-btn text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-700">9m Bridge Road</button>
+        <button id="presetTop2D" class="pill-btn text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-700">Top Plan</button>
+
+        <div class="h-4 w-px bg-slate-200 mx-1"></div>
+
+        <!-- Quick Plot Search -->
+        <div class="relative flex items-center">
+          <input id="searchInput" type="text" placeholder="Plot # (e.g. 14, P2-33, Shop 2)" class="w-44 text-xs bg-slate-100/90 focus:bg-white border border-slate-200 rounded-xl pl-2.5 pr-7 py-1.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <button id="searchBtn" class="absolute right-1.5 text-xs text-slate-400 hover:text-emerald-600 font-bold" title="Find Plot">⌕</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- LEFT SIDEBAR: Legend, Filters, Road Directory & 3D Scene Controls -->
+    <aside class="fixed top-20 left-3 z-20 w-64 flex flex-col gap-2.5 pointer-events-none max-h-[calc(100vh-6rem)] overflow-y-auto custom-scroll pr-1">
+      <!-- Interactive North Compass & Lighting Theme Card -->
+      <div class="glass-card rounded-2xl p-3 flex items-center justify-between pointer-events-auto">
+        <div class="flex items-center gap-2.5">
+          <canvas id="compassCanvas" width="46" height="46" class="cursor-pointer rounded-full shadow-sm" title="Click to align North Up"></canvas>
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-amber-600">Orientation</div>
+            <div class="text-xs font-bold text-slate-800">North (▲ N)</div>
+            <button id="btnAlignNorth" class="text-xs text-emerald-600 hover:underline font-semibold">Reset North ↑</button>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span class="text-xs font-semibold text-slate-400">Sky &amp; Sun</span>
+          <select id="skyThemeSelect" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 focus:outline-none">
+            <option value="day" selected>☀️ Crisp Day</option>
+            <option value="blueprint">🗺️ Original Plan</option>
+            <option value="sunset">🌇 Golden Hour</option>
+            <option value="night">🌙 Night Glow</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Masterplan Zone Filter & Color Legend -->
+      <div class="glass-card rounded-2xl p-3 pointer-events-auto">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Zones &amp; Plot Types</span>
+          <button id="btnResetFilter" class="text-xs text-emerald-600 font-semibold hidden hover:underline">Show All</button>
+        </div>
+        <div class="space-y-1">
+          <button data-filter="all" class="zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-slate-900 text-white font-semibold">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-400 border border-slate-900"></span>All Masterplan Zones</span>
+            <span class="text-xs opacity-80">87</span>
+          </button>
+          <button data-filter="phase1" class="zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-[#3b5e31] border border-[#1c3016]"></span>Phase I (Plots 01–29 &amp; Shops)</span>
+            <span class="text-xs text-slate-400">39</span>
+          </button>
+          <button data-filter="phase2" class="zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-[#26421e] border border-[#12230e]"></span>Phase II (Plots 01–45 &amp; OSR)</span>
+            <span class="text-xs text-slate-400">48</span>
+          </button>
+          <button data-filter="commercial" class="zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-[#54502f] border border-[#2a2816]"></span>Commercial (Shop 1 – Shop 5)</span>
+            <span class="text-xs text-slate-400">5</span>
+          </button>
+          <button data-filter="osr_cs" class="zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-[#1f471e] border border-[#102810]"></span>O.S.R. / C.S. / PP / Landscape</span>
+            <span class="text-xs text-slate-400">8</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Road Network Hierarchy Quick-Focus -->
+      <div class="glass-card rounded-2xl p-3 pointer-events-auto">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Key Road Corridors</div>
+        <div class="grid grid-cols-1 gap-1 text-xs">
+          <button data-road="orr" class="road-jump-btn text-left px-2.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-800 font-medium flex items-center justify-between">
+            <span>🛣️ Outer Ring Road &amp; Service Rd</span>
+            <span class="text-xs font-bold text-slate-500">Hwy</span>
+          </button>
+          <button data-road="10m" class="road-jump-btn text-left px-2.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-800 font-medium flex items-center justify-between">
+            <span>📐 10.0m Wide Road (Entrance)</span>
+            <span class="text-xs font-bold text-emerald-700">10.0m</span>
+          </button>
+          <button data-road="bridge" class="road-jump-btn text-left px-2.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-800 font-medium flex items-center justify-between">
+            <span>🌉 9.0 M Road to Phase II</span>
+            <span class="text-xs font-bold text-emerald-700">9.0m</span>
+          </button>
+          <button data-road="p1_spine" class="road-jump-btn text-left px-2.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-800 font-medium flex items-center justify-between">
+            <span>↕️ Phase I Spine &amp; 7.2m Roads</span>
+            <span class="text-xs font-bold text-teal-700">9m / 7.2m</span>
+          </button>
+          <button data-road="p2_grid" class="road-jump-btn text-left px-2.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-800 font-medium flex items-center justify-between">
+            <span>⊞ Phase II 9.0M &amp; 7.2M Grid</span>
+            <span class="text-xs font-bold text-teal-700">9m / 7.2m</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Layers & Creative Detail Controls -->
+      <div class="glass-card rounded-2xl p-3 pointer-events-auto space-y-2">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500">3D Layers &amp; Details</div>
+
+        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
+          <span class="font-medium">🟡 Plot Number Badges (01–45)</span>
+          <input id="chkPlotBadges" type="checkbox" checked class="accent-emerald-600 rounded" />
+        </label>
+        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
+          <span class="font-medium">🛣️ Road Names &amp; Width Labels</span>
+          <input id="chkRoadLabels" type="checkbox" checked class="accent-emerald-600 rounded" />
+        </label>
+        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
+          <span class="font-medium">🏢 3D Shops, Parks &amp; C.S.</span>
+          <input id="chk3DCommercial" type="checkbox" checked class="accent-emerald-600 rounded" />
+        </label>
+        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
+          <span class="font-medium">🏡 3D Sample Villas on Plots</span>
+          <input id="chk3DVillas" type="checkbox" class="accent-emerald-600 rounded" />
+        </label>
+        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
+          <span class="font-medium">🌳 AoE II Style Trees (269)</span>
+          <input id="chk3DTrees" type="checkbox" checked class="accent-emerald-600 rounded" />
+        </label>
+        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
+          <span class="font-medium">🚗 Animated 3D Road Traffic</span>
+          <input id="chkTraffic" type="checkbox" checked class="accent-emerald-600 rounded" />
+        </label>
+
+        <div class="pt-1 border-t border-slate-200/80">
+          <div class="flex justify-between text-xs text-slate-500 mb-1">
+            <span>3D Plot Extrusion Height</span>
+            <span id="lblExtrudeHeight" class="font-mono font-bold text-slate-700">1.4x</span>
+          </div>
+          <input id="sliderExtrude" type="range" min="0.4" max="3.0" step="0.1" value="1.4" class="w-full accent-emerald-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer" />
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT DRAWER: Selected Plot / Zone 3D Inspector -->
+    <aside id="inspectorDrawer" class="fixed top-20 right-3 z-20 w-80 glass-card rounded-2xl p-4 pointer-events-auto transition-all duration-200 translate-x-[115%] opacity-0">
+      <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-200/80">
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span id="inspPhaseBadge" class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900">PHASE I</span>
+            <span id="inspCategoryBadge" class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900">Residential Plot</span>
+          </div>
+          <h2 id="inspTitle" class="text-lg font-extrabold text-slate-900 mt-1">Plot #01</h2>
+        </div>
+        <button id="btnCloseInspector" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold">✕</button>
+      </div>
+
+      <!-- Key Plot Metrics Grid -->
+      <div class="grid grid-cols-2 gap-2 my-3 text-xs">
+        <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5">
+          <div class="text-slate-400 font-medium">Plot / Zone ID</div>
+          <div id="inspId" class="font-bold text-slate-900 text-sm mt-0.5">P1-01</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5">
+          <div class="text-slate-400 font-medium">Road Frontage</div>
+          <div id="inspRoad" class="font-bold text-emerald-700 text-sm mt-0.5">7.2 m Wide Road</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5">
+          <div class="text-slate-400 font-medium">Est. Plot Area</div>
+          <div id="inspArea" class="font-bold text-slate-900 text-sm mt-0.5">1,200 sq.ft</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5">
+          <div class="text-slate-400 font-medium">Orientation</div>
+          <div id="inspFacing" class="font-bold text-slate-900 text-sm mt-0.5">North Facing</div>
+        </div>
+      </div>
+
+      <div class="space-y-1.5 pt-1">
+        <button id="btnFlyToPlot" class="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+          <span>🎯</span> Focus 3D Camera on Plot
+        </button>
+        <button id="btnTogglePlotBuilding" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+          <span>🏡</span> Toggle 3D Building on This Plot
+        </button>
+      </div>
+
+      <!-- Quick Neighbour Plot Jumper -->
+      <div class="mt-3 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
+        <button id="btnPrevPlot" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-700">← Prev Plot</button>
+        <span id="inspBlockName" class="text-slate-400 font-medium">Block B</span>
+        <button id="btnNextPlot" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-700">Next Plot →</button>
+      </div>
+    </aside>
+
+    <!-- BOTTOM NAVIGATION DOCK: Pan D-Pad + 3D Orbit + Zoom Controls -->
+    <div class="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 glass-card rounded-2xl px-3 py-1.5 flex items-center gap-1.5 pointer-events-auto">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">Pan:</span>
+      <button id="btnPanLeft" class="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-200">◀ L</button>
+      <button id="btnPanRight" class="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-200">R ▶</button>
+      <button id="btnPanUp" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">▲</button>
+      <button id="btnPanDown" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">▼</button>
+      <div class="h-4 w-px bg-slate-200 mx-0.5"></div>
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mx-0.5 hidden sm:inline">3D Orbit:</span>
+      <button id="btnOrbitLeft" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">⟲ Spin L</button>
+      <button id="btnOrbitRight" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Spin R ⟳</button>
+      <button id="btnTiltDown" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Tilt 3D</button>
+      <button id="btnTiltUp" class="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Flat 2D</button>
+      <div class="h-4 w-px bg-slate-200 mx-0.5"></div>
+      <button id="btnZoomIn" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold">＋</button>
+      <button id="btnZoomOut" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold">－</button>
+      <button id="btnResetCam" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">Reset</button>
+    </div>
+
+    <!-- HOVER FLOATING TOOLTIP -->
+    <div id="hoverTooltip" class="fixed z-30 pointer-events-none hidden glass-dark rounded-xl px-3 py-2 text-xs shadow-xl min-w-[185px]">
+      <div class="flex items-center justify-between gap-2">
+        <span id="ttPlotTitle" class="font-extrabold text-amber-300 text-sm">Plot #01</span>
+        <span id="ttPhaseTag" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold">Phase I</span>
+      </div>
+      <div id="ttCategory" class="text-slate-300 mt-0.5 font-medium">Residential Plot • Block B</div>
+      <div class="flex items-center justify-between mt-1.5 pt-1 border-t border-white/10 text-xs">
+        <span id="ttRoad" class="text-sky-300 font-semibold">🛣️ 7.2 m Wide Road</span>
+        <span id="ttArea" class="font-bold text-white">1,200 sq.ft</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // EMBEDDED MASTERPLAN GEOMETRY DATASET (EXACT COORDINATES FROM UPLOADED PLAN)
+    // ============================================================================
+    const MASTERPLAN_DATA = {"orrPoly": [[10, 311], [261, 101], [283, 127], [276, 134], [287, 136], [309, 161], [54, 363], [36, 339], [41, 331], [31, 331]], "orrDivider": [[32, 336], [285, 131]], "layoutOuterPoly": [[104, 315], [244, 198], [263, 189], [312, 215], [325, 278], [332, 307], [496, 343], [478, 444], [705, 513], [782, 502], [779, 550], [875, 556], [998, 604], [982, 646], [968, 681], [910, 836], [832, 807], [806, 804], [776, 795], [786, 755], [733, 732], [692, 736], [610, 710], [579, 722], [496, 694], [469, 678], [421, 661], [432, 562], [445, 480], [457, 362], [331, 339], [342, 520], [322, 886], [283, 875], [179, 828], [188, 665], [190, 633], [193, 571], [159, 557], [131, 545], [95, 536], [95, 504], [91, 504], [98, 417], [102, 386], [103, 348]], "roadLabels": [{"text": "OUTER RING ROAD", "x": 146, "y": 204, "angle": -39.5, "size": 9.5, "type": "highway"}, {"text": "\u2190 TOWARDS PATTABIRAM", "x": 58, "y": 280, "angle": -39.5, "size": 8.5, "type": "highway-dir"}, {"text": "TOWARDS POONAMALLEE \u2192", "x": 226, "y": 139, "angle": -39.5, "size": 8.5, "type": "highway-dir"}, {"text": "SERVICE ROAD", "x": 162, "y": 236, "angle": -39.5, "size": 9.0, "type": "service"}, {"text": "10.0m Wide Road", "x": 203, "y": 356, "angle": 50.0, "size": 10.5, "type": "main"}, {"text": "7.2 m Wide Road", "x": 152, "y": 403, "angle": 4.0, "size": 10.0, "type": "internal"}, {"text": "7.2 m Wide Road", "x": 185, "y": 524, "angle": 4.0, "size": 10.0, "type": "internal"}, {"text": "7.2 m Wide Road", "x": 238, "y": 652, "angle": 4.0, "size": 10.0, "type": "internal"}, {"text": "9.0 m Wide Road", "x": 232, "y": 770, "angle": 4.0, "size": 10.0, "type": "main"}, {"text": "9.0 m Wide Road", "x": 307, "y": 308, "angle": 85.0, "size": 10.5, "type": "main"}, {"text": "9.0 m Wide Road", "x": 319, "y": 474, "angle": 86.0, "size": 10.5, "type": "main"}, {"text": "9.0 m Wide Road", "x": 308, "y": 745, "angle": 93.0, "size": 10.5, "type": "main"}, {"text": "9.0 M ROAD TO PHASE II", "x": 406, "y": 333, "angle": 12.0, "size": 10.5, "type": "bridge"}, {"text": "9.0 M ROAD", "x": 642, "y": 518, "angle": 19.0, "size": 10.5, "type": "main"}, {"text": "9.0 M ROAD", "x": 896, "y": 632, "angle": 21.0, "size": 10.5, "type": "main"}, {"text": "9.0 M ROAD", "x": 515, "y": 594, "angle": 108.0, "size": 10.0, "type": "main"}, {"text": "7.2 M ROAD", "x": 629, "y": 632, "angle": 108.0, "size": 10.0, "type": "internal"}, {"text": "7.2 M ROAD", "x": 741, "y": 666, "angle": 108.0, "size": 10.0, "type": "internal"}, {"text": "9.0 M ROAD", "x": 853, "y": 716, "angle": 108.0, "size": 10.0, "type": "main"}], "trafficPaths": [{"name": "ORR_1", "pts": [[22, 318], [272, 112]], "speed": 0.22, "color": "#e2e8f0"}, {"name": "ORR_2", "pts": [[278, 120], [28, 326]], "speed": 0.19, "color": "#334155"}, {"name": "SRV_1", "pts": [[46, 349], [297, 147]], "speed": 0.14, "color": "#cbd5e1"}, {"name": "P1_SPINE", "pts": [[252, 212], [298, 252], [312, 325], [322, 520], [306, 865]], "speed": 0.12, "color": "#1e293b"}, {"name": "BRIDGE_TO_P2", "pts": [[312, 322], [476, 355], [462, 462], [650, 522], [965, 658]], "speed": 0.13, "color": "#e2e8f0"}, {"name": "P1_10M", "pts": [[156, 294], [248, 398], [318, 405]], "speed": 0.1, "color": "#334155"}], "plots": [{"id": "P1-SHOP1", "plotNo": "Shop - 1", "label": "Shop - 1", "phase": 1, "block": "Commercial Zone", "category": "commercial", "shade": "olive", "poly": [[103, 348], [141, 316], [198, 378], [193, 392], [102, 386]], "center": [145.0, 360.0], "sqft": 5250, "facing": "North-East", "roadWidth": "10.0 m"}, {"id": "P1-SHOP2", "plotNo": "Shop 2", "label": "Shop 2", "phase": 1, "block": "Commercial Zone", "category": "commercial", "shade": "olive", "poly": [[181.0, 290.0], [203.0, 270.7], [238.0, 313.0], [216.0, 332.0]], "center": [209.5, 301.4], "sqft": 1840, "facing": "North-West", "roadWidth": "Service Road"}, {"id": "P1-SHOP3", "plotNo": "Shop 3", "label": "Shop 3", "phase": 1, "block": "Commercial Zone", "category": "commercial", "shade": "olive", "poly": [[203.0, 270.7], [225.0, 251.3], [260.0, 294.0], [238.0, 313.0]], "center": [231.5, 282.2], "sqft": 1850, "facing": "North-West", "roadWidth": "Service Road"}, {"id": "P1-SHOP4", "plotNo": "Shop 4", "label": "Shop 4", "phase": 1, "block": "Commercial Zone", "category": "commercial", "shade": "olive", "poly": [[225.0, 251.3], [247.0, 232.0], [282.0, 275.0], [260.0, 294.0]], "center": [253.5, 263.1], "sqft": 1850, "facing": "North-West", "roadWidth": "Service Road"}, {"id": "P1-28", "plotNo": "28", "label": "28", "phase": 1, "block": "Block A (North)", "category": "residential", "shade": "dark", "poly": [[247.7, 304.6], [282, 275], [290, 318], [263.0, 340.4]], "center": [272.1, 305.1], "sqft": 1740, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P1-27", "plotNo": "27", "label": "27", "phase": 1, "block": "Block A (North)", "category": "residential", "shade": "light", "poly": [[216, 332], [247.7, 304.6], [263.0, 340.4], [238, 361]], "center": [237.2, 335.1], "sqft": 1570, "facing": "South-West", "roadWidth": "10.0 m"}, {"id": "P1-29", "plotNo": "29", "label": "29", "phase": 1, "block": "Block A (North)", "category": "residential", "shade": "light", "poly": [[238, 361], [263.0, 340.4], [276.8, 374.6], [260, 390]], "center": [259.1, 368.2], "sqft": 1130, "facing": "South-West", "roadWidth": "10.0 m"}, {"id": "P1-SHOP5", "plotNo": "Shop 5", "label": "Shop 5", "phase": 1, "block": "Commercial Zone", "category": "commercial", "shade": "olive", "poly": [[263.0, 340.4], [290, 318], [295, 358], [276.8, 374.6]], "center": [279.0, 344.0], "sqft": 1180, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P1-LANDSCAPE", "plotNo": "LANDSCAPE", "label": "LANDSCAPE", "phase": 1, "block": "Green Belt", "category": "landscape", "shade": "park", "poly": [[263, 189], [310, 216], [321, 268]], "center": [296.0, 224.0], "sqft": 1230, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P1-01", "plotNo": "01", "label": "01", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[98.0, 417.0], [131.7, 419.1], [128.5, 462.6], [94.5, 460.5]], "center": [113.1, 439.0], "sqft": 1700, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-12", "plotNo": "12", "label": "12", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[94.5, 460.5], [128.5, 462.6], [125.3, 506.1], [91.0, 504.0]], "center": [109.0, 484.0], "sqft": 1720, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-02", "plotNo": "02", "label": "02", "phase": 1, "block": "Block B", "category": "residential", "shade": "light", "poly": [[131.7, 419.1], [165.3, 421.3], [162.4, 464.8], [128.5, 462.6]], "center": [146.8, 442.0], "sqft": 1700, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-11", "plotNo": "11", "label": "11", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[128.5, 462.6], [162.4, 464.8], [159.6, 508.3], [125.3, 506.1]], "center": [143.0, 486.2], "sqft": 1710, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-03", "plotNo": "03", "label": "03", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[165.3, 421.3], [199.0, 423.4], [196.5, 466.9], [162.4, 464.8]], "center": [179.9, 444.1], "sqft": 1700, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-10", "plotNo": "10", "label": "10", "phase": 1, "block": "Block B", "category": "residential", "shade": "light", "poly": [[162.4, 464.8], [196.5, 466.9], [194.0, 510.4], [159.6, 508.3]], "center": [175.3, 489.1], "sqft": 1720, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-04", "plotNo": "04", "label": "04", "phase": 1, "block": "Block B", "category": "residential", "shade": "light", "poly": [[199.0, 423.4], [232.6, 425.6], [230.4, 469.1], [196.5, 466.9]], "center": [212.3, 446.4], "sqft": 1690, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-09", "plotNo": "09", "label": "09", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[196.5, 466.9], [230.4, 469.1], [228.3, 512.6], [194.0, 510.4]], "center": [209.1, 491.5], "sqft": 1710, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-05", "plotNo": "05", "label": "05", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[232.6, 425.6], [266.3, 427.7], [264.5, 471.2], [230.4, 469.1]], "center": [246.0, 449.0], "sqft": 1700, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-08", "plotNo": "08", "label": "08", "phase": 1, "block": "Block B", "category": "residential", "shade": "light", "poly": [[230.4, 469.1], [264.5, 471.2], [262.6, 514.7], [228.3, 512.6]], "center": [242.7, 494.0], "sqft": 1720, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-06", "plotNo": "06", "label": "06", "phase": 1, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[266.3, 427.7], [302.0, 430.0], [300.5, 473.5], [264.5, 471.2]], "center": [283.2, 451.2], "sqft": 1800, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-07", "plotNo": "07", "label": "07", "phase": 1, "block": "Block B", "category": "residential", "shade": "light", "poly": [[264.5, 471.2], [300.5, 473.5], [299.0, 517.0], [262.6, 514.7]], "center": [280.0, 496.9], "sqft": 1820, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-PP1", "plotNo": "PP1", "label": "PP1", "phase": 1, "block": "Block C", "category": "pp", "shade": "light", "poly": [[95, 531], [132, 533], [131, 545], [95, 536]], "center": [115.0, 537.0], "sqft": 450, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-PP2", "plotNo": "PP2", "label": "PP2", "phase": 1, "block": "Block C", "category": "pp", "shade": "dark", "poly": [[132, 533], [160, 535], [159, 557], [131, 545]], "center": [146.0, 543.0], "sqft": 560, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-CS", "plotNo": "C.S", "label": "C.S", "phase": 1, "block": "Block C", "category": "cs", "shade": "olive", "poly": [[160, 535], [195, 537], [193, 571], [159, 557]], "center": [176.9, 550.1], "sqft": 1120, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-13", "plotNo": "13", "label": "13", "phase": 1, "block": "Block C", "category": "residential", "shade": "light", "poly": [[195.0, 537.0], [230.3, 539.3], [227.9, 587.1], [192.5, 585.0]], "center": [212.1, 568.9], "sqft": 1950, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-18", "plotNo": "18", "label": "18", "phase": 1, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[192.5, 585.0], [227.9, 587.1], [225.6, 635.0], [190.0, 633.0]], "center": [207.1, 617.0], "sqft": 1960, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-14", "plotNo": "14", "label": "14", "phase": 1, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[230.3, 539.3], [265.6, 541.6], [263.5, 589.3], [227.9, 587.1]], "center": [243.5, 571.1], "sqft": 1950, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-17", "plotNo": "17", "label": "17", "phase": 1, "block": "Block C", "category": "residential", "shade": "light", "poly": [[227.9, 587.1], [263.5, 589.3], [261.3, 637.0], [225.6, 635.0]], "center": [240.0, 617.5], "sqft": 1970, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-15", "plotNo": "15", "label": "15", "phase": 1, "block": "Block C", "category": "residential", "shade": "light", "poly": [[265.6, 541.6], [302.0, 544.0], [300.0, 591.5], [263.5, 589.3]], "center": [280.7, 574.0], "sqft": 2000, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-16", "plotNo": "16", "label": "16", "phase": 1, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[263.5, 589.3], [300.0, 591.5], [298.0, 639.0], [261.3, 637.0]], "center": [276.9, 620.0], "sqft": 2010, "facing": "South", "roadWidth": "7.2 m"}, {"id": "P1-19", "plotNo": "19", "label": "19", "phase": 1, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[188.0, 665.0], [221.2, 666.9], [218.8, 709.4], [185.5, 707.5]], "center": [203.6, 688.9], "sqft": 1630, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-24", "plotNo": "24", "label": "24", "phase": 1, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[185.5, 707.5], [218.8, 709.4], [216.5, 751.9], [183.0, 750.0]], "center": [200.9, 730.7], "sqft": 1640, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P1-20", "plotNo": "20", "label": "20", "phase": 1, "block": "Block D", "category": "residential", "shade": "light", "poly": [[221.2, 666.9], [255.4, 668.8], [253.2, 711.3], [218.8, 709.4]], "center": [232.8, 690.1], "sqft": 1680, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-23", "plotNo": "23", "label": "23", "phase": 1, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[218.8, 709.4], [253.2, 711.3], [251.0, 753.8], [216.5, 751.9]], "center": [232.9, 733.3], "sqft": 1690, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P1-21", "plotNo": "21", "label": "21", "phase": 1, "block": "Block D", "category": "residential", "shade": "light", "poly": [[255.4, 668.8], [295.0, 671.0], [293.0, 713.5], [253.2, 711.3]], "center": [273.9, 692.2], "sqft": 1950, "facing": "North", "roadWidth": "7.2 m"}, {"id": "P1-22", "plotNo": "22", "label": "22", "phase": 1, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[253.2, 711.3], [293.0, 713.5], [291.0, 756.0], [251.0, 753.8]], "center": [270.5, 735.0], "sqft": 1960, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P1-PART-OSR", "plotNo": "PART OSR", "label": "PART OSR", "phase": 1, "block": "Open Space", "category": "osr", "shade": "park", "poly": [[181, 783], [232.4, 786.4], [228.9, 850.6], [179, 828]], "center": [205.0, 812.0], "sqft": 3220, "facing": "North", "roadWidth": "9.0 m"}, {"id": "P1-25", "plotNo": "25", "label": "25", "phase": 1, "block": "Block E", "category": "residential", "shade": "light", "poly": [[232.4, 786.4], [288.0, 790.0], [285.4, 834.2], [230.6, 819.8]], "center": [263.9, 810.6], "sqft": 2490, "facing": "North & East", "roadWidth": "9.0 m"}, {"id": "P1-26", "plotNo": "26", "label": "26", "phase": 1, "block": "Block E", "category": "residential", "shade": "dark", "poly": [[230.6, 819.8], [285.4, 834.2], [283.0, 875.0], [228.9, 850.6]], "center": [262.0, 845.8], "sqft": 2290, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-OSR", "plotNo": "O.S.R.", "label": "O.S.R.", "phase": 2, "block": "Open Space", "category": "osr", "shade": "olive", "poly": [[445.0, 480.0], [491.5, 494.0], [470.6, 574.3], [432.0, 562.0]], "center": [462.0, 524.0], "sqft": 4230, "facing": "North", "roadWidth": "9.0 m"}, {"id": "P2-01", "plotNo": "01", "label": "01", "phase": 2, "block": "Block A", "category": "residential", "shade": "light", "poly": [[491.5, 494.0], [528.0, 505.0], [514.5, 544.5], [481.1, 534.1]], "center": [510.0, 521.7], "sqft": 1750, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-02", "plotNo": "02", "label": "02", "phase": 2, "block": "Block A", "category": "residential", "shade": "dark", "poly": [[481.1, 534.1], [514.5, 544.5], [501.0, 584.0], [470.6, 574.3]], "center": [495.7, 563.6], "sqft": 1600, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-03", "plotNo": "03", "label": "03", "phase": 2, "block": "Block A", "category": "residential", "shade": "light", "poly": [[432.0, 562.0], [501.0, 584.0], [490.3, 615.3], [428.3, 595.0]], "center": [468.9, 593.6], "sqft": 2600, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-04", "plotNo": "04", "label": "04", "phase": 2, "block": "Block A", "category": "residential", "shade": "dark", "poly": [[428.3, 595.0], [490.3, 615.3], [479.7, 646.7], [424.7, 628.0]], "center": [462.0, 626.9], "sqft": 2330, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-05", "plotNo": "05", "label": "05", "phase": 2, "block": "Block A", "category": "residential", "shade": "light", "poly": [[424.7, 628.0], [479.7, 646.7], [469.0, 678.0], [421.0, 661.0]], "center": [454.7, 660.5], "sqft": 2050, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-11", "plotNo": "11", "label": "11", "phase": 2, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[561.0, 512.0], [602.5, 526.0], [591.7, 556.3], [550.2, 542.3]], "center": [584.4, 538.2], "sqft": 1620, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-12", "plotNo": "12", "label": "12", "phase": 2, "block": "Block B", "category": "residential", "shade": "light", "poly": [[602.5, 526.0], [644.0, 540.0], [633.2, 570.3], [591.7, 556.3]], "center": [626.2, 551.6], "sqft": 1620, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-10", "plotNo": "10", "label": "10", "phase": 2, "block": "Block B", "category": "residential", "shade": "light", "poly": [[550.2, 542.3], [591.7, 556.3], [580.8, 586.7], [539.3, 572.7]], "center": [572.9, 569.7], "sqft": 1630, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-13", "plotNo": "13", "label": "13", "phase": 2, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[591.7, 556.3], [633.2, 570.3], [622.3, 600.7], [580.8, 586.7]], "center": [615.4, 584.5], "sqft": 1630, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-09", "plotNo": "09", "label": "09", "phase": 2, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[539.3, 572.7], [580.8, 586.7], [570.0, 617.0], [528.5, 603.0]], "center": [561.7, 601.5], "sqft": 1620, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-14", "plotNo": "14", "label": "14", "phase": 2, "block": "Block B", "category": "residential", "shade": "light", "poly": [[580.8, 586.7], [622.3, 600.7], [611.5, 631.0], [570.0, 617.0]], "center": [604.6, 616.1], "sqft": 1620, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-08", "plotNo": "08", "label": "08", "phase": 2, "block": "Block B", "category": "residential", "shade": "light", "poly": [[528.5, 603.0], [570.0, 617.0], [559.2, 647.3], [517.7, 633.3]], "center": [550.6, 633.6], "sqft": 1620, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-15", "plotNo": "15", "label": "15", "phase": 2, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[570.0, 617.0], [611.5, 631.0], [600.7, 661.3], [559.2, 647.3]], "center": [593.3, 648.2], "sqft": 1620, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-07", "plotNo": "07", "label": "07", "phase": 2, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[517.7, 633.3], [559.2, 647.3], [548.3, 677.7], [506.8, 663.7]], "center": [539.5, 665.3], "sqft": 1630, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-16", "plotNo": "16", "label": "16", "phase": 2, "block": "Block B", "category": "residential", "shade": "light", "poly": [[559.2, 647.3], [600.7, 661.3], [589.8, 691.7], [548.3, 677.7]], "center": [582.1, 679.5], "sqft": 1630, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-06", "plotNo": "06", "label": "06", "phase": 2, "block": "Block B", "category": "residential", "shade": "light", "poly": [[506.8, 663.7], [548.3, 677.7], [537.5, 708.0], [496.0, 694.0]], "center": [529.9, 696.0], "sqft": 1620, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-17", "plotNo": "17", "label": "17", "phase": 2, "block": "Block B", "category": "residential", "shade": "dark", "poly": [[548.3, 677.7], [589.8, 691.7], [579.0, 722.0], [537.5, 708.0]], "center": [571.3, 708.1], "sqft": 1620, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-22", "plotNo": "22", "label": "22", "phase": 2, "block": "Block C", "category": "residential", "shade": "light", "poly": [[671.0, 549.0], [711.5, 567.5], [699.4, 598.6], [658.8, 581.2]], "center": [695.1, 579.6], "sqft": 1730, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-23", "plotNo": "23", "label": "23", "phase": 2, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[711.5, 567.5], [752.0, 586.0], [740.0, 616.0], [699.4, 598.6]], "center": [734.9, 598.6], "sqft": 1670, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-21", "plotNo": "21", "label": "21", "phase": 2, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[658.8, 581.2], [699.4, 598.6], [687.3, 629.7], [646.6, 613.4]], "center": [683.7, 614.0], "sqft": 1710, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-24", "plotNo": "24", "label": "24", "phase": 2, "block": "Block C", "category": "residential", "shade": "light", "poly": [[699.4, 598.6], [740.0, 616.0], [728.0, 646.0], [687.3, 629.7]], "center": [725.7, 630.4], "sqft": 1660, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-20", "plotNo": "20", "label": "20", "phase": 2, "block": "Block C", "category": "residential", "shade": "light", "poly": [[646.6, 613.4], [687.3, 629.7], [675.2, 660.8], [634.4, 645.6]], "center": [672.0, 645.1], "sqft": 1700, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-25", "plotNo": "25", "label": "25", "phase": 2, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[687.3, 629.7], [728.0, 646.0], [716.0, 676.0], [675.2, 660.8]], "center": [714.5, 662.4], "sqft": 1650, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-19", "plotNo": "19", "label": "19", "phase": 2, "block": "Block C", "category": "residential", "shade": "dark", "poly": [[634.4, 645.6], [675.2, 660.8], [663.1, 691.9], [622.2, 677.8]], "center": [660.5, 677.5], "sqft": 1690, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-26", "plotNo": "26", "label": "26", "phase": 2, "block": "Block C", "category": "residential", "shade": "light", "poly": [[675.2, 660.8], [716.0, 676.0], [704.0, 706.0], [663.1, 691.9]], "center": [702.7, 694.0], "sqft": 1640, "facing": "East", "roadWidth": "7.2 m"}, {"id": "P2-18", "plotNo": "18", "label": "18", "phase": 2, "block": "Block C", "category": "residential", "shade": "light", "poly": [[622.2, 677.8], [704.0, 706.0], [692.0, 736.0], [610.0, 710.0]], "center": [668.4, 720.6], "sqft": 3310, "facing": "West & East", "roadWidth": "7.2 m"}, {"id": "P2-30", "plotNo": "30", "label": "30", "phase": 2, "block": "Block D", "category": "residential", "shade": "light", "poly": [[780.0, 606.0], [820.5, 621.0], [808.9, 652.5], [768.2, 637.5]], "center": [802.4, 633.7], "sqft": 1670, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-31", "plotNo": "31", "label": "31", "phase": 2, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[820.5, 621.0], [861.0, 636.0], [849.5, 667.5], [808.9, 652.5]], "center": [843.7, 649.4], "sqft": 1670, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-29", "plotNo": "29", "label": "29", "phase": 2, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[768.2, 637.5], [808.9, 652.5], [797.2, 684.0], [756.5, 669.0]], "center": [791.5, 664.3], "sqft": 1680, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-32", "plotNo": "32", "label": "32", "phase": 2, "block": "Block D", "category": "residential", "shade": "light", "poly": [[808.9, 652.5], [849.5, 667.5], [838.0, 699.0], [797.2, 684.0]], "center": [833.4, 680.3], "sqft": 1670, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-28", "plotNo": "28", "label": "28", "phase": 2, "block": "Block D", "category": "residential", "shade": "light", "poly": [[756.5, 669.0], [797.2, 684.0], [785.6, 715.5], [744.8, 700.5]], "center": [780.1, 696.3], "sqft": 1680, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-33", "plotNo": "33", "label": "33", "phase": 2, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[797.2, 684.0], [838.0, 699.0], [826.5, 730.5], [785.6, 715.5]], "center": [822.3, 712.6], "sqft": 1680, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-27", "plotNo": "27", "label": "27", "phase": 2, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[744.8, 700.5], [785.6, 715.5], [774.0, 747.0], [733.0, 732.0]], "center": [768.1, 724.0], "sqft": 1680, "facing": "West", "roadWidth": "7.2 m"}, {"id": "P2-34", "plotNo": "34", "label": "34", "phase": 2, "block": "Block D", "category": "residential", "shade": "light", "poly": [[785.6, 715.5], [826.5, 730.5], [815.0, 762.0], [774.0, 747.0]], "center": [812.3, 744.4], "sqft": 1680, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-35", "plotNo": "35", "label": "35", "phase": 2, "block": "Block D", "category": "residential", "shade": "dark", "poly": [[774.0, 747.0], [815, 762], [806, 804], [776, 795]], "center": [800.4, 785.0], "sqft": 1890, "facing": "East", "roadWidth": "9.0 m"}, {"id": "P2-40", "plotNo": "40", "label": "40", "phase": 2, "block": "Block E", "category": "residential", "shade": "light", "poly": [[892.0, 651.0], [966.0, 679.0], [954.0, 710.0], [880.0, 682.2]], "center": [933.6, 685.6], "sqft": 3030, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-39", "plotNo": "39", "label": "39", "phase": 2, "block": "Block E", "category": "residential", "shade": "dark", "poly": [[880.0, 682.2], [954.0, 710.0], [942.0, 741.0], [868.0, 713.4]], "center": [922.4, 715.9], "sqft": 3030, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-38", "plotNo": "38", "label": "38", "phase": 2, "block": "Block E", "category": "residential", "shade": "light", "poly": [[868.0, 713.4], [942.0, 741.0], [930.0, 772.0], [856.0, 744.6]], "center": [911.5, 747.7], "sqft": 3030, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-37", "plotNo": "37", "label": "37", "phase": 2, "block": "Block E", "category": "residential", "shade": "dark", "poly": [[856.0, 744.6], [930.0, 772.0], [918.0, 803.0], [844.0, 775.8]], "center": [900.5, 779.6], "sqft": 3020, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-36", "plotNo": "36", "label": "36", "phase": 2, "block": "Block E", "category": "residential", "shade": "light", "poly": [[844.0, 775.8], [918.0, 803.0], [906.0, 834.0], [832.0, 807.0]], "center": [888.0, 812.4], "sqft": 3020, "facing": "West", "roadWidth": "9.0 m"}, {"id": "P2-45", "plotNo": "45", "label": "45", "phase": 2, "block": "Block F (North)", "category": "residential", "shade": "dark", "poly": [[705, 513], [782, 502], [776, 558], [728, 529]], "center": [762.7, 534.5], "sqft": 2500, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P2-PP", "plotNo": "PP PLOTS", "label": "PP PLOTS", "phase": 2, "block": "Block F (North)", "category": "pp", "shade": "olive", "poly": [[779, 550], [822, 553], [815, 577], [776, 558]], "center": [798.0, 562.0], "sqft": 820, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P2-CS", "plotNo": "C.S.", "label": "C.S.", "phase": 2, "block": "Block F (North)", "category": "cs", "shade": "olive", "poly": [[822, 553], [875, 556], [862, 597], [815, 577]], "center": [845.0, 574.0], "sqft": 2000, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P2-44", "plotNo": "44", "label": "44", "phase": 2, "block": "Block F (North)", "category": "residential", "shade": "dark", "poly": [[875.0, 556.0], [905.8, 568.0], [892.0, 609.2], [862.0, 597.0]], "center": [885.3, 584.9], "sqft": 1620, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P2-43", "plotNo": "43", "label": "43", "phase": 2, "block": "Block F (North)", "category": "residential", "shade": "light", "poly": [[905.8, 568.0], [936.5, 580.0], [922.0, 621.5], [892.0, 609.2]], "center": [916.2, 598.4], "sqft": 1640, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P2-42", "plotNo": "42", "label": "42", "phase": 2, "block": "Block F (North)", "category": "residential", "shade": "dark", "poly": [[936.5, 580.0], [967.2, 592.0], [952.0, 633.8], [922.0, 621.5]], "center": [947.2, 611.4], "sqft": 1660, "facing": "South", "roadWidth": "9.0 m"}, {"id": "P2-41", "plotNo": "41", "label": "41", "phase": 2, "block": "Block F (North)", "category": "residential", "shade": "light", "poly": [[967.2, 592.0], [998.0, 604.0], [982.0, 646.0], [952.0, 633.8]], "center": [976.9, 624.5], "sqft": 1680, "facing": "South", "roadWidth": "9.0 m"}], "trees": [[105.2, 306.2, 0.92, 0], [233.7, 195.9, 0.98, 1], [246.2, 190.3, 1.04, 2], [254.7, 183.8, 1.1, 0], [271.9, 186.9, 0.92, 1], [285.2, 191.5, 0.98, 2], [296.4, 199.9, 1.04, 0], [309.7, 204.5, 1.1, 1], [319.2, 220.1, 0.92, 2], [323.9, 232.2, 0.98, 0], [324.4, 245.3, 1.04, 1], [329.1, 257.4, 1.1, 2], [329.6, 270.5, 0.92, 0], [334.7, 283.3, 0.98, 1], [336.1, 298.3, 1.04, 2], [340.6, 300.5, 1.1, 0], [353.8, 305.6, 0.92, 1], [367.9, 306.5, 0.98, 2], [381.1, 311.6, 1.04, 0], [395.3, 312.5, 1.1, 1], [408.5, 317.6, 0.92, 2], [422.6, 318.5, 0.98, 0], [435.8, 323.6, 1.04, 1], [449.9, 324.5, 1.1, 2], [463.1, 329.6, 0.92, 0], [477.3, 330.5, 0.98, 1], [490.5, 335.6, 1.04, 2], [502.9, 350.8, 1.1, 0], [498.5, 363.0, 0.92, 1], [498.4, 376.0, 0.98, 2], [494.0, 388.2, 1.04, 0], [493.9, 401.3, 1.1, 1], [489.5, 413.5, 0.92, 2], [489.4, 426.5, 0.98, 0], [485.0, 438.7, 1.04, 1], [486.7, 438.1, 1.1, 2], [498.7, 444.0, 0.92, 0], [511.9, 445.7, 0.98, 1], [523.9, 451.7, 1.04, 2], [537.1, 453.4, 1.1, 0], [549.1, 459.3, 0.92, 1], [562.4, 461.1, 0.98, 2], [574.3, 467.0, 1.04, 0], [587.6, 468.7, 1.1, 1], [599.6, 474.7, 0.92, 2], [612.8, 476.4, 0.98, 0], [624.8, 482.3, 1.04, 1], [638.0, 484.1, 1.1, 2], [650.0, 490.0, 0.92, 0], [663.2, 491.7, 0.98, 1], [675.2, 497.7, 1.04, 2], [688.5, 499.4, 1.1, 0], [700.4, 505.3, 0.92, 1], [710.3, 504.0, 0.98, 2], [723.4, 504.3, 1.04, 0], [735.9, 500.3, 1.1, 1], [749.1, 500.6, 0.92, 2], [761.6, 496.6, 0.98, 0], [774.7, 497.0, 1.04, 1], [789.8, 508.5, 1.1, 2], [786.9, 520.4, 0.92, 0], [788.3, 532.5, 0.98, 1], [785.4, 544.4, 1.04, 2], [786.4, 542.2, 1.1, 0], [799.9, 545.3, 0.92, 1], [813.8, 544.0, 0.98, 2], [827.4, 547.0, 1.04, 0], [841.2, 545.7, 1.1, 1], [854.8, 548.7, 0.92, 2], [868.7, 547.4, 0.98, 0], [883.3, 552.8, 1.04, 1], [896.4, 555.6, 1.1, 2], [907.9, 562.4, 0.92, 0], [921.0, 565.2, 0.98, 1], [932.5, 572.0, 1.04, 2], [945.6, 574.8, 1.1, 0], [957.1, 581.6, 0.92, 1], [970.2, 584.4, 0.98, 2], [981.7, 591.2, 1.04, 0], [994.8, 594.0, 1.1, 1], [1000.9, 613.1, 0.92, 2], [997.7, 627.9, 0.98, 0], [990.3, 641.1, 1.04, 1], [987.3, 654.9, 1.1, 2], [980.6, 665.7, 0.92, 0], [977.9, 678.2, 0.98, 1], [971.2, 689.6, 1.04, 2], [968.4, 703.2, 1.1, 0], [961.5, 715.4, 0.92, 1], [958.8, 729.1, 0.98, 2], [951.9, 741.2, 1.04, 0], [949.1, 754.9, 1.1, 1], [942.2, 767.1, 0.92, 2], [939.4, 780.7, 0.98, 0], [932.5, 792.9, 1.04, 1], [929.8, 806.6, 1.1, 2], [922.9, 818.7, 0.92, 0], [920.1, 832.4, 0.98, 1], [901.4, 839.2, 1.04, 2], [887.6, 836.4, 1.1, 0], [875.4, 829.5, 0.92, 1], [861.6, 826.8, 0.98, 2], [849.4, 819.9, 1.04, 0], [835.6, 817.1, 1.1, 1], [824.8, 812.2, 0.92, 2], [811.6, 812.9, 0.98, 0], [796.8, 807.5, 1.04, 1], [781.1, 805.1, 1.1, 2], [771.8, 786.9, 0.92, 0], [773.0, 773.0, 0.98, 1], [778.5, 760.2, 1.04, 2], [776.1, 759.6, 1.1, 0], [763.7, 751.9, 0.92, 1], [749.6, 748.1, 0.98, 2], [737.2, 740.4, 1.04, 0], [727.0, 740.8, 1.1, 1], [713.1, 740.0, 0.92, 2], [699.6, 743.5, 0.98, 0], [683.4, 739.6, 1.04, 1], [669.0, 737.3, 1.1, 2], [656.0, 730.9, 0.92, 0], [641.7, 728.6, 0.98, 1], [628.7, 722.2, 1.04, 2], [614.4, 720.0, 1.1, 0], [604.4, 718.6, 0.92, 1], [589.7, 726.6, 0.98, 2], [570.2, 725.4, 1.04, 0], [555.6, 722.8, 1.1, 1], [542.5, 716.0, 0.92, 2], [528.0, 713.4, 0.98, 0], [514.8, 706.7, 1.04, 1], [500.3, 704.1, 1.1, 2], [486.2, 695.2, 0.92, 0], [471.6, 689.1, 0.98, 1], [461.0, 681.5, 1.04, 2], [448.3, 679.4, 1.1, 0], [437.0, 673.0, 0.92, 1], [424.3, 670.9, 0.98, 2], [415.8, 653.3, 1.04, 0], [415.2, 638.9, 1.1, 1], [419.0, 625.0, 0.92, 2], [418.4, 610.6, 0.98, 0], [422.1, 596.7, 1.04, 1], [421.5, 582.3, 1.1, 2], [425.3, 568.4, 0.92, 0], [425.0, 553.9, 0.98, 1], [429.3, 540.6, 1.04, 2], [429.3, 526.5, 1.1, 0], [433.7, 513.2, 0.92, 1], [433.7, 499.2, 0.98, 2], [438.0, 485.9, 1.04, 0], [437.5, 472.6, 1.1, 1], [441.0, 459.7, 0.92, 2], [440.2, 446.4, 0.98, 0], [443.7, 433.5, 1.04, 1], [442.8, 420.2, 1.1, 2], [446.4, 407.3, 0.92, 0], [445.5, 393.9, 0.98, 1], [449.0, 381.1, 1.04, 2], [448.2, 367.7, 1.1, 0], [448.9, 366.6, 0.92, 1], [434.5, 366.2, 0.98, 2], [420.9, 361.5, 1.04, 0], [406.5, 361.1, 1.1, 1], [392.9, 356.4, 0.92, 2], [378.5, 356.0, 0.98, 0], [364.9, 351.3, 1.04, 1], [350.5, 350.9, 1.1, 2], [336.9, 346.2, 0.92, 0], [339.6, 345.5, 0.98, 1], [338.3, 359.5, 1.04, 2], [341.3, 373.3, 1.1, 0], [340.0, 387.4, 0.92, 1], [343.0, 401.2, 0.98, 2], [341.6, 415.2, 1.04, 0], [344.7, 429.0, 1.1, 1], [343.3, 443.1, 0.92, 2], [346.4, 456.8, 0.98, 0], [345.0, 470.9, 1.04, 1], [348.1, 484.7, 1.1, 2], [346.7, 498.8, 0.92, 0], [349.8, 512.5, 0.98, 1], [347.6, 527.1, 1.04, 2], [349.1, 540.8, 1.1, 0], [346.1, 554.2, 0.92, 1], [347.6, 567.9, 0.98, 2], [344.7, 581.3, 1.04, 0], [346.1, 595.0, 1.1, 1], [343.2, 608.4, 0.92, 2], [344.6, 622.1, 0.98, 0], [341.7, 635.5, 1.04, 1], [343.2, 649.2, 1.1, 2], [340.2, 662.7, 0.92, 0], [341.7, 676.3, 0.98, 1], [338.7, 689.8, 1.04, 2], [340.2, 703.4, 1.1, 0], [337.3, 716.9, 0.92, 1], [338.7, 730.6, 0.98, 2], [335.8, 744.0, 1.04, 0], [337.2, 757.7, 1.1, 1], [334.3, 771.1, 0.92, 2], [335.7, 784.8, 0.98, 0], [332.8, 798.2, 1.04, 1], [334.3, 811.9, 1.1, 2], [331.3, 825.3, 0.92, 0], [332.8, 839.0, 0.98, 1], [329.8, 852.4, 1.04, 2], [331.3, 866.1, 1.1, 0], [328.4, 879.5, 0.92, 1], [313.3, 892.1, 0.98, 2], [300.9, 886.3, 1.04, 0], [287.3, 884.7, 1.1, 1], [274.0, 877.5, 0.92, 2], [260.1, 873.7, 0.98, 0], [248.0, 865.8, 1.04, 1], [234.1, 861.9, 1.1, 2], [222.0, 854.0, 0.92, 0], [208.1, 850.2, 0.98, 1], [196.0, 842.3, 1.04, 2], [182.1, 838.4, 1.1, 0], [173.4, 820.9, 0.92, 1], [171.9, 807.2, 0.98, 2], [174.9, 793.7, 1.04, 0], [173.4, 780.0, 1.1, 1], [176.4, 766.5, 0.92, 2], [174.9, 752.8, 0.98, 0], [177.9, 739.4, 1.04, 1], [176.4, 725.7, 1.1, 2], [179.4, 712.2, 0.92, 0], [177.9, 698.5, 0.98, 1], [180.9, 685.0, 1.04, 2], [179.4, 671.3, 1.1, 0], [182.5, 656.6, 0.92, 1], [181.3, 640.5, 0.98, 2], [184.3, 626.5, 1.04, 0], [182.7, 614.0, 1.1, 1], [185.5, 601.7, 0.92, 2], [183.9, 589.2, 0.98, 0], [186.7, 576.9, 1.04, 1], [184.2, 576.2, 1.1, 2], [173.7, 569.5, 0.92, 0], [161.5, 566.9, 0.98, 1], [149.6, 559.5, 1.04, 2], [134.8, 555.5, 1.1, 0], [123.5, 549.3, 0.92, 1], [111.0, 548.5, 0.98, 2], [99.5, 543.3, 1.04, 0], [86.8, 528.0, 1.1, 1], [89.0, 512.0, 0.92, 2], [83.4, 496.1, 0.98, 0], [86.8, 481.8, 1.04, 1], [85.7, 467.1, 1.1, 2], [89.1, 452.8, 0.92, 0], [88.1, 438.1, 0.98, 1], [91.4, 423.8, 1.04, 2], [90.9, 408.2, 1.1, 0], [95.0, 393.0, 0.92, 1], [94.0, 379.5, 0.98, 2], [96.5, 366.8, 1.04, 0], [94.6, 354.1, 1.1, 1], [97.3, 339.6, 0.92, 2], [95.6, 323.0, 0.98, 0], [282, 206, 1.0, 0], [302, 228, 0.96, 1], [192, 798, 1.02, 0], [214, 818, 0.96, 2], [450, 496, 1.04, 0], [474, 518, 0.98, 1], [446, 542, 1.0, 2]], "compass": {"x": 451, "y": 845}, "phaseLabels": [{"text": "Phase I", "x": 72, "y": 718, "phase": 1}, {"text": "Phase II", "x": 712, "y": 366, "phase": 2}], "roadLines": [{"pts": [[15, 313], [264, 106]], "type": "edge", "color": "#cbd5e1", "width": 1.4, "dash": []}, {"pts": [[23, 323], [273, 116]], "type": "lane", "color": "#f1f5f9", "width": 1.6, "dash": [8, 7]}, {"pts": [[31, 334], [283, 129]], "type": "median", "color": "#f59e0b", "width": 1.8, "dash": []}, {"pts": [[34, 337], [286, 132]], "type": "median", "color": "#f59e0b", "width": 1.8, "dash": []}, {"pts": [[44, 349], [296, 144]], "type": "lane", "color": "#e2e8f0", "width": 1.4, "dash": [7, 7]}, {"pts": [[53, 359], [305, 155]], "type": "edge", "color": "#94a3b8", "width": 1.2, "dash": []}, {"pts": [[156, 292], [250, 400]], "type": "center", "color": "#f1f5f9", "width": 1.6, "dash": [6, 6]}, {"pts": [[144, 303], [234, 405]], "type": "edge", "color": "#64748b", "width": 1.0, "dash": []}, {"pts": [[169, 282], [258, 385]], "type": "edge", "color": "#64748b", "width": 1.0, "dash": []}, {"pts": [[103, 403], [308, 417]], "type": "center", "color": "#e2e8f0", "width": 1.4, "dash": [5, 5]}, {"pts": [[97, 518], [312, 532]], "type": "center", "color": "#e2e8f0", "width": 1.4, "dash": [5, 5]}, {"pts": [[190, 650], [310, 658]], "type": "center", "color": "#e2e8f0", "width": 1.4, "dash": [5, 5]}, {"pts": [[184, 768], [304, 776]], "type": "center", "color": "#f1f5f9", "width": 1.5, "dash": [6, 5]}, {"pts": [[256, 210], [298, 250], [309, 322], [320, 520], [313, 660], [303, 875]], "type": "center", "color": "#f1f5f9", "width": 1.7, "dash": [7, 6]}, {"pts": [[312, 322], [475, 355], [456, 468]], "type": "center", "color": "#fbbf24", "width": 1.7, "dash": [7, 6]}, {"pts": [[330, 311], [488, 345], [471, 456]], "type": "edge", "color": "#64748b", "width": 1.0, "dash": []}, {"pts": [[328, 334], [462, 362], [443, 464]], "type": "edge", "color": "#64748b", "width": 1.0, "dash": []}, {"pts": [[456, 468], [550, 498], [695, 542], [772, 578], [882, 625], [984, 665]], "type": "center", "color": "#f1f5f9", "width": 1.7, "dash": [7, 6]}, {"pts": [[547, 500], [485, 686]], "type": "center", "color": "#f1f5f9", "width": 1.5, "dash": [6, 5]}, {"pts": [[661, 535], [597, 718]], "type": "center", "color": "#e2e8f0", "width": 1.4, "dash": [5, 5]}, {"pts": [[771, 580], [715, 735]], "type": "center", "color": "#e2e8f0", "width": 1.4, "dash": [5, 5]}, {"pts": [[881, 626], [820, 806]], "type": "center", "color": "#f1f5f9", "width": 1.5, "dash": [6, 5]}], "zebraCrossings": []};
+
+    // ============================================================================
+    // BUILT-IN CSP-SAFE THREE.JS SCENE GRAPH & 3D RENDERING ENGINE FALLBACK
+    // Ensures that even when Antigravity's preview iframe blocks external CDNs via CSP,
+    // `window.THREE` is 100% available and renders the full 3D Three.js scene graph!
+    // ============================================================================
+    if (typeof window.THREE === 'undefined') {
+      window.THREE = (function() {
+        class Vector2 {
+          constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+          set(x, y) { this.x = x; this.y = y; return this; }
+        }
+        class Vector3 {
+          constructor(x = 0, y = 0, z = 0) { this.x = x; this.y = y; this.z = z; }
+          set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }
+          copy(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
+          add(v) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
+          clone() { return new Vector3(this.x, this.y, this.z); }
+        }
+        class Euler {
+          constructor(x = 0, y = 0, z = 0) { this.x = x; this.y = y; this.z = z; }
+          set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }
+        }
+        class Color {
+          constructor(c = 0xffffff) { this.set(c); }
+          set(c) {
+            if (typeof c === 'number') {
+              this.r = ((c >> 16) & 255) / 255;
+              this.g = ((c >> 8) & 255) / 255;
+              this.b = (c & 255) / 255;
+            } else if (typeof c === 'string') {
+              const m = c.replace('#', '');
+              const n = parseInt(m.length === 3 ? m.split('').map(x => x + x).join('') : m, 16) || 0;
+              this.r = ((n >> 16) & 255) / 255;
+              this.g = ((n >> 8) & 255) / 255;
+              this.b = (n & 255) / 255;
+            } else if (c && typeof c === 'object') {
+              this.r = c.r ?? 1; this.g = c.g ?? 1; this.b = c.b ?? 1;
+            }
+            return this;
+          }
+          getStyle() {
+            return `rgb(${Math.round(this.r * 255)},${Math.round(this.g * 255)},${Math.round(this.b * 255)})`;
+          }
+           getHexString() {
+            const h = (n) => Math.max(0, Math.min(255, Math.round(n * 255))).toString(16).padStart(2, '0');
+            return h(this.r) + h(this.g) + h(this.b);
+          }
+        }
+        class Object3D {
+          constructor() {
+            this.position = new Vector3();
+            this.rotation = new Euler();
+            this.scale = new Vector3(1, 1, 1);
+            this.children = [];
+            this.parent = null;
+            this.visible = true;
+            this.userData = {};
+            this.name = '';
+          }
+          add(...objs) {
+            for (const o of objs) {
+              if (!o) continue;
+              if (o.parent) o.parent.remove(o);
+              o.parent = this;
+              this.children.push(o);
+            }
+            return this;
+          }
+          remove(...objs) {
+            for (const o of objs) {
+              const idx = this.children.indexOf(o);
+              if (idx !== -1) { this.children.splice(idx, 1); o.parent = null; }
+            }
+            return this;
+          }
+          traverse(fn) {
+            fn(this);
+            for (const c of this.children) c.traverse(fn);
+          }
+        }
+        class Scene extends Object3D {
+          constructor() { super(); this.background = new Color(0x070b12); this.fog = null; }
+        }
+        class Group extends Object3D {}
+        class PerspectiveCamera extends Object3D {
+          constructor(fov = 45, aspect = 1, near = 1, far = 5000) {
+            super();
+            this.fov = fov; this.aspect = aspect; this.near = near; this.far = far;
+            this.target = new Vector3(0, 0, 0);
+          }
+          lookAt(x, y, z) {
+            if (x instanceof Vector3) this.target.copy(x);
+            else this.target.set(x, y, z);
+          }
+          updateProjectionMatrix() {}
+        }
+        class Shape {
+          constructor(pts = []) { this.points = pts.slice(); }
+          moveTo(x, y) { this.points.push(new Vector2(x, y)); }
+          lineTo(x, y) { this.points.push(new Vector2(x, y)); }
+          closePath() {}
+        }
+        class ExtrudeGeometry {
+          constructor(shape, opts = {}) {
+            this.type = 'ExtrudeGeometry';
+            this.shape = shape;
+            this.depth = opts.depth ?? 4;
+            this.bevelEnabled = opts.bevelEnabled ?? false;
+          }
+          rotateX(angle) { this._rotX = (this._rotX || 0) + angle; return this; }
+          translate(x, y, z) { this._trans = new Vector3(x, y, z); return this; }
+        }
+        class BoxGeometry {
+          constructor(w = 1, h = 1, d = 1) { this.type = 'BoxGeometry'; this.w = w; this.h = h; this.d = d; }
+        }
+        class CylinderGeometry {
+          constructor(rt = 1, rb = 1, h = 1, seg = 12) { this.type = 'CylinderGeometry'; this.rt = rt; this.rb = rb; this.h = h; this.seg = seg; }
+        }
+        class ConeGeometry {
+          constructor(r = 1, h = 1, seg = 12) { this.type = 'ConeGeometry'; this.r = r; this.h = h; this.seg = seg; }
+        }
+        class SphereGeometry {
+          constructor(r = 1, ws = 10, hs = 8) { this.type = 'SphereGeometry'; this.r = r; }
+        }
+        class PlaneGeometry {
+          constructor(w = 1, h = 1) { this.type = 'PlaneGeometry'; this.w = w; this.h = h; }
+          rotateX(a) { this._rotX = a; return this; }
+        }
+        class BufferGeometry {
+          constructor() { this.type = 'BufferGeometry'; this.points = []; }
+          setFromPoints(pts) { this.points = pts.slice(); return this; }
+        }
+        class EdgesGeometry {
+          constructor(geom) { this.type = 'EdgesGeometry'; this.geom = geom; }
+        }
+        class Material {
+          constructor(opts = {}) {
+            this.color = new Color(opts.color ?? 0xffffff);
+            this.emissive = new Color(opts.emissive ?? 0x000000);
+            this.emissiveIntensity = opts.emissiveIntensity ?? 0;
+            this.roughness = opts.roughness ?? 0.5;
+            this.metalness = opts.metalness ?? 0.1;
+            this.opacity = opts.opacity ?? 1.0;
+            this.transparent = opts.transparent ?? false;
+            this.map = opts.map ?? null;
+            this.depthTest = opts.depthTest ?? true;
+          }
+        }
+        class MeshStandardMaterial extends Material {}
+        class MeshPhongMaterial extends Material {}
+        class MeshBasicMaterial extends Material {}
+        class LineBasicMaterial extends Material {}
+        class SpriteMaterial extends Material {}
+        class CanvasTexture {
+          constructor(canvas) { this.image = canvas; this.needsUpdate = true; }
+        }
+        class Mesh extends Object3D {
+          constructor(geometry, material) { super(); this.geometry = geometry; this.material = material; this.isMesh = true; }
+        }
+        class Line extends Object3D {
+          constructor(geometry, material) { super(); this.geometry = geometry; this.material = material; this.isLine = true; }
+        }
+        class LineSegments extends Line {}
+        class Sprite extends Object3D {
+          constructor(material) { super(); this.material = material; this.isSprite = true; }
+        }
+        class AmbientLight extends Object3D {
+          constructor(color = 0xffffff, intensity = 1) { super(); this.color = new Color(color); this.intensity = intensity; this.isLight = true; }
+        }
+        class HemisphereLight extends Object3D {
+          constructor(sky = 0xffffff, ground = 0x444444, intensity = 1) { super(); this.color = new Color(sky); this.groundColor = new Color(ground); this.intensity = intensity; this.isLight = true; }
+        }
+        class DirectionalLight extends Object3D {
+          constructor(color = 0xffffff, intensity = 1) { super(); this.color = new Color(color); this.intensity = intensity; this.castShadow = false; this.shadow = { mapSize: new Vector2(2048, 2048), camera: {} }; this.isLight = true; }
+        }
+        class FogExp2 {
+          constructor(color, density) { this.color = new Color(color); this.density = density; }
+        }
+        class Raycaster {
+          constructor() { this.ndc = new Vector2(); this.camera = null; }
+          setFromCamera(ndc, camera) { this.ndc.set(ndc.x, ndc.y); this.camera = camera; }
+          intersectObjects(objs, recursive = false) {
+            if (!window.__builtinRendererInstance) return [];
+            return window.__builtinRendererInstance.raycastMeshes(this.ndc, objs, recursive);
+          }
+        }
+
+        // Full 3D Perspective + Painter's Z-Buffer & Shading Renderer for THREE Scene Graph
+        class WebGLRenderer {
+          constructor(opts = {}) {
+            this.domElement = document.createElement('canvas');
+            this.ctx = this.domElement.getContext('2d');
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+            this.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+            this.shadowMap = { enabled: true, type: 1 };
+            this._interactiveProjections = [];
+            window.__builtinRendererInstance = this;
+          }
+          setSize(w, h) {
+            this.width = w; this.height = h;
+            this.domElement.width = Math.round(w * this.pixelRatio);
+            this.domElement.height = Math.round(h * this.pixelRatio);
+            this.domElement.style.width = w + 'px';
+            this.domElement.style.height = h + 'px';
+          }
+          setPixelRatio(pr) {
+            this.pixelRatio = Math.min(pr, 2);
+            this.setSize(this.width, this.height);
+          }
+          // Project 3D world point (wx, wy, wz) into camera space & screen pixels
+          projectPoint(wx, wy, wz, camBasis) {
+            const dx = wx - camBasis.tx;
+            const dy = wy - camBasis.ty;
+            const dz = wz - camBasis.tz;
+
+            // Rotate by horizontal yaw around Y axis
+            const x1 = dx * camBasis.cosYaw - dz * camBasis.sinYaw;
+            const z1 = dx * camBasis.sinYaw + dz * camBasis.cosYaw;
+
+            // Rotate by pitch around X axis
+            const y2 = dy * camBasis.cosPitch - z1 * camBasis.sinPitch;
+            const z2 = dy * camBasis.sinPitch + z1 * camBasis.cosPitch;
+
+            const depth = camBasis.dist + z2;
+            const scale = (camBasis.fovScale / Math.max(80, depth)) * camBasis.zoom;
+            return {
+              sx: camBasis.cx + x1 * scale,
+              sy: camBasis.cy - y2 * scale,
+              depth: depth,
+              scale: scale
+            };
+          }
+          shadeColor(baseColor, nx, ny, nz, sunDir, ambientBoost = 0.55, emissive = null, emissiveInt = 0) {
+            const dot = Math.max(0, nx * sunDir.x + ny * sunDir.y + nz * sunDir.z);
+            const light = ambientBoost + (1 - ambientBoost) * dot;
+            let r = baseColor.r * light;
+            let g = baseColor.g * light;
+            let b = baseColor.b * light;
+            if (emissive && emissiveInt > 0) {
+              r += emissive.r * emissiveInt;
+              g += emissive.g * emissiveInt;
+              b += emissive.b * emissiveInt;
+            }
+            return `rgb(${Math.min(255, Math.round(r * 255))},${Math.min(255, Math.round(g * 255))},${Math.min(255, Math.round(b * 255))})`;
+          }
+          render(scene, camera) {
+            const ctx = this.ctx;
+            const W = this.width, H = this.height;
+            ctx.save();
+            ctx.scale(this.pixelRatio, this.pixelRatio);
+
+            // Derive spherical orbit basis from camera.position and camera.target
+            const tx = camera.target ? camera.target.x : 0;
+            const ty = camera.target ? camera.target.y : 0;
+            const tz = camera.target ? camera.target.z : 0;
+            const vx = camera.position.x - tx;
+            const vy = camera.position.y - ty;
+            const vz = camera.position.z - tz;
+            const dist = Math.max(120, Math.hypot(vx, vy, vz));
+            const yaw = Math.atan2(vx, vz);
+            const pitch = Math.asin(Math.max(-0.98, Math.min(0.98, vy / dist)));
+
+            const camBasis = {
+              tx, ty, tz,
+              dist: 950,
+              zoom: 950 / dist,
+              yaw, pitch,
+              cosYaw: Math.cos(-yaw), sinYaw: Math.sin(-yaw),
+              cosPitch: Math.cos(pitch), sinPitch: Math.sin(pitch),
+              fovScale: Math.min(W, H) * 1.08,
+              cx: W * 0.52,
+              cy: H * 0.51
+            };
+            this._lastCamBasis = camBasis;
+
+            // Background sky gradient
+            const bg = scene.background || new Color(0x070b12);
+            ctx.fillStyle = bg.getStyle();
+            ctx.fillRect(0, 0, W, H);
+
+            // Find sun directional light
+            let sunDir = { x: 0.45, y: 0.78, z: 0.42 };
+            let ambientBoost = 0.58;
+            scene.traverse(obj => {
+              if (obj.isLight && obj instanceof DirectionalLight) {
+                const len = Math.hypot(obj.position.x, obj.position.y, obj.position.z) || 1;
+                sunDir = { x: obj.position.x / len, y: obj.position.y / len, z: obj.position.z / len };
+              }
+              if (obj.isLight && obj instanceof AmbientLight) {
+                ambientBoost = Math.min(0.78, Math.max(0.28, obj.intensity * 0.58));
+              }
+            });
+
+            // Collect renderable primitives with world transform
+            const drawables = [];
+            const sprites = [];
+            this._interactiveProjections = [];
+
+            const visit = (node, px, py, pz, rx, ry, rz, sx, sy, sz) => {
+              if (!node.visible) return;
+              const wx = px + node.position.x * sx;
+              const wy = py + node.position.y * sy;
+              const wz = pz + node.position.z * sz;
+              const wrx = rx + node.rotation.x;
+              const wry = ry + node.rotation.y;
+              const wrz = rz + node.rotation.z;
+              const wsx = sx * node.scale.x;
+              const wsy = sy * node.scale.y;
+              const wsz = sz * node.scale.z;
+
+              if (node.isMesh && node.geometry && node.material) {
+                const g = node.geometry;
+                const m = node.material;
+                if (g.type === 'ExtrudeGeometry' && g.shape && g.shape.points) {
+                  const pts = g.shape.points;
+                  const h = g.depth * wsy;
+                  const basePts = [];
+                  const topPts = [];
+                  let sumDepth = 0;
+                  for (let i = 0; i < pts.length; i++) {
+                    const ptx = wx + pts[i].x * wsx;
+                    const ptz = wz + pts[i].y * wsz;
+                    const pb = this.projectPoint(ptx, wy, ptz, camBasis);
+                    const pt = this.projectPoint(ptx, wy + h, ptz, camBasis);
+                    basePts.push(pb);
+                    topPts.push(pt);
+                    sumDepth += pt.depth;
+                  }
+                  const avgDepth = sumDepth / Math.max(1, pts.length) - (node.userData.layerBias || 0);
+                  drawables.push({
+                    kind: 'extrude',
+                    node, m, basePts, topPts, h,
+                    depth: avgDepth
+                  });
+                  if (node.userData && node.userData.plotData) {
+                    this._interactiveProjections.push({ object: node, topPts, depth: avgDepth });
+                  }
+                } else if (g.type === 'BoxGeometry') {
+                  const hw = (g.w * wsx) / 2;
+                  const hh = (g.h * wsy);
+                  const hd = (g.d * wsz) / 2;
+                  const cosR = Math.cos(wry), sinR = Math.sin(wry);
+                  const localCorners = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]];
+                  const basePts = [], topPts = [];
+                  let sumDepth = 0;
+                  for (const [lx, lz] of localCorners) {
+                    const rxp = wx + lx * cosR - lz * sinR;
+                    const rzp = wz + lx * sinR + lz * cosR;
+                    const pb = this.projectPoint(rxp, wy, rzp, camBasis);
+                    const pt = this.projectPoint(rxp, wy + hh, rzp, camBasis);
+                    basePts.push(pb);
+                    topPts.push(pt);
+                    sumDepth += pt.depth;
+                  }
+                  drawables.push({
+                    kind: 'extrude',
+                    node, m, basePts, topPts, h: hh,
+                    depth: sumDepth / 4 - 2
+                  });
+                } else if (g.type === 'SphereGeometry' || g.type === 'ConeGeometry' || g.type === 'CylinderGeometry') {
+                  const p = this.projectPoint(wx, wy, wz, camBasis);
+                  const rad = (g.r || g.rt || 3) * wsx * p.scale;
+                  drawables.push({
+                    kind: 'foliage',
+                    node, m, p, rad, h: (g.h || g.r || 4) * wsy * p.scale,
+                    gType: g.type,
+                    depth: p.depth - 3
+                  });
+                }
+              } else if (node.isLine && node.geometry && node.geometry.points) {
+                const pts = node.geometry.points.map(pt =>
+                  this.projectPoint(wx + pt.x * wsx, wy + pt.y * wsy, wz + pt.z * wsz, camBasis)
+                );
+                if (pts.length > 1) {
+                  const avgD = pts.reduce((a, b) => a + b.depth, 0) / pts.length - (node.userData.layerBias || 1);
+                  drawables.push({ kind: 'line', node, m: node.material, pts, depth: avgD });
+                }
+              } else if (node.isSprite && node.material && node.material.map) {
+                const p = this.projectPoint(wx, wy, wz, camBasis);
+                sprites.push({ node, m: node.material, p, wsx, wsy, depth: p.depth });
+              }
+
+              for (const child of node.children) {
+                visit(child, wx, wy, wz, wrx, wry, wrz, wsx, wsy, wsz);
+              }
+            };
+
+            visit(scene, 0, 0, 0, 0, 0, 0, 1, 1, 1);
+
+            // Painter's sort back-to-front (largest depth first)
+            drawables.sort((a, b) => b.depth - a.depth);
+
+            for (const d of drawables) {
+              if (d.kind === 'extrude') {
+                const { basePts, topPts, m, node } = d;
+                const n = topPts.length;
+                if (n < 3) continue;
+
+                ctx.globalAlpha = m.opacity ?? 1.0;
+
+                // Draw 3D extruded side walls if height > 0.3
+                if (d.h > 0.3) {
+                  const sideWallFill = this.shadeColor(m.color, 0.35, 0.25, 0.5, sunDir, ambientBoost * 0.72, m.emissive, m.emissiveIntensity);
+                  const sideWallDark = this.shadeColor(m.color, -0.35, 0.15, -0.4, sunDir, ambientBoost * 0.58, m.emissive, m.emissiveIntensity);
+                  for (let i = 0; i < n; i++) {
+                    const j = (i + 1) % n;
+                    const b0 = basePts[i], b1 = basePts[j], t1 = topPts[j], t0 = topPts[i];
+                    ctx.fillStyle = (b1.sx - b0.sx) + (b1.sy - b0.sy) > 0 ? sideWallFill : sideWallDark;
+                    ctx.beginPath();
+                    ctx.moveTo(b0.sx, b0.sy);
+                    ctx.lineTo(b1.sx, b1.sy);
+                    ctx.lineTo(t1.sx, t1.sy);
+                    ctx.lineTo(t0.sx, t0.sy);
+                    ctx.closePath();
+                    ctx.fill();
+                  }
+                }
+
+                // Draw top face
+                ctx.fillStyle = this.shadeColor(m.color, 0, 1, 0, sunDir, ambientBoost, m.emissive, m.emissiveIntensity);
+                ctx.beginPath();
+                ctx.moveTo(topPts[0].sx, topPts[0].sy);
+                for (let i = 1; i < n; i++) ctx.lineTo(topPts[i].sx, topPts[i].sy);
+                ctx.closePath();
+                ctx.fill();
+
+                // Crisp architectural border around top face
+                if (node.userData.borderColor) {
+                  ctx.strokeStyle = node.userData.borderColor;
+                  ctx.lineWidth = node.userData.borderWidth || 1.1;
+                  ctx.stroke();
+                }
+                ctx.globalAlpha = 1.0;
+              } else if (d.kind === 'line') {
+                const { pts, m, node } = d;
+                ctx.save();
+                ctx.strokeStyle = m.color.getStyle();
+                ctx.lineWidth = node.userData.lineWidth || 1.5;
+                if (node.userData.dash) ctx.setLineDash(node.userData.dash);
+                ctx.globalAlpha = m.opacity ?? 1.0;
+                ctx.beginPath();
+                ctx.moveTo(pts[0].sx, pts[0].sy);
+                for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].sx, pts[i].sy);
+                ctx.stroke();
+                ctx.restore();
+              } else if (d.kind === 'foliage') {
+                const { p, rad, m, node } = d;
+                if (rad < 1.2) continue;
+                ctx.save();
+                const ud = node.userData || {};
+                const species = ud.species ?? 0;
+                // p is the ground base of the tree; rad is the clean AoE2 crown scale
+                const bx = p.sx, by = p.sy;
+                const r = rad * 1.05;
+
+                // 1. Clean AoE2 oval ground shadow at trunk base
+                ctx.fillStyle = 'rgba(4, 10, 5, 0.42)';
+                ctx.beginPath();
+                ctx.ellipse(bx + r * 0.18, by + r * 0.06, r * 0.72, r * 0.34, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 2. Sturdy low-detail AoE2 wooden trunk
+                const trunkW = Math.max(1.8, r * 0.26);
+                const trunkH = r * 0.72;
+                ctx.fillStyle = '#3b2412';
+                ctx.strokeStyle = '#1a0f07';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.rect(bx - trunkW * 0.5, by - trunkH, trunkW, trunkH);
+                ctx.fill();
+                ctx.stroke();
+
+                // Sunlit left bark strip on trunk
+                ctx.fillStyle = '#59381e';
+                ctx.fillRect(bx - trunkW * 0.42, by - trunkH + 1, trunkW * 0.38, trunkH - 1.5);
+
+                // 3. Clean, Low-Detail Age of Empires II Crown Silhouette (3 Classic Variants)
+                const cy = by - trunkH - r * 0.48;
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = Math.max(0.9, r * 0.10);
+
+                if (species === 1) {
+                  // AoE2 PINE / CONIFER: Clean 3-tiered stepped evergreen triangle
+                  const tiers = [
+                    { yOff: r * 0.35, w: r * 0.98, h: r * 0.85, fill: '#173820', hi: '#245230' },
+                    { yOff: -r * 0.08, w: r * 0.78, h: r * 0.78, fill: '#1f4729', hi: '#2e633b' },
+                    { yOff: -r * 0.50, w: r * 0.54, h: r * 0.68, fill: '#285934', hi: '#3b784a' }
+                  ];
+                  ctx.strokeStyle = '#0c1f11';
+                  for (const t of tiers) {
+                    const ty = cy + t.yOff;
+                    ctx.fillStyle = t.fill;
+                    ctx.beginPath();
+                    ctx.moveTo(bx, ty - t.h);
+                    ctx.lineTo(bx + t.w, ty + t.h * 0.25);
+                    ctx.lineTo(bx, ty + t.h * 0.38);
+                    ctx.lineTo(bx - t.w, ty + t.h * 0.25);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Clean AoE2 sunlit left facet
+                    ctx.fillStyle = t.hi;
+                    ctx.beginPath();
+                    ctx.moveTo(bx, ty - t.h + 1);
+                    ctx.lineTo(bx, ty + t.h * 0.34);
+                    ctx.lineTo(bx - t.w * 0.92, ty + t.h * 0.22);
+                    ctx.closePath();
+                    ctx.fill();
+                  }
+                } else if (species === 2) {
+                  // AoE2 OLIVE-BEECH: Compact, clean 2-tone rounded woodland crown
+                  ctx.strokeStyle = '#12210b';
+                  // Shadow base puff
+                  ctx.fillStyle = '#223d15';
+                  ctx.beginPath();
+                  ctx.ellipse(bx, cy + r * 0.16, r * 0.88, r * 0.64, 0, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+
+                  // Main mid-green crown
+                  ctx.fillStyle = '#325720';
+                  ctx.beginPath();
+                  ctx.ellipse(bx - r * 0.04, cy - r * 0.06, r * 0.76, r * 0.62, 0, 0, Math.PI * 2);
+                  ctx.fill();
+
+                  // Single clean sunlit top-left patch
+                  ctx.fillStyle = '#477530';
+                  ctx.beginPath();
+                  ctx.ellipse(bx - r * 0.22, cy - r * 0.24, r * 0.42, r * 0.32, -0.2, 0, Math.PI * 2);
+                  ctx.fill();
+                } else {
+                  // AoE2 CLASSIC OAK: Clean 3-puff deciduous crown (Left, Right, Top Center)
+                  ctx.strokeStyle = '#10220d';
+                  ctx.fillStyle = '#1b3b16';
+                  // Outer silhouette outline + dark base
+                  ctx.beginPath();
+                  ctx.arc(bx - r * 0.36, cy + r * 0.10, r * 0.56, 0, Math.PI * 2);
+                  ctx.arc(bx + r * 0.36, cy + r * 0.12, r * 0.54, 0, Math.PI * 2);
+                  ctx.arc(bx, cy - r * 0.24, r * 0.64, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+
+                  // Mid-tone clean oak fill
+                  ctx.fillStyle = '#295422';
+                  ctx.beginPath();
+                  ctx.arc(bx - r * 0.32, cy + r * 0.04, r * 0.46, 0, Math.PI * 2);
+                  ctx.arc(bx + r * 0.28, cy + r * 0.06, r * 0.42, 0, Math.PI * 2);
+                  ctx.arc(bx - r * 0.02, cy - r * 0.24, r * 0.54, 0, Math.PI * 2);
+                  ctx.fill();
+
+                  // Clean top-left sunlit puff
+                  ctx.fillStyle = '#3d7334';
+                  ctx.beginPath();
+                  ctx.arc(bx - r * 0.18, cy - r * 0.32, r * 0.34, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+                ctx.restore();              }
+            }
+
+            // Custom 3D road text & surface markings callback if registered on scene
+            if (typeof scene.userData.onAfterMeshesRender === 'function') {
+              scene.userData.onAfterMeshesRender(ctx, camBasis, this);
+            }
+
+            // Draw 3D Billboard Sprites sorted back-to-front
+            sprites.sort((a, b) => b.depth - a.depth);
+            for (const sp of sprites) {
+              const img = sp.m.map.image;
+              if (!img) continue;
+              const w = sp.wsx * sp.p.scale;
+              const h = sp.wsy * sp.p.scale;
+              if (w < 4 || h < 4) continue;
+              ctx.save();
+              ctx.globalAlpha = sp.m.opacity ?? 1.0;
+              ctx.drawImage(img, sp.p.sx - w / 2, sp.p.sy - h / 2, w, h);
+              ctx.restore();
+            }
+
+            ctx.restore();
+          }
+          raycastMeshes(ndc, objs, recursive) {
+            const sx = (ndc.x * 0.5 + 0.5) * this.width;
+            const sy = (-ndc.y * 0.5 + 0.5) * this.height;
+            const hits = [];
+            for (const item of this._interactiveProjections) {
+              const pts = item.topPts;
+              let inside = false;
+              for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+                const xi = pts[i].sx, yi = pts[i].sy;
+                const xj = pts[j].sx, yj = pts[j].sy;
+                if (((yi > sy) !== (yj > sy)) && (sx < (xj - xi) * (sy - yi) / (yj - yi + 1e-9) + xi)) {
+                  inside = !inside;
+                }
+              }
+              if (inside) {
+                hits.push({ object: item.object, distance: item.depth });
+              }
+            }
+            hits.sort((a, b) => a.distance - b.distance);
+            return hits;
+          }
+        }
+
+        return {
+          Vector2, Vector3, Euler, Color, Object3D, Scene, Group,
+          PerspectiveCamera, Shape, ExtrudeGeometry, BoxGeometry,
+          CylinderGeometry, ConeGeometry, SphereGeometry, PlaneGeometry,
+          BufferGeometry, EdgesGeometry, MeshStandardMaterial, MeshPhongMaterial,
+          MeshBasicMaterial, LineBasicMaterial, SpriteMaterial, CanvasTexture,
+          Mesh, Line, LineSegments, Sprite, AmbientLight, HemisphereLight,
+          DirectionalLight, FogExp2, Raycaster, WebGLRenderer
+        };
+      })();
+    }
+
+    // ============================================================================
+    // MAIN THREE.JS 3D MASTERPLAN APPLICATION
+    // ============================================================================
+    (function initMasterplanApp() {
+      const container = document.getElementById('threeContainer');
+
+      // Coordinate conversion: Image (1020x1020) -> 3D World Space (centered at 0,0,0)
+      const CX = 510, CY = 505;
+      const toWX = (px) => (px - CX);
+      const toWZ = (py) => (py - CY);
+
+      // Application State
+      const state = {
+        dragMode: 'orbit', // 'orbit' | 'pan'
+        activeFilter: 'all',
+        skyTheme: 'day',
+        showPlotBadges: true,
+        showRoadLabels: true,
+        show3DCommercial: true,
+        show3DVillas: false,
+        show3DTrees: true,
+        showTraffic: true,
+        extrudeScale: 1.4,
+        hoveredPlot: null,
+        selectedPlot: null,
+        customVillaPlotIds: new Set()
+      };
+
+      // Camera spherical orbit state
+      const camCtrl = {
+        targetX: 15,
+        targetZ: 45,
+        targetYaw: 0.08,
+        targetPitch: 0.92, // radians above horizon (1.55 = top-down 2D plan)
+        targetDist: 790,
+        curX: 15,
+        curZ: 45,
+        curYaw: 0.08,
+        curPitch: 0.92,
+        curDist: 790
+      };
+
+      // 1. Create Three.js Scene, Camera & Renderer
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x070b12);
+
+      const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 2, 4500);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      if (renderer.shadowMap) renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      // 2. Three.js Lighting Rig
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+      scene.add(ambientLight);
+
+      const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x334155, 0.45);
+      hemiLight.position.set(0, 500, 0);
+      scene.add(hemiLight);
+
+      const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.95);
+      sunLight.position.set(280, 620, 340);
+      sunLight.castShadow = true;
+      scene.add(sunLight);
+
+      // Scene Groups
+      const worldGroup = new THREE.Group();
+      scene.add(worldGroup);
+
+      const baseGroup = new THREE.Group();
+      const roadGroup = new THREE.Group();
+      const plotsGroup = new THREE.Group();
+      const buildingsGroup = new THREE.Group();
+      const badgesGroup = new THREE.Group();
+      const roadSignsGroup = new THREE.Group();
+      const treesGroup = new THREE.Group();
+      const trafficGroup = new THREE.Group();
+      const landmarksGroup = new THREE.Group();
+
+      worldGroup.add(baseGroup, roadGroup, plotsGroup, buildingsGroup, treesGroup, trafficGroup, roadSignsGroup, badgesGroup, landmarksGroup);
+
+      function makeGroundedBox(w, h, d) {
+        const g = new THREE.BoxGeometry(w, h, d);
+        if (!window.__builtinRendererInstance && typeof g.translate === 'function') {
+          g.translate(0, h / 2, 0);
+        }
+        return g;
+      }
+      // Helper to build extruded 3D polygon mesh from 2D image coordinates
+      function createExtrudedPolygon(polyPts, depth, colorHex, yBase = 0, borderColor = null, borderWidth = 1.1, layerBias = 0) {
+        const shape = new THREE.Shape();
+        polyPts.forEach((pt, idx) => {
+          const x = toWX(pt[0]);
+          const z = toWZ(pt[1]);
+          if (idx === 0) shape.moveTo(x, z);
+          else shape.lineTo(x, z);
+        });
+        shape.closePath();
+
+        const geom = new THREE.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: false });
+        // If native Three.js is active, ExtrudeGeometry extrudes along Z in XY plane, so rotateX(-PI/2)
+        if (!window.__builtinRendererInstance) {
+          const shapeNative = new THREE.Shape();
+          polyPts.forEach((pt, idx) => {
+            const x = toWX(pt[0]);
+            const y = -toWZ(pt[1]);
+            if (idx === 0) shapeNative.moveTo(x, y);
+            else shapeNative.lineTo(x, y);
+          });
+          const gNative = new THREE.ExtrudeGeometry(shapeNative, { depth: 1.0, bevelEnabled: false });
+          gNative.rotateX(-Math.PI / 2);
+          const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.62, metalness: 0.08, transparent: true, opacity: 1.0 });
+          const mesh = new THREE.Mesh(gNative, mat);
+          mesh.position.y = yBase;
+          mesh.scale.y = depth;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          mesh.userData = { borderColor, borderWidth, layerBias, baseDepth: depth };
+          if (borderColor) {
+            const edges = new THREE.EdgesGeometry(gNative);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: borderColor }));
+            mesh.add(line);
+            mesh.userData.edgeLine = line;
+          }
+          return mesh;
+        }
+
+        const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.65, metalness: 0.08 });
+        const mesh = new THREE.Mesh(geom, mat);
+        mesh.position.y = yBase;
+        mesh.userData = { borderColor, borderWidth, layerBias, baseDepth: depth };
+        return mesh;
+      }
+
+      // 3. Build Estate Perimeter Landscaped Plinth & Asphalt Road Deck
+      // Expand layoutOuterPoly slightly for the lush green tree-belt plinth
+      const outerPts = MASTERPLAN_DATA.layoutOuterPoly;
+      const plinthPoly = outerPts.map((p, idx) => {
+        const prev = outerPts[(idx - 1 + outerPts.length) % outerPts.length];
+        const next = outerPts[(idx + 1) % outerPts.length];
+        const dx1 = p[0] - prev[0], dy1 = p[1] - prev[1];
+        const l1 = Math.hypot(dx1, dy1) || 1;
+        const nx1 = dy1 / l1, ny1 = -dx1 / l1;
+        const dx2 = next[0] - p[0], dy2 = next[1] - p[1];
+        const l2 = Math.hypot(dx2, dy2) || 1;
+        const nx2 = dy2 / l2, ny2 = -dx2 / l2;
+        let mx = nx1 + nx2, my = ny1 + ny2;
+        const ml = Math.hypot(mx, my) || 1;
+        mx /= ml; my /= ml;
+        const dot = Math.max(0.45, mx * nx1 + my * ny1);
+        const offset = Math.min(22, 14.5 / dot);
+        return [p[0] + mx * offset, p[1] + my * offset];
+      });
+      const greenPlinthMesh = createExtrudedPolygon(plinthPoly, 5.5, 0x152812, -3.2, '#0c180a', 1.8, -20);
+      baseGroup.add(greenPlinthMesh);
+
+      // Main Internal Asphalt Road Bed — Real-World Dark Bitumen Tarmac + Concrete Curb
+      const roadBedMesh = createExtrudedPolygon(MASTERPLAN_DATA.layoutOuterPoly, 2.2, 0x22272e, 0, '#3b424c', 1.5, -10);
+      roadGroup.add(roadBedMesh);
+
+      // Outer Ring Road + Service Road Highway Deck — Deep Highway Asphalt
+      const orrMesh = createExtrudedPolygon(MASTERPLAN_DATA.orrPoly, 2.6, 0x181c22, 0, '#2e353f', 1.7, -9);
+      roadGroup.add(orrMesh);
+
+      // Build All 22 Road Centerlines, Lane Dividers, Highway Median & Curb Lines
+      if (MASTERPLAN_DATA.roadLines) {
+        MASTERPLAN_DATA.roadLines.forEach(rl => {
+          const pts = rl.pts.map(p => new THREE.Vector3(toWX(p[0]), 2.75, toWZ(p[1])));
+          const geom = new THREE.BufferGeometry().setFromPoints(pts);
+          const mat = new THREE.LineBasicMaterial({
+            color: rl.color,
+            opacity: rl.type === 'edge' ? 0.55 : 0.88,
+            transparent: true
+          });
+          const line = new THREE.Line(geom, mat);
+          line.userData = {
+            lineWidth: rl.width || 1.5,
+            dash: (rl.dash && rl.dash.length) ? rl.dash : null,
+            layerBias: 3.5
+          };
+          roadGroup.add(line);
+        });
+      }
+
+      // (Zebra crossings removed for clean continuous road corridors)
+
+      // 4. Create High-Resolution Texture Generator for Plot Badges & Road Signs
+      const badgeTextureCache = new Map();
+      function getPlotBadgeTexture(label, category, isSelected, isHovered) {
+        const key = `${label}_${category}_${isSelected ? 1 : 0}_${isHovered ? 1 : 0}`;
+        if (badgeTextureCache.has(key)) return badgeTextureCache.get(key);
+
+        const isCirclePlot = /^\d+$/.test(label) || label === 'C.S';
+        const c = document.createElement('canvas');
+        if (isCirclePlot) {
+          c.width = 96; c.height = 96;
+          const ctx = c.getContext('2d');
+          const r = isSelected || isHovered ? 40 : 35;
+
+          // Outer glow / drop shadow
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(48, 48, r + 4, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected ? 'rgba(16, 185, 129, 0.9)' : (isHovered ? 'rgba(255, 255, 255, 0.85)' : 'rgba(15, 23, 42, 0.45)');
+          ctx.fill();
+
+          // Signature Yellow Plot Circle (#facc15 / #fde047)
+          const grad = ctx.createRadialGradient(40, 38, 4, 48, 48, r);
+          grad.addColorStop(0, '#fde047');
+          grad.addColorStop(0.55, '#eab308');
+          grad.addColorStop(1, '#ca8a04');
+          ctx.beginPath();
+          ctx.arc(48, 48, r, 0, Math.PI * 2);
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          ctx.lineWidth = isSelected ? 4.5 : 3;
+          ctx.strokeStyle = isSelected ? '#064e3b' : '#1e293b';
+          ctx.stroke();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.font = `900 ${label.length > 2 ? 24 : 31}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, 48, 50);
+          ctx.restore();
+        } else {
+          // Rectangular architectural pill badge for Shop - 1..5, O.S.R., PART OSR, C.S., PP PLOTS, PP1, PP2, LANDSCAPE
+          c.width = 220; c.height = 80;
+          const ctx = c.getContext('2d');
+          ctx.save();
+          const bgCol = category === 'commercial' ? 'rgba(120, 113, 50, 0.95)' :
+                        (category === 'osr' || category === 'landscape') ? 'rgba(20, 83, 45, 0.94)' :
+                        'rgba(30, 41, 59, 0.92)';
+          const borderCol = isSelected ? '#34d399' : '#fde047';
+
+          ctx.fillStyle = bgCol;
+          ctx.strokeStyle = borderCol;
+          ctx.lineWidth = isSelected ? 4 : 2.5;
+          const rx = 18, ry = 14, rw = 184, rh = 52, rad = 14;
+          ctx.beginPath();
+          ctx.roundRect(rx, ry, rw, rh, rad);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, 110, 41);
+          ctx.restore();
+        }
+
+        const tex = new THREE.CanvasTexture(c);
+        badgeTextureCache.set(key, tex);
+        return tex;
+      }
+
+      // 5. Build All 87 Extruded 3D Plot Meshes, Yellow Badges & Optional 3D Buildings
+      const plotMeshes = [];
+      const plotObjectsById = new Map();
+
+      const PLOT_PALETTE = {
+        light: { fill: 0x3b5e31, border: '#1c3016' },
+        dark:  { fill: 0x26421e, border: '#12230e' },
+        olive: { fill: 0x54502f, border: '#2a2816' },
+        park:  { fill: 0x1f471e, border: '#102810' }
+      };
+
+      // Helper to build a 3D Architectural Building / Villa / Park Feature on a plot
+      function createPlot3DStructure(plot, yTop) {
+        const g = new THREE.Group();
+        const wx = toWX(plot.center[0]);
+        const wz = toWZ(plot.center[1]);
+        g.position.set(wx, yTop, wz);
+
+        if (plot.category === 'commercial') {
+          // Sleek Dark-Bronze & Smoked-Glass Commercial Retail Complex (Shop - 1 to Shop 5)
+          const mainBox = new THREE.Mesh(
+            makeGroundedBox(20, 12, 15),
+            new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.35 })
+          );
+          mainBox.userData = { borderColor: '#1e293b', borderWidth: 0.9 };
+          const glassFront = new THREE.Mesh(
+            makeGroundedBox(18, 8, 15.6),
+            new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.15, opacity: 0.9, transparent: true })
+          );
+          glassFront.position.y = 1;
+          const roofCanopy = new THREE.Mesh(
+            makeGroundedBox(22, 1.8, 17),
+            new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.45 })
+          );
+          roofCanopy.position.y = 12;
+          g.add(mainBox, glassFront, roofCanopy);
+          g.userData.isCommercialOrPark = true;
+        } else if (plot.category === 'cs') {
+          // Civic / Community Site Building in Warm Sandstone & Dark Slate
+          const civic = new THREE.Mesh(
+            makeGroundedBox(16, 10, 13),
+            new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.45 })
+          );
+          civic.userData = { borderColor: '#1e293b', borderWidth: 0.9 };
+          const roof = new THREE.Mesh(
+            makeGroundedBox(18, 1.6, 15),
+            new THREE.MeshStandardMaterial({ color: 0x713f12 })
+          );
+          roof.position.y = 10;
+          g.add(civic, roof);
+          g.userData.isCommercialOrPark = true;
+        } else if (plot.category === 'osr' || plot.category === 'landscape') {
+          // 3D Park Pergola / Gazebo in Dark Teak & Forest Green
+          const gazeboBase = new THREE.Mesh(
+            makeGroundedBox(14, 1.5, 14),
+            new THREE.MeshStandardMaterial({ color: 0x334155 })
+          );
+          const gazeboRoof = new THREE.Mesh(
+            new THREE.ConeGeometry(9, 6, 8),
+            new THREE.MeshStandardMaterial({ color: 0x14532d })
+          );
+          gazeboRoof.position.y = 5;
+          g.add(gazeboBase, gazeboRoof);
+          g.userData.isCommercialOrPark = true;
+        } else if (plot.category === 'residential') {
+          // Architectural Warm-Stone & Charcoal Duplex Villa
+          const gf = new THREE.Mesh(
+            makeGroundedBox(14, 6.5, 11),
+            new THREE.MeshStandardMaterial({ color: 0x64748b })
+          );
+          gf.userData = { borderColor: '#1e293b', borderWidth: 0.7 };
+          const ff = new THREE.Mesh(
+            makeGroundedBox(11, 5.5, 9),
+            new THREE.MeshStandardMaterial({ color: 0x475569 })
+          );
+          ff.position.set(-1, 6.5, 0);
+          ff.userData = { borderColor: '#1e293b', borderWidth: 0.7 };
+          const roof = new THREE.Mesh(
+            makeGroundedBox(12.5, 1.2, 10.5),
+            new THREE.MeshStandardMaterial({ color: 0x1e293b })
+          );
+          roof.position.set(-1, 12.0, 0);
+          g.add(gf, ff, roof);
+          g.userData.isResidentialVilla = true;
+        }
+        return g;
+      }
+
+      MASTERPLAN_DATA.plots.forEach((plot, index) => {
+        const pal = PLOT_PALETTE[plot.shade] || PLOT_PALETTE.light;
+        const baseHeight = plot.category === 'commercial' ? 5.2 :
+                           (plot.category === 'osr' || plot.category === 'landscape') ? 3.2 : 4.2;
+
+        const mesh = createExtrudedPolygon(
+          plot.poly,
+          baseHeight * state.extrudeScale,
+          pal.fill,
+          2.2,
+          pal.border,
+          1.25,
+          5
+        );
+        mesh.userData.plotData = plot;
+        mesh.userData.baseColor = pal.fill;
+        mesh.userData.baseBorder = pal.border;
+        mesh.userData.baseHeight = baseHeight;
+        plotsGroup.add(mesh);
+        plotMeshes.push(mesh);
+
+        // Create 3D Floating Yellow Plot Badge Sprite
+        const isCircle = /^\d+$/.test(plot.label) || plot.label === 'C.S';
+        const tex = getPlotBadgeTexture(plot.label, plot.category, false, false);
+        const spMat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+        const sprite = new THREE.Sprite(spMat);
+        const badgeY = 2.2 + baseHeight * state.extrudeScale + (isCircle ? 3.5 : 4.5);
+        sprite.position.set(toWX(plot.center[0]), badgeY, toWZ(plot.center[1]));
+        if (isCircle) {
+          sprite.scale.set(17.5, 17.5, 1);
+        } else {
+          sprite.scale.set(34, 12.5, 1);
+        }
+        sprite.userData = { plotData: plot, isCircle };
+        badgesGroup.add(sprite);
+
+        // Create 3D Architectural Structure
+        const structure = createPlot3DStructure(plot, 2.2 + baseHeight * state.extrudeScale);
+        buildingsGroup.add(structure);
+
+        plotObjectsById.set(plot.id, { plot, mesh, sprite, structure, index });
+      });
+
+      // 6. Build 269 Clean Age of Empires II Style Low-Detail Trees
+      MASTERPLAN_DATA.trees.forEach((t, idx) => {
+        const tx = t[0], ty = t[1], sc = t[2] || 1.0, species = t[3] ?? (idx % 3);
+        const wx = toWX(tx), wz = toWZ(ty);
+
+        if (!window.__builtinRendererInstance) {
+          // Native WebGL Three.js: Clean low-poly 2-part AoE2 tree (1 trunk + 1 clean cone/crown)
+          const treeGrp = new THREE.Group();
+          treeGrp.position.set(wx, 2.2, wz);
+          const trunk = new THREE.Mesh(
+            makeGroundedBox(1.8 * sc, 5.0 * sc, 1.8 * sc),
+            new THREE.MeshStandardMaterial({ color: 0x3b2412, roughness: 0.9 })
+          );
+          const crownGeom = species === 1
+            ? new THREE.ConeGeometry(5.5 * sc, 11.0 * sc, 7)
+            : new THREE.SphereGeometry(5.6 * sc, 7, 6);
+          const crownCol = species === 1 ? 0x1f4729 : (species === 2 ? 0x325720 : 0x295422);
+          const crown = new THREE.Mesh(
+            crownGeom,
+            new THREE.MeshStandardMaterial({ color: crownCol, roughness: 0.78, flatShading: true })
+          );
+          crown.position.y = (species === 1 ? 8.5 : 7.8) * sc;
+          treeGrp.add(trunk, crown);
+          treesGroup.add(treeGrp);
+        } else {
+          // Built-in 3D Renderer: Single clean AoE2 tree node per tree (zero multi-sphere clutter)
+          const aoeNode = new THREE.Mesh(
+            new THREE.SphereGeometry(6.2 * sc, 6, 6),
+            new THREE.MeshStandardMaterial({ color: 0x295422 })
+          );
+          aoeNode.position.set(wx, 2.2, wz);
+          aoeNode.userData = { species, seed: idx };
+          treesGroup.add(aoeNode);
+        }
+      });
+
+      // 7. Build 3D Animated Vehicles on Outer Ring Road, Service Road & Internal Roads
+      const activeVehicles = [];
+      MASTERPLAN_DATA.trafficPaths.forEach((pathDef, pIdx) => {
+        for (let c = 0; c < 2; c++) {
+          const carGrp = new THREE.Group();
+          const body = new THREE.Mesh(
+            makeGroundedBox(8.5, 3.2, 4.4),
+            new THREE.MeshStandardMaterial({ color: pathDef.color })
+          );
+          body.userData = { borderColor: '#0f172a', borderWidth: 0.7 };
+          const cabin = new THREE.Mesh(
+            makeGroundedBox(4.6, 2.0, 3.8),
+            new THREE.MeshStandardMaterial({ color: 0x0f172a })
+          );
+          cabin.position.y = 3.0;
+          carGrp.add(body, cabin);
+          trafficGroup.add(carGrp);
+
+          activeVehicles.push({
+            mesh: carGrp,
+            pts: pathDef.pts,
+            speed: pathDef.speed,
+            t: (c * 0.5 + pIdx * 0.17) % 1.0
+          });
+        }
+      });
+
+      // 8. Build 3D Phase I & Phase II Monument Landmarks + 3D North Compass Rose
+      function makeBannerTexture(text, subtext, accentHex) {
+        const c = document.createElement('canvas');
+        c.width = 320; c.height = 110;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = accentHex;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(10, 10, 300, 90, 20);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 40px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 160, 46);
+
+        ctx.fillStyle = accentHex;
+        ctx.font = '700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillText(subtext, 160, 80);
+        return new THREE.CanvasTexture(c);
+      }
+
+      const p1Banner = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: makeBannerTexture('Phase I', 'PLOTS 01–29 • SHOPS 1–5', '#4ade80'),
+        transparent: true
+      }));
+      p1Banner.position.set(toWX(72), 18, toWZ(718));
+      p1Banner.scale.set(92, 32, 1);
+      landmarksGroup.add(p1Banner);
+
+      const p2Banner = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: makeBannerTexture('Phase II', 'PLOTS 01–45 • O.S.R. & C.S.', '#38bdf8'),
+        transparent: true
+      }));
+      p2Banner.position.set(toWX(712), 22, toWZ(366));
+      p2Banner.scale.set(96, 33, 1);
+      landmarksGroup.add(p2Banner);
+
+      // 3D North Compass Emblem at (451, 845) matching the orange-gold circle in the plan
+      const compassDiscCanvas = document.createElement('canvas');
+      compassDiscCanvas.width = 160; compassDiscCanvas.height = 160;
+      const cctx = compassDiscCanvas.getContext('2d');
+      cctx.beginPath();
+      cctx.arc(80, 80, 70, 0, Math.PI * 2);
+      cctx.fillStyle = '#f59e0b';
+      cctx.fill();
+      cctx.lineWidth = 5;
+      cctx.strokeStyle = '#fef08a';
+      cctx.stroke();
+      // Arrow pointing North (Up)
+      cctx.fillStyle = '#0f172a';
+      cctx.beginPath();
+      cctx.moveTo(54, 42);
+      cctx.lineTo(76, 108);
+      cctx.lineTo(54, 94);
+      cctx.lineTo(32, 108);
+      cctx.closePath();
+      cctx.fill();
+      cctx.font = '900 48px sans-serif';
+      cctx.textAlign = 'center';
+      cctx.textBaseline = 'middle';
+      cctx.fillText('N', 110, 82);
+
+      const compassSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(compassDiscCanvas),
+        transparent: true
+      }));
+      compassSprite.position.set(toWX(451), 8, toWZ(845));
+      compassSprite.scale.set(58, 58, 1);
+      landmarksGroup.add(compassSprite);
+
+      // 9. Crisp 3D Road Surface Markings & Road Width Labels
+      // Rendered directly onto the 3D projected road surface so every single road name & width
+      // ("OUTER RING ROAD", "SERVICE ROAD", "10.0m Wide Road", "9.0 m Wide Road", "7.2 m Wide Road",
+      // "9.0 M ROAD TO PHASE II", "9.0 M ROAD", "7.2 M ROAD") is crystal-clear!
+      scene.userData.onAfterMeshesRender = function(ctx, camBasis, rend) {
+        if (!state.showRoadLabels) return;
+
+        for (const rl of MASTERPLAN_DATA.roadLabels) {
+          const wx = toWX(rl.x);
+          const wz = toWZ(rl.y);
+          const p = rend.projectPoint(wx, 3.0, wz, camBasis);
+
+          // Compute screen-space angle of the road vector so text aligns with the 3D road!
+          const rad = (rl.angle * Math.PI) / 180;
+          const wx2 = toWX(rl.x + Math.cos(rad) * 20);
+          const wz2 = toWZ(rl.y + Math.sin(rad) * 20);
+          const p2 = rend.projectPoint(wx2, 3.0, wz2, camBasis);
+          let scrAngle = Math.atan2(p2.sy - p.sy, p2.sx - p.sx);
+          // Keep text right-side-up on screen
+          if (scrAngle > Math.PI / 2) scrAngle -= Math.PI;
+          if (scrAngle < -Math.PI / 2) scrAngle += Math.PI;
+
+          const fontSize = Math.max(8.5, Math.min(18, rl.size * p.scale * 0.92));
+          if (fontSize < 7.5) continue;
+
+          ctx.save();
+          ctx.translate(p.sx, p.sy);
+          ctx.rotate(scrAngle);
+
+          ctx.font = `800 ${fontSize.toFixed(1)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          // Subtle road-label pill backing for maximum legibility
+          const metrics = ctx.measureText(rl.text);
+          const padX = fontSize * 0.45, padY = fontSize * 0.24;
+          const bw = metrics.width + padX * 2;
+          const bh = fontSize + padY * 2;
+
+          ctx.fillStyle = 'rgba(15, 20, 28, 0.86)';
+          ctx.strokeStyle = rl.type === 'bridge' || rl.type.startsWith('highway') ? 'rgba(217, 119, 6, 0.55)' : 'rgba(148, 163, 184, 0.35)';
+          ctx.lineWidth = 1.0;
+          ctx.beginPath();
+          ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 4);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = (rl.type === 'bridge' || rl.type.startsWith('highway')) ? '#fbbf24' : '#e2e8f0';
+          ctx.fillText(rl.text, 0, 0.5);
+          ctx.restore();
+        }
+      };
+
+      // Create 3D Road-Surface Markings + Floating Road Signs for native WebGL Three.js mode
+      if (!window.__builtinRendererInstance) {
+        MASTERPLAN_DATA.roadLabels.forEach(rl => {
+          const c = document.createElement('canvas');
+          c.width = 360; c.height = 68;
+          const ctx = c.getContext('2d');
+          const isHighlight = (rl.type === 'bridge' || rl.type.startsWith('highway'));
+          ctx.fillStyle = 'rgba(15, 20, 28, 0.90)';
+          ctx.strokeStyle = isHighlight ? '#d97706' : '#475569';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(6, 6, 348, 56, 12);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = isHighlight ? '#fbbf24' : '#e2e8f0';
+          ctx.font = '900 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(rl.text, 180, 35);
+
+          const tex = new THREE.CanvasTexture(c);
+          // Flat 3D road decal plane slightly above road surface
+          const planeW = Math.max(46, rl.text.length * 4.4);
+          const planeH = 10.5;
+          const decalGeom = new THREE.PlaneGeometry(planeW, planeH);
+          decalGeom.rotateX(-Math.PI / 2);
+          const decalMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
+          const decalMesh = new THREE.Mesh(decalGeom, decalMat);
+          decalMesh.position.set(toWX(rl.x), 3.1, toWZ(rl.y));
+          decalMesh.rotation.y = -(rl.angle * Math.PI) / 180;
+          roadSignsGroup.add(decalMesh);
+        });
+      }
+
+      // 10. Sync Visibility, Filters, Extrusion Scale & Highlight States
+      function syncSceneAppearance() {
+        badgesGroup.visible = state.showPlotBadges;
+        roadSignsGroup.visible = state.showRoadLabels;
+        treesGroup.visible = state.show3DTrees;
+        trafficGroup.visible = state.showTraffic;
+
+        plotObjectsById.forEach(({ plot, mesh, sprite, structure }) => {
+          // Check zone filter
+          let matchesFilter = true;
+          if (state.activeFilter === 'phase1') matchesFilter = plot.phase === 1;
+          else if (state.activeFilter === 'phase2') matchesFilter = plot.phase === 2;
+          else if (state.activeFilter === 'commercial') matchesFilter = plot.category === 'commercial';
+          else if (state.activeFilter === 'osr_cs') matchesFilter =plot.category !== 'residential' && plot.category !== 'commercial';
+
+          const isSel = state.selectedPlot && state.selectedPlot.id === plot.id;
+          const isHov = state.hoveredPlot && state.hoveredPlot.id === plot.id;
+
+          const extrudeMult = state.extrudeScale * (isSel ? 1.45 : (isHov ? 1.25 : 1.0));
+          const currentHeight = mesh.userData.baseHeight * extrudeMult;
+          if (mesh.geometry && mesh.geometry.depth !== undefined) {
+            mesh.geometry.depth = currentHeight;
+          } else {
+            mesh.scale.y = currentHeight;
+          }
+
+          // Color & opacity
+          if (!matchesFilter) {
+            mesh.material.color.set(0x475569);
+            mesh.material.opacity = 0.35;
+            sprite.material.opacity = 0.25;
+          } else {
+            mesh.material.opacity = 1.0;
+            sprite.material.opacity = 1.0;
+            if (isSel) {
+              mesh.material.color.set(0x15803d);
+              mesh.userData.borderColor = '#fef08a';
+              mesh.userData.borderWidth = 2.6;
+            } else if (isHov) {
+              mesh.material.color.set(0x4d7c0f);
+              mesh.userData.borderColor = '#ffffff';
+              mesh.userData.borderWidth = 2.0;
+            } else {
+              mesh.material.color.set(mesh.userData.baseColor);
+              mesh.userData.borderColor = mesh.userData.baseBorder;
+              mesh.userData.borderWidth = 1.25;
+            }
+          }
+
+          // Update badge texture & height
+          sprite.material.map = getPlotBadgeTexture(plot.label, plot.category, isSel, isHov);
+          const isCircle = sprite.userData.isCircle;
+          sprite.position.y = 2.2 + currentHeight + (isCircle ? 3.5 : 4.5);
+
+          // Update 3D building visibility & height
+          structure.position.y = 2.2 + currentHeight;
+          if (structure.userData.isCommercialOrPark) {
+            structure.visible = state.show3DCommercial && matchesFilter;
+          } else if (structure.userData.isResidentialVilla) {
+            structure.visible = (state.show3DVillas || state.customVillaPlotIds.has(plot.id)) && matchesFilter;
+          }
+        });
+      }
+
+      // 11. Interactive Plot Selection & Inspector Drawer
+      function selectPlot(plot, flyTo = false) {
+        state.selectedPlot = plot;
+        const drawer = document.getElementById('inspectorDrawer');
+        if (!plot) {
+          drawer.classList.add('translate-x-[115%]', 'opacity-0');
+          syncSceneAppearance();
+          return;
+        }
+        drawer.classList.remove('translate-x-[115%]', 'opacity-0');
+
+        document.getElementById('inspPhaseBadge').textContent = `PHASE ${plot.phase === 1 ? 'I' : 'II'}`;
+        const catNames = {
+          residential: 'Residential Plot',
+          commercial: 'Commercial Shop',
+          osr: 'Open Space (O.S.R.)',
+          cs: 'Community Site (C.S.)',
+          pp: 'Public Purpose (PP)',
+          landscape: 'Green Landscape'
+        };
+        document.getElementById('inspCategoryBadge').textContent = catNames[plot.category] || 'Masterplan Zone';
+        document.getElementById('inspTitle').textContent = /^\d+$/.test(plot.label) ? `Plot #${plot.label}` : plot.label;
+        document.getElementById('inspId').textContent = plot.id;
+        document.getElementById('inspRoad').textContent = plot.roadWidth.includes('Road') ? plot.roadWidth : `${plot.roadWidth} Wide Road`;
+        document.getElementById('inspArea').textContent = `${plot.sqft.toLocaleString()} sq.ft`;
+        document.getElementById('inspFacing').textContent = `${plot.facing} Facing`;
+        document.getElementById('inspBlockName').textContent = plot.block;
+
+        if (flyTo) {
+          camCtrl.targetX = toWX(plot.center[0]);
+          camCtrl.targetZ = toWZ(plot.center[1]);
+          camCtrl.targetDist = Math.min(camCtrl.targetDist, 360);
+          camCtrl.targetPitch = Math.min(1.15, Math.max(0.78, camCtrl.targetPitch));
+        }
+        syncSceneAppearance();
+      }
+
+      // 12. Pointer / Mouse Orbit, Pan, Wheel Zoom & 3D Raycasting
+      const raycaster = new THREE.Raycaster();
+      const mouseNDC = new THREE.Vector2();
+      const canvasEl = renderer.domElement;
+      const dragBadge = document.getElementById('dragBadge');
+      const dragBadgeIcon = document.getElementById('dragBadgeIcon');
+      const dragBadgeText = document.getElementById('dragBadgeText');
+
+      let isDragging = false;
+      let activeDragAction = 'orbit';
+      let lastX = 0, lastY = 0, dragMoved = 0;
+
+      function panCameraByScreenDelta(dx, dy) {
+        const panScale = (camCtrl.curDist / 720) * 1.05;
+        const cosY = Math.cos(camCtrl.curYaw), sinY = Math.sin(camCtrl.curYaw);
+        camCtrl.targetX -= (dx * cosY + dy * sinY) * panScale;
+        camCtrl.targetZ -= (-dx * sinY + dy * cosY) * panScale;
+      }
+
+      canvasEl.addEventListener('contextmenu', e => e.preventDefault());
+
+      canvasEl.addEventListener('pointerdown', e => {
+        isDragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        dragMoved = 0;
+
+        const isSecondary = (e.button === 2 || e.button === 1 || e.shiftKey || e.ctrlKey);
+        if (state.dragMode === 'orbit') {
+          activeDragAction = isSecondary ? 'pan' : 'orbit';
+        } else {
+          activeDragAction = isSecondary ? 'orbit' : 'pan';
+        }
+
+        canvasEl.classList.toggle('dragging-pan', activeDragAction === 'pan');
+        canvasEl.classList.toggle('dragging-orbit', activeDragAction === 'orbit');
+        dragBadge.classList.remove('hidden');
+        if (activeDragAction === 'orbit') {
+          dragBadgeIcon.textContent = '🔄';
+          dragBadgeText.textContent = 'Orbiting 3D Masterplan (Drag L/R to Rotate, U/D to Tilt)';
+        } else {
+          dragBadgeIcon.textContent = '✋';
+          dragBadgeText.textContent = 'Panning Map Across Phase I & Phase II';
+        }
+        canvasEl.setPointerCapture(e.pointerId);
+      });
+
+      canvasEl.addEventListener('pointermove', e => {
+        const rect = canvasEl.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        if (isDragging) {
+          const dx = e.clientX - lastX;
+          const dy = e.clientY - lastY;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          dragMoved += Math.hypot(dx, dy);
+
+          if (activeDragAction === 'orbit') {
+            camCtrl.targetYaw -= dx * 0.0065;
+            camCtrl.targetPitch = Math.max(0.36, Math.min(1.55, camCtrl.targetPitch + dy * 0.006));
+          } else {
+            panCameraByScreenDelta(dx, dy);
+          }
+          document.getElementById('hoverTooltip').classList.add('hidden');
+          return;
+        }
+
+        // Raycast 3D Plots on Hover
+        mouseNDC.x = (mx / rect.width) * 2 - 1;
+        mouseNDC.y = -(my / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouseNDC, camera);
+        const hits = raycaster.intersectObjects(plotMeshes, false);
+
+        const tt = document.getElementById('hoverTooltip');
+        if (hits.length > 0 && hits[0].object.userData.plotData) {
+          const p = hits[0].object.userData.plotData;
+          if (state.hoveredPlot !== p) {
+            state.hoveredPlot = p;
+            syncSceneAppearance();
+          }
+          canvasEl.style.cursor = 'pointer';
+          document.getElementById('ttPlotTitle').textContent = /^\d+$/.test(p.label) ? `Plot #${p.label}` : p.label;
+          document.getElementById('ttPhaseTag').textContent = `Phase ${p.phase === 1 ? 'I' : 'II'}`;
+          document.getElementById('ttCategory').textContent = `${p.block} • ${p.facing} Facing`;
+          document.getElementById('ttRoad').textContent = `🛣️ ${p.roadWidth}`;
+          document.getElementById('ttArea').textContent = `${p.sqft.toLocaleString()} sq.ft`;
+
+          tt.style.left = `${Math.min(window.innerWidth - 210, e.clientX + 16)}px`;
+          tt.style.top = `${Math.min(window.innerHeight - 95, Math.max(12, e.clientY - 18))}px`;
+          tt.classList.remove('hidden');
+        } else {
+          if (state.hoveredPlot) {
+            state.hoveredPlot = null;
+            syncSceneAppearance();
+          }
+          canvasEl.style.cursor = state.dragMode === 'pan' ? 'grab' : 'move';
+          tt.classList.add('hidden');
+        }
+      });
+
+      canvasEl.addEventListener('pointerup', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        canvasEl.classList.remove('dragging-pan', 'dragging-orbit');
+        dragBadge.classList.add('hidden');
+        canvasEl.releasePointerCapture(e.pointerId);
+
+        if (dragMoved < 6) {
+          const rect = canvasEl.getBoundingClientRect();
+          mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+          raycaster.setFromCamera(mouseNDC, camera);
+          const hits = raycaster.intersectObjects(plotMeshes, false);
+          if (hits.length > 0 && hits[0].object.userData.plotData) {
+            selectPlot(hits[0].object.userData.plotData, false);
+          }
+        }
+      });
+
+      canvasEl.addEventListener('wheel', e => {
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 1.12 : 0.89;
+        camCtrl.targetDist = Math.max(190, Math.min(1450, camCtrl.targetDist * factor));
+      }, { passive: false });
+
+      // 13. UI Controls Wiring
+      const btnModeOrbit = document.getElementById('btnModeOrbit');
+      const btnModePan = document.getElementById('btnModePan');
+      btnModeOrbit.addEventListener('click', () => {
+        state.dragMode = 'orbit';
+        btnModeOrbit.classList.add('active');
+        btnModePan.classList.remove('active');
+      });
+      btnModePan.addEventListener('click', () => {
+        state.dragMode = 'pan';
+        btnModePan.classList.add('active');
+        btnModeOrbit.classList.remove('active');
+      });
+
+      function setPresetActive(id) {
+        ['presetOverview', 'presetPhase1', 'presetPhase2', 'presetShops', 'presetBridge', 'presetTop2D'].forEach(btnId => {
+          document.getElementById(btnId).classList.toggle('active', btnId === id);
+        });
+      }
+
+      document.getElementById('presetOverview').addEventListener('click', () => {
+        setPresetActive('presetOverview');
+        camCtrl.targetX = 15; camCtrl.targetZ = 45;
+        camCtrl.targetYaw = 0.08; camCtrl.targetPitch = 0.92; camCtrl.targetDist = 790;
+      });
+      document.getElementById('presetPhase1').addEventListener('click', () => {
+        setPresetActive('presetPhase1');
+        camCtrl.targetX = toWX(225); camCtrl.targetZ = toWZ(555);
+        camCtrl.targetYaw = 0.14; camCtrl.targetPitch = 0.86; camCtrl.targetDist = 520;
+      });
+      document.getElementById('presetPhase2').addEventListener('click', () => {
+        setPresetActive('presetPhase2');
+        camCtrl.targetX = toWX(695); camCtrl.targetZ = toWZ(635);
+        camCtrl.targetYaw = -0.10; camCtrl.targetPitch = 0.86; camCtrl.targetDist = 520;
+      });
+      document.getElementById('presetShops').addEventListener('click', () => {
+        setPresetActive('presetShops');
+        camCtrl.targetX = toWX(205); camCtrl.targetZ = toWZ(295);
+        camCtrl.targetYaw = 0.22; camCtrl.targetPitch = 0.78; camCtrl.targetDist = 370;
+      });
+      document.getElementById('presetBridge').addEventListener('click', () => {
+        setPresetActive('presetBridge');
+        camCtrl.targetX = toWX(410); camCtrl.targetZ = toWZ(390);
+        camCtrl.targetYaw = 0.05; camCtrl.targetPitch = 0.82; camCtrl.targetDist = 390;
+      });
+      document.getElementById('presetTop2D').addEventListener('click', () => {
+        setPresetActive('presetTop2D');
+        camCtrl.targetX = 15; camCtrl.targetZ = 35;
+        camCtrl.targetYaw = 0.0; camCtrl.targetPitch = 1.55; camCtrl.targetDist = 830;
+      });
+
+      // Road Corridor Quick-Jump Buttons
+      document.querySelectorAll('.road-jump-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const r = btn.getAttribute('data-road');
+          if (r === 'orr') document.getElementById('presetShops').click();
+          else if (r === '10m') {
+            camCtrl.targetX = toWX(203); camCtrl.targetZ = toWZ(355);
+            camCtrl.targetYaw = 0.18; camCtrl.targetPitch = 0.82; camCtrl.targetDist = 340;
+          } else if (r === 'bridge') document.getElementById('presetBridge').click();
+          else if (r === 'p1_spine') document.getElementById('presetPhase1').click();
+          else if (r === 'p2_grid') document.getElementById('presetPhase2').click();
+        });
+      });
+
+      // Zone Filter Buttons
+      const filterBtns = document.querySelectorAll('.zone-filter-btn');
+      const resetFilterBtn = document.getElementById('btnResetFilter');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const f = btn.getAttribute('data-filter');
+          state.activeFilter = f;
+          resetFilterBtn.classList.toggle('hidden', f === 'all');
+          filterBtns.forEach(b => {
+            const active = b.getAttribute('data-filter') === f;
+            b.className = active
+              ? 'zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-slate-900 text-white font-semibold'
+              : 'zone-filter-btn w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium';
+          });
+          syncSceneAppearance();
+        });
+      });
+      resetFilterBtn.addEventListener('click', () => {
+        document.querySelector('[data-filter="all"]').click();
+      });
+
+      // Sky Theme Switcher
+      document.getElementById('skyThemeSelect').addEventListener('change', e => {
+        state.skyTheme = e.target.value;
+        if (state.skyTheme === 'day') {
+          scene.background.set(0x070b12);
+          ambientLight.intensity = 0.75;
+          sunLight.position.set(280, 620, 340);
+        } else if (state.skyTheme === 'blueprint') {
+          scene.background.set(0xf1f5f9);
+          ambientLight.intensity = 0.92;
+          sunLight.position.set(180, 750, 220);
+        } else if (state.skyTheme === 'sunset') {
+          scene.background.set(0x1e1b4b);
+          ambientLight.intensity = 0.55;
+          sunLight.position.set(-420, 320, 380);
+        } else if (state.skyTheme === 'night') {
+          scene.background.set(0x020617);
+          ambientLight.intensity = 0.36;
+          sunLight.position.set(120, 480, -250);
+        }
+      });
+
+      // Checkboxes & Extrusion Slider
+      document.getElementById('chkPlotBadges').addEventListener('change', e => { state.showPlotBadges = e.target.checked; syncSceneAppearance(); });
+      document.getElementById('chkRoadLabels').addEventListener('change', e => { state.showRoadLabels = e.target.checked; syncSceneAppearance(); });
+      document.getElementById('chk3DCommercial').addEventListener('change', e => { state.show3DCommercial = e.target.checked; syncSceneAppearance(); });
+      document.getElementById('chk3DVillas').addEventListener('change', e => { state.show3DVillas = e.target.checked; syncSceneAppearance(); });
+      document.getElementById('chk3DTrees').addEventListener('change', e => { state.show3DTrees = e.target.checked; syncSceneAppearance(); });
+      document.getElementById('chkTraffic').addEventListener('change', e => { state.showTraffic = e.target.checked; syncSceneAppearance(); });
+
+      document.getElementById('sliderExtrude').addEventListener('input', e => {
+        state.extrudeScale = parseFloat(e.target.value);
+        document.getElementById('lblExtrudeHeight').textContent = `${state.extrudeScale.toFixed(1)}x`;
+        syncSceneAppearance();
+      });
+
+      // Search Input
+      function runPlotSearch() {
+        const q = document.getElementById('searchInput').value.trim().toUpperCase();
+        if (!q) return;
+        let match = MASTERPLAN_DATA.plots.find(p =>
+          p.id.toUpperCase() === q ||
+          p.label.toUpperCase() === q ||
+          p.plotNo.toUpperCase() === q ||
+          p.plotNo.replace(/^0+/, '') === q.replace(/^0+/, '')
+        );
+        if (!match) {
+          match = MASTERPLAN_DATA.plots.find(p => p.label.toUpperCase().includes(q) || p.id.toUpperCase().includes(q));
+        }
+        if (match) selectPlot(match, true);
+      }
+      document.getElementById('searchBtn').addEventListener('click', runPlotSearch);
+      document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') runPlotSearch(); });
+
+      // Inspector Buttons
+      document.getElementById('btnCloseInspector').addEventListener('click', () => selectPlot(null));
+      document.getElementById('btnFlyToPlot').addEventListener('click', () => {
+        if (state.selectedPlot) selectPlot(state.selectedPlot, true);
+      });
+      document.getElementById('btnTogglePlotBuilding').addEventListener('click', () => {
+        if (!state.selectedPlot) return;
+        const id = state.selectedPlot.id;
+        if (state.customVillaPlotIds.has(id)) state.customVillaPlotIds.delete(id);
+        else state.customVillaPlotIds.add(id);
+        syncSceneAppearance();
+      });
+      document.getElementById('btnPrevPlot').addEventListener('click', () => {
+        if (!state.selectedPlot) return;
+        const entry = plotObjectsById.get(state.selectedPlot.id);
+        const prevIdx = (entry.index - 1 + MASTERPLAN_DATA.plots.length) % MASTERPLAN_DATA.plots.length;
+        selectPlot(MASTERPLAN_DATA.plots[prevIdx], true);
+      });
+      document.getElementById('btnNextPlot').addEventListener('click', () => {
+        if (!state.selectedPlot) return;
+        const entry = plotObjectsById.get(state.selectedPlot.id);
+        const nextIdx = (entry.index + 1) % MASTERPLAN_DATA.plots.length;
+        selectPlot(MASTERPLAN_DATA.plots[nextIdx], true);
+      });
+
+      // Bottom Dock Controls
+      document.getElementById('btnPanLeft').addEventListener('click', () => panCameraByScreenDelta(70, 0));
+      document.getElementById('btnPanRight').addEventListener('click', () => panCameraByScreenDelta(-70, 0));
+      document.getElementById('btnPanUp').addEventListener('click', () => panCameraByScreenDelta(0, 70));
+      document.getElementById('btnPanDown').addEventListener('click', () => panCameraByScreenDelta(0, -70));
+      document.getElementById('btnOrbitLeft').addEventListener('click', () => { camCtrl.targetYaw -= 0.28; });
+      document.getElementById('btnOrbitRight').addEventListener('click', () => { camCtrl.targetYaw += 0.28; });
+      document.getElementById('btnTiltDown').addEventListener('click', () => { camCtrl.targetPitch = Math.max(0.42, camCtrl.targetPitch - 0.16); });
+      document.getElementById('btnTiltUp').addEventListener('click', () => { camCtrl.targetPitch = Math.min(1.55, camCtrl.targetPitch + 0.16); });
+      document.getElementById('btnZoomIn').addEventListener('click', () => { camCtrl.targetDist = Math.max(200, camCtrl.targetDist * 0.82); });
+      document.getElementById('btnZoomOut').addEventListener('click', () => { camCtrl.targetDist = Math.min(1400, camCtrl.targetDist * 1.22); });
+      document.getElementById('btnResetCam').addEventListener('click', () => document.getElementById('presetOverview').click());
+
+      // HUD Compass Widget
+      const compassHudCanvas = document.getElementById('compassCanvas');
+      const hudCompassCtx = compassHudCanvas.getContext('2d');
+      function renderHudCompass() {
+        const ctx = hudCompassCtx;
+        ctx.clearRect(0, 0, 46, 46);
+        ctx.save();
+        ctx.translate(23, 23);
+        ctx.rotate(camCtrl.curYaw);
+
+        ctx.beginPath();
+        ctx.arc(0, 0, 21, 0, Math.PI * 2);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#0f172a';
+        ctx.stroke();
+
+        // North pointer
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.moveTo(-5, -12);
+        ctx.lineTo(0, 8);
+        ctx.lineTo(-5, 4);
+        ctx.lineTo(-10, 8);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.font = '900 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('N', 7, 0);
+        ctx.restore();
+      }
+      document.getElementById('btnAlignNorth').addEventListener('click', () => { camCtrl.targetYaw = 0; });
+      compassHudCanvas.addEventListener('click', () => { camCtrl.targetYaw = 0; });
+
+      // Window Resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Initial Sync
+      syncSceneAppearance();
+
+      // 14. Main 60 FPS Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Smooth camera damping
+        camCtrl.curX += (camCtrl.targetX - camCtrl.curX) * 0.14;
+        camCtrl.curZ += (camCtrl.targetZ - camCtrl.curZ) * 0.14;
+        camCtrl.curYaw += (camCtrl.targetYaw - camCtrl.curYaw) * 0.14;
+        camCtrl.curPitch += (camCtrl.targetPitch - camCtrl.curPitch) * 0.14;
+        camCtrl.curDist += (camCtrl.targetDist - camCtrl.curDist) * 0.14;
+
+        const hDist = camCtrl.curDist * Math.cos(camCtrl.curPitch);
+        const vDist = camCtrl.curDist * Math.sin(camCtrl.curPitch);
+        camera.position.set(
+          camCtrl.curX + hDist * Math.sin(camCtrl.curYaw),
+          vDist,
+          camCtrl.curZ + hDist * Math.cos(camCtrl.curYaw)
+        );
+        camera.lookAt(camCtrl.curX, 0, camCtrl.curZ);
+
+        // Update animated 3D traffic vehicles along road paths
+        if (state.showTraffic) {
+          for (const v of activeVehicles) {
+            v.t = (v.t + v.speed * 0.008) % 1.0;
+            const totalSegs = v.pts.length - 1;
+            const scaled = v.t * totalSegs;
+            const segIdx = Math.min(totalSegs - 1, Math.floor(scaled));
+            const localT = scaled - segIdx;
+            const p0 = v.pts[segIdx], p1 = v.pts[segIdx + 1];
+            const px = p0[0] + (p1[0] - p0[0]) * localT;
+            const py = p0[1] + (p1[1] - p0[1]) * localT;
+            v.mesh.position.set(toWX(px), 2.5, toWZ(py));
+            v.mesh.rotation.y = -Math.atan2(p1[1] - p0[1], p1[0] - p0[0]);
+          }
+        }
+
+        renderHudCompass();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    })();
+  </script>
+</body>
+</html>

@@ -13,6 +13,7 @@ import { PropertyCardComponent } from '../../../home/components/property-card/pr
 import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
 import { TopupDialogComponent } from '../../../home/components/topup-dialog/topup-dialog.component';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
+import { AiChatModalComponent } from '../../../home/components/ai-chat-modal/ai-chat-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
 
 export interface FilterOption {
@@ -60,7 +61,8 @@ function extractBedCount(bhkBadge: string, title: string): number {
     PropertyCardComponent,
     PropertyMediaModalComponent,
     TopupDialogComponent,
-    ToastComponent
+    ToastComponent,
+    AiChatModalComponent
   ],
   templateUrl: './search-page.component.html',
   styleUrls: ['./search-page.component.css']
@@ -85,10 +87,13 @@ export class SearchPageComponent implements OnInit {
   // Toggle Signals
   readonly reraOnly = signal<boolean>(false);
   readonly cmdaOnly = signal<boolean>(false);
-  readonly zeroBrokerageOnly = signal<boolean>(false);
+  readonly directOwnerOnly = signal<boolean>(false);
   readonly videoOnly = signal<boolean>(false);
   readonly droneOnly = signal<boolean>(false);
   readonly readyToMoveOnly = signal<boolean>(false);
+  readonly isMobileFilterOpen = signal<boolean>(false);
+  readonly isAdVisible = signal<boolean>(true);
+  readonly adPosition = signal<'left' | 'right'>('right');
 
   // Filter Presets & Choices
   readonly cities: FilterOption[] = [
@@ -137,7 +142,7 @@ export class SearchPageComponent implements OnInit {
     if (this.selectedBhk() !== 'all') count++;
     if (this.reraOnly()) count++;
     if (this.cmdaOnly()) count++;
-    if (this.zeroBrokerageOnly()) count++;
+    if (this.directOwnerOnly()) count++;
     if (this.videoOnly()) count++;
     if (this.droneOnly()) count++;
     if (this.readyToMoveOnly()) count++;
@@ -155,7 +160,7 @@ export class SearchPageComponent implements OnInit {
     const bhk = this.selectedBhk();
     const rera = this.reraOnly();
     const cmda = this.cmdaOnly();
-    const zeroBrok = this.zeroBrokerageOnly();
+    const directOwner = this.directOwnerOnly();
     const video = this.videoOnly();
     const drone = this.droneOnly();
     const ready = this.readyToMoveOnly();
@@ -192,7 +197,8 @@ export class SearchPageComponent implements OnInit {
         const priceNum = parsePriceToNumber(p.price);
         if (budget === 'under-50l' && priceNum >= 5000000) return false;
         if ((budget === '50l-1cr' || budget === '50l-1.5cr') && (priceNum < 5000000 || priceNum > 15000000)) return false;
-        if ((budget === '1cr-2cr' || budget === '1.5cr-3cr') && (priceNum < 10000000 || priceNum > 30000000)) return false;
+        if (budget === '1cr-2cr' && (priceNum < 10000000 || priceNum > 20000000)) return false;
+        if (budget === '1.5cr-3cr' && (priceNum < 15000000 || priceNum > 30000000)) return false;
         if ((budget === '2cr-5cr' || budget === '3cr-5cr') && (priceNum < 20000000 || priceNum > 50000000)) return false;
         if (budget === 'above-5cr' && priceNum <= 50000000) return false;
       }
@@ -230,10 +236,10 @@ export class SearchPageComponent implements OnInit {
         if (!cmdaMatch) return false;
       }
 
-      // 8. Zero Brokerage
-      if (zeroBrok) {
+      // 8. Direct Owner
+      if (directOwner) {
         const brok = (p.badges?.brokerage || '').toLowerCase();
-        if (!brok.includes('0%') && !brok.includes('zero')) {
+        if (!brok.includes('owner') && !brok.includes('direct')) {
           return false;
         }
       }
@@ -329,8 +335,8 @@ export class SearchPageComponent implements OnInit {
       if (params['cmda'] === 'true') {
         this.cmdaOnly.set(true);
       }
-      if (params['zero'] === 'true') {
-        this.zeroBrokerageOnly.set(true);
+      if (params['direct'] === 'true' || params['owner'] === 'true') {
+        this.directOwnerOnly.set(true);
       }
       if (params['ready'] === 'true' || params['status'] === 'ready') {
         this.readyToMoveOnly.set(true);
@@ -393,12 +399,16 @@ export class SearchPageComponent implements OnInit {
     this.cmdaOnly.update(v => !v);
   }
 
-  toggleZeroBrokerage(): void {
-    this.zeroBrokerageOnly.update(v => !v);
+  toggleDirectOwner(): void {
+    this.directOwnerOnly.update(v => !v);
   }
 
   toggleReadyToMove(): void {
     this.readyToMoveOnly.update(v => !v);
+  }
+
+  toggleMobileFilter(): void {
+    this.isMobileFilterOpen.update(v => !v);
   }
 
   resetAllFilters(): void {
@@ -409,7 +419,7 @@ export class SearchPageComponent implements OnInit {
     this.selectedBhk.set('all');
     this.reraOnly.set(false);
     this.cmdaOnly.set(false);
-    this.zeroBrokerageOnly.set(false);
+    this.directOwnerOnly.set(false);
     this.videoOnly.set(false);
     this.droneOnly.set(false);
     this.readyToMoveOnly.set(false);
@@ -423,8 +433,29 @@ export class SearchPageComponent implements OnInit {
     });
   }
 
+  toggleAdPosition(): void {
+    this.adPosition.update(pos => pos === 'right' ? 'left' : 'right');
+    this.notificationService.show({
+      type: 'info',
+      title: 'Ad Position Updated',
+      message: `Sponsored showcase moved to the ${this.adPosition()} side.`,
+      icon: 'swap_horiz'
+    });
+  }
+
+  dismissAd(): void {
+    this.isAdVisible.set(false);
+  }
+
+  openSponsoredProject(): void {
+    const plot = this.propertyService.properties().find(p => p.propertyType === 'Gated CMDA Plots') || this.propertyService.properties()[0];
+    if (plot) {
+      this.propertyService.openMediaModal(plot, 'premium');
+    }
+  }
+
   onImgError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+    img.src = 'property-placeholder.svg';
   }
 }

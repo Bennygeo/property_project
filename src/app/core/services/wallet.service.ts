@@ -309,9 +309,9 @@ export class WalletService {
           key: 'rzp_test_51MockMannidam',
           amount: rupees * 100, // in paise
           currency: 'INR',
-          name: 'Mannidam Architectural Registry',
+          name: 'Find a Plot Architectural Registry',
           description: `Recharge ${points + bonus} Media Points`,
-          image: '/logo.svg',
+          image: 'logo.svg',
           handler: (response: any) => {
             this.rechargeWallet(points, bonus, rupees, 'Razorpay Gateway', response?.razorpay_payment_id).subscribe();
           },

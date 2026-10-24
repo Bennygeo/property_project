@@ -148,18 +148,29 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
   `,
   styles: [`
     .pricing-section {
-      padding-top: 4rem;
-      padding-bottom: 4rem;
+      padding-top: 2.25rem;
+      padding-bottom: 2.25rem;
       background: #f8fafc;
       border-top: 1px solid var(--hairline-border);
       border-bottom: 1px solid var(--hairline-border);
+    }
+    @media (min-width: 640px) {
+      .pricing-section {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+      }
     }
     .pricing-header {
       text-align: center;
       max-width: 48rem;
       margin-left: auto;
       margin-right: auto;
-      margin-bottom: 3rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (min-width: 640px) {
+      .pricing-header {
+        margin-bottom: 3rem;
+      }
     }
     .text-red {
       color: var(--brand-red);
@@ -168,8 +179,8 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       color: #047857;
     }
     .pricing-title {
-      font-size: 1.875rem;
-      font-weight: 800;
+      font-size: 1.45rem;
+      font-weight: 600;
       color: var(--text-slate-950);
       letter-spacing: -0.02em;
       margin-top: 0.25rem;
@@ -181,24 +192,26 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .pricing-sub {
       color: var(--text-slate-600);
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       margin-top: 0.5rem;
-      line-height: 1.6;
+      line-height: 1.5;
     }
     @media (min-width: 640px) {
       .pricing-sub {
         font-size: 1rem;
+        line-height: 1.6;
       }
     }
     .packs-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 1.5rem;
+      gap: 1.25rem;
       align-items: stretch;
     }
     @media (min-width: 640px) {
       .packs-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
       }
     }
     @media (min-width: 1100px) {
@@ -209,7 +222,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     .pricing-card {
       background: #ffffff;
       border-radius: 1rem;
-      padding: 1.75rem;
+      padding: 1.25rem 1rem;
       border: 2px solid var(--hairline-border);
       display: flex;
       flex-direction: column;
@@ -250,7 +263,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
     }
     .pack-cat {
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-500);
@@ -262,7 +275,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       color: var(--text-slate-700);
       font-family: ui-monospace, monospace;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
     }
     .pts-red {
       background: #fee2e2;
@@ -329,7 +342,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       gap: 0.5rem;
     }
     .feature-item.highlight {
-      font-weight: 700;
+      font-weight: 600;
     }
     .feature-item span.material-symbols-outlined {
       font-size: 18px;
@@ -344,7 +357,7 @@ import { PricingPack } from '../../../../core/models/pricing-pack.model';
       border-radius: 0.75rem;
       background: #f1f5f9;
       color: var(--text-slate-900);
-      font-weight: 700;
+      font-weight: 600;
       font-size: 12px;
       letter-spacing: 0.05em;
       text-transform: uppercase;

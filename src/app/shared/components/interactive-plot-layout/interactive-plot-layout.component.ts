@@ -226,6 +226,12 @@ export class InteractivePlotLayoutComponent implements OnInit {
     return all.filter(p => p.status === filter);
   });
 
+  // Master community check (multi-phase layout)
+  readonly isMasterCommunity = computed(() => {
+    return this.plots().some(p => !!p.phase) || this.plots().length > 10;
+  });
+  readonly masterplanImageUrl = signal<string>('madipakkam-masterplan.png');
+
   // Summary Counts
   readonly availableCount = computed(() => this.plots().filter(p => p.status === 'available').length);
   readonly soldCount = computed(() => this.plots().filter(p => p.status === 'sold').length);
@@ -268,7 +274,7 @@ export class InteractivePlotLayoutComponent implements OnInit {
   getWhatsAppLink(plot: SubdividedPlot): string {
     const area = this.unitMode() === 'yds' ? `${plot.superBuiltUpYds} Yds` : `${plot.superBuiltUpSqft} Sq.Ft`;
     const text = encodeURIComponent(
-      `Hi Mannidam Realty, I am interested in Plot No. ${plot.plotNo} (${area}, ${plot.facing}, Price: ${plot.formattedPrice}) at ${this.propertyTitle}. Please share full survey sketch and arrange site visit.`
+      `Hi Find a Plot Realty, I am interested in Plot No. ${plot.plotNo} (${area}, ${plot.facing}, Price: ${plot.formattedPrice}) at ${this.propertyTitle}. Please share full survey sketch and arrange site visit.`
     );
     return `https://wa.me/919444100000?text=${text}`;
   }

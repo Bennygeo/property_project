@@ -40,7 +40,7 @@
   padding: 2px 8px;
   border-radius: 9999px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
@@ -56,15 +56,26 @@
 }
 
 @keyframes pulse-green {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 .masterplan-title {
   margin: 0;
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   letter-spacing: -0.01em;
 }
@@ -92,7 +103,7 @@
   border-radius: 8px;
   padding: 0.4rem 0.85rem;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   color: #334155;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -128,7 +139,7 @@
 
 .unit-label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: #64748b;
   padding: 0 6px;
   text-transform: uppercase;
@@ -139,7 +150,7 @@
   background: transparent;
   padding: 4px 10px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   color: #64748b;
   border-radius: 6px;
   cursor: pointer;
@@ -167,7 +178,7 @@
   border-radius: 20px;
   padding: 4px 12px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: #475569;
   cursor: pointer;
   transition: all 0.15s;
@@ -190,8 +201,13 @@
   border-radius: 50%;
 }
 
-.dot-green { background: #22c55e; }
-.dot-red { background: #ef4444; }
+.dot-green {
+  background: #22c55e;
+}
+
+.dot-red {
+  background: #ef4444;
+}
 
 /* 2. 3D PERSPECTIVE VIEWPORT */
 .canvas-3d-viewport {
@@ -228,12 +244,15 @@
     transform: translate(0, 0) scale(0.8);
     opacity: 0;
   }
+
   15% {
     opacity: 0.75;
   }
+
   85% {
     opacity: 0.75;
   }
+
   100% {
     transform: translate(calc(100vw + 200px), -60px) scale(1.1);
     opacity: 0;
@@ -264,8 +283,8 @@
 /* 3D Isometric Tilt Active State */
 .isometric-board.board-3d-active {
   transform: rotateX(32deg) rotateZ(-14deg) scale(0.92);
-  box-shadow: 
-    0 45px 85px -15px rgba(0, 0, 0, 0.8), 
+  box-shadow:
+    0 45px 85px -15px rgba(0, 0, 0, 0.8),
     0 20px 30px -10px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.08);
 }
@@ -303,7 +322,7 @@
 
 .plot-label {
   pointer-events: none;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   letter-spacing: 0.04em;
   transition: transform 0.25s ease;
 }
@@ -326,7 +345,7 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
-  box-shadow: 
+  box-shadow:
     0 25px 60px -10px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.05);
   color: #ffffff;
@@ -340,6 +359,7 @@
     opacity: 0;
     transform: translateY(10px) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -359,7 +379,7 @@
 
 .plot-title-label {
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.01em;
 }
@@ -396,12 +416,12 @@
   color: #38bdf8;
   line-height: 1;
   letter-spacing: -0.03em;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .metric-unit-label {
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight: 600;
   color: #94a3b8;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -417,7 +437,7 @@
   padding: 3px 14px;
   border-radius: 9999px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.02em;
 }
 
@@ -455,14 +475,14 @@
 
 .spec-key {
   color: #94a3b8;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
 .spec-val {
   color: #f1f5f9;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .text-brand {
@@ -497,7 +517,7 @@
   color: #ffffff;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
   box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
@@ -521,7 +541,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: not-allowed;
 }
 
@@ -538,7 +558,7 @@
 
 .strip-label {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
 }
@@ -553,7 +573,7 @@
   padding: 5px 12px;
   border-radius: 6px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   border: 1px solid #cbd5e1;
   background: #f8fafc;
   color: #334155;
@@ -583,7 +603,7 @@
     min-height: auto;
     flex-direction: column;
   }
-  
+
   .isometric-board.board-3d-active {
     transform: rotateX(24deg) rotateZ(-10deg) scale(0.96);
   }

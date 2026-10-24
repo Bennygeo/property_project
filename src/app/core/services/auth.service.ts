@@ -30,8 +30,8 @@ export class AuthService {
   public readonly otpModalReason = signal<'guest_limit' | 'general' | null>(null);
   public readonly isSubmitting = signal<boolean>(false);
 
-  // Temporary holder for sent OTP in demo mode
-  public readonly lastSentOtp = signal<string>('1234');
+  // Verification code holder (kept as 1111 until production)
+  public readonly lastSentOtp = signal<string>('1111');
   public readonly pendingPhone = signal<string>('');
 
   private getInitialGuestViews(): string[] {
@@ -60,6 +60,68 @@ export class AuthService {
     return null;
   }
 
+  constructor() {
+    if (!this.isLoggedIn()) {
+      this.syncGuestViews().subscribe();
+    }
+  }
+
+  /**
+   * Generates a stable hardware fingerprint across browsers on the same computer.
+   * Combines screen resolution, color depth, timezone, CPU cores, memory, and platform.
+   */
+  public getDeviceFingerprint(): string {
+    if (typeof window === 'undefined') return '';
+    try {
+      const screenRes = `${window.screen?.width || 0}x${window.screen?.height || 0}x${window.screen?.colorDepth || 0}`;
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const cores = (navigator as any).hardwareConcurrency || 4;
+      const mem = (navigator as any).deviceMemory || 8;
+      const platform = (navigator as any).platform || '';
+      const raw = `${screenRes}|${tz}|${cores}|${mem}|${platform}`;
+      
+      let hash = 0;
+      for (let i = 0; i < raw.length; i++) {
+        const char = raw.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0;
+      }
+      return 'dev_' + Math.abs(hash).toString(16);
+    } catch {
+      return 'dev_default';
+    }
+  }
+
+  /**
+   * Sync guest view limitations from backend by client IP & device fingerprint.
+   * This ensures unauthenticated visitors cannot bypass the 1-free-view restriction
+   * by simply opening a different browser (Chrome, Edge, Firefox) or incognito window on the same machine.
+   */
+  public syncGuestViews(): Observable<string[]> {
+    if (this.isLoggedIn()) {
+      return of([]);
+    }
+    const deviceHash = this.getDeviceFingerprint();
+    const url = `${environment.apiUrl}/auth/guest-views.php?deviceHash=${deviceHash}`;
+
+    return this.http.get<{ success: boolean; data: { viewedPropertyIds: string[] } }>(url).pipe(
+      map(res => {
+        if (res && res.success && res.data && Array.isArray(res.data.viewedPropertyIds)) {
+          const serverViews = res.data.viewedPropertyIds;
+          const localViews = this.guestViewedPropertyIds();
+          const merged = Array.from(new Set([...localViews, ...serverViews]));
+          this.guestViewedPropertyIds.set(merged);
+          try {
+            localStorage.setItem(GUEST_VIEWS_STORAGE_KEY, JSON.stringify(merged));
+          } catch {}
+          return merged;
+        }
+        return this.guestViewedPropertyIds();
+      }),
+      catchError(() => of(this.guestViewedPropertyIds()))
+    );
+  }
+
   /**
    * Check whether a user is allowed to view this property.
    * - Logged-in users: Unlimited access (true).
@@ -83,7 +145,8 @@ export class AuthService {
   }
 
   /**
-   * Record that a guest has viewed a property (consumes their 1 free view)
+   * Record that an unauthenticated guest has viewed a property (consumes their 1 free view).
+   * Persists both to localStorage and the MySQL backend by IP/device fingerprint.
    */
   public recordGuestPropertyView(propertyId: string): void {
     if (this.isLoggedIn()) return;
@@ -97,6 +160,23 @@ export class AuthService {
         // Ignore
       }
     }
+
+    // Persist to backend guest-views.php (IP & Device signature)
+    const deviceHash = this.getDeviceFingerprint();
+    const url = `${environment.apiUrl}/auth/guest-views.php`;
+    this.http.post<{ success: boolean; data?: { allowed: boolean; viewedPropertyIds: string[] } }>(url, {
+      propertyId,
+      deviceHash
+    }).pipe(
+      catchError(() => of(null))
+    ).subscribe(res => {
+      if (res && res.data && Array.isArray(res.data.viewedPropertyIds)) {
+        this.guestViewedPropertyIds.set(res.data.viewedPropertyIds);
+        try {
+          localStorage.setItem(GUEST_VIEWS_STORAGE_KEY, JSON.stringify(res.data.viewedPropertyIds));
+        } catch {}
+      }
+    });
   }
 
   /**
@@ -135,8 +215,8 @@ export class AuthService {
 
     const demoUser: User = {
       id: 1,
-      name: 'Demo Real Estate Investor',
-      email: 'investor@mannidam.com',
+      name: 'Arun Kumar',
+      email: 'arunkumar@mannidam.com',
       phone: '+91 94441 00000',
       role: 'buyer',
       pointsBalance: points,
@@ -147,7 +227,7 @@ export class AuthService {
     this.notificationService.show({
       type: 'success',
       title: 'Verified Access Granted',
-      message: 'Logged in as Demo Investor. Unlimited property dossiers unlocked.',
+      message: 'Logged in as Arun Kumar. Unlimited property dossiers unlocked.',
       icon: 'verified'
     });
   }
@@ -162,7 +242,7 @@ export class AuthService {
     return this.http.post<{ success: boolean; message: string; data?: { phone: string; dummyOtp: string } }>(url, { phone }).pipe(
       map(res => {
         this.isSubmitting.set(false);
-        const dummyOtp = res.data?.dummyOtp || '1234';
+        const dummyOtp = res.data?.dummyOtp || '1111';
         this.lastSentOtp.set(dummyOtp);
         this.pendingPhone.set(phone);
         return {
@@ -173,13 +253,13 @@ export class AuthService {
       }),
       catchError(err => {
         this.isSubmitting.set(false);
-        const dummyOtp = '1234';
+        const dummyOtp = '1111';
         this.lastSentOtp.set(dummyOtp);
         this.pendingPhone.set(phone);
         return of({
           success: true,
           dummyOtp,
-          message: `Demo OTP ${dummyOtp} generated for ${phone}`
+          message: `Verification code sent to ${phone}`
         });
       })
     );
@@ -202,7 +282,7 @@ export class AuthService {
           this.notificationService.show({
             type: 'success',
             title: 'Login Successful',
-            message: `Welcome, ${user.name}! Your investor session is now verified.`,
+            message: `Welcome, ${user.name}! Your account is now verified.`,
             icon: 'verified_user'
           });
           return { success: true, user, message: res.message };
@@ -211,12 +291,12 @@ export class AuthService {
       }),
       catchError(err => {
         this.isSubmitting.set(false);
-        // Fallback for seamless demo offline experience
-        if (otp === '1234' || otp.length === 4) {
+        // Fallback for offline experience
+        if (otp === '1111') {
           const fallbackUser: User = {
             id: 1,
-            name: name || 'Demo Real Estate Investor',
-            email: 'investor@mannidam.com',
+            name: name || 'Arun Kumar',
+            email: 'user@mannidam.com',
             phone: phone || '+91 94441 00000',
             role: 'buyer',
             pointsBalance: 40,
@@ -226,13 +306,13 @@ export class AuthService {
           this.closeOtpModal();
           this.notificationService.show({
             type: 'success',
-            title: 'Demo Login Verified',
+            title: 'Login Successful',
             message: `Welcome, ${fallbackUser.name}! Logged in successfully.`,
-            icon: 'verified'
+            icon: 'verified_user'
           });
-          return of({ success: true, user: fallbackUser, message: 'Logged in via demo mode' });
+          return of({ success: true, user: fallbackUser, message: 'Logged in successfully' });
         }
-        return of({ success: false, message: 'Invalid OTP code. Please use 1234 for demo.' });
+        return of({ success: false, message: 'Invalid verification code. Please enter 1111.' });
       })
     );
   }

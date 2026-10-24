@@ -11,8 +11,8 @@ import { Component } from '@angular/core';
             <span class="material-symbols-outlined text-red">savings</span>
           </div>
           <div>
-            <div class="prop-title">₹140 Cr+ Saved</div>
-            <div class="prop-sub">Monthly Zero-Brokerage Savings</div>
+            <div class="prop-title">1,200+ Properties</div>
+            <div class="prop-sub">Drone &amp; Architectural Dossiers</div>
           </div>
         </div>
 
@@ -112,7 +112,7 @@ import { Component } from '@angular/core';
     .text-purple { color: #7e22ce; }
     .prop-title {
       font-size: 0.875rem;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-950);
     }
     .prop-sub {
@@ -123,4 +123,4 @@ import { Component } from '@angular/core';
     }
   `]
 })
-export class ValuePropsComponent {}
+export class ValuePropsComponent { }

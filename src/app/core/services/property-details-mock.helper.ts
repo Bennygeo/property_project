@@ -12,6 +12,7 @@ import {
   CadastralAudit, 
   FaqItem 
 } from '../models/property.model';
+import { MADIPAKKAM_MASTERPLAN_PLOTS } from './madipakkam-masterplan-data';
 
 export function enrichPropertyWithMockDetails(prop: Property): Property {
   // If already populated, return as is
@@ -39,13 +40,13 @@ export function enrichPropertyWithMockDetails(prop: Property): Property {
     };
   } else if (prop.cityKey === 'chennai') {
     devProfile = {
-      name: 'Mannidam Architectural Enclaves',
+      name: 'Find a Plot Architectural Enclaves',
       establishedYear: '2011',
       projectsCompleted: '28 CMDA/RERA Communities',
       deliveredSqFt: '5.8 Million sq.ft Delivered',
       onTimeTrack: '99.1% On-Time Cadastral Delivery',
-      aboutText: 'Mannidam is South India’s premier architectural real estate collective. Pioneering 0% brokerage direct transactions and drone-verified cadastral deeds across Chennai, ECR, and OMR corridors, Mannidam curates heritage courtyards, CMDA sanctioned enclaves, and sustainable coastal sanctuaries.',
-      corporateOffice: 'Mannidam Chambers, Cenotaph Road, Teynampet, Chennai'
+      aboutText: 'Find a Plot is South India’s premier architectural real estate collective. Pioneering verified cadastral deeds and drone-verified surveys across Chennai, ECR, and OMR corridors, Find a Plot curates heritage courtyards, CMDA sanctioned enclaves, and sustainable coastal sanctuaries.',
+      corporateOffice: 'Find a Plot Chambers, Cenotaph Road, Teynampet, Chennai'
     };
   } else if (prop.cityKey === 'bengaluru') {
     devProfile = {
@@ -64,7 +65,7 @@ export function enrichPropertyWithMockDetails(prop: Property): Property {
       projectsCompleted: '31 Flagship Assets',
       deliveredSqFt: '11.2 Million sq.ft Delivered',
       onTimeTrack: '98.9% On-Time Completion',
-      aboutText: 'Vanguard is a trusted institution in high-value metropolitan assets, certified zero-brokerage registries, and sustainable grade-A engineering across Mumbai, Hyderabad, and Tier-1 growth corridors.',
+      aboutText: 'Vanguard is a trusted institution in high-value metropolitan assets, certified title registries, and sustainable grade-A engineering across Mumbai, Hyderabad, and Tier-1 growth corridors.',
       corporateOffice: 'Vanguard Financial Centre, BKC, Mumbai'
     };
   }
@@ -398,8 +399,8 @@ export function enrichPropertyWithMockDetails(prop: Property): Property {
       a: `This development is fully registered with State Regulatory authorities (RERA Registration: ${prop.badges.rera}) and sanctioned by municipal authorities (CMDA/DTCP/GHMC/DTCP/HARERA as applicable). The cadastral chain has been audited for 30 years with Nil Encumbrance.`
     },
     {
-      q: 'How does the Zero Brokerage policy work on Mannidam?',
-      a: 'Mannidam is a direct verified architectural registry. Buyers and investors pay ₹0 in brokerage fees. All inquiries, site visits, and coordinate surveys connect directly with authorized ownership dossiers without middleman markups.'
+      q: 'How does title and deed verification work on Find a Plot?',
+      a: 'Find a Plot provides a direct verified architectural registry. All inquiries, site visits, and coordinate surveys connect directly with authorized ownership dossiers, 30-year encumbrance certificates, and verified revenue records.'
     },
     {
       q: 'How do the 4K Cinematic Walkthrough and Drone Media Points work?',
@@ -415,13 +416,16 @@ export function enrichPropertyWithMockDetails(prop: Property): Property {
     }
   ];
 
+  const isMadipakkam = prop.id === 'prop-plot-14';
+  const customSubdividedPlots = prop.subdividedPlots || (isMadipakkam ? MADIPAKKAM_MASTERPLAN_PLOTS : undefined);
+
   return {
     ...prop,
     developer: devProfile,
     possessionDate,
     projectStatus,
-    totalLandParcel,
-    totalUnits,
+    totalLandParcel: isMadipakkam ? '42.8 Acres Dual-Phase Master Planned Township' : totalLandParcel,
+    totalUnits: isMadipakkam ? '510 Partitioned Villa Plots across Phase 1 & Phase 2' : totalUnits,
     apartmentDetails,
     plotDetails,
     villaDetails,
@@ -431,6 +435,8 @@ export function enrichPropertyWithMockDetails(prop: Property): Property {
     connectivity,
     neighborhoodScore,
     cadastralAudit,
-    faqs
+    faqs,
+    subdividedPlots: customSubdividedPlots,
+    interactiveMapUrl: prop.interactiveMapUrl || 'assets/secura-masterplan-3d.html'
   };
 }

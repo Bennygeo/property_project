@@ -1,91 +1,79 @@
-import { Component, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { WalletService } from '../../../../core/services/wallet.service';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-economy-banner',
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule],
   template: `
-    <section class="max-w-content economy-section">
-      <div class="economy-card">
-        <!-- Ambient Glow Elements -->
-        <div class="glow-top-right"></div>
-        <div class="glow-bottom-left"></div>
+    <section class="max-w-content verification-section">
+      <!-- Building Art Sitting Directly Above the Below Section (Height 10rem) -->
+      <div class="skyline-wrapper">
+        
+        <div class="skyline-img-container">
+          <img 
+            alt="Sanctioned Structural & Cadastral Registry Skyline" 
+            class="skyline-img" 
+            src="skyline.svg"
+            loading="lazy"
+            decoding="async">
+        </div>
+      </div>
 
-        <div class="economy-header-row">
+      <!-- Below Section with Rounded TL & TR and Flat Bottom -->
+      <div class="verification-card">
+        <div class="glow-decor"></div>
+
+        <div class="card-header-row">
           <div class="header-left">
-            <div class="token-icon-box">
-              <span class="material-symbols-outlined token-glyph">videocam</span>
-            </div>
-            
             <div class="header-text-block">
-              <div class="badges-row">
-                <span class="badge-pill badge-exclusive">
-                  <span class="material-symbols-outlined badge-icon">verified</span>
-                  FREE PHOTOS FOR ALL • 4K TOURS ON POINTS
-                </span>
-                <span class="badge-pill badge-subtle">
-                  <span class="material-symbols-outlined badge-icon">payments</span>
-                  Recharge via Razorpay • From ₹100
-                </span>
-              </div>
-              
-              <h2 class="economy-title">
-                <span>Architectural Media Economy:</span>
-                <span class="rate-highlight">2 Pts for ₹100 • 10 Pts for ₹500</span>
+              <h2 class="verification-title">
+                Every Plot Drone-Verified &amp; Survey-Backed.
               </h2>
               
-              <p class="economy-desc">
-                Browse standard property photos 100% free. Unlock cinematic 4K interior walkthroughs, drone boundary surveys, and ultra-HD architectural stills with micro-points.
+              <p class="verification-desc">
+                Inspect authentic cadastral boundary demarcation, true approach road widths, and government-sanctioned approvals before visiting in person. Zero encroachment surprises, zero false marketing.
               </p>
             </div>
           </div>
 
           <div class="header-right">
-            <a routerLink="/wallet" class="btn-explore">
-              <span>Wallet &amp; Recharge</span>
-              <span class="material-symbols-outlined arrow-icon">arrow_forward</span>
-            </a>
+            <button type="button" (click)="scrollToFeatured()" class="btn-explore" id="explore-verified-btn">
+              <span>Explore Verified Plots</span>
+              <span class="material-symbols-outlined arrow-icon">south</span>
+            </button>
           </div>
         </div>
 
-        <!-- 3 Economy Pillars -->
-        <div class="economy-pillars-grid">
+        <!-- 3 High-Trust Buyer Assurance Pillars -->
+        <div class="pillars-grid">
           <div class="pillar-box">
-            <div class="pillar-icon-box amber-pill-icon">₹50</div>
             <div class="pillar-content">
-              <div class="pillar-heading">
-                <span class="stat-highlight">₹50</span>
-                <span class="stat-unit">/ Media Point</span>
+              <div class="pillar-top-row">
+                <h3 class="pillar-heading">Exact Cadastral Boundaries</h3>
+                <span class="pillar-tag">GPS Demarcated</span>
               </div>
-              <div class="pillar-sub">₹100 (2 pts), ₹500 (10 pts), ₹1,000 &amp; ₹5,000 packs</div>
+              <p class="pillar-sub">Surveyor-audited boundary stones and physical GPS coordinates with zero encroachment risk.</p>
             </div>
           </div>
 
           <div class="pillar-box">
-            <div class="pillar-icon-box emerald-pill-icon">
-              <span class="material-symbols-outlined">smart_display</span>
-            </div>
             <div class="pillar-content">
-              <div class="pillar-heading">
-                <span class="stat-highlight">1–3 Pts</span>
-                <span class="stat-unit">/ Property</span>
+              <div class="pillar-top-row">
+                <h3 class="pillar-heading">4K Aerial Drone Perspective</h3>
+                <span class="pillar-tag">High-Def Video</span>
               </div>
-              <div class="pillar-sub">1 pt for plots • 2 pts for flats • 3 pts for luxury villas</div>
+              <p class="pillar-sub">Verify true approach road widths, surrounding topography, and neighborhood developments from above.</p>
             </div>
           </div>
 
           <div class="pillar-box">
-            <div class="pillar-icon-box white-pill-icon">
-              <span class="material-symbols-outlined">all_inclusive</span>
-            </div>
             <div class="pillar-content">
-              <div class="pillar-heading">
-                <span class="stat-highlight">Permanent</span>
-                <span class="stat-unit">Lifetime Access</span>
+              <div class="pillar-top-row">
+                <h3 class="pillar-heading">100% Legal Clearance</h3>
+                <span class="pillar-tag">Bank NOC Cleared</span>
               </div>
-              <div class="pillar-sub">Once unlocked, 4K video tours remain forever available</div>
+              <p class="pillar-sub">DTCP &amp; CMDA sanctioned layouts, 30-year encumbrance-free records, and cleared parent deeds.</p>
             </div>
           </div>
         </div>
@@ -99,61 +87,109 @@ import { WalletService } from '../../../../core/services/wallet.service';
       z-index: 1;
     }
 
-    .economy-section {
+    .verification-section {
       margin-top: 1.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
       position: relative;
       z-index: 1;
     }
-
-    .economy-card {
-      width: 100%;
-      border-radius: 16px;
-      padding: 2rem 2.25rem;
-      position: relative;
-      overflow: hidden;
-      color: #ffffff;
-      background: linear-gradient(135deg, rgb(127, 29, 29) 0%, rgb(199, 52, 52) 50%, rgb(185, 28, 28) 100%);
-      box-shadow: 0 25px 50px -12px rgba(127, 29, 29, 0.35);
-      border: 1px solid rgba(254, 202, 202, 0.3);
+    @media (max-width: 640px) {
+      .verification-section {
+        margin-top: 1rem;
+        margin-bottom: 1.75rem;
+      }
     }
 
-    .glow-top-right {
+    /* Building Art Sitting Above Below Section */
+    .skyline-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      width: 100%;
+      margin-bottom: -1px; /* Sits flush right on the top border of the card below */
+      position: relative;
+      z-index: 2;
+    }
+
+    .skyline-label {
+      font-size: 10px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #94a3b8;
+      font-weight: 600;
+      margin-bottom: 0.65rem;
+    }
+
+    .skyline-img-container {
+      width: 100%;
+      height: 10rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+    }
+    @media (max-width: 640px) {
+      .skyline-img-container {
+        height: 6.5rem;
+      }
+    }
+
+    .skyline-img {
+      width: 100%;
+      max-width: 50rem;
+      height: 10rem;
+      object-fit: contain;
+      object-position: bottom center;
+      opacity: 0.62;
+      display: block;
+    }
+    @media (max-width: 640px) {
+      .skyline-img {
+        height: 6.5rem;
+      }
+    }
+
+    /* Below Section Card: Rounded TL & TR, Flat Bottom */
+    .verification-card {
+      width: 100%;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 1.5rem 1.25rem;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      border-radius: 16px;
+    }
+    @media (min-width: 640px) {
+      .verification-card {
+        padding: 2.25rem 2.5rem;
+      }
+    }
+
+    .glow-decor {
       position: absolute;
       top: -6rem;
       right: -6rem;
-      width: 24rem;
-      height: 24rem;
-      background: rgba(255, 255, 255, 0.1);
+      width: 20rem;
+      height: 20rem;
+      background: radial-gradient(circle, rgba(185, 28, 28, 0.04) 0%, transparent 70%);
       border-radius: 9999px;
-      filter: blur(48px);
       pointer-events: none;
     }
 
-    .glow-bottom-left {
-      position: absolute;
-      bottom: -6rem;
-      left: -6rem;
-      width: 24rem;
-      height: 24rem;
-      background: rgba(251, 191, 36, 0.1);
-      border-radius: 9999px;
-      filter: blur(48px);
-      pointer-events: none;
-    }
-
-    .economy-header-row {
-      position: relative;
-      z-index: 2;
+    .card-header-row {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      padding-bottom: 1.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      align-items: flex-start;
+      margin-bottom: 1.75rem;
     }
-
     @media (min-width: 1024px) {
-      .economy-header-row {
+      .card-header-row {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
@@ -162,48 +198,44 @@ import { WalletService } from '../../../../core/services/wallet.service';
 
     .header-left {
       display: flex;
-      flex-direction: column;
+      align-items: flex-start;
       gap: 1.25rem;
+      max-width: 820px;
     }
 
+    .shield-icon-box {
+      display: none;
+    }
     @media (min-width: 640px) {
-      .header-left {
-        flex-direction: row;
-        align-items: flex-start;
+      .shield-icon-box {
+        display: flex;
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 14px;
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(185, 28, 28, 0.08);
       }
     }
 
-    .token-icon-box {
-      width: 3.5rem;
-      height: 3.5rem;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(6px);
-    }
-
-    .token-glyph {
-      font-size: 28px;
+    .shield-glyph {
+      font-size: 1.85rem;
+      color: #b91c1c;
     }
 
     .header-text-block {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
+      flex: 1;
     }
 
     .badges-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.65rem;
     }
 
     .badge-pill {
@@ -212,146 +244,120 @@ import { WalletService } from '../../../../core/services/wallet.service';
       gap: 0.35rem;
       padding: 0.3rem 0.75rem;
       border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-family: inherit;
     }
 
-    .badge-exclusive {
-      background: #ffffff;
-      color: var(--brand-red, #c73434);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    .badge-primary {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
     }
 
-    .badge-subtle {
-      background: rgba(0, 0, 0, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
+    .badge-neutral {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
     }
 
     .badge-icon {
-      font-size: 14px;
+      font-size: 0.95rem;
     }
 
-    .economy-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.02em;
+    .verification-title {
+      font-size: 1.45rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
       line-height: 1.25;
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      flex-wrap: wrap;
-      margin: 0;
+      color: #0f172a;
+      margin: 0 0 0.55rem 0;
     }
-
     @media (min-width: 640px) {
-      .economy-title {
-        font-size: 1.85rem;
+      .verification-title {
+        font-size: 1.5rem;
       }
     }
 
-    .rate-highlight {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #fde68a;
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(253, 230, 138, 0.35);
-      padding: 0.2rem 0.7rem;
-      border-radius: 8px;
-      letter-spacing: normal;
-    }
-
-    .economy-desc {
-      color: #fee2e2;
+    .verification-desc {
       font-size: 0.92rem;
-      margin: 0.4rem 0 0 0;
-      max-width: 44rem;
-      font-weight: 400;
-      line-height: 1.6;
+      line-height: 1.65;
+      color: #475569;
+      letter-spacing: -0.01em;
+      margin: 0;
+      max-width: 720px;
     }
 
     .header-right {
       flex-shrink: 0;
-      width: 100%;
-    }
-
-    @media (min-width: 1024px) {
-      .header-right {
-        width: auto;
-      }
+      width: auto;
     }
 
     .btn-explore {
-      width: 100%;
-      padding: 0.85rem 1.6rem;
-      border-radius: 10px;
-      background: #ffffff;
-      color: var(--text-slate-950, #020617);
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-      text-decoration: none;
+      gap: 0.45rem;
+      width: auto;
+      height: 38px;
+      padding: 0 1.25rem;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--brand-green);
+      border: 2px solid var(--brand-green);
+      background-color: white;
       cursor: pointer;
-      border: none;
-      box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.2);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
     .btn-explore:hover {
-      background: #f8fafc;
-      transform: translateY(-2px);
-      box-shadow: 0 14px 24px -4px rgba(0, 0, 0, 0.3);
+      border-color: var(--brand-green);
+      color: var(--brand-green);
+      transform: translateY(-1px);
     }
-
-    .btn-explore:hover .arrow-icon {
-      transform: translateX(3px);
+    .btn-explore:active {
+      transform: translateY(0);
     }
 
     .arrow-icon {
-      font-size: 18px;
-      color: var(--brand-red, #c73434);
+      font-size: 16px;
       transition: transform 0.2s ease;
     }
-
-    /* 3 Economy Pillars */
-    .economy-pillars-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-      padding-top: 1.5rem;
-      position: relative;
-      z-index: 10;
+    .btn-explore:hover .arrow-icon {
+      transform: translateY(2px);
     }
 
-    @media (min-width: 640px) {
-      .economy-pillars-grid {
+    /* 3 Pillars Grid */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #f1f5f9;
+    }
+    @media (min-width: 768px) {
+      .pillars-grid {
         grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
       }
     }
 
     .pillar-box {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 12px;
-      padding: 1.25rem;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 1rem;
-      backdrop-filter: blur(8px);
-      transition: all 0.2s ease;
+      padding: 1.15rem;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
-
     .pillar-box:hover {
-      background: rgba(255, 255, 255, 0.18);
-      border-color: rgba(255, 255, 255, 0.4);
-      transform: translateY(-2px);
+      background: #f1f5f9;
+      border-color: #e2e8f0;
     }
 
     .pillar-icon-box {
@@ -364,66 +370,67 @@ import { WalletService } from '../../../../core/services/wallet.service';
       flex-shrink: 0;
     }
 
-    .amber-pill-icon {
-      background: #fbbf24;
-      color: #020617;
-      font-weight: 900;
-      font-size: 1rem;
-      border: 1px solid #fde68a;
+    .crimson-icon {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fee2e2;
     }
-
-    .emerald-pill-icon {
-      background: #34d399;
-      color: #020617;
+    .blue-icon {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #dbeafe;
+    }
+    .emerald-icon {
+      background: #ecfdf5;
+      color: #047857;
       border: 1px solid #a7f3d0;
     }
 
-    .emerald-pill-icon .material-symbols-outlined {
-      font-size: 22px;
-    }
-
-    .white-pill-icon {
-      background: #ffffff;
-      color: var(--brand-red, #c73434);
-      border: 1px solid #ffffff;
-    }
-
-    .white-pill-icon .material-symbols-outlined {
-      font-size: 22px;
-    }
-
     .pillar-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pillar-top-row {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
     }
 
     .pillar-heading {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    .stat-highlight {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.01em;
-    }
-
-    .stat-unit {
-      font-size: 0.82rem;
+      font-size: 0.92rem;
       font-weight: 600;
-      color: #fecaca;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .pillar-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #64748b;
+      background: #ffffff;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      white-space: nowrap;
     }
 
     .pillar-sub {
-      font-size: 0.8rem;
-      color: #fee2e2;
-      line-height: 1.35;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: #64748b;
+      letter-spacing: -0.005em;
+      margin: 0;
     }
   `]
 })
 export class EconomyBannerComponent {
-  readonly walletService = inject(WalletService);
+  scrollToFeatured() {
+    const el = document.getElementById('featured-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }

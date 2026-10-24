@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /demo1/
+  RewriteBase /P_demo_4/
 
   # If an existing asset or directory is requested, serve directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -9,4 +9,30 @@
 
   # All other routes go to index.html for Angular SPA client routing
   RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # 1. HTTP/2 RFC 7540 Compliance:
+  # Strip hop-by-hop headers that cause net::ERR_HTTP2_PROTOCOL_ERROR in Chrome/Edge
+  Header unset Upgrade
+  Header unset Connection
+  Header unset Keep-Alive
+  Header unset Proxy-Connection
+  Header always unset Upgrade
+  Header always unset Connection
+
+  # 2. Fix malformed Expires header (Expires: max-age=A10368000) that crashes HTTP/2 parser
+  Header unset Expires
+  Header always unset Expires
+
+  # 3. Proper cache headers for static bundles
+  <FilesMatch "\.(js|css|svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "max-age=31536000, public, immutable"
+  </FilesMatch>
+
+  # 4. Do not cache index.html so updates load immediately
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+  </FilesMatch>
 </IfModule>

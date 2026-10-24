@@ -27,8 +27,8 @@ export class VisitorPurposeService {
     {
       key: 'build_home',
       title: 'To Build a Home',
-      badge: 'Plots & Custom Homes',
-      tagline: 'Verified residential plots, CMDA/DTCP layouts, or land to construct your dream home.',
+      badge: 'Plots & Homes',
+      tagline: 'Verified plots and CMDA/DTCP layouts for home construction.',
       icon: 'cottage',
       themeColor: '#b91c1c',
       lightBg: '#fef2f2'
@@ -36,29 +36,29 @@ export class VisitorPurposeService {
     {
       key: 'investment',
       title: 'Investment',
-      badge: 'High Yield & Growth',
-      tagline: 'High-appreciation metro corridors, commercial assets, and high-rental yield properties.',
+      badge: 'High Growth',
+      tagline: 'High-appreciation corridors and commercial capital growth.',
       icon: 'trending_up',
-      themeColor: '#d97706',
-      lightBg: '#fffbeb'
+      themeColor: '#b91c1c',
+      lightBg: '#fef2f2'
     },
     {
       key: 'farm_land',
       title: 'Farm Land',
-      badge: 'Managed Eco Enclaves',
-      tagline: 'Scenic agricultural acreage, managed farmhouse retreats, and green plots with clear titles.',
+      badge: 'Eco Enclaves',
+      tagline: 'Agricultural acreage and managed farmhouse retreats.',
       icon: 'yard',
-      themeColor: '#059669',
-      lightBg: '#ecfdf5'
+      themeColor: '#b91c1c',
+      lightBg: '#fef2f2'
     },
     {
       key: 'other',
       title: 'Other',
-      badge: 'Custom Requirements',
-      tagline: 'Architectural video scouting, institutional due diligence, or custom property requests.',
+      badge: 'Custom',
+      tagline: 'Video scouting, commercial due diligence, or custom requests.',
       icon: 'interests',
-      themeColor: '#7c3aed',
-      lightBg: '#f5f3ff'
+      themeColor: '#b91c1c',
+      lightBg: '#fef2f2'
     }
   ];
 

@@ -1,15 +1,28 @@
 /* ==========================================================================
-   MANNIDAM ARCHITECTURAL REAL ESTATE - DESIGN SYSTEM
+   FIND A PLOT ARCHITECTURAL REAL ESTATE - DESIGN SYSTEM
    Discipline, Structural Precision, Monochromatic Restraint & High Contrast
    ========================================================================== */
 
 :root {
   /* Brand & Core Palette */
-  --brand-red: #c73434;
-  --brand-red-hover: #b52d2d;
-  --brand-red-dark: #a82424;
-  --brand-red-subtle: #fef2f2;
-  --brand-red-border: #fecaca;
+  --brand-green: #5e8f72;
+  --brand-green-hover: #497259;
+  --brand-green-dark: #2c4938;
+  --brand-green-subtle: #e5f7ec;
+  --brand-green-border: #3d684e;
+
+  /* Red Palette Replaced by Brand Green */
+  --brand-red: var(--brand-green);
+  --brand-red-hover: var(--brand-green-hover);
+  --brand-red-dark: var(--brand-green-dark);
+  --brand-red-subtle: var(--brand-green-subtle);
+  --brand-red-border: var(--brand-green-border);
+
+  --brand-teal: #0f3b4a;
+  --brand-teal-hover: #144f63;
+
+  --brand-booked: #d5b357;
+  --brand-sold: #c76f56;
 
   /* Surfaces & Planar Tones */
   --surface-canvas: #ffffff;
@@ -56,39 +69,78 @@
   --color-amber-900: #78350f;
   --color-amber-950: #451a03;
 
-  /* Fonts: Use the primary header font ('Plus Jakarta Sans') everywhere across the application */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Fonts: Primary font ('Montserrat') everywhere across the application */
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: var(--font-sans);
 }
 
 html {
   scroll-behavior: smooth;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1;
+  font-kerning: normal;
+  overflow-x: clip;
+  max-width: 100vw;
 }
 
 body {
   font-family: var(--font-sans);
   color: var(--text-slate-900);
   background-color: var(--surface-canvas);
-  line-height: 1.5;
+  line-height: 1.6;
   min-height: 100vh;
+  overflow-x: clip;
+  max-width: 100vw;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
 }
 
-button, input, select, textarea, optgroup {
-  font-family: var(--font-sans);
+p {
+  line-height: 1.65;
+  color: var(--text-slate-600);
+  letter-spacing: -0.01em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Material Symbols Outlined: Preserve icon glyph font */
+button,
+input,
+select,
+textarea,
+optgroup {
+  font-family: inherit;
+}
+
+/* Material Symbols & Material Icons: Preserve icon glyph font */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined' !important;
+}
+
+.material-icons-outlined {
+  font-family: 'Material Icons Outlined', 'Material Icons' !important;
+}
+
+.material-icons {
+  font-family: 'Material Icons' !important;
+}
+
+.material-symbols-outlined,
+.material-icons-outlined,
+.material-icons {
   font-weight: normal;
   font-style: normal;
   font-size: 20px;
@@ -139,7 +191,7 @@ button, input, select, textarea, optgroup {
   letter-spacing: 0.12em;
   font-size: 11px;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 600;
   display: inline-block;
 }
 
@@ -151,7 +203,7 @@ button, input, select, textarea, optgroup {
 
 /* ==========================================================================
    GOOGLE MATERIAL DESIGN (M3) CONTROLS & FORM FIELDS
-   Engineered for Structural Precision with Mannidam Theme Styling
+   Engineered for Structural Precision with Find a Plot Theme Styling
    ========================================================================== */
 
 .mat-field-outlined {
@@ -180,7 +232,7 @@ button, input, select, textarea, optgroup {
 .mat-field-label {
   display: block;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-slate-500);
@@ -320,6 +372,7 @@ button, input, select, textarea, optgroup {
   left: 0;
   right: 0;
   min-width: 250px;
+  max-width: calc(100vw - 2rem);
   background: #ffffff;
   border-radius: 12px;
   border: 1.5px solid #e2e8f0;
@@ -330,11 +383,21 @@ button, input, select, textarea, optgroup {
   transform-origin: top center;
 }
 
+@media (max-width: 640px) {
+  .mat-dropdown-panel {
+    min-width: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+}
+
 @keyframes matDropdownIn {
   from {
     opacity: 0;
     transform: scale(0.96) translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -409,7 +472,7 @@ button, input, select, textarea, optgroup {
 
 .mat-dropdown-item.selected .item-label {
   color: var(--brand-red);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .mat-dropdown-item .item-sub {
@@ -423,7 +486,7 @@ button, input, select, textarea, optgroup {
 .mat-dropdown-item .item-check {
   font-size: 18px;
   color: var(--brand-red);
-  font-weight: 800;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
@@ -454,7 +517,7 @@ button, input, select, textarea, optgroup {
   background: var(--brand-red-subtle);
   border-color: var(--brand-red-border);
   color: var(--brand-red);
-  font-weight: 700;
+  font-weight: 600;
   box-shadow: 0 2px 4px rgba(199, 52, 52, 0.1);
 }
 
@@ -468,7 +531,7 @@ button, input, select, textarea, optgroup {
   inset: 0;
   background-color: rgba(2, 6, 23, 0.65);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -489,8 +552,13 @@ button, input, select, textarea, optgroup {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -498,6 +566,7 @@ button, input, select, textarea, optgroup {
     opacity: 0;
     transform: translateY(20px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -521,4 +590,81 @@ button, input, select, textarea, optgroup {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Mobile Navigation Drawer Typography Consistency */
+.mobile-drawer-panel,
+.mobile-drawer-panel button,
+.mobile-drawer-panel a,
+.mobile-drawer-panel span:not(.material-symbols-outlined),
+.mobile-drawer-panel div,
+.drawer-section,
+.drawer-section-title,
+.drawer-nav-item,
+.drawer-city-chip {
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ==========================================================================
+   STRICTLY NO DROP SHADOW ON MOBILE VIEW (< 1024px)
+   Enforces clean, planar surfaces with crisp hairline borders on mobile
+   devices while preserving all desktop shadows (>= 1024px) 100% intact.
+   ========================================================================== */
+@media (max-width: 1023px) {
+
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Specific containers to ensure zero nested or element-level drop-shadows */
+  .main-header,
+  .main-header.is-scrolled,
+  .search-pill-bar,
+  .verification-card,
+  .property-card,
+  .flash-billboard,
+  .mobile-drawer-panel,
+  .mat-dropdown-panel,
+  .suggest-dropdown-panel,
+  .hanu-header-block,
+  .hanu-card,
+  .sidebar-card,
+  .modal-card,
+  .modal-dialog,
+  .hero-search-wrapper,
+  .property-details-container,
+  .sticky-bottom-bar,
+  .minimal-points-pill,
+  .post-property-btn,
+  .city-selector-box,
+  .filter-pill,
+  .quick-chip,
+  .cta-button,
+  .btn,
+  .drawer-user-card,
+  .drawer-signin-card,
+  .drawer-post-card,
+  .drawer-city-chip,
+  .hero-tab-pill,
+  .banner-deal-card {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+  }
+
+  /* Reset any CSS filter drop-shadows on mobile */
+  [style*="drop-shadow"],
+  .plotex-tooltip,
+  .plotex-hud,
+  .interactive-tooltip,
+  .media-modal-counter {
+    filter: none !important;
+    -webkit-filter: none !important;
+  }
 }

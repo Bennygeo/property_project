@@ -31,9 +31,9 @@ if (empty($otp)) {
     Response::error('OTP verification code is required', 422);
 }
 
-// In dummy mode, accept '1234' or any valid 4-digit code
-if ($otp !== '1234' && strlen($otp) !== 4) {
-    Response::error('Invalid OTP. For demo mode, please enter 1234', 400);
+// Verification code kept as 1111 until production
+if ($otp !== '1111') {
+    Response::error('Invalid verification code. Please enter 1111', 400);
 }
 
 $cleanPhone = preg_replace('/[^\d+]/', '', $phone);

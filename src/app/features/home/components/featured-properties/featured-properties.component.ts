@@ -12,28 +12,29 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     <section class="max-w-content featured-section" id="featured-section">
       <!-- Section Header -->
       <div class="section-header-row">
-        <div>
-          <span class="editorial-tag text-red">Verified Deed Registry</span>
-          <h2 class="section-title">Featured No-Brokerage Properties</h2>
+        <div class="header-left">
+          <h2 class="section-title">Featured Verified Properties</h2>
           <p class="section-subtitle">
-            Survey-audited titles, genuine owner contacts, and direct negotiation with zero broker fee.
+            Audited legal titles, genuine owner contacts, and verified site dimensions.
           </p>
         </div>
-        <div class="header-meta">
-          <span class="meta-count">Showing {{ propertyService.properties().length }} Active Dossiers</span>
-          <a class="meta-link" routerLink="/search">View Full Search Registry &rarr;</a>
+        <div class="header-right">
+          <span class="meta-count">{{ propertyService.properties().length }} Properties</span>
+          <a class="meta-link" routerLink="/search">
+            <span>Explore all</span>
+            <span class="material-symbols-outlined link-arrow">arrow_forward</span>
+          </a>
         </div>
       </div>
 
-      <!-- Quick Filter Pills -->
+      <!-- Minimalist Filter Pills Bar -->
       <div class="filter-pills-bar">
         <button 
           type="button" 
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'all'"
           (click)="propertyService.setCategoryFilter('all')">
-          <span class="material-symbols-outlined chip-icon">grid_view</span>
-          <span>All Asset Classes</span>
+          <span>All Properties</span>
         </button>
 
         <button 
@@ -41,7 +42,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'apartments'"
           (click)="propertyService.setCategoryFilter('apartments')">
-          <span class="material-symbols-outlined chip-icon">apartment</span>
           <span>Apartments &amp; Flats</span>
         </button>
 
@@ -50,7 +50,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'plots'"
           (click)="propertyService.setCategoryFilter('plots')">
-          <span class="material-symbols-outlined chip-icon">terrain</span>
           <span>Plots &amp; Land</span>
         </button>
 
@@ -59,7 +58,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'villas'"
           (click)="propertyService.setCategoryFilter('villas')">
-          <span class="material-symbols-outlined chip-icon">villa</span>
           <span>Villas &amp; Penthouses</span>
         </button>
 
@@ -68,8 +66,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'commercial'"
           (click)="propertyService.setCategoryFilter('commercial')">
-          <span class="material-symbols-outlined chip-icon">domain</span>
-          <span>Commercial Spaces</span>
+          <span>Commercial</span>
         </button>
       </div>
 
@@ -83,32 +80,41 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       } @else {
         <div class="empty-results-box">
           <div class="empty-icon-wrap">
-            <span class="material-symbols-outlined empty-icon">apartment</span>
+            <span class="material-symbols-outlined empty-icon">domain_disabled</span>
           </div>
-          <h3 class="empty-title">No verified properties match "{{ propertyService.searchQuery() }}"</h3>
+          <h3 class="empty-title">No properties match your current filter</h3>
           <p class="empty-desc">
-            No published listings were found matching your current search criteria. Try searching by city name, project title, or reset your filters.
+            Try adjusting your asset class filter or clear the current search query.
           </p>
           <button type="button" class="btn-reset-search" (click)="resetSearch()">
             <span class="material-symbols-outlined">restart_alt</span>
-            <span>Reset Search &amp; Show All Properties</span>
+            <span>Reset Filters</span>
           </button>
         </div>
       }
     </section>
   `,
   styles: [`
-    .featured-section {
-      padding-top: 4rem;
-      padding-bottom: 4rem;
-      background: #ffffff;
+    :host {
+      display: block;
+      width: 100%;
     }
+
+    .featured-section {
+      width: 100%;
+      padding-top: 1rem;
+      padding-bottom: 2.5rem;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+
+    /* Section Header */
     .section-header-row {
       display: flex;
       flex-direction: column;
       gap: 1rem;
       padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--hairline-border);
+      border-bottom: 1px solid #f1f5f9;
     }
     @media (min-width: 768px) {
       .section-header-row {
@@ -117,119 +123,171 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
         justify-content: space-between;
       }
     }
-    .text-red {
-      color: var(--brand-red);
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
     }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
     .section-title {
-      font-size: 1.875rem;
-      font-weight: 800;
-      color: var(--text-slate-950);
-      letter-spacing: -0.02em;
-      margin-top: 0.25rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #0f172a;
+      letter-spacing: -0.025em;
+      margin: 0;
     }
     @media (min-width: 640px) {
       .section-title {
-        font-size: 2.25rem;
+        font-size: 1.5rem;
       }
     }
+
     .section-subtitle {
-      color: var(--text-slate-600);
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin: 0;
+      line-height: 1.5;
     }
-    .header-meta {
+
+    .header-right {
       display: flex;
       align-items: center;
       gap: 1rem;
-      font-size: 12px;
-    }
-    .meta-count {
-      font-family: ui-monospace, monospace;
-      color: var(--text-slate-500);
-      font-weight: 600;
-    }
-    .meta-link {
-      font-weight: 700;
-      color: var(--brand-red);
-      text-decoration: none;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-    }
-    .meta-link:hover {
-      text-decoration: underline;
     }
 
-    /* Filter Pills Bar */
+    .meta-count {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+      padding: 0.3rem 0.75rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+    }
+
+    .meta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      text-decoration: none;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .meta-link:hover {
+      color: var(--brand-green, #5e8f72);
+    }
+
+    .link-arrow {
+      font-size: 16px;
+      transition: transform 0.15s ease;
+    }
+
+    .meta-link:hover .link-arrow {
+      transform: translateX(3px);
+    }
+
+    /* Minimalist Filter Pills Bar */
     .filter-pills-bar {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
+      gap: 0.5rem;
       overflow-x: auto;
       padding-top: 1.5rem;
       padding-bottom: 0.5rem;
       scrollbar-width: none;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     .filter-pills-bar::-webkit-scrollbar {
       display: none;
     }
+
     .filter-chip {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      padding: 0.45rem 1rem;
       border-radius: 9999px;
       font-size: 13px;
-      font-weight: 600;
-      color: var(--text-slate-600);
-      background: #f8fafc;
-      border: 1px solid var(--hairline-border);
+      font-weight: 500;
+      color: #475569;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: none;
+      transition: all 0.15s ease;
     }
+
     .filter-chip:hover {
-      background: #f1f5f9;
-      color: var(--text-slate-950);
+      background: #f8fafc;
+      color: #0f172a;
       border-color: #cbd5e1;
     }
+
     .filter-chip.active {
-      background: var(--brand-red);
+      background: var(--brand-teal);
       color: #ffffff;
-      border-color: var(--brand-red);
-      box-shadow: 0 2px 6px rgba(199, 52, 52, 0.25);
-    }
-    .filter-chip.active .chip-icon {
-      color: #ffffff;
-    }
-    .chip-icon {
-      font-size: 18px;
-      color: var(--text-slate-500);
+      border-color: var(--brand-teal);
+      font-weight: 600;
     }
 
+    /* Properties Grid - 4 Columns */
     .cards-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       align-items: stretch;
-      gap: 2rem;
+      gap: 1.25rem;
       padding-top: 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
     }
-    @media (min-width: 768px) {
+    @media (min-width: 600px) {
       .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
-    @media (min-width: 1024px) {
+    @media (min-width: 900px) {
       .cards-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1180px) {
+      .cards-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.25rem;
       }
     }
 
+    /* Empty State */
     .empty-results-box {
       margin-top: 2rem;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 1rem;
+      background: #fafafa;
+      border: 1px dashed #e2e8f0;
+      border-radius: 12px;
       padding: 3rem 1.5rem;
       text-align: center;
       display: flex;
@@ -238,53 +296,60 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       justify-content: center;
       gap: 0.75rem;
     }
+
     .empty-icon-wrap {
-      width: 56px;
-      height: 56px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      background: #fee2e2;
-      color: var(--brand-red);
+      background: #f1f5f9;
+      color: #64748b;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.5rem;
     }
+
     .empty-icon {
-      font-size: 28px;
+      font-size: 24px;
     }
+
     .empty-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-slate-900);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #0f172a;
       margin: 0;
     }
+
     .empty-desc {
       font-size: 0.875rem;
-      color: var(--text-slate-600);
-      max-width: 28rem;
+      color: #64748b;
+      max-width: 26rem;
       margin: 0;
       line-height: 1.5;
     }
+
     .btn-reset-search {
-      margin-top: 0.75rem;
+      margin-top: 0.5rem;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.625rem 1.25rem;
-      background: var(--brand-red);
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      background: #0f172a;
       color: #ffffff;
-      border: none;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 600;
+      border: 1px solid #0f172a;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
       cursor: pointer;
+      box-shadow: none;
       transition: background 0.15s ease;
     }
+
     .btn-reset-search:hover {
-      background: var(--brand-red-dark, #a82828);
+      background: #1e293b;
     }
+
     .btn-reset-search .material-symbols-outlined {
-      font-size: 18px;
+      font-size: 16px;
     }
   `]
 })

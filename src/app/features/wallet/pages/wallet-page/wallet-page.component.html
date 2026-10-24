@@ -15,7 +15,7 @@
         <span>Home</span>
       </a>
       <span class="breadcrumb-separator">/</span>
-      <a routerLink="/profile" class="breadcrumb-link">Investor Dashboard</a>
+      <a routerLink="/profile" class="breadcrumb-link">My Dashboard</a>
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-current">Media Wallet &amp; Payments</span>
     </nav>
@@ -25,7 +25,7 @@
       <div class="hero-left-col">
         <div class="wallet-title-pill">
           <span class="material-symbols-outlined pill-icon">account_balance_wallet</span>
-          <span>Verified Investor Wallet</span>
+          <span>Verified Media Wallet</span>
         </div>
 
         <div class="points-balance-display">
@@ -39,11 +39,11 @@
         <div class="wallet-policy-pills">
           <span class="policy-pill">
             <span class="material-symbols-outlined">schedule</span>
-            <span>Never Expire • Lifetime Validity</span>
+            <span>Lifetime Validity</span>
           </span>
           <span class="policy-pill">
             <span class="material-symbols-outlined">verified</span>
-            <span>2 Pts = ₹100 • 1 4K Tour Unlock</span>
+            <span>2 Pts = ₹100 • 1 4K Tour</span>
           </span>
           <span class="policy-pill">
             <span class="material-symbols-outlined">shield</span>
@@ -55,7 +55,7 @@
       <!-- Quick Metrics Strip -->
       <div class="hero-right-metrics">
         <div class="hero-stat-card">
-          <div class="stat-icon-wrap bg-purple">
+          <div class="stat-icon-wrap">
             <span class="material-symbols-outlined">smart_display</span>
           </div>
           <div class="stat-body">
@@ -65,7 +65,7 @@
         </div>
 
         <div class="hero-stat-card">
-          <div class="stat-icon-wrap bg-emerald">
+          <div class="stat-icon-wrap">
             <span class="material-symbols-outlined">payments</span>
           </div>
           <div class="stat-body">
@@ -75,7 +75,7 @@
         </div>
 
         <div class="hero-stat-card">
-          <div class="stat-icon-wrap bg-amber">
+          <div class="stat-icon-wrap">
             <span class="material-symbols-outlined">toll</span>
           </div>
           <div class="stat-body">
@@ -91,24 +91,24 @@
       <div class="section-header-row">
         <div>
           <h2 class="section-heading">Choose Media Recharge Package</h2>
-          <p class="section-sub">Select a curated investor bundle with bonus free points, or enter a custom amount.</p>
+          <p class="section-sub">Select a curated package with bonus free points, or enter a custom amount.</p>
         </div>
       </div>
 
-      <!-- UNIFIED PACKAGES GRID: 1,000 | 2,000 | 5,000 | CUSTOM (No separate tab) -->
+      <!-- UNIFIED PACKAGES GRID: 1,000 | 2,000 | 5,000 | CUSTOM -->
       <div class="packages-grid">
         @for (pkg of walletService.rechargeOptions; track pkg.rupees) {
         <div class="package-card" [class.selected]="!isCustomMode() && selectedPackage()?.rupees === pkg.rupees"
           [class.popular-card]="pkg.popular" [class.recommended-card]="pkg.isRecommended" (click)="selectPackage(pkg)">
 
           @if (pkg.popular && !pkg.isRecommended) {
-          <div class="card-ribbon bg-amber">MOST POPULAR</div>
+          <div class="card-ribbon ribbon-popular">POPULAR</div>
           } @else if (pkg.isRecommended && !pkg.popular) {
-          <div class="card-ribbon bg-emerald">BEST VALUE</div>
+          <div class="card-ribbon ribbon-value">BEST VALUE</div>
           } @else if (pkg.popular && pkg.isRecommended) {
           <div class="card-ribbons-wrap">
-            <span class="card-ribbon bg-amber">MOST POPULAR</span>
-            <span class="card-ribbon bg-emerald">BEST VALUE</span>
+            <span class="card-ribbon ribbon-popular">POPULAR</span>
+            <span class="card-ribbon ribbon-value">BEST VALUE</span>
           </div>
           }
 
@@ -165,7 +165,7 @@
         <!-- 4TH OPTION: CUSTOM AMOUNT CARD -->
         <div class="package-card custom-package-card" [class.selected]="isCustomMode()" (click)="switchToCustom()">
 
-          <div class="card-ribbon bg-purple">CUSTOM AMOUNT</div>
+          <div class="card-ribbon ribbon-custom">CUSTOM PLAN</div>
 
           <div class="card-top-header">
             <span class="pkg-label">Flexible Custom Plan</span>
@@ -243,19 +243,19 @@
       <div class="calc-results-strip">
         <div class="calc-res-item">
           <span class="res-label">Base Cost</span>
-          <span class="res-val font-semibold">₹{{ currentAmountRupees().toLocaleString('en-IN') }}</span>
+          <span class="res-val">₹{{ currentAmountRupees().toLocaleString('en-IN') }}</span>
         </div>
         <div class="calc-res-item">
           <span class="res-label">Bonus Free Points</span>
-          <span class="res-val text-emerald font-bold">+{{ currentBonus() }} Points</span>
+          <span class="res-val text-brand-green">+{{ currentBonus() }} Points</span>
         </div>
-        <div class="calc-res-item">
+        <div class="calc-res-item highlight-item">
           <span class="res-label">Total Points Credited</span>
-          <span class="res-val text-red font-extrabold">{{ totalPointsToCredit() }} Points</span>
+          <span class="res-val text-brand-teal font-medium">{{ totalPointsToCredit() }} Points</span>
         </div>
         <div class="calc-res-item">
           <span class="res-label">Full 4K Tours Unlocked</span>
-          <span class="res-val text-purple font-bold">~{{ estimatedWalkthroughs() }} Complete Tours</span>
+          <span class="res-val">~{{ estimatedWalkthroughs() }} Complete Tours</span>
         </div>
       </div>
       }
@@ -293,19 +293,19 @@
             <!-- Razorpay Channels Grid -->
             <div class="razorpay-channels-grid">
               <div class="channel-pill">
-                <span class="material-symbols-outlined text-emerald">qr_code_2</span>
+                <span class="material-symbols-outlined channel-icon">qr_code_2</span>
                 <span>UPI (GPay / PhonePe / Paytm / BHIM)</span>
               </div>
               <div class="channel-pill">
-                <span class="material-symbols-outlined text-blue">credit_card</span>
+                <span class="material-symbols-outlined channel-icon">credit_card</span>
                 <span>Cards (Visa / MasterCard / RuPay)</span>
               </div>
               <div class="channel-pill">
-                <span class="material-symbols-outlined text-purple">account_balance</span>
+                <span class="material-symbols-outlined channel-icon">account_balance</span>
                 <span>Net Banking (50+ Banks)</span>
               </div>
               <div class="channel-pill">
-                <span class="material-symbols-outlined text-amber">account_balance_wallet</span>
+                <span class="material-symbols-outlined channel-icon">account_balance_wallet</span>
                 <span>Wallets &amp; PayLater</span>
               </div>
             </div>
@@ -313,7 +313,7 @@
             <!-- Demo Sandbox Guide Callout -->
             <div class="demo-instructions-card">
               <div class="demo-card-top">
-                <span class="material-symbols-outlined text-amber">science</span>
+                <span class="material-symbols-outlined demo-icon">science</span>
                 <span class="demo-tag-label">Razorpay Demo Account Environment</span>
               </div>
               <p class="demo-instruction-text">
@@ -351,7 +351,7 @@
         <!-- RIGHT: ORDER SUMMARY & PAY BUTTON -->
         <div class="order-summary-card">
           <div class="card-inner-header">
-            <span class="material-symbols-outlined text-emerald">receipt_long</span>
+            <span class="material-symbols-outlined card-header-icon">receipt_long</span>
             <h3 class="method-card-title">Payment Summary</h3>
           </div>
 
@@ -363,19 +363,19 @@
 
             @if (currentBonus() > 0) {
             <div class="summary-line">
-              <span class="s-label text-emerald">Promotional Bonus</span>
-              <span class="s-val text-emerald font-bold">+{{ currentBonus() }} Bonus Points</span>
+              <span class="s-label text-brand-green">Promotional Bonus</span>
+              <span class="s-val text-brand-green font-medium">+{{ currentBonus() }} Bonus Points</span>
             </div>
             }
 
             <div class="summary-line highlight-line">
               <span class="s-label">Total Points Credited</span>
-              <span class="s-val font-extrabold text-red">{{ totalPointsToCredit() }} Points</span>
+              <span class="s-val font-medium text-brand-teal">{{ totalPointsToCredit() }} Points</span>
             </div>
 
             <div class="summary-line">
               <span class="s-label">4K Walkthroughs Unlocked</span>
-              <span class="s-val text-purple font-bold">~{{ estimatedWalkthroughs() }} Complete Properties</span>
+              <span class="s-val font-medium">~{{ estimatedWalkthroughs() }} Complete Properties</span>
             </div>
 
             <div class="summary-divider"></div>
@@ -387,12 +387,12 @@
 
             <div class="summary-line">
               <span class="s-label">Convenience &amp; Gateway Fee</span>
-              <span class="s-val text-emerald font-semibold">FREE (₹0.00)</span>
+              <span class="s-val text-brand-green font-medium">FREE (₹0.00)</span>
             </div>
 
             <div class="summary-line">
               <span class="s-label">GST</span>
-              <span class="s-val text-slate-500">Inclusive</span>
+              <span class="s-val text-muted">Inclusive</span>
             </div>
 
             <div class="summary-total-box">
@@ -476,18 +476,18 @@
             @for (tx of filteredTransactions(); track tx.id) {
             <tr>
               <td class="font-mono text-xs">#TXN-{{ tx.id }}</td>
-              <td>{{ tx.createdAt }}</td>
+              <td class="text-xs">{{ tx.createdAt }}</td>
               <td class="font-medium text-slate-900">{{ tx.description }}</td>
               <td>
-                <span class="font-bold"
-                  [class.text-emerald]="tx.transactionType === 'credit_purchase' || tx.transactionType === 'bonus_credit'"
-                  [class.text-red]="tx.transactionType === 'debit_unlock'">
+                <span class="font-medium"
+                  [class.text-credit]="tx.transactionType === 'credit_purchase' || tx.transactionType === 'bonus_credit'"
+                  [class.text-debit]="tx.transactionType === 'debit_unlock'">
                   {{ tx.points > 0 ? '+' : '' }}{{ tx.points }} Pts
                 </span>
               </td>
               <td>
                 @if (tx.amountRupees > 0) {
-                <span class="font-semibold text-slate-900">₹{{ tx.amountRupees.toLocaleString('en-IN') }}</span>
+                <span class="font-medium text-slate-900">₹{{ tx.amountRupees.toLocaleString('en-IN') }}</span>
                 } @else {
                 <span class="text-slate-400">—</span>
                 }
@@ -522,7 +522,7 @@
     <!-- SECTION: FAQ & VALUE PROPOSITION -->
     <section class="wallet-faq-section">
       <div class="faq-header-center">
-        <h3 class="faq-section-title">Frequently Asked Questions About Media Wallet</h3>
+        <h3 class="faq-section-title">Frequently Asked Questions</h3>
         <p class="faq-section-sub">Everything you need to know about purchasing points, accessing 4K HDR walkthroughs,
           and tax invoicing.</p>
       </div>
@@ -546,7 +546,7 @@
             <h4 class="faq-card-title">Do my wallet points ever expire?</h4>
           </div>
           <p class="faq-card-text">
-            No. Points in your Mannidam wallet have lifetime validity and will never expire, allowing you to research
+            No. Points in your Find a Plot wallet have lifetime validity and will never expire, allowing you to research
             properties at your own pace across Chennai and other South Indian hubs.
           </p>
         </div>
@@ -589,7 +589,7 @@
       <div class="rzp-modal-header">
         <div class="rzp-header-top">
           <div class="rzp-brand-badge">
-            <span class="rzp-brand-bolt">⚡</span>
+            <span class="material-symbols-outlined rzp-brand-bolt">bolt</span>
             <span class="rzp-brand-name">Razorpay</span>
             <span class="rzp-badge-sandbox">TEST SANDBOX</span>
           </div>
@@ -601,7 +601,7 @@
 
         <div class="rzp-merchant-strip">
           <div class="rzp-merchant-info">
-            <h3 id="rzp-title" class="rzp-merchant-title">Mannidam Real Estate Registry</h3>
+            <h3 id="rzp-title" class="rzp-merchant-title">Find a Plot Real Estate Registry</h3>
             <p class="rzp-merchant-purpose">Points Top-Up • {{ totalPointsToCredit() }} Media Points (Incl. Bonus)</p>
           </div>
           <div class="rzp-amount-badge">
@@ -616,9 +616,9 @@
         <div class="rzp-user-meta">
           <span class="material-symbols-outlined rzp-user-icon">account_circle</span>
           <div class="rzp-user-text">
-            <span class="rzp-user-name">{{ authService.currentUser()?.name || 'Verified Investor' }}</span>
+            <span class="rzp-user-name">{{ authService.currentUser()?.name || 'Verified User' }}</span>
             <span class="rzp-user-contact">{{ authService.currentUser()?.phone || '+91 94441 00000' }} • {{
-              authService.currentUser()?.email || 'investor@mannidam.com' }}</span>
+              authService.currentUser()?.email || 'user@mannidam.com' }}</span>
           </div>
         </div>
         <span class="rzp-verified-pill">
@@ -764,8 +764,7 @@
               </div>
 
               <div class="rzp-banks-grid">
-                @for (b of ['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra', 'Punjab
-                National']; track b) {
+                @for (b of ['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra', 'Punjab National']; track b) {
                 <button type="button" class="rzp-bank-card" [class.selected]="selectedBank() === b"
                   (click)="selectBank(b)">
                   <span class="material-symbols-outlined">apartment</span>
@@ -828,7 +827,7 @@
 
       <div class="receipt-header">
         <div class="receipt-brand">
-          <span class="brand-logo-text">MANNIDAM</span>
+          <span class="brand-logo-text">FIND A PLOT</span>
           <span class="brand-sub">Architectural Registry &amp; Media Wallet</span>
         </div>
         <div class="receipt-status-badge">
@@ -854,7 +853,7 @@
         <div class="receipt-details-list">
           <div class="r-row">
             <span class="r-item-name">Billed To:</span>
-            <span class="r-item-val font-semibold">{{ authService.currentUser()?.name || 'Verified Investor' }}</span>
+            <span class="r-item-val font-medium">{{ authService.currentUser()?.name || 'Verified User' }}</span>
           </div>
           <div class="r-row">
             <span class="r-item-name">Mobile Phone:</span>
@@ -866,7 +865,7 @@
           </div>
           <div class="r-row">
             <span class="r-item-name">Points Credited / Debited:</span>
-            <span class="r-item-val font-bold text-red">{{ activeReceipt()?.points }} Media Points</span>
+            <span class="r-item-val font-medium text-brand-teal">{{ activeReceipt()?.points }} Media Points</span>
           </div>
           <div class="r-row">
             <span class="r-item-name">Gateway Reference:</span>

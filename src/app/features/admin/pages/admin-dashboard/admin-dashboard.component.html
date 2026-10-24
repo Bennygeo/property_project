@@ -10,7 +10,7 @@
           <span class="material-symbols-outlined">security</span>
         </div>
         <div class="brand-titles">
-          <h1 class="brand-title">MANNIDAM ADMIN PORTAL</h1>
+          <h1 class="brand-title">FIND A PLOT ADMIN PORTAL</h1>
           <span class="brand-sub">Four-Eyes Architectural Registry &amp; Peer Review System</span>
         </div>
       </div>
@@ -191,6 +191,16 @@
           </span>
         }
       </button>
+
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'user_mindset'"
+        (click)="setTab('user_mindset')">
+        <span class="material-symbols-outlined text-amber">psychology</span>
+        <span>Buyer Mindset &amp; Leads</span>
+        <span class="tab-badge-studio" style="background:#fef3c7;color:#92400e;">AI INTEL</span>
+      </button>
     </div>
 
     <!-- TAB CONTENT 1: REVIEW QUEUE (MAKER-CHECKER ENFORCEMENT) -->
@@ -224,7 +234,7 @@
                 
                 <!-- Card Left: Image & Badge -->
                 <div class="review-thumb-col">
-                  <img [src]="prop.mainImageUrl" [alt]="prop.title" class="prop-thumb-img" />
+                  <img [src]="prop.mainImageUrl" [alt]="prop.title" class="prop-thumb-img" loading="lazy" decoding="async" />
                   <span class="thumb-type-tag">{{ prop.propertyType }}</span>
                 </div>
 
@@ -903,6 +913,11 @@
                 <input type="text" class="field-input" [(ngModel)]="newProp().reraNumber" name="reraNumber" placeholder="e.g. TN/29/Building/0811/2026 or Patta #491" />
               </div>
 
+              <div class="form-field">
+                <label class="field-label">Interactive 3D Masterplan Map URL</label>
+                <input type="text" class="field-input font-mono" [(ngModel)]="newProp().interactiveMapUrl" name="interactiveMapUrl" placeholder="e.g. assets/secura-masterplan-3d.html" />
+              </div>
+
               <!-- SECTION: PHOTOGRAPHY & MEDIA UPLOAD -->
               <div class="form-field full-width media-upload-field">
                 <div class="media-field-header">
@@ -999,7 +1014,7 @@
                       @for (item of adminUploadedImages(); track item.id) {
                         <div class="upload-img-card" [class.is-cover]="item.isCover">
                           <div class="img-preview-container">
-                            <img [src]="item.previewUrl" [alt]="item.name" class="uploaded-preview-img" />
+                            <img [src]="item.previewUrl" [alt]="item.name" class="uploaded-preview-img" loading="lazy" decoding="async" />
                             
                             <div *ngIf="item.isCover" class="cover-photo-pill">
                               <span class="material-symbols-outlined">star</span>
@@ -1076,7 +1091,7 @@
                   <div *ngIf="newProp().mainImageUrl" class="url-live-preview-box">
                     <span class="preview-box-label">Live Link Preview</span>
                     <div class="url-preview-thumb">
-                      <img [src]="newProp().mainImageUrl" alt="Property Cover Preview" (error)="$any($event.target).src = 'assets/blueprint-bg.svg'" />
+                      <img [src]="newProp().mainImageUrl" alt="Property Cover Preview" loading="lazy" decoding="async" (error)="$any($event.target).src = 'blueprint-bg.svg'" />
                     </div>
                   </div>
                 </div>
@@ -1089,7 +1104,7 @@
                         class="sample-img-card" 
                         [class.selected]="newProp().mainImageUrl === img.url"
                         (click)="selectAdminPreset(img.url)">
-                        <img [src]="img.url" [alt]="img.label" class="sample-img" />
+                        <img [src]="img.url" [alt]="img.label" class="sample-img" loading="lazy" decoding="async" />
                         <span class="sample-label">{{ img.label }}</span>
                         @if (newProp().mainImageUrl === img.url) {
                           <span class="material-symbols-outlined check-badge">check_circle</span>
@@ -1102,7 +1117,7 @@
                 <!-- ACTIVE PRIMARY COVER PREVIEW -->
                 <div class="active-cover-showcase-bar">
                   <div class="showcase-thumb-box">
-                    <img [src]="adminActiveCoverPreview()" alt="Active Listing Cover" class="showcase-thumb" />
+                    <img [src]="adminActiveCoverPreview()" alt="Active Listing Cover" class="showcase-thumb" loading="lazy" decoding="async" />
                   </div>
                   <div class="showcase-info">
                     <div class="showcase-status">
@@ -1720,7 +1735,7 @@
                 <tr>
                   <td>
                     <div class="table-prop-cell">
-                      <img [src]="prop.mainImageUrl" [alt]="prop.title" class="table-prop-thumb" />
+                      <img [src]="prop.mainImageUrl" [alt]="prop.title" class="table-prop-thumb" loading="lazy" decoding="async" />
                       <div class="table-prop-meta">
                         <span class="t-title">{{ prop.title }}</span>
                         <span class="t-sub">{{ prop.localityName }}, {{ prop.cityName }}</span>
@@ -2233,6 +2248,140 @@
       </section>
     }
 
+    <!-- TAB CONTENT 5: BUYER MINDSET & AI BEHAVIORAL LEADS -->
+    @if (activeTab() === 'user_mindset') {
+      <section class="tab-pane-section">
+        
+        <!-- Header Banner -->
+        <div class="user-mindset-admin-header">
+          <div class="um-header-left">
+            <div class="um-icon-badge">
+              <span class="material-symbols-outlined">psychology</span>
+            </div>
+            <div>
+              <h2 class="um-admin-title">Buyer Mindset &amp; Behavioral Leads Intelligence</h2>
+              <p class="um-admin-sub">Real-time buyer persona analysis synthesized from browsing behavior across plots and flats</p>
+            </div>
+          </div>
+          <div class="um-header-actions">
+            <button type="button" class="btn-refresh-mindset" (click)="loadMindsetLeads()">
+              <span class="material-symbols-outlined">sync</span>
+              <span>Sync Database</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Leads List -->
+        <div class="mindset-leads-grid">
+          @for (lead of mindsetLeads(); track lead.userPhone) {
+            <div class="admin-lead-card">
+              <!-- Lead Top Bar -->
+              <div class="lead-card-top">
+                <div class="lead-phone-block">
+                  <span class="material-symbols-outlined lead-phone-icon">phone_android</span>
+                  <div>
+                    <span class="lead-lbl">TRACKED BUYER PHONE</span>
+                    <h3 class="lead-phone-num">{{ lead.userPhone }}</h3>
+                  </div>
+                </div>
+
+                <div class="lead-archetype-badge">
+                  <span class="material-symbols-outlined">insights</span>
+                  <span>{{ lead.buyerArchetype }}</span>
+                </div>
+
+                <div class="lead-urgency-badge" [class.hot]="lead.totalViewed >= 4">
+                  <span class="material-symbols-outlined">local_fire_department</span>
+                  <span>{{ lead.urgency || 'High Intent' }}</span>
+                </div>
+              </div>
+
+              <!-- Mindset Brief Quote Box -->
+              <div class="admin-brief-box">
+                <div class="brief-quote-header">
+                  <span class="material-symbols-outlined text-amber">format_quote</span>
+                  <span class="brief-tag">SYNTHESIZED BUYER MINDSET BRIEF</span>
+                </div>
+                <blockquote class="lead-brief-quote">
+                  "{{ lead.mindsetBrief }}"
+                </blockquote>
+              </div>
+
+              <!-- Split & Metrics Grid -->
+              <div class="lead-metrics-row">
+                <!-- Interest Split -->
+                <div class="lead-metric-item">
+                  <span class="lm-label">Interest Split ({{ lead.totalViewed }} Viewed)</span>
+                  <div class="lm-progress">
+                    <div class="lm-prog-plots" [style.width.%]="lead.plotsPercentage">
+                      <span *ngIf="lead.plotsPercentage >= 20">{{ lead.plotsPercentage }}% Plots</span>
+                    </div>
+                    <div class="lm-prog-flats" [style.width.%]="lead.flatsPercentage">
+                      <span *ngIf="lead.flatsPercentage >= 20">{{ lead.flatsPercentage }}% Flats</span>
+                    </div>
+                  </div>
+                  <div class="lm-split-labels">
+                    <span class="text-green font-bold">{{ lead.plotsCount }} Plots ({{ lead.plotsPercentage }}%)</span>
+                    <span class="text-blue font-bold">{{ lead.flatsCount }} Flat{{ lead.flatsCount === 1 ? '' : 's' }} ({{ lead.flatsPercentage }}%)</span>
+                  </div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="lead-metric-item">
+                  <span class="lm-label">Explored Price Bracket</span>
+                  <span class="lm-price-val">{{ lead.priceRange }}</span>
+                  <span class="lm-sub">Avg Ticket: {{ lead.avgPriceFormatted }}</span>
+                </div>
+
+                <!-- Target Localities -->
+                <div class="lead-metric-item">
+                  <span class="lm-label">Target Corridors</span>
+                  <div class="lm-loc-chips">
+                    @for (loc of lead.topLocalities; track loc) {
+                      <span class="lm-chip">
+                        <span class="material-symbols-outlined text-xs">place</span>
+                        {{ loc }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recommendation / Action Box -->
+              <div class="admin-recommendation-box">
+                <span class="material-symbols-outlined text-amber">tips_and_updates</span>
+                <p><strong>Broker Action:</strong> {{ lead.recommendation }}</p>
+              </div>
+
+              <!-- Direct Contact Buttons -->
+              <div class="lead-actions-bar">
+                <a [href]="'https://wa.me/91' + lead.userPhone" target="_blank" class="btn-lead-wa">
+                  <span class="material-symbols-outlined">chat</span>
+                  <span>WhatsApp Buyer</span>
+                </a>
+                <a [href]="'tel:+91' + lead.userPhone" class="btn-lead-call">
+                  <span class="material-symbols-outlined">call</span>
+                  <span>Direct Call</span>
+                </a>
+                <button type="button" class="btn-lead-note">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <span>Log CRM Note</span>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-leads-box">
+              <span class="material-symbols-outlined text-4xl">travel_explore</span>
+              <h4>No user browsing analytics recorded yet</h4>
+              <p>As visitors browse properties on the marketplace, live behavioral leads will appear here.</p>
+            </div>
+          }
+        </div>
+
+      </section>
+    }
+
+
   </main>
 
   <!-- ========================================== -->
@@ -2259,7 +2408,7 @@
             
             <!-- Left Preview Media -->
             <div class="modal-media-col">
-              <img [src]="inspectingProperty()?.mainImageUrl" [alt]="inspectingProperty()?.title" class="modal-cover-img" />
+              <img [src]="inspectingProperty()?.mainImageUrl" [alt]="inspectingProperty()?.title" class="modal-cover-img" loading="lazy" decoding="async" />
               
               <div class="spec-pills-row">
                 <span class="spec-pill">{{ inspectingProperty()?.propertyType }}</span>
@@ -2384,7 +2533,7 @@
             <div class="receipt-header">
               <div class="receipt-brand">
                 <span class="material-symbols-outlined">verified</span>
-                <span>Mannidam Media Points Settlement</span>
+                <span>Find a Plot Media Points Settlement</span>
               </div>
               <span class="receipt-status-pill success">
                 <span class="material-symbols-outlined">check_circle</span>

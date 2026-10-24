@@ -21,10 +21,10 @@ class Database {
     private ?PDO $connection = null;
 
     public function __construct() {
-        $this->host     = $_ENV['DB_HOST'] ?? '127.0.0.1';
-        $this->dbName   = $_ENV['DB_NAME'] ?? 'mannidam_property_db';
-        $this->username = $_ENV['DB_USER'] ?? 'root';
-        $this->password = $_ENV['DB_PASS'] ?? '';
+        $this->host     = $_ENV['DB_HOST'] ?? 'localhost';
+        $this->dbName   = $_ENV['DB_NAME'] ?? 'onenesgw_property_project';
+        $this->username = $_ENV['DB_USER'] ?? 'onenesgw_pp';
+        $this->password = $_ENV['DB_PASS'] ?? 'property@77';
         $this->charset  = 'utf8mb4';
     }
 
@@ -49,6 +49,17 @@ class Database {
             $this->connection = new PDO($dsn, $this->username, $this->password, $options);
             return $this->connection;
         } catch (PDOException $e) {
+            // Local dev / XAMPP fallback
+            if ($this->host === 'localhost' || $this->host === '127.0.0.1') {
+                try {
+                    $localDsn = "mysql:host={$this->host};dbname=mannidam_property_db;charset={$this->charset}";
+                    $this->connection = new PDO($localDsn, 'root', '', $options);
+                    return $this->connection;
+                } catch (PDOException $fallbackErr) {
+                    // Fall through to standard error response below
+                }
+            }
+
             http_response_code(500);
             header('Content-Type: application/json; charset=UTF-8');
             echo json_encode([

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -14,6 +15,7 @@ import { WalletService } from '../../../../core/services/wallet.service';
 import { MetroService } from '../../../../core/services/metro.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -23,7 +25,7 @@ import { PropertyMediaModalComponent } from '../../../home/components/property-m
 import { InteractivePlotLayoutComponent } from '../../../../shared/components/interactive-plot-layout/interactive-plot-layout.component';
 import { PlotexViewerComponent } from '../../../../shared/components/plotex-viewer/plotex-viewer.component';
 
-export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
+export type MediaStageTab = 'photos' | 'walkthrough' | 'drone' | '3dmap';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
 
 function parsePriceToNumber(priceStr: string): number {
@@ -64,17 +66,29 @@ export class PropertyDetailsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly propertyService = inject(PropertyService);
   readonly walletService = inject(WalletService);
   readonly metroService = inject(MetroService);
   readonly notificationService = inject(NotificationService);
   readonly authService = inject(AuthService);
+  readonly userBehaviorService = inject(UserBehaviorService);
 
   readonly propertyId = signal<string>('');
   readonly property = computed<Property | null>(() => {
     const id = this.propertyId();
     if (!id) return null;
     return this.propertyService.getPropertyById(id) || this.propertyService.allProperties()[0] || null;
+  });
+
+  readonly sanitizedInteractiveMapUrl = computed<SafeResourceUrl | null>(() => {
+    const url = this.property()?.interactiveMapUrl;
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+  });
+
+  readonly isPlot = computed<boolean>(() => {
+    const prop = this.property();
+    return prop?.propertyType === 'Gated CMDA Plots';
   });
 
   // Active in-page navigation section
@@ -189,20 +203,24 @@ export class PropertyDetailsPageComponent implements OnInit {
           // Record browsing history in MySQL & localStorage for logged in user
           this.authService.recordPropertyView(id).subscribe();
         } else {
-          // Guest visitor flow
-          if (this.authService.canViewProperty(id)) {
-            // First free property view granted to guest
-            this.authService.recordGuestPropertyView(id);
-          } else {
-            // Blocked: Guest has already viewed 1 property. Prescribe login!
-            this.authService.openOtpModal('guest_limit');
-          }
+          // Guest visitor flow - verify against server IP/device records across browsers
+          this.authService.syncGuestViews().subscribe(() => {
+            if (this.authService.canViewProperty(id)) {
+              // First free property view granted to guest
+              this.authService.recordGuestPropertyView(id);
+            } else {
+              // Blocked: Guest has already viewed 1 property from this computer/IP. Prescribe login!
+              this.authService.openOtpModal('guest_limit');
+            }
+          });
         }
 
         // Fetch real-time dossier from MySQL backend
         this.propertyService.fetchPropertyDetails(id).subscribe(prop => {
-          if (prop) {
-            const priceNum = parsePriceToNumber(prop.price);
+          const resolved = prop || this.propertyService.getPropertyById(id);
+          if (resolved) {
+            this.userBehaviorService.trackPropertyView(resolved);
+            const priceNum = parsePriceToNumber(resolved.price);
             if (priceNum > 0) {
               this.loanAmount.set(Math.round(priceNum * 0.8));
             }
@@ -436,7 +454,7 @@ export class PropertyDetailsPageComponent implements OnInit {
     if (navigator.share) {
       navigator.share({
         title: prop.title,
-        text: `Check out ${prop.title} in ${prop.locality}, ${prop.city} on Mannidam Verified Registry.`,
+        text: `Check out ${prop.title} in ${prop.locality}, ${prop.city} on Find a Plot Verified Registry.`,
         url: window.location.href
       }).catch(() => {});
     } else {

@@ -11,223 +11,134 @@ import { NotificationService } from '../../services/notification.service';
   template: `
     @if (authService.isOtpModalOpen()) {
       <div class="modal-backdrop" (click)="closeModal()">
-        <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          
           <!-- Modal Header -->
           <div class="modal-header">
-            <div class="header-branding">
-              <div class="icon-badge">
-                <span class="material-symbols-outlined">shield_person</span>
-              </div>
-              <div>
-                <h3 class="modal-title">Investor &amp; Buyer Sign In</h3>
-                <p class="modal-subtitle">One-Time Password (OTP) Secured Registry Access</p>
-              </div>
+            <div>
+              <h2 class="modal-title">Sign In</h2>
+              <p class="modal-subtitle">
+                @if (step() === 'phone') {
+                  Enter your mobile number to continue
+                } @else {
+                  Code sent to <strong>+91 {{ phone() }}</strong>
+                  <button type="button" class="btn-link-edit" (click)="step.set('phone')">Edit</button>
+                }
+              </p>
             </div>
-            <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close dialog">
-              <span class="material-symbols-outlined">close</span>
-            </button>
+            <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close dialog">✕</button>
           </div>
+
+          <!-- Minimal Notice if Guest View Limit Reached -->
+          @if (authService.otpModalReason() === 'guest_limit' && step() === 'phone') {
+            <div class="minimal-notice">
+              <span>Sign in to unlock full verified property details</span>
+            </div>
+          }
 
           <!-- STEP 1: Phone Entry -->
           @if (step() === 'phone') {
-            <form (submit)="onSendOtp($event)" class="modal-body">
-              @if (authService.otpModalReason() === 'guest_limit') {
-                <div class="limit-alert">
-                  <div class="limit-alert-icon-box">
-                    <span class="material-symbols-outlined alert-icon text-amber">lock</span>
-                  </div>
-                  <div class="limit-alert-content">
-                    <strong class="limit-title">Free Guest Preview Limit Reached (1/1)</strong>
-                    <p class="limit-sub">You have viewed 1 free property dossier without signing in. To continue exploring verified properties, floor plans, and seller contacts, please sign in or use 1-Click Demo Login below.</p>
-                  </div>
-                </div>
-              } @else {
-                <div class="info-alert">
-                  <span class="material-symbols-outlined alert-icon">info</span>
-                  <span>Enter your mobile number to receive a 4-digit verification code. Standard no-brokerage access is free.</span>
-                </div>
-              }
-
-              <!-- Phone Input Field -->
-              <div class="input-group">
-                <label for="phone-input" class="input-label">Mobile Number</label>
-                <div class="phone-input-wrapper">
-                  <div class="country-pill">
-                    <span class="flag-icon">🇮🇳</span>
-                    <span class="dial-code">+91</span>
-                  </div>
-                  <input 
-                    id="phone-input"
-                    type="tel"
-                    inputmode="numeric"
-                    maxlength="10"
-                    class="phone-field"
-                    placeholder="94441 00000"
-                    [value]="phone()"
-                    (input)="onPhoneInput($event)"
-                    autocomplete="tel-national"
-                    required>
-                </div>
+            <form (submit)="onSendOtp($event)" class="modal-form">
+              <div class="phone-input-wrap">
+                <span class="country-code">+91</span>
+                <input 
+                  id="phone-input"
+                  type="tel"
+                  inputmode="numeric"
+                  maxlength="10"
+                  class="phone-input"
+                  placeholder="Enter 10-digit number"
+                  [value]="phone()"
+                  (input)="onPhoneInput($event)"
+                  autocomplete="tel-national"
+                  autofocus
+                  required />
               </div>
 
-              <!-- Optional Name Field for Registration -->
-              <div class="input-group">
-                <label for="name-input" class="input-label">Full Name <span class="text-muted">(Optional for first-time buyers)</span></label>
-                <div class="standard-input-wrapper">
-                  <span class="material-symbols-outlined input-leading-icon">person</span>
-                  <input 
-                    id="name-input"
-                    type="text"
-                    class="standard-field"
-                    placeholder="e.g. Ramesh Sundaram"
-                    [value]="name()"
-                    (input)="name.set($any($event.target).value)">
-                </div>
-              </div>
-
-              <!-- Demo Auto-Fill Quick Chip -->
-              <div class="demo-chip-row">
-                <span class="demo-label">Demo Quick Fill:</span>
-                <button type="button" class="demo-chip" (click)="autoFillDemoPhone()">
-                  <span class="material-symbols-outlined">bolt</span>
-                  <span>+91 94441 00000</span>
-                </button>
-              </div>
-
-              <!-- Submit CTA -->
               <button 
                 type="submit" 
-                class="btn-primary-cta" 
+                class="btn-primary" 
                 [disabled]="phone().length < 10 || authService.isSubmitting()">
                 @if (authService.isSubmitting()) {
                   <span class="spinner"></span>
-                  <span>Sending OTP...</span>
+                  <span>Sending code...</span>
                 } @else {
-                  <span>Send Verification Code</span>
-                  <span class="material-symbols-outlined">arrow_forward</span>
+                  <span>Continue</span>
                 }
               </button>
-
-              <!-- Instant 1-Click Demo Login for Quick Verification -->
-              <div class="instant-login-row">
-                <div class="instant-divider">
-                  <span class="instant-divider-text">OR INSTANT EVALUATION</span>
-                </div>
-                <button 
-                  type="button" 
-                  class="btn-instant-demo" 
-                  (click)="quickDemoLogin()">
-                  <span class="material-symbols-outlined instant-bolt">electric_bolt</span>
-                  <span>⚡ 1-Click Instant Investor Demo Login</span>
-                </button>
-              </div>
             </form>
           }
 
-          <!-- STEP 2: Segmented OTP Entry -->
+          <!-- STEP 2: 4-Digit OTP Entry -->
           @if (step() === 'otp') {
-            <form (submit)="onVerifyOtp($event)" class="modal-body">
-              <div class="otp-banner">
-                <div class="banner-top">
-                  <span class="material-symbols-outlined text-emerald">sms</span>
-                  <span class="banner-title">Code Sent to +91 {{ phone() }}</span>
-                </div>
-                <button type="button" class="link-change-phone" (click)="step.set('phone')">
-                  Edit Number
-                </button>
+            <form (submit)="onVerifyOtp($event)" class="modal-form">
+              <div class="otp-boxes-grid">
+                <input 
+                  #otpBox0 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[0]" 
+                  (input)="onDigitInput(0, $event)"
+                  (keydown)="onDigitKeydown(0, $event)"
+                  autocomplete="one-time-code">
+                <input 
+                  #otpBox1 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[1]" 
+                  (input)="onDigitInput(1, $event)"
+                  (keydown)="onDigitKeydown(1, $event)">
+                <input 
+                  #otpBox2 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[2]" 
+                  (input)="onDigitInput(2, $event)"
+                  (keydown)="onDigitKeydown(2, $event)">
+                <input 
+                  #otpBox3 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[3]" 
+                  (input)="onDigitInput(3, $event)"
+                  (keydown)="onDigitKeydown(3, $event)">
               </div>
 
-              <!-- Demo OTP Notification Box -->
-              <div class="demo-otp-box">
-                <div class="demo-otp-left">
-                  <span class="material-symbols-outlined text-amber">key</span>
-                  <div>
-                    <div class="demo-otp-title">Demo Testing Mode Active</div>
-                    <div class="demo-otp-sub">Your dummy verification code is: <strong>{{ authService.lastSentOtp() }}</strong></div>
-                  </div>
-                </div>
-                <button type="button" class="btn-autofill-otp" (click)="autoFillOtp()">
-                  Auto-Fill {{ authService.lastSentOtp() }}
-                </button>
-              </div>
-
-              <!-- Segmented 4-Digit Inputs -->
-              <div class="input-group">
-                <label class="input-label text-center">Enter 4-Digit Code</label>
-                <div class="otp-boxes-row">
-                  <input 
-                    #otpBox0 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-digit-box"
-                    [value]="otpDigits()[0]" 
-                    (input)="onDigitInput(0, $event)"
-                    (keydown)="onDigitKeydown(0, $event)"
-                    autocomplete="one-time-code">
-                  <input 
-                    #otpBox1 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-digit-box"
-                    [value]="otpDigits()[1]" 
-                    (input)="onDigitInput(1, $event)"
-                    (keydown)="onDigitKeydown(1, $event)">
-                  <input 
-                    #otpBox2 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-digit-box"
-                    [value]="otpDigits()[2]" 
-                    (input)="onDigitInput(2, $event)"
-                    (keydown)="onDigitKeydown(2, $event)">
-                  <input 
-                    #otpBox3 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-digit-box"
-                    [value]="otpDigits()[3]" 
-                    (input)="onDigitInput(3, $event)"
-                    (keydown)="onDigitKeydown(3, $event)">
-                </div>
-              </div>
-
-              <!-- Countdown Timer & Resend -->
               <div class="resend-row">
                 @if (countdown() > 0) {
-                  <span class="countdown-text">Resend code in <strong>{{ countdown() }}s</strong></span>
+                  <span class="countdown-text">Resend code in {{ countdown() }}s</span>
                 } @else {
-                  <button type="button" class="btn-resend" (click)="resendOtp()">
-                    <span class="material-symbols-outlined">replay</span>
-                    <span>Resend OTP Code</span>
-                  </button>
+                  <button type="button" class="btn-resend" (click)="resendOtp()">Resend Code</button>
                 }
               </div>
 
-              <!-- Verify CTA -->
               <button 
                 type="submit" 
-                class="btn-primary-cta"
+                class="btn-primary" 
                 [disabled]="getCombinedOtp().length < 4 || authService.isSubmitting()">
                 @if (authService.isSubmitting()) {
                   <span class="spinner"></span>
                   <span>Verifying...</span>
                 } @else {
-                  <span class="material-symbols-outlined">verified</span>
-                  <span>Verify &amp; Sign In</span>
+                  <span>Verify &amp; Continue</span>
                 }
               </button>
             </form>
           }
 
-          <!-- Footer Trust Markers -->
+          <!-- Minimal Trust Footer -->
           <div class="modal-footer">
-            <span class="material-symbols-outlined trust-icon">lock</span>
-            <span>256-Bit SSL Encrypted • Zero Spam • No Broker Calls</span>
+            <span>256-Bit Encrypted • Secure Access</span>
           </div>
+
         </div>
       </div>
     }
@@ -236,69 +147,73 @@ import { NotificationService } from '../../services/notification.service';
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(6px);
-      z-index: 1000;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1rem;
-      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeIn 0.15s ease-out;
     }
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    .modal-container {
+
+    .modal-card {
       background: #ffffff;
-      border-radius: 1.25rem;
+      border-radius: 1rem;
       width: 100%;
-      max-width: 460px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      overflow: hidden;
-      animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 390px;
+      box-sizing: border-box;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      animation: scaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-card * {
+      box-sizing: border-box;
     }
     @keyframes scaleUp {
-      from { transform: scale(0.96) translateY(8px); opacity: 0; }
+      from { transform: scale(0.97) translateY(6px); opacity: 0; }
       to { transform: scale(1) translateY(0); opacity: 1; }
     }
+
+    /* Header */
     .modal-header {
-      padding: 1.5rem 1.75rem 1.25rem;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      border-bottom: 1px solid #f1f5f9;
-      background: #fafafa;
-    }
-    .header-branding {
-      display: flex;
-      align-items: center;
-      gap: 0.875rem;
-    }
-    .icon-badge {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: #fee2e2;
-      color: var(--brand-red);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .icon-badge span {
-      font-size: 24px;
+      gap: 0.75rem;
     }
     .modal-title {
-      font-size: 1.125rem;
-      font-weight: 800;
-      color: var(--text-slate-950);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
       letter-spacing: -0.01em;
     }
     .modal-subtitle {
-      font-size: 12px;
-      color: var(--text-slate-500);
-      margin-top: 2px;
+      font-size: 0.8125rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+      margin-bottom: 0;
+      line-height: 1.4;
+    }
+    .btn-link-edit {
+      background: none;
+      border: none;
+      color: var(--brand-green, #5e8f72);
+      font-weight: 600;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      margin-left: 0.35rem;
+      text-decoration: underline;
+      padding: 0;
     }
     .btn-close {
       width: 32px;
@@ -309,412 +224,188 @@ import { NotificationService } from '../../services/notification.service';
       justify-content: center;
       background: transparent;
       border: none;
-      color: var(--text-slate-400);
+      color: #94a3b8;
       cursor: pointer;
       transition: all 0.15s;
+      flex-shrink: 0;
     }
     .btn-close:hover {
-      background: #e2e8f0;
-      color: var(--text-slate-700);
+      background: #f1f5f9;
+      color: #0f172a;
     }
-    .modal-body {
-      padding: 1.5rem 1.75rem;
+    .btn-close span {
+      font-size: 20px;
+    }
+
+    /* Minimalist Alert */
+    .minimal-notice {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.75rem;
+      color: #475569;
+      font-weight: 500;
+    }
+    .notice-icon {
+      font-size: 16px;
+      color: #f59e0b;
+      flex-shrink: 0;
+    }
+
+    /* Form & Input */
+    .modal-form {
       display: flex;
       flex-direction: column;
       gap: 1.125rem;
     }
-    .info-alert {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      font-size: 12px;
-      color: #166534;
-      line-height: 1.4;
-    }
-    .alert-icon {
-      font-size: 18px;
-      color: #16a34a;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.375rem;
-    }
-    .input-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-slate-700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .text-muted {
-      text-transform: none;
-      font-weight: 400;
-      color: var(--text-slate-400);
-    }
-    .phone-input-wrapper {
+    .phone-input-wrap {
       display: flex;
       align-items: center;
       border: 1.5px solid #cbd5e1;
-      border-radius: 0.75rem;
+      border-radius: 0.625rem;
       background: #ffffff;
+      height: 48px;
       overflow: hidden;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .phone-input-wrapper:focus-within {
-      border-color: var(--brand-red);
+    .phone-input-wrap:focus-within {
+      border-color: var(--brand-green, #5e8f72);
       box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.12);
     }
-    .country-pill {
+    .country-code {
+      padding: 0 0.875rem;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: #475569;
+      background: #f8fafc;
+      height: 100%;
       display: flex;
       align-items: center;
-      gap: 0.375rem;
-      padding: 0 0.875rem;
-      height: 48px;
-      background: #f8fafc;
       border-right: 1px solid #e2e8f0;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-slate-700);
     }
-    .flag-icon {
-      font-size: 16px;
-    }
-    .phone-field {
+    .phone-input {
       flex: 1;
-      height: 48px;
+      height: 100%;
       border: none;
       outline: none;
-      padding: 0 1rem;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--text-slate-900);
+      padding: 0 0.875rem;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #0f172a;
     }
-    .phone-field::placeholder {
+    .phone-input::placeholder {
       font-weight: 400;
       color: #94a3b8;
-    }
-    .standard-input-wrapper {
-      display: flex;
-      align-items: center;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 0.75rem;
-      background: #ffffff;
-      padding: 0 0.875rem;
-      height: 44px;
-      gap: 0.5rem;
-    }
-    .standard-input-wrapper:focus-within {
-      border-color: var(--brand-red);
-      box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.12);
-    }
-    .input-leading-icon {
-      font-size: 20px;
-      color: #94a3b8;
-    }
-    .standard-field {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 14px;
-      color: var(--text-slate-900);
-    }
-    .demo-chip-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 12px;
-    }
-    .demo-label {
-      color: var(--text-slate-500);
-    }
-    .demo-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0.25rem 0.625rem;
-      border-radius: 9999px;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      color: var(--text-slate-700);
-      font-weight: 600;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .demo-chip:hover {
-      background: #e2e8f0;
-      border-color: #94a3b8;
-      color: var(--brand-red);
-    }
-    .demo-chip span.material-symbols-outlined {
-      font-size: 14px;
-      color: #f59e0b;
-    }
-    .btn-primary-cta {
-      height: 48px;
-      border-radius: 0.75rem;
-      background: var(--brand-red);
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 6px -1px rgba(199, 52, 52, 0.25);
-      transition: all 0.2s;
-    }
-    .btn-primary-cta:hover:not(:disabled) {
-      background: #b91c1c;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 12px -2px rgba(199, 52, 52, 0.35);
-    }
-    .btn-primary-cta:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-    .btn-primary-cta span.material-symbols-outlined {
-      font-size: 18px;
-    }
-    .otp-banner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-    }
-    .banner-top {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-slate-800);
-    }
-    .text-emerald {
-      color: #059669;
-    }
-    .text-amber {
-      color: #d97706;
-    }
-    .link-change-phone {
-      background: none;
-      border: none;
-      color: var(--brand-red);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-    .demo-otp-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-    }
-    .demo-otp-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .demo-otp-left span {
-      font-size: 22px;
-    }
-    .demo-otp-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #92400e;
-    }
-    .demo-otp-sub {
-      font-size: 11px;
-      color: #b45309;
-      margin-top: 1px;
-    }
-    .btn-autofill-otp {
-      padding: 0.375rem 0.75rem;
-      border-radius: 6px;
-      background: #f59e0b;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s;
-    }
-    .btn-autofill-otp:hover {
-      background: #d97706;
-    }
-    .otp-boxes-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.875rem;
-      margin-top: 0.25rem;
-    }
-    .otp-digit-box {
-      width: 56px;
-      height: 60px;
-      border-radius: 0.75rem;
-      border: 2px solid #cbd5e1;
-      text-align: center;
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--text-slate-900);
-      background: #ffffff;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .otp-digit-box:focus {
-      border-color: var(--brand-red);
-      box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.15);
-    }
-    .resend-row {
-      text-align: center;
-      font-size: 12px;
-    }
-    .countdown-text {
-      color: var(--text-slate-500);
-    }
-    .btn-resend {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: none;
-      border: none;
-      color: var(--brand-red);
-      font-weight: 700;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .btn-resend span {
-      font-size: 16px;
-    }
-    .modal-footer {
-      padding: 0.875rem 1.75rem;
-      background: #f8fafc;
-      border-top: 1px solid #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
-      font-size: 11px;
-      color: var(--text-slate-500);
-      font-weight: 500;
-    }
-    .trust-icon {
-      font-size: 14px;
-      color: #059669;
-    }
-    /* Limit Alert Styling */
-    .limit-alert {
-      display: flex;
-      gap: 0.875rem;
-      align-items: flex-start;
-      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-      border: 1px solid #fde68a;
-      border-radius: 12px;
-      padding: 1rem 1.125rem;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
-    }
-    .limit-alert-icon-box {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: #fef08a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .limit-title {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: #78350f;
-      margin-bottom: 2px;
-    }
-    .limit-sub {
-      font-size: 12px;
-      line-height: 1.5;
-      color: #92400e;
-      margin: 0;
+      font-size: 0.875rem;
+      letter-spacing: normal;
     }
 
-    /* Instant 1-Click Login Styling */
-    .instant-login-row {
-      margin-top: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .instant-divider {
-      position: relative;
-      text-align: center;
-    }
-    .instant-divider::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: #e2e8f0;
-    }
-    .instant-divider-text {
-      position: relative;
-      background: #ffffff;
-      padding: 0 10px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      color: #94a3b8;
-    }
-    .btn-instant-demo {
+    /* Primary Button */
+    .btn-primary {
+      height: 46px;
+      border-radius: 0.625rem;
+      background: var(--brand-green, #5e8f72);
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      width: 100%;
-      padding: 0.875rem 1.25rem;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #ffffff;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 700;
+      border: none;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.15s ease-in-out;
     }
-    .btn-instant-demo:hover {
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    .btn-primary:hover:not(:disabled) {
+      background: #5e8f72;
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.22);
     }
-    .instant-bolt {
-      color: #f59e0b;
-      font-size: 18px;
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
+
+    /* Segmented OTP Boxes */
+    .otp-boxes-grid {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 0.25rem 0;
+    }
+    .otp-box {
+      width: 54px;
+      height: 56px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      border-radius: 0.625rem;
+      border: 1.5px solid #cbd5e1;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #0f172a;
+      background: #ffffff;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+    .otp-box:focus {
+      border-color: var(--brand-green, #5e8f72);
+      box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.12);
+    }
+    @media (max-width: 400px) {
+      .otp-box {
+        width: 48px;
+        height: 50px;
+        font-size: 1.25rem;
+      }
+      .otp-boxes-grid {
+        gap: 0.5rem;
+      }
+    }
+
+    /* Resend text */
+    .resend-row {
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .countdown-text {
+      color: #64748b;
+    }
+    .btn-resend {
+      background: none;
+      border: none;
+      color: var(--brand-green, #5e8f72);
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    /* Minimal Footer */
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.6875rem;
+      color: #94a3b8;
+      padding-top: 0.5rem;
+      border-top: 1px solid #f1f5f9;
+    }
+    .footer-icon {
+      font-size: 13px;
+      color: #10b981;
+    }
+
     .spinner {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       border-top-color: #ffffff;
@@ -732,15 +423,9 @@ export class OtpLoginModalComponent {
   @ViewChildren('otpBox0, otpBox1, otpBox2, otpBox3') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   readonly step = signal<'phone' | 'otp'>('phone');
-  readonly phone = signal<string>('9444100000');
-  readonly name = signal<string>('Demo Investor');
+  readonly phone = signal<string>('');
   readonly otpDigits = signal<string[]>(['', '', '', '']);
   readonly countdown = signal<number>(30);
-
-  quickDemoLogin(): void {
-    this.authService.quickDemoLogin();
-    this.resetOtpForm();
-  }
 
   private timerInterval: any = null;
 
@@ -755,11 +440,6 @@ export class OtpLoginModalComponent {
     this.phone.set(clean);
   }
 
-  autoFillDemoPhone(): void {
-    this.phone.set('9444100000');
-    this.name.set('Demo Real Estate Investor');
-  }
-
   onSendOtp(event: Event): void {
     event.preventDefault();
     if (this.phone().length < 10) return;
@@ -772,7 +452,7 @@ export class OtpLoginModalComponent {
         this.notificationService.show({
           type: 'info',
           title: 'Verification Code Sent',
-          message: `Demo OTP: ${res.dummyOtp} sent to +91 ${this.phone()}`,
+          message: `Verification code sent to +91 ${this.phone()}`,
           icon: 'sms'
         });
         setTimeout(() => {
@@ -808,13 +488,6 @@ export class OtpLoginModalComponent {
     }
   }
 
-  autoFillOtp(): void {
-    const dummy = this.authService.lastSentOtp();
-    const digits = dummy.padEnd(4, '0').slice(0, 4).split('');
-    this.otpDigits.set(digits);
-    this.submitVerification();
-  }
-
   getCombinedOtp(): string {
     return this.otpDigits().join('');
   }
@@ -828,7 +501,7 @@ export class OtpLoginModalComponent {
     const code = this.getCombinedOtp();
     if (code.length < 4) return;
 
-    this.authService.verifyOtp(this.phone(), code, this.name()).subscribe(res => {
+    this.authService.verifyOtp(this.phone(), code).subscribe(res => {
       if (res.success) {
         this.resetOtpForm();
       } else {
@@ -849,7 +522,7 @@ export class OtpLoginModalComponent {
       this.notificationService.show({
         type: 'info',
         title: 'New Code Sent',
-        message: `Use demo code: ${res.dummyOtp}`,
+        message: `A new verification code has been sent to +91 ${this.phone()}`,
         icon: 'autorenew'
       });
     });

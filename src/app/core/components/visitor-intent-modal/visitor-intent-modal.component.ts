@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '../../services/visitor-purpose.service';
+import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor-purpose.service';
 
 @Component({
   selector: 'app-visitor-intent-modal',
@@ -12,60 +12,35 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
       <div class="intent-modal-backdrop" (click)="onBackdropClick($event)">
         <div class="intent-modal-container" (click)="$event.stopPropagation()">
           
-          <!-- Top Decorative Accent Bar -->
-          <div class="top-accent-line"></div>
-
-          <!-- Modal Header -->
+          <!-- Clean Minimal Header -->
           <div class="modal-header">
-            <div class="header-brand-badge">
-              <span class="badge-dot"></span>
-              <span class="badge-text">WELCOME TO MANNIDAM • ARCHITECTURAL REAL ESTATE</span>
+            <div class="header-titles">
+              <h2 class="modal-heading">What is your primary goal?</h2>
+              <p class="modal-subheading">Personalize your verified listings and architectural survey views</p>
             </div>
 
             <button 
               type="button" 
               class="btn-close-modal" 
               (click)="visitorService.closeModal()" 
-              aria-label="Dismiss welcome popup">
-              <span class="material-symbols-outlined">close</span>
+              aria-label="Close modal">
+              &times;
             </button>
           </div>
 
-          <div class="header-titles">
-            <h2 class="modal-heading">What is the purpose of your visit today?</h2>
-            <p class="modal-subheading">
-              Select your primary goal to help us tailor verified no-brokerage listings, 4K architectural walkthroughs, and cadastral maps.
-            </p>
-          </div>
-
-          <!-- Purpose Cards 2x2 Grid -->
-          <div class="purposes-grid">
+          <!-- Simple Options List (No boxes, no grid) -->
+          <div class="purposes-list">
             @for (opt of visitorService.options; track opt.key) {
               <div 
-                class="purpose-card" 
+                class="purpose-item" 
                 [class.selected]="selectedKey() === opt.key"
-                [style.--theme-color]="opt.themeColor"
-                [style.--theme-light-bg]="opt.lightBg"
                 (click)="onSelect(opt.key)">
-                
-                <div class="card-top-row">
-                  <div class="icon-avatar" [style.background]="opt.lightBg" [style.color]="opt.themeColor">
-                    <span class="material-symbols-outlined">{{ opt.icon }}</span>
-                  </div>
-                  
-                  <div class="selection-indicator">
-                    <span class="material-symbols-outlined check-icon">
-                      {{ selectedKey() === opt.key ? 'check_circle' : 'radio_button_unchecked' }}
-                    </span>
-                  </div>
+                <div class="radio-indicator" aria-hidden="true">
+                  <div class="radio-dot"></div>
                 </div>
-
-                <div class="card-content">
-                  <div class="card-badge-row">
-                    <span class="option-badge">{{ opt.badge }}</span>
-                  </div>
-                  <h3 class="purpose-title">{{ opt.title }}</h3>
-                  <p class="purpose-tagline">{{ opt.tagline }}</p>
+                <div class="item-text">
+                  <span class="purpose-title">{{ opt.title }}</span>
+                  <span class="purpose-tagline">{{ opt.tagline }}</span>
                 </div>
               </div>
             }
@@ -74,28 +49,24 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
           <!-- Other Custom Purpose Input (Expands when 'other' is chosen) -->
           @if (selectedKey() === 'other') {
             <div class="other-input-block">
-              <label for="other-note-input" class="other-label">
-                <span class="material-symbols-outlined">edit_note</span>
-                <span>Tell us a bit more about what you're looking for (optional):</span>
-              </label>
               <input 
                 id="other-note-input"
                 type="text" 
                 class="other-input-field" 
-                placeholder="e.g. NRI relocation, commercial warehouse, JV development..." 
+                placeholder="Specify your requirement (e.g., commercial, NRI, JV)..." 
                 [ngModel]="noteInput()" 
                 (ngModelChange)="noteInput.set($event)"
                 (keydown.enter)="onConfirm()" />
             </div>
           }
 
-          <!-- Footer Actions Strip -->
+          <!-- Minimal Footer Actions -->
           <div class="modal-footer">
             <button 
               type="button" 
               class="btn-skip" 
               (click)="visitorService.closeModal()">
-              <span>Skip for now</span>
+              Skip for now
             </button>
 
             <button 
@@ -103,27 +74,8 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
               class="btn-continue" 
               [disabled]="!selectedKey()"
               (click)="onConfirm()">
-              <span>{{ getActionLabel() }}</span>
-              <span class="material-symbols-outlined">arrow_forward</span>
+              {{ getActionLabel() }}
             </button>
-          </div>
-
-          <!-- Trust Strip at the Bottom -->
-          <div class="bottom-trust-strip">
-            <div class="trust-badge">
-              <span class="material-symbols-outlined">verified</span>
-              <span>100% Direct Owner</span>
-            </div>
-            <div class="trust-dot">•</div>
-            <div class="trust-badge">
-              <span class="material-symbols-outlined">videocam</span>
-              <span>4K Architectural Walkthroughs</span>
-            </div>
-            <div class="trust-dot">•</div>
-            <div class="trust-badge">
-              <span class="material-symbols-outlined">map</span>
-              <span>Cadastral Boundary Scans</span>
-            </div>
           </div>
 
         </div>
@@ -134,15 +86,15 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
     .intent-modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.72);
+      background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.25rem;
+      padding: 1rem;
       z-index: 99999;
-      animation: backdropFadeIn 0.25s ease-out forwards;
+      animation: backdropFadeIn 0.2s ease-out forwards;
     }
 
     @keyframes backdropFadeIn {
@@ -152,24 +104,24 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
 
     .intent-modal-container {
       background: #ffffff;
-      border-radius: 24px;
-      max-width: 680px;
+      border-radius: 18px;
+      max-width: 480px;
       width: 100%;
-      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(226, 232, 240, 0.8);
+      box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(226, 232, 240, 0.9);
       position: relative;
       overflow: hidden;
-      padding: 2rem 2.25rem 1.75rem;
+      padding: 1.5rem 1.6rem 1.35rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-      animation: modalPopIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      gap: 1.15rem;
+      animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      font-family: inherit;
     }
 
     @keyframes modalPopIn {
       from {
         opacity: 0;
-        transform: scale(0.94) translateY(12px);
+        transform: scale(0.96) translateY(8px);
       }
       to {
         opacity: 1;
@@ -177,257 +129,169 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
       }
     }
 
-    .top-accent-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #b91c1c 0%, #ea580c 35%, #059669 70%, #7c3aed 100%);
-    }
-
     /* Modal Header */
     .modal-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 1rem;
-    }
-
-    .header-brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      background: #fef2f2;
-      border: 1px solid #fee2e2;
-    }
-
-    .badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #b91c1c;
-      box-shadow: 0 0 8px rgba(185, 28, 28, 0.6);
-    }
-
-    .badge-text {
-      font-size: 10.5px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #991b1b;
-    }
-
-    .btn-close-modal {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-close-modal:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-
-    .btn-close-modal .material-symbols-outlined {
-      font-size: 18px;
     }
 
     .header-titles {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
     .modal-heading {
-      font-size: 1.55rem;
-      font-weight: 800;
+      font-size: 1.3rem;
+      font-weight: 600;
       color: #0f172a;
-      letter-spacing: -0.025em;
+      letter-spacing: -0.02em;
       margin: 0;
       line-height: 1.25;
     }
 
-    @media (min-width: 640px) {
-      .modal-heading {
-        font-size: 1.75rem;
-      }
-    }
-
     .modal-subheading {
-      font-size: 13.5px;
+      font-size: 12.5px;
       color: #64748b;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* Purpose Grid */
-    .purposes-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.85rem;
-    }
-
-    @media (min-width: 580px) {
-      .purposes-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .purpose-card {
-      background: #ffffff;
-      border: 2px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 1.15rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-    }
-
-    .purpose-card:hover {
-      border-color: var(--theme-color);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.08);
-    }
-
-    .purpose-card.selected {
-      border-color: var(--theme-color);
-      background: var(--theme-light-bg);
-      box-shadow: 0 10px 22px -4px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-top-row {
+    .btn-close-modal {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 400;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
     }
 
-    .icon-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+    .btn-close-modal:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    /* Simple List (No box, no grid) */
+    .purposes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .purpose-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      cursor: pointer;
+      background: transparent;
+      transition: background-color 0.15s ease;
+    }
+
+    .purpose-item:hover {
+      background: #f8fafc;
+    }
+
+    .purpose-item.selected {
+      background: var(--brand-green-subtle, #e5f7ec);
+    }
+
+    .radio-indicator {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: transform 0.2s ease;
+      margin-top: 2px;
+      transition: all 0.15s ease;
     }
 
-    .purpose-card:hover .icon-avatar {
-      transform: scale(1.08);
+    .purpose-item.selected .radio-indicator {
+      border-color: var(--brand-green, #5e8f72);
+      background: var(--brand-green, #5e8f72);
     }
 
-    .icon-avatar .material-symbols-outlined {
-      font-size: 24px;
+    .radio-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background 0.15s ease;
     }
 
-    .selection-indicator .check-icon {
-      font-size: 22px;
-      color: #cbd5e1;
-      transition: all 0.2s ease;
+    .purpose-item.selected .radio-dot {
+      background: #ffffff;
     }
 
-    .purpose-card.selected .selection-indicator .check-icon {
-      color: var(--theme-color);
-    }
-
-    .card-content {
+    .item-text {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-    }
-
-    .card-badge-row {
-      display: flex;
-    }
-
-    .option-badge {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #64748b;
-    }
-
-    .purpose-card.selected .option-badge {
-      color: var(--theme-color);
+      gap: 2px;
     }
 
     .purpose-title {
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-size: 0.92rem;
+      font-weight: 600;
       color: #0f172a;
       margin: 0;
       letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .purpose-item.selected .purpose-title {
+      color: var(--brand-green-dark, #2c4938);
     }
 
     .purpose-tagline {
       font-size: 12px;
       color: #64748b;
       margin: 0;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     /* Other Note Input */
     .other-input-block {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0.85rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      animation: fadeIn 0.2s ease-out;
+      animation: fadeIn 0.18s ease-out;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
+      from { opacity: 0; transform: translateY(-3px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    .other-label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #475569;
-    }
-
-    .other-label .material-symbols-outlined {
-      font-size: 16px;
-      color: #7c3aed;
     }
 
     .other-input-field {
       width: 100%;
-      background: #ffffff;
+      background: #f8fafc;
       border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 12.5px;
       color: #0f172a;
       outline: none;
       transition: all 0.15s ease;
+      font-family: inherit;
     }
 
     .other-input-field:focus {
-      border-color: #7c3aed;
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+      background: #ffffff;
+      border-color: var(--brand-green, #5e8f72);
+      box-shadow: 0 0 0 3px rgba(94, 143, 114, 0.15);
     }
 
     /* Modal Footer */
@@ -436,8 +300,9 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding-top: 0.5rem;
+      padding-top: 0.65rem;
       border-top: 1px solid #f1f5f9;
+      margin-top: 0.25rem;
     }
 
     .btn-skip {
@@ -447,87 +312,49 @@ import { VisitorPurposeService, VisitorPurposeKey, VisitorPurposeOption } from '
       font-weight: 600;
       color: #64748b;
       cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 8px;
-      transition: all 0.15s ease;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: color 0.15s ease;
     }
 
     .btn-skip:hover {
       color: #0f172a;
-      background: #f1f5f9;
     }
 
     .btn-continue {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: #b91c1c;
+      justify-content: center;
+      background: var(--brand-green, #5e8f72);
       color: #ffffff;
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 10px 20px;
-      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25);
+      transition: all 0.18s ease;
     }
 
     .btn-continue:hover:not(:disabled) {
-      background: #991b1b;
+      background: var(--brand-green-hover, #497259);
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(185, 28, 28, 0.35);
+      box-shadow: 0 4px 12px rgba(94, 143, 114, 0.28);
     }
 
     .btn-continue:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    .btn-continue .material-symbols-outlined {
-      font-size: 18px;
-      transition: transform 0.15s ease;
-    }
-
-    .btn-continue:hover:not(:disabled) .material-symbols-outlined {
-      transform: translateX(2px);
-    }
-
-    /* Bottom Trust Strip */
-    .bottom-trust-strip {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 11.5px;
-      color: #64748b;
-      padding-top: 0.25rem;
-    }
-
-    .trust-badge {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .trust-badge .material-symbols-outlined {
-      font-size: 14px;
-      color: #10b981;
-    }
-
-    .trust-dot {
-      color: #cbd5e1;
     }
 
     @media (max-width: 500px) {
       .intent-modal-container {
-        padding: 1.5rem 1.25rem 1.25rem;
-        border-radius: 20px;
+        padding: 1.25rem 1rem 1rem;
+        border-radius: 16px;
+        gap: 0.95rem;
       }
-      .bottom-trust-strip {
-        font-size: 10.5px;
-        flex-wrap: wrap;
+      .modal-heading {
+        font-size: 1.2rem;
       }
     }
   `]
@@ -563,15 +390,15 @@ export class VisitorIntentModalComponent {
     const key = this.selectedKey();
     switch (key) {
       case 'build_home':
-        return 'Explore Plots to Build a Home';
+        return 'Explore Plots';
       case 'investment':
-        return 'Explore High-Yield Investments';
+        return 'Explore Investments';
       case 'farm_land':
-        return 'Explore Farmland Enclaves';
+        return 'Explore Farmland';
       case 'other':
-        return 'Continue Exploring';
+        return 'Continue';
       default:
-        return 'Confirm & Explore';
+        return 'Continue';
     }
   }
 

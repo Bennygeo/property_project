@@ -22,16 +22,15 @@
       <div class="search-omnibox-row">
         <div class="search-omnibox">
           <span class="material-symbols-outlined omnibox-icon">search</span>
-          <input 
-            type="text" 
-            class="omnibox-input" 
-            [value]="searchQuery()"
-            (input)="onSearchInput($any($event.target).value)"
+          <input type="text" class="omnibox-input" [value]="searchQuery()"
+            (input)="onSearchInput($any($event.target).value)" autocomplete="off" autocorrect="off" autocapitalize="off"
+            spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
             placeholder="Search by locality (e.g. OMR, Whitefield, Powai), project, or title keyword...">
           @if (searchQuery()) {
-            <button type="button" class="omnibox-clear-btn" (click)="clearSearchQuery()" aria-label="Clear keyword search">
-              <span class="material-symbols-outlined">close</span>
-            </button>
+          <button type="button" class="omnibox-clear-btn" (click)="clearSearchQuery()"
+            aria-label="Clear keyword search">
+            <span class="material-symbols-outlined">close</span>
+          </button>
           }
         </div>
       </div>
@@ -40,50 +39,32 @@
       <div class="preset-pills-row">
         <span class="preset-label">Quick Class:</span>
         <div class="preset-pills-list">
-          <button 
-            type="button" 
-            class="preset-chip" 
+          <button type="button" class="preset-chip"
             [class.active]="selectedType() === 'all' && selectedBudget() === 'all' && !videoOnly() && !droneOnly()"
             (click)="selectAllAssets()">
             All Assets
           </button>
-          <button 
-            type="button" 
-            class="preset-chip" 
-            [class.active]="selectedType() === 'Apartments & Flats'"
+          <button type="button" class="preset-chip" [class.active]="selectedType() === 'Apartments & Flats'"
             (click)="setType('Apartments & Flats')">
             <span class="material-symbols-outlined">apartment</span>
             Apartments &amp; Flats
           </button>
-          <button 
-            type="button" 
-            class="preset-chip" 
-            [class.active]="selectedType() === 'Gated CMDA Plots'"
+          <button type="button" class="preset-chip" [class.active]="selectedType() === 'Gated CMDA Plots'"
             (click)="setType('Gated CMDA Plots')">
             <span class="material-symbols-outlined">terrain</span>
             Plots &amp; Land
           </button>
-          <button 
-            type="button" 
-            class="preset-chip" 
-            [class.active]="selectedType() === 'Independent Villas'"
+          <button type="button" class="preset-chip" [class.active]="selectedType() === 'Independent Villas'"
             (click)="setType('Independent Villas')">
             <span class="material-symbols-outlined">villa</span>
             Independent Villas
           </button>
-          <button 
-            type="button" 
-            class="preset-chip" 
-            [class.active]="selectedBudget() === 'under-50l'"
+          <button type="button" class="preset-chip" [class.active]="selectedBudget() === 'under-50l'"
             (click)="setBudget(selectedBudget() === 'under-50l' ? 'all' : 'under-50l')">
             <span class="material-symbols-outlined">payments</span>
             Under ₹50 Lakh
           </button>
-          <button 
-            type="button" 
-            class="preset-chip" 
-            [class.active]="videoOnly()"
-            (click)="toggleVideoOnly()">
+          <button type="button" class="preset-chip" [class.active]="videoOnly()" (click)="toggleVideoOnly()">
             <span class="material-symbols-outlined">smart_display</span>
             4K Video Tours
           </button>
@@ -98,22 +79,27 @@
     <aside class="search-sidebar">
       <div class="sidebar-card">
         <!-- Sidebar Header -->
-        <div class="sidebar-header">
+        <div class="sidebar-header" (click)="toggleMobileFilter()">
           <div class="sidebar-title-group">
             <span class="material-symbols-outlined sidebar-icon">tune</span>
             <h3 class="sidebar-title">Filters</h3>
             @if (activeFilterCount() > 0) {
-              <span class="active-badge">{{ activeFilterCount() }}</span>
+            <span class="active-badge">{{ activeFilterCount() }}</span>
             }
           </div>
-          @if (activeFilterCount() > 0) {
+          <div class="sidebar-header-actions" (click)="$event.stopPropagation()">
+            @if (activeFilterCount() > 0) {
             <button type="button" class="btn-reset-filters" (click)="resetAllFilters()">
               Clear All
             </button>
-          }
+            }
+            <button type="button" class="btn-toggle-mobile" (click)="toggleMobileFilter()" aria-label="Toggle filters">
+              <span class="material-symbols-outlined chevron-icon" [class.rotated]="isMobileFilterOpen()">expand_more</span>
+            </button>
+          </div>
         </div>
 
-        <div class="sidebar-scrollable">
+        <div class="sidebar-scrollable" [class.mobile-open]="isMobileFilterOpen()">
           <!-- 1. Metro Jurisdiction -->
           <div class="filter-group">
             <label class="filter-group-label">
@@ -122,14 +108,11 @@
             </label>
             <div class="chips-stack">
               @for (c of cities; track c.value) {
-                <button 
-                  type="button" 
-                  class="choice-chip"
-                  [class.selected]="selectedCity() === c.value"
-                  (click)="setCity(c.value)">
-                  <span class="material-symbols-outlined chip-icon">{{ c.icon }}</span>
-                  <span>{{ c.label }}</span>
-                </button>
+              <button type="button" class="choice-chip" [class.selected]="selectedCity() === c.value"
+                (click)="setCity(c.value)">
+                <span class="material-symbols-outlined chip-icon">{{ c.icon }}</span>
+                <span>{{ c.label }}</span>
+              </button>
               }
             </div>
           </div>
@@ -142,14 +125,11 @@
             </label>
             <div class="chips-stack">
               @for (t of propertyTypes; track t.value) {
-                <button 
-                  type="button" 
-                  class="choice-chip"
-                  [class.selected]="selectedType() === t.value"
-                  (click)="setType(t.value)">
-                  <span class="material-symbols-outlined chip-icon">{{ t.icon }}</span>
-                  <span>{{ t.label }}</span>
-                </button>
+              <button type="button" class="choice-chip" [class.selected]="selectedType() === t.value"
+                (click)="setType(t.value)">
+                <span class="material-symbols-outlined chip-icon">{{ t.icon }}</span>
+                <span>{{ t.label }}</span>
+              </button>
               }
             </div>
           </div>
@@ -162,13 +142,10 @@
             </label>
             <div class="budget-grid">
               @for (b of budgetOptions; track b.value) {
-                <button 
-                  type="button" 
-                  class="budget-pill"
-                  [class.selected]="selectedBudget() === b.value"
-                  (click)="setBudget(b.value)">
-                  {{ b.label }}
-                </button>
+              <button type="button" class="budget-pill" [class.selected]="selectedBudget() === b.value"
+                (click)="setBudget(b.value)">
+                {{ b.label }}
+              </button>
               }
             </div>
           </div>
@@ -181,13 +158,10 @@
             </label>
             <div class="bhk-grid">
               @for (bhk of bhkOptions; track bhk.value) {
-                <button 
-                  type="button" 
-                  class="bhk-pill"
-                  [class.selected]="selectedBhk() === bhk.value"
-                  (click)="setBhk(bhk.value)">
-                  {{ bhk.label }}
-                </button>
+              <button type="button" class="bhk-pill" [class.selected]="selectedBhk() === bhk.value"
+                (click)="setBhk(bhk.value)">
+                {{ bhk.label }}
+              </button>
               }
             </div>
           </div>
@@ -202,7 +176,7 @@
               <label class="toggle-item" (click)="toggleRera()">
                 <div class="custom-checkbox" [class.checked]="reraOnly()">
                   @if (reraOnly()) {
-                    <span class="material-symbols-outlined check-icon">check</span>
+                  <span class="material-symbols-outlined check-icon">check</span>
                   }
                 </div>
                 <div class="toggle-text">
@@ -214,7 +188,7 @@
               <label class="toggle-item" (click)="toggleCmda()">
                 <div class="custom-checkbox" [class.checked]="cmdaOnly()">
                   @if (cmdaOnly()) {
-                    <span class="material-symbols-outlined check-icon">check</span>
+                  <span class="material-symbols-outlined check-icon">check</span>
                   }
                 </div>
                 <div class="toggle-text">
@@ -223,15 +197,15 @@
                 </div>
               </label>
 
-              <label class="toggle-item" (click)="toggleZeroBrokerage()">
-                <div class="custom-checkbox" [class.checked]="zeroBrokerageOnly()">
-                  @if (zeroBrokerageOnly()) {
-                    <span class="material-symbols-outlined check-icon">check</span>
+              <label class="toggle-item" (click)="toggleDirectOwner()">
+                <div class="custom-checkbox" [class.checked]="directOwnerOnly()">
+                  @if (directOwnerOnly()) {
+                  <span class="material-symbols-outlined check-icon">check</span>
                   }
                 </div>
                 <div class="toggle-text">
-                  <span class="toggle-title">Zero Brokerage</span>
-                  <span class="toggle-sub">100% direct owner listings</span>
+                  <span class="toggle-title">Direct Owner</span>
+                  <span class="toggle-sub">Verified direct owner listings</span>
                 </div>
               </label>
             </div>
@@ -247,7 +221,7 @@
               <label class="toggle-item" (click)="toggleVideoOnly()">
                 <div class="custom-checkbox" [class.checked]="videoOnly()">
                   @if (videoOnly()) {
-                    <span class="material-symbols-outlined check-icon">check</span>
+                  <span class="material-symbols-outlined check-icon">check</span>
                   }
                 </div>
                 <div class="toggle-text">
@@ -259,7 +233,7 @@
               <label class="toggle-item" (click)="toggleDroneOnly()">
                 <div class="custom-checkbox" [class.checked]="droneOnly()">
                   @if (droneOnly()) {
-                    <span class="material-symbols-outlined check-icon">check</span>
+                  <span class="material-symbols-outlined check-icon">check</span>
                   }
                 </div>
                 <div class="toggle-text">
@@ -279,7 +253,7 @@
             <label class="toggle-item" (click)="toggleReadyToMove()">
               <div class="custom-checkbox" [class.checked]="readyToMoveOnly()">
                 @if (readyToMoveOnly()) {
-                  <span class="material-symbols-outlined check-icon">check</span>
+                <span class="material-symbols-outlined check-icon">check</span>
                 }
               </div>
               <div class="toggle-text">
@@ -289,6 +263,11 @@
             </label>
           </div>
         </div>
+      </div>
+
+      <!-- Left-side Ad Placement -->
+      <div class="sidebar-ad-wrapper" *ngIf="isAdVisible() && adPosition() === 'left'">
+        <ng-container *ngTemplateOutlet="sponsoredAdTemplate"></ng-container>
       </div>
     </aside>
 
@@ -306,58 +285,58 @@
           <!-- Active Filter Tags -->
           <div class="active-tags-row">
             @if (selectedCity() !== 'all') {
-              <div class="active-tag-pill">
-                <span>City: {{ selectedCity() | uppercase }}</span>
-                <button type="button" (click)="setCity('all')">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>City: {{ selectedCity() | uppercase }}</span>
+              <button type="button" (click)="setCity('all')">&times;</button>
+            </div>
             }
             @if (selectedType() !== 'all') {
-              <div class="active-tag-pill">
-                <span>Type: {{ selectedType() }}</span>
-                <button type="button" (click)="setType('all')">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>Type: {{ selectedType() }}</span>
+              <button type="button" (click)="setType('all')">&times;</button>
+            </div>
             }
             @if (selectedBudget() !== 'all') {
-              <div class="active-tag-pill">
-                <span>Budget: {{ selectedBudget() }}</span>
-                <button type="button" (click)="setBudget('all')">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>Budget: {{ selectedBudget() }}</span>
+              <button type="button" (click)="setBudget('all')">&times;</button>
+            </div>
             }
             @if (selectedBhk() !== 'all') {
-              <div class="active-tag-pill">
-                <span>{{ selectedBhk() === 'plot' ? 'Plots Only' : selectedBhk() + ' BHK' }}</span>
-                <button type="button" (click)="setBhk('all')">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>{{ selectedBhk() === 'plot' ? 'Plots Only' : selectedBhk() + ' BHK' }}</span>
+              <button type="button" (click)="setBhk('all')">&times;</button>
+            </div>
             }
             @if (videoOnly()) {
-              <div class="active-tag-pill">
-                <span>4K Video</span>
-                <button type="button" (click)="toggleVideoOnly()">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>4K Video</span>
+              <button type="button" (click)="toggleVideoOnly()">&times;</button>
+            </div>
             }
             @if (droneOnly()) {
-              <div class="active-tag-pill">
-                <span>Drone Survey</span>
-                <button type="button" (click)="toggleDroneOnly()">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>Drone Survey</span>
+              <button type="button" (click)="toggleDroneOnly()">&times;</button>
+            </div>
             }
             @if (reraOnly()) {
-              <div class="active-tag-pill">
-                <span>RERA</span>
-                <button type="button" (click)="toggleRera()">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>RERA</span>
+              <button type="button" (click)="toggleRera()">&times;</button>
+            </div>
             }
             @if (cmdaOnly()) {
-              <div class="active-tag-pill">
-                <span>CMDA/DTCP</span>
-                <button type="button" (click)="toggleCmda()">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>CMDA/DTCP</span>
+              <button type="button" (click)="toggleCmda()">&times;</button>
+            </div>
             }
             @if (readyToMoveOnly()) {
-              <div class="active-tag-pill">
-                <span>Ready to Move</span>
-                <button type="button" (click)="toggleReadyToMove()">&times;</button>
-              </div>
+            <div class="active-tag-pill">
+              <span>Ready to Move</span>
+              <button type="button" (click)="toggleReadyToMove()">&times;</button>
+            </div>
             }
           </div>
         </div>
@@ -368,11 +347,7 @@
           <div class="sort-selector-wrapper">
             <label class="sort-label" for="sort-dropdown">Sort by:</label>
             <div class="sort-select-box">
-              <select 
-                id="sort-dropdown"
-                class="sort-select" 
-                [ngModel]="sortBy()" 
-                (ngModelChange)="setSort($event)">
+              <select id="sort-dropdown" class="sort-select" [ngModel]="sortBy()" (ngModelChange)="setSort($event)">
                 <option value="featured">Featured / Curated</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
@@ -385,20 +360,12 @@
 
           <!-- View Mode Toggle -->
           <div class="view-mode-toggle" role="group" aria-label="View Mode">
-            <button 
-              type="button" 
-              class="btn-view-mode" 
-              [class.active]="viewMode() === 'grid'"
-              (click)="setViewMode('grid')"
-              title="Grid View">
+            <button type="button" class="btn-view-mode" [class.active]="viewMode() === 'grid'"
+              (click)="setViewMode('grid')" title="Grid View">
               <span class="material-symbols-outlined">grid_view</span>
             </button>
-            <button 
-              type="button" 
-              class="btn-view-mode" 
-              [class.active]="viewMode() === 'list'"
-              (click)="setViewMode('list')"
-              title="Compact List View">
+            <button type="button" class="btn-view-mode" [class.active]="viewMode() === 'list'"
+              (click)="setViewMode('list')" title="Compact List View">
               <span class="material-symbols-outlined">view_list</span>
             </button>
           </div>
@@ -407,176 +374,265 @@
 
       <!-- GUEST VIEW LIMIT ALERT IN SEARCH -->
       @if (authService.hasReachedGuestLimit()) {
-        <div class="search-guest-alert">
-          <div class="alert-left-content">
-            <div class="alert-icon-wrap">
-              <span class="material-symbols-outlined alert-lock-icon">lock</span>
-            </div>
-            <div class="alert-text-block">
-              <strong class="alert-bold">1 Free Guest Preview Used</strong>
-              <p class="alert-desc">You have explored 1 free property dossier. Please sign in to unlock all verified property blueprints, floor plans, and seller contacts.</p>
-            </div>
+      <div class="search-guest-alert">
+        <div class="alert-left-content">
+          <div class="alert-icon-wrap">
+            <span class="material-symbols-outlined alert-lock-icon">lock</span>
           </div>
-          <button type="button" class="btn-search-signin" (click)="authService.openOtpModal('guest_limit')">
-            <span class="material-symbols-outlined">login</span>
-            <span>Sign In to Unlock All</span>
-          </button>
+          <div class="alert-text-block">
+            <strong class="alert-bold">1 Free Guest Preview Used</strong>
+            <p class="alert-desc">You have explored 1 free property dossier. Please sign in to unlock all verified
+              property blueprints, floor plans, and seller contacts.</p>
+          </div>
         </div>
+        <button type="button" class="btn-search-signin" (click)="authService.openOtpModal('guest_limit')">
+          <span class="material-symbols-outlined">login</span>
+          <span>Sign In to Unlock All</span>
+        </button>
+      </div>
       }
 
       <!-- RESULTS CONTAINER -->
       @if (filteredProperties().length > 0) {
-        <!-- 1. GRID VIEW -->
-        @if (viewMode() === 'grid') {
-          <div class="results-grid">
-            @for (prop of filteredProperties(); track prop.id) {
-              <app-property-card [property]="prop" />
+      <!-- 1. GRID VIEW -->
+      @if (viewMode() === 'grid') {
+      <div class="results-grid">
+        @for (prop of filteredProperties(); track prop.id) {
+        <app-property-card [property]="prop" />
+        }
+      </div>
+      }
+
+      <!-- 2. COMPACT LIST DOSSIER VIEW -->
+      @if (viewMode() === 'list') {
+      <div class="results-list">
+        @for (prop of filteredProperties(); track prop.id) {
+        <article class="list-dossier-card">
+          <!-- Thumbnail with Badges (Links to Details) -->
+          <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
+            <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
+            <span class="list-photo-count">
+              <span class="material-symbols-outlined">photo_camera</span>
+              {{ prop.freePhotos?.length || 0 }} Photos
+            </span>
+            @if (prop.isMediaUnlocked) {
+            <span class="list-unlocked-badge">
+              <span class="material-symbols-outlined">smart_display</span>
+              4K Unlocked
+            </span>
             }
           </div>
-        }
 
-        <!-- 2. COMPACT LIST DOSSIER VIEW -->
-        @if (viewMode() === 'list') {
-          <div class="results-list">
-            @for (prop of filteredProperties(); track prop.id) {
-              <article class="list-dossier-card">
-                <!-- Thumbnail with Badges (Links to Details) -->
-                <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
-                  <img 
-                    [src]="prop.imageUrl" 
-                    [alt]="prop.title" 
-                    (error)="onImgError($event)"
-                    class="list-thumb-img">
-                  <span class="list-photo-count">
-                    <span class="material-symbols-outlined">photo_camera</span>
-                    {{ prop.freePhotos?.length || 0 }} Photos
-                  </span>
-                  @if (prop.isMediaUnlocked) {
-                    <span class="list-unlocked-badge">
-                      <span class="material-symbols-outlined">smart_display</span>
-                      4K Unlocked
-                    </span>
-                  }
-                </div>
+          <!-- Info Section -->
+          <div class="list-info">
+            <div class="list-meta-top">
+              <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
+              <span class="badge-tag-sm">{{ prop.badges?.specialTag || prop.badges?.brokerage || 'Verified Deed'
+                }}</span>
+              <span class="badge-pts-sm">{{ prop.mediaPoints || 2 }} Pts 4K</span>
+              @if (!authService.canViewProperty(prop.id)) {
+              <span class="badge-signin-lock">
+                🔒 Sign In to View
+              </span>
+              }
+            </div>
 
-                <!-- Info Section -->
-                <div class="list-info">
-                  <div class="list-meta-top">
-                    <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
-                    <span class="badge-tag-sm">{{ prop.badges?.specialTag || prop.badges?.brokerage || '0% Brokerage' }}</span>
-                    <span class="badge-pts-sm">{{ prop.mediaPoints || 2 }} Pts 4K</span>
-                    @if (!authService.canViewProperty(prop.id)) {
-                      <span class="badge-tag-sm" style="background: linear-gradient(135deg, #78350f, #451a03); color: #fef3c7; border: 1px solid #f59e0b; font-weight: 800;">
-                        🔒 Sign In to View
-                      </span>
-                    }
-                  </div>
+            <h3 class="list-title">
+              <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
+            </h3>
 
-                  <h3 class="list-title">
-                    <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
-                  </h3>
+            <div class="list-locality">
+              <span class="material-symbols-outlined loc-icon">location_on</span>
+              <span>{{ prop.locality }}, {{ prop.city }}</span>
+            </div>
 
-                  <div class="list-locality">
-                    <span class="material-symbols-outlined text-red">location_on</span>
-                    <span>{{ prop.locality }}, {{ prop.city }}</span>
-                  </div>
-
-                  <div class="list-highlights-row">
-                    <span class="dimension-tag">{{ prop.sqft }}</span>
-                    <span class="dot-sep">•</span>
-                    <span>{{ prop.facingOrView }}</span>
-                    <span class="dot-sep">•</span>
-                    @for (hl of prop.highlights; track $index; let last = $last) {
-                      <span class="hl-item">{{ hl }}</span>
-                      @if (!last) { <span class="dot-sep">•</span> }
-                    }
-                  </div>
-                </div>
-
-                <!-- Price & Action Section -->
-                <div class="list-price-action">
-                  <div class="list-price-block">
-                    <div class="list-main-price">{{ prop.price }}</div>
-                    <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
-                  </div>
-
-                  <div class="list-actions-stack">
-                    <button 
-                      type="button" 
-                      class="btn-list-media" 
-                      [class.unlocked]="prop.isMediaUnlocked"
-                      (click)="propertyService.openMediaModal(prop, prop.isMediaUnlocked ? 'premium' : 'free')">
-                      <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'photo_library' }}</span>
-                      <span>{{ prop.isMediaUnlocked ? 'Watch 4K Tour' : 'Photos & 4K' }}</span>
-                    </button>
-
-                    <div class="list-secondary-actions">
-                      <a 
-                        class="btn-list-wa" 
-                        [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" 
-                        target="_blank" 
-                        rel="noopener">
-                        <span class="material-symbols-outlined">chat</span>
-                        <span>Concierge</span>
-                      </a>
-
-                      <button 
-                        type="button" 
-                        class="btn-list-shortlist"
-                        [class.shortlisted]="prop.isShortlisted"
-                        (click)="propertyService.toggleShortlist(prop.id)"
-                        [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
-                        <span class="material-symbols-outlined">
-                          {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            }
-          </div>
-        }
-      } @else {
-        <!-- 3. EMPTY STATE -->
-        <div class="empty-state-card">
-          <div class="empty-icon-circle">
-            <span class="material-symbols-outlined">search_off</span>
-          </div>
-          <h2 class="empty-title">No Matching Cadastral Records Found</h2>
-          <p class="empty-desc">
-            We couldn't find any verified deeds matching your current filter criteria. Try adjusting your budget, selecting all metros, or resetting active filters.
-          </p>
-
-          <div class="empty-actions">
-            <button type="button" class="btn-empty-reset" (click)="resetAllFilters()">
-              <span class="material-symbols-outlined">restart_alt</span>
-              <span>Reset All Filters</span>
-            </button>
-          </div>
-
-          <!-- Suggested Quick Searches -->
-          <div class="empty-suggestions">
-            <span class="suggestions-label">Try searching for:</span>
-            <div class="suggestion-chips">
-              <button type="button" class="sugg-chip" (click)="setType('Gated CMDA Plots'); setCity('chennai')">
-                CMDA Plots in Chennai
-              </button>
-              <button type="button" class="sugg-chip" (click)="setType('Apartments & Flats'); setCity('bengaluru')">
-                Flats in Bengaluru
-              </button>
-              <button type="button" class="sugg-chip" (click)="setType('Independent Villas'); setCity('hyderabad')">
-                Villas in Hyderabad
-              </button>
-              <button type="button" class="sugg-chip" (click)="setBudget('under-50l')">
-                Properties under ₹50 Lakh
-              </button>
+            <div class="list-highlights-row">
+              <span class="dimension-tag">{{ prop.sqft }}</span>
+              <span class="dot-sep">•</span>
+              <span>{{ prop.facingOrView }}</span>
+              <span class="dot-sep">•</span>
+              @for (hl of prop.highlights; track $index; let last = $last) {
+              <span class="hl-item">{{ hl }}</span>
+              @if (!last) { <span class="dot-sep">•</span> }
+              }
             </div>
           </div>
+
+          <!-- Price & Action Section -->
+          <div class="list-price-action">
+            <div class="list-price-block">
+              <div class="list-main-price">{{ prop.price }}</div>
+              <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+            </div>
+
+            <div class="list-actions-stack">
+              <button type="button" class="btn-list-media" [class.unlocked]="prop.isMediaUnlocked"
+                (click)="propertyService.openMediaModal(prop, prop.isMediaUnlocked ? 'premium' : 'free')">
+                <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'photo_library'
+                  }}</span>
+                <span>{{ prop.isMediaUnlocked ? 'Watch 4K Tour' : 'Photos & 4K' }}</span>
+              </button>
+
+              <div class="list-secondary-actions">
+                <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
+                  rel="noopener">
+                  <span class="material-symbols-outlined">chat</span>
+                  <span>Concierge</span>
+                </a>
+
+                <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
+                  (click)="propertyService.toggleShortlist(prop.id)"
+                  [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                  <span class="material-symbols-outlined">
+                    {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+      }
+      } @else {
+      <!-- 3. EMPTY STATE -->
+      <div class="empty-state-card">
+        <div class="empty-icon-circle">
+          <span class="material-symbols-outlined">search_off</span>
         </div>
+        <h2 class="empty-title">No Matching Cadastral Records Found</h2>
+        <p class="empty-desc">
+          We couldn't find any verified deeds matching your current filter criteria. Try adjusting your budget,
+          selecting all metros, or resetting active filters.
+        </p>
+
+        <div class="empty-actions">
+          <button type="button" class="btn-empty-reset" (click)="resetAllFilters()">
+            <span class="material-symbols-outlined">restart_alt</span>
+            <span>Reset All Filters</span>
+          </button>
+        </div>
+
+        <!-- Suggested Quick Searches -->
+        <div class="empty-suggestions">
+          <span class="suggestions-label">Try searching for:</span>
+          <div class="suggestion-chips">
+            <button type="button" class="sugg-chip" (click)="setType('Gated CMDA Plots'); setCity('chennai')">
+              CMDA Plots in Chennai
+            </button>
+            <button type="button" class="sugg-chip" (click)="setType('Apartments & Flats'); setCity('bengaluru')">
+              Flats in Bengaluru
+            </button>
+            <button type="button" class="sugg-chip" (click)="setType('Independent Villas'); setCity('hyderabad')">
+              Villas in Hyderabad
+            </button>
+            <button type="button" class="sugg-chip" (click)="setBudget('under-50l')">
+              Properties under ₹50 Lakh
+            </button>
+          </div>
+        </div>
+      </div>
       }
     </section>
+
+    <!-- RIGHT SIDE: Sponsored Ad Rail -->
+    <aside class="search-ad-sidebar" *ngIf="isAdVisible() && adPosition() === 'right'">
+      <ng-container *ngTemplateOutlet="sponsoredAdTemplate"></ng-container>
+    </aside>
   </main>
+
+  <!-- SPONSORED AD REUSABLE TEMPLATE (Supports Left or Right Side Display) -->
+  <ng-template #sponsoredAdTemplate>
+    <div class="search-ad-container" *ngIf="isAdVisible()">
+      <!-- SPONSORED PROJECT SHOWCASE -->
+      <div class="ad-card-sponsored">
+        <div class="ad-card-header">
+          <div class="ad-badge-group">
+            <span class="ad-tag">SPONSORED</span>
+            <span class="ad-label">Verified Launch</span>
+          </div>
+          <div class="ad-header-actions">
+            <button type="button" class="btn-ad-icon" (click)="toggleAdPosition()" [title]="adPosition() === 'right' ? 'Move ad to left sidebar' : 'Move ad to right side'">
+              <span class="material-symbols-outlined">swap_horiz</span>
+            </button>
+            <button type="button" class="btn-ad-icon" (click)="dismissAd()" title="Hide advertisement">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner Media with Overlay -->
+        <div class="ad-media-frame" (click)="openSponsoredProject()">
+          <img src="plot-banner.jpg" alt="Greenfield CMDA Approved Layout" class="ad-media-img" loading="lazy" decoding="async">
+          <div class="ad-overlay-badge">
+            <span class="material-symbols-outlined">verified</span>
+            <span>CMDA &amp; RERA Sanctioned</span>
+          </div>
+          <div class="ad-overlay-tag">OMR Corridor</div>
+        </div>
+
+        <!-- Ad Body Content -->
+        <div class="ad-content">
+          <div class="ad-pricing-row">
+            <span class="ad-price">₹ 38.50 L <small>onwards</small></span>
+            <span class="ad-rate">₹ 3,200/sq.ft</span>
+          </div>
+
+          <h4 class="ad-title" (click)="openSponsoredProject()">
+            Greenfield CMDA Signature Enclave
+          </h4>
+          <p class="ad-locality">
+            <span class="material-symbols-outlined loc-icon">location_on</span>
+            <span>Kelambakkam – OMR IT Expressway, Chennai</span>
+          </p>
+
+          <div class="ad-usps-list">
+            <div class="ad-usp-item">
+              <span class="material-symbols-outlined usp-icon">task_alt</span>
+              <span>Immediate SRO Computerized Patta</span>
+            </div>
+            <div class="ad-usp-item">
+              <span class="material-symbols-outlined usp-icon">task_alt</span>
+              <span>40-ft Wide Bitumen Arterial Roads</span>
+            </div>
+            <div class="ad-usp-item">
+              <span class="material-symbols-outlined usp-icon">task_alt</span>
+              <span>Potable Sweet Ground Water at 22-ft</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="ad-actions-stack">
+            <button type="button" class="btn-ad-primary" (click)="openSponsoredProject()">
+              <span class="material-symbols-outlined">smart_display</span>
+              <span>Explore 4K Video Tour</span>
+            </button>
+
+            <a class="btn-ad-whatsapp" href="https://wa.me/919444100000?text=Hi%2C%20I%20am%20interested%20in%20the%20sponsored%20Greenfield%20CMDA%20Signature%20Enclave%20on%20OMR." target="_blank" rel="noopener">
+              <span class="material-symbols-outlined">chat</span>
+              <span>Chat with SRO Concierge</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECONDARY SELLER ADVERTISEMENT (Sell with 0% Commission) -->
+      <div class="ad-card-seller">
+        <div class="seller-ad-icon-wrap">
+          <span class="material-symbols-outlined">add_home_work</span>
+        </div>
+        <div class="seller-ad-text">
+          <span class="seller-ad-badge">DIRECT REGISTRY</span>
+          <h5 class="seller-ad-title">Sell Your Land or Property</h5>
+          <p class="seller-ad-desc">List with 0% brokerage and get a free 4K cadastral drone scan.</p>
+        </div>
+        <a routerLink="/post-property" class="btn-seller-ad">
+          <span>Post Property Free</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </ng-template>
 
   <!-- Comprehensive Footer -->
   <app-footer />
@@ -585,4 +641,5 @@
   <app-property-media-modal />
   <app-topup-dialog />
   <app-toast />
+  <app-ai-chat-modal />
 </div>

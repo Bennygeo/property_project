@@ -27,7 +27,7 @@ $propertyType = $_GET['propertyType'] ?? null;
 $listingMode  = $_GET['mode'] ?? null;
 $searchQuery  = $_GET['q'] ?? null;
 $page         = max(1, (int)($_GET['page'] ?? 1));
-$limit        = max(1, min(50, (int)($_GET['limit'] ?? 12)));
+$limit        = max(1, min(100, (int)($_GET['limit'] ?? 100)));
 $offset       = ($page - 1) * $limit;
 
 // Build Dynamic SQL Query with Prepared Statements
@@ -128,6 +128,23 @@ foreach ($rows as $row) {
         $freePhotos = [$row['imageUrl']];
     }
 
+    // Fetch premium media
+    $premStmt = $db->prepare("SELECT id, media_type, title, url, thumbnail_url, duration, tag FROM property_media WHERE property_id = ? AND media_type != 'free_photo' ORDER BY sort_order ASC");
+    $premStmt->execute([$row['id']]);
+    $premRows = $premStmt->fetchAll();
+    $premiumMedia = [];
+    foreach ($premRows as $pm) {
+        $premiumMedia[] = [
+            'id'           => (string)$pm['id'],
+            'type'         => $pm['media_type'] === 'drone_survey' ? 'drone' : 'video',
+            'title'        => $pm['title'],
+            'url'          => $pm['url'],
+            'thumbnailUrl' => $pm['thumbnail_url'] ?? $row['imageUrl'],
+            'duration'     => $pm['duration'] ?? '02:00 mins',
+            'tag'          => $pm['tag'] ?? 'Ultra-HD'
+        ];
+    }
+
     $properties[] = [
         'id'           => $row['id'],
         'title'        => $row['title'],
@@ -150,6 +167,7 @@ foreach ($rows as $row) {
         'highlights'      => $highlights,
         'mediaPoints'     => (int)$row['mediaPoints'],
         'freePhotos'      => $freePhotos,
+        'premiumMedia'    => $premiumMedia,
         'whatsappUrl'     => $row['whatsappUrl'],
         'possessionDate'  => $row['possessionDate'] ?? null,
         'projectStatus'   => $row['projectStatus'] ?? null,

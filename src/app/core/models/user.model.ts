@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
+  gender?: 'male' | 'female' | 'other';
   role: UserRole;
   pointsBalance: number;
   createdAt: string;

@@ -1,286 +1,311 @@
-<div class="plotex-wrapper">
+<div class="samooha-app-wrapper" [class.fullscreen-active]="isFullscreen()">
 
-  <!-- TOP HEADER / BRANDING & CONTROLS -->
-  <div class="plotex-topbar">
-    <div class="topbar-left">
-      <div class="brand-badge">
-        <span class="live-dot"></span>
-        <span class="badge-text">Plotex 3D WebGL Engine</span>
+  <!-- TOP APP HEADER -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-pin-icon" title="FINDAPLOT"></div>
+      <div class="brand-text">
+        <span class="brand-primary">FINDAPLOT</span>
+        <span class="brand-sep">|</span>
+        <span class="brand-project">Samooha Master Community</span>
       </div>
-      <h3 class="plotex-title">{{ propertyTitle }} — 3D Interactive Masterplan</h3>
-      <p class="plotex-sub">Full 360° interactive 3D site viewer • Powered by Three.js WebGL</p>
     </div>
 
-    <!-- Quick Action / View Controls -->
-    <div class="topbar-actions">
-      <!-- Camera Presets -->
-      <div class="camera-pill-group">
-        <button 
-          type="button" 
-          class="cam-btn" 
-          [class.active]="currentCameraView() === 'drone'"
-          (click)="setCameraPreset('drone')"
-          title="3D Drone Isometric View">
-          <span class="material-symbols-outlined">flight</span>
-          <span>Drone</span>
-        </button>
-        <button 
-          type="button" 
-          class="cam-btn" 
-          [class.active]="currentCameraView() === 'top'"
-          (click)="setCameraPreset('top')"
-          title="2D Top Surveyor Plan View">
-          <span class="material-symbols-outlined">crop_free</span>
-          <span>Top Plan</span>
-        </button>
-        <button 
-          type="button" 
-          class="cam-btn" 
-          [class.active]="currentCameraView() === 'eye'"
-          (click)="setCameraPreset('eye')"
-          title="Eye-Level Street View">
-          <span class="material-symbols-outlined">directions_walk</span>
-          <span>Street</span>
-        </button>
+    <!-- Center Phase Selector & Search -->
+    <div class="header-center">
+      <!-- Search Input -->
+      <div class="plot-search-bar">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input 
+          type="text" 
+          placeholder="Search Plot No. (e.g. 14, 124, 246)" 
+          [value]="searchQuery()" 
+          (input)="onSearchInput($event)"
+          (keydown.enter)="searchPlot()" />
+        <button type="button" class="btn-search-go" (click)="searchPlot()">Go</button>
       </div>
 
-      <!-- Tour / Auto-Rotate Toggle -->
+      <!-- Phase Filter Pills -->
+      <div class="phase-pills-group">
+        <button 
+          type="button" 
+          class="phase-btn" 
+          [class.active]="activePhase() === 'all'" 
+          (click)="setPhase('all')">
+          All Township
+        </button>
+        <button 
+          type="button" 
+          class="phase-btn phase-1-btn" 
+          [class.active]="activePhase() === 'Phase 1'" 
+          (click)="setPhase('Phase 1')">
+          Phase 1 (North-East)
+        </button>
+        <button 
+          type="button" 
+          class="phase-btn phase-2-btn" 
+          [class.active]="activePhase() === 'Phase 2'" 
+          (click)="setPhase('Phase 2')">
+          Phase 2 (South-West)
+        </button>
+      </div>
+    </div>
+
+    <!-- Header Right Controls -->
+    <div class="header-right">
+      <!-- Unit Toggle -->
       <button 
         type="button" 
-        class="tour-btn" 
+        class="unit-toggle-pill" 
+        (click)="toggleUnit()" 
+        title="Toggle between Sq.Ft and Yards">
+        <span class="unit-opt" [class.active]="unitMode() === 'sqft'">SQ.FT</span>
+        <span class="unit-opt" [class.active]="unitMode() === 'yds'">YDS</span>
+      </button>
+
+      <!-- 360° Cinema Auto-Tour Toggle -->
+      <button 
+        type="button" 
+        class="tour-pill-btn" 
         [class.active]="isAutoRotating()" 
         (click)="toggleAutoRotate()"
         title="Toggle 360° Cinema Tour">
         <span class="material-symbols-outlined">{{ isAutoRotating() ? 'pause_circle' : 'play_circle' }}</span>
-        <span>{{ isAutoRotating() ? 'Stop Tour' : '360° Tour' }}</span>
+        <span>{{ isAutoRotating() ? 'Pause Tour' : '360° Tour' }}</span>
       </button>
 
-      <!-- Unit Switcher -->
-      <div class="unit-group">
+      <!-- Fullscreen Toggle -->
+      <button type="button" class="icon-round-btn expand-btn" (click)="toggleFullscreen()" [title]="isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen View'">
+        <span class="material-symbols-outlined">{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN 3D MAP VIEWPORT -->
+  <div class="map-viewport-container">
+
+    <!-- WebGL Three.js Canvas Container -->
+    <div class="webgl-stage" #webglContainer></div>
+
+    <!-- OVERLAY: Top-Left Compass & Status Legend -->
+    <div class="overlay-top-left">
+      <!-- Compass Rose -->
+      <div class="compass-widget" (click)="resetNorth()" title="Click to Align True North">
+        <div class="compass-dial" [style.transform]="'rotate(' + compassRotation() + 'deg)'">
+          <span class="compass-pt pt-n">N</span>
+          <span class="compass-pt pt-e">E</span>
+          <span class="compass-pt pt-s">S</span>
+          <span class="compass-pt pt-w">W</span>
+          <div class="compass-needle"></div>
+        </div>
+      </div>
+
+      <!-- Status Legend Filter Pills -->
+      <div class="status-legend-pill">
         <button 
           type="button" 
-          class="unit-btn" 
-          [class.active]="unitMode() === 'yds'"
-          (click)="unitMode.set('yds')">
-          YDS
+          class="legend-item" 
+          [class.active]="activeStatusFilter() === 'all'" 
+          (click)="setStatusFilter('all')">
+          <span class="legend-label">All ({{ plots().length }})</span>
         </button>
         <button 
           type="button" 
-          class="unit-btn" 
-          [class.active]="unitMode() === 'sqft'"
-          (click)="unitMode.set('sqft')">
-          SQFT
+          class="legend-item" 
+          [class.active]="activeStatusFilter() === 'available'" 
+          (click)="setStatusFilter('available')">
+          <span class="legend-dot dot-available"></span>
+          <span class="legend-label">Available ({{ availableCount() }})</span>
+        </button>
+        <button 
+          type="button" 
+          class="legend-item" 
+          [class.active]="activeStatusFilter() === 'reserved'" 
+          (click)="setStatusFilter('reserved')">
+          <span class="legend-dot dot-booked"></span>
+          <span class="legend-label">Booked ({{ bookedCount() }})</span>
+        </button>
+        <button 
+          type="button" 
+          class="legend-item" 
+          [class.active]="activeStatusFilter() === 'sold'" 
+          (click)="setStatusFilter('sold')">
+          <span class="legend-dot dot-sold"></span>
+          <span class="legend-label">Sold ({{ soldCount() }})</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- OVERLAY: Top-Right 2D/3D Mode & Tool Controls -->
+    <div class="overlay-top-right">
+      <!-- 2D / 3D Segmented Toggle -->
+      <div class="mode-toggle-pill">
+        <button 
+          type="button" 
+          class="mode-btn" 
+          [class.active]="is2DMode()"
+          (click)="toggle2DMode()">
+          2D
+        </button>
+        <button 
+          type="button" 
+          class="mode-btn" 
+          [class.active]="!is2DMode()"
+          (click)="toggle2DMode()">
+          3D
         </button>
       </div>
 
-      <!-- Reset -->
-      <button 
-        type="button" 
-        class="icon-action-btn" 
-        (click)="resetCamera()" 
-        title="Reset Camera Angle">
-        <span class="material-symbols-outlined">restart_alt</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- MAIN 3D WEBGL CANVAS VIEWPORT -->
-  <div class="webgl-viewport-container">
-    <!-- The WebGL Canvas Element Mount Point -->
-    <div #webglContainer class="webgl-canvas-box"></div>
-
-    <!-- REAL-TIME 3D DIRECTION NEEDLE COMPASS (MATCHING ATTACHED IMAGE) -->
-    <div 
-      class="compass-control-widget" 
-      (click)="resetNorth()" 
-      title="Compass: Points to True North • Click to Align Camera to North">
-      <div class="compass-dial" [style.transform]="'rotate(' + compassAngle() + 'deg)'">
-        <svg viewBox="0 0 100 100" width="78" height="78" class="compass-svg">
-          <!-- Drop Shadow Filter -->
-          <defs>
-            <filter id="compassDropShadow" x="-15%" y="-15%" width="130%" height="130%">
-              <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.32"/>
-            </filter>
-          </defs>
-
-          <!-- Outer Circular White Disc Base -->
-          <circle cx="50" cy="50" r="45" fill="#fcfdfe" stroke="#e2e8f0" stroke-width="2" filter="url(#compassDropShadow)"/>
-          <circle cx="50" cy="50" r="42.5" fill="none" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="2,2"/>
-
-          <!-- Secondary Diagonal Points (NE, SE, SW, NW) -->
-          <!-- NE -->
-          <polygon points="50,50 47,33 50,26 50,50" fill="#cbd5e1" transform="rotate(45 50 50)"/>
-          <polygon points="50,50 53,33 50,26 50,50" fill="#94a3b8" transform="rotate(45 50 50)"/>
-          <!-- SE -->
-          <polygon points="50,50 47,33 50,26 50,50" fill="#cbd5e1" transform="rotate(135 50 50)"/>
-          <polygon points="50,50 53,33 50,26 50,50" fill="#94a3b8" transform="rotate(135 50 50)"/>
-          <!-- SW -->
-          <polygon points="50,50 47,33 50,26 50,50" fill="#cbd5e1" transform="rotate(225 50 50)"/>
-          <polygon points="50,50 53,33 50,26 50,50" fill="#94a3b8" transform="rotate(225 50 50)"/>
-          <!-- NW -->
-          <polygon points="50,50 47,33 50,26 50,50" fill="#cbd5e1" transform="rotate(315 50 50)"/>
-          <polygon points="50,50 53,33 50,26 50,50" fill="#94a3b8" transform="rotate(315 50 50)"/>
-
-          <!-- Primary Cardinal Pointers (East, South, West in 3D Faceted Silver/Metallic) -->
-          <!-- EAST POINT -->
-          <polygon points="50,50 68,46 76,50 50,50" fill="#e2e8f0"/>
-          <polygon points="50,50 68,54 76,50 50,50" fill="#64748b"/>
-
-          <!-- SOUTH POINT -->
-          <polygon points="50,50 46,68 50,76 50,50" fill="#cbd5e1"/>
-          <polygon points="50,50 54,68 50,76 50,50" fill="#475569"/>
-
-          <!-- WEST POINT -->
-          <polygon points="50,50 32,46 24,50 50,50" fill="#e2e8f0"/>
-          <polygon points="50,50 32,54 24,50 50,50" fill="#64748b"/>
-
-          <!-- NORTH POINTER: 3D FACETED VIBRANT RED NEEDLE (Matches User's Attached Image!) -->
-          <!-- Left Facet: Bright Red -->
-          <polygon points="50,50 44,28 50,17 50,50" fill="#ef4444"/>
-          <!-- Right Facet: Deep Shaded Red -->
-          <polygon points="50,50 56,28 50,17 50,50" fill="#b91c1c"/>
-
-          <!-- Cardinal Direction Text Labels -->
-          <!-- N in bold red with crisp white outline matching user attached image -->
-          <text x="50" y="9.5" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="900" fill="#dc2626" stroke="#ffffff" stroke-width="0.9" paint-order="stroke fill" font-family="'Inter', sans-serif">N</text>
-          <!-- E in dark slate rotated outward -->
-          <text x="90.5" y="50" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="#334155" transform="rotate(90 90.5 50)" font-family="'Inter', sans-serif">E</text>
-          <!-- S in dark slate rotated outward -->
-          <text x="50" y="90.5" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="#334155" transform="rotate(180 50 90.5)" font-family="'Inter', sans-serif">S</text>
-          <!-- W in dark slate rotated outward -->
-          <text x="9.5" y="50" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="#334155" transform="rotate(270 9.5 50)" font-family="'Inter', sans-serif">W</text>
-
-          <!-- Center Pivot Hub Pin -->
-          <circle cx="50" cy="50" r="4.2" fill="#64748b" stroke="#f8fafc" stroke-width="1.8"/>
-        </svg>
+      <!-- Vertical Action Stack -->
+      <div class="vertical-tools-pill">
+        <button type="button" class="tool-btn" (click)="recenter()" title="Reset / Recenter View">
+          <span class="material-symbols-outlined">filter_center_focus</span>
+        </button>
+        <button type="button" class="tool-btn" (click)="zoomIn()" title="Zoom In (+)">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+        <button type="button" class="tool-btn" (click)="zoomOut()" title="Zoom Out (-)">
+          <span class="material-symbols-outlined">remove</span>
+        </button>
+        <button type="button" class="tool-btn" (click)="resetNorth()" title="Align to North">
+          <span class="material-symbols-outlined">explore</span>
+        </button>
+        <button type="button" class="tool-btn" (click)="toggleAutoRotate()" [title]="isAutoRotating() ? 'Pause Rotation' : 'Auto Rotate'">
+          <span class="material-symbols-outlined">{{ isAutoRotating() ? 'motion_photos_paused' : 'autorenew' }}</span>
+        </button>
       </div>
     </div>
 
-    <!-- FLOATING HUD PLOT DETAIL CARD (PLOTEX STYLE) -->
-    @if (selectedPlot(); as plot) {
-      <div class="plotex-hud-card animate-hud-pop">
-        <div class="hud-header">
-          <div class="hud-title-col">
-            <span class="hud-eyebrow">SELECTED PARCEL</span>
-            <h4 class="hud-plot-no">Plot No. {{ plot.plotNo }}</h4>
-            <span class="hud-facing">{{ plot.facing }}</span>
-          </div>
-          <div class="hud-status-col">
-            <span class="hud-badge" [class.hud-badge-avail]="plot.status === 'available'" [class.hud-badge-sold]="plot.status === 'sold'">
-              <span class="status-pulse-dot"></span>
-              {{ plot.status === 'available' ? 'AVAILABLE' : 'SOLD OUT' }}
-            </span>
-            <button type="button" class="btn-close-hud" (click)="closeDetails()" aria-label="Close plot info">
-              <span class="material-symbols-outlined">close</span>
-            </button>
-          </div>
+    <!-- DYNAMIC 3D PIN BADGE OVER SELECTED PLOT -->
+    @if (isPinVisible() && selectedPlot(); as plot) {
+      <div 
+        class="floating-3d-pin-badge"
+        [style.left.px]="selectedPinScreenX()"
+        [style.top.px]="selectedPinScreenY()">
+        <div class="pin-badge-bubble">
+          <span class="pin-badge-num">{{ plot.plotNo }}</span>
+          <span class="pin-badge-status" [class]="plot.status">{{ plot.status }}</span>
         </div>
-
-        <div class="hud-metrics-grid">
-          <div class="metric-box highlight-box">
-            <span class="m-label">Super Built-up Area</span>
-            <span class="m-val">
-              @if (unitMode() === 'yds') {
-                {{ plot.superBuiltUpYds }} <small>YDS</small>
-              } @else {
-                {{ plot.superBuiltUpSqft | number:'1.0-0' }} <small>SQ.FT</small>
-              }
-            </span>
-          </div>
-
-          <div class="metric-box">
-            <span class="m-label">Net Plot Area</span>
-            <span class="m-val">
-              @if (unitMode() === 'yds') {
-                {{ plot.netPlotAreaYds }} <small>YDS</small>
-              } @else {
-                {{ (plot.netPlotAreaYds * 9) | number:'1.0-0' }} <small>SQ.FT</small>
-              }
-            </span>
-          </div>
-
-          <div class="metric-box">
-            <span class="m-label">Dimensions (W × L)</span>
-            <span class="m-val sm-val">
-              {{ plot.widthMeters }} m × {{ plot.lengthMeters }} m
-              <span class="m-sub">({{ plot.widthFeet }}′ × {{ plot.lengthFeet }}′)</span>
-            </span>
-          </div>
-
-          <div class="metric-box">
-            <span class="m-label">Estimated Price</span>
-            <span class="m-val price-val">{{ plot.formattedPrice }}</span>
-          </div>
-        </div>
-
-        <div class="hud-actions-row">
-          @if (plot.status === 'available') {
-            <a 
-              [href]="getWhatsAppLink(plot)" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              class="hud-btn-whatsapp">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.82 2.41h-.01c-1.42 0-2.82-.37-4.06-1.08l-.29-.17-3.02.79.81-2.94-.19-.3a8.217 8.217 0 01-1.26-4.35c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.65.81-.8 1-.15.19-.29.21-.54.08-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.32-.23.25-.88.86-.88 2.1s.9 2.44 1.02 2.6c.13.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.22-.17-.47-.29z"/>
-              </svg>
-              <span>WhatsApp Inquiry</span>
-            </a>
-          } @else {
-            <div class="hud-sold-alert">
-              <span class="material-symbols-outlined">lock</span>
-              <span>This plot is already booked. Inquire for similar upcoming releases.</span>
-            </div>
-          }
-        </div>
+        <div class="pin-badge-pointer"></div>
+        <div class="pin-ripple-pulse"></div>
       </div>
     }
 
-    <!-- BOTTOM FLOATING COMPASS & INTERACTION HINT -->
-    <div class="canvas-floating-footer">
-      <div class="interaction-hint">
-        <span class="material-symbols-outlined">360</span>
-        <span>Drag to rotate 360° • Scroll / Pinch to zoom • Tap any 3D plot to inspect</span>
-      </div>
-
-      <!-- Quick Plot Selector Pills (Click to elevate in 3D) -->
-      <div class="quick-plot-strip">
-        <span class="strip-label">Quick Select:</span>
-        @for (plot of plots(); track plot.id) {
-          <button 
-            type="button" 
-            class="plot-chip" 
-            [class.chip-active]="selectedPlot()?.id === plot.id"
-            [class.chip-avail]="plot.status === 'available'"
-            [class.chip-sold]="plot.status === 'sold'"
-            (click)="selectPlot(plot)">
-            <span class="chip-num">{{ plot.plotNo }}</span>
-            <span class="chip-status-dot"></span>
+    <!-- SLIDE-IN PROPERTY FACTSHEET PANEL (ON SELECT) -->
+    @if (selectedPlot(); as plot) {
+      <aside class="plot-details-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-eyebrow">{{ plot.phase || 'Master Planned Township' }}</span>
+            <h2 class="panel-title">Plot {{ plot.plotNo }}</h2>
+          </div>
+          <button type="button" class="btn-close-panel" (click)="closeDetails()" title="Close details">
+            <span class="material-symbols-outlined">close</span>
           </button>
+        </div>
+
+        <div class="panel-status-row">
+          <div class="status-badge" [class]="plot.status">
+            <span class="status-dot"></span>
+            <span>{{ plot.status === 'available' ? 'Available for Registry' : (plot.status === 'reserved' ? 'Booked / In Review' : 'Sold Deed Registered') }}</span>
+          </div>
+          <span class="facing-chip">{{ plot.facing }}</span>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="panel-metrics-grid">
+          <div class="metric-card">
+            <span class="metric-lbl">Total Area</span>
+            <strong class="metric-val">
+              {{ unitMode() === 'sqft' ? (plot.superBuiltUpSqft | number) + ' sq.ft' : (plot.superBuiltUpYds | number) + ' sq.yds' }}
+            </strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-lbl">Dimensions</span>
+            <strong class="metric-val">
+              {{ plot.widthFeet }}' × {{ plot.lengthFeet }}' ft
+            </strong>
+          </div>
+        </div>
+
+        <!-- Specifications List -->
+        <div class="panel-specs-list">
+          <div class="spec-row">
+            <span class="spec-label">Facing Orientation</span>
+            <strong class="spec-val">{{ plot.facing }}</strong>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Road Width</span>
+            <strong class="spec-val">{{ plot.roadWidth || '40 ft Internal Avenue' }}</strong>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Corner Parcel</span>
+            <strong class="spec-val">{{ plot.isCorner ? 'Yes (Dual Road Frontage)' : 'Standard Plot' }}</strong>
+          </div>
+          @if (plot.amenityProximity) {
+            <div class="spec-row">
+              <span class="spec-label">Proximity</span>
+              <strong class="spec-val text-green">{{ plot.amenityProximity }}</strong>
+            </div>
+          }
+          <div class="spec-row price-row">
+            <span class="spec-label">Expected Price</span>
+            <strong class="spec-val price-val">{{ plot.formattedPrice }}</strong>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="panel-actions">
+          <a [href]="getWhatsAppLink(plot)" target="_blank" rel="noopener noreferrer" class="btn-panel-action btn-whatsapp">
+            <span class="material-symbols-outlined">chat</span>
+            <span>Enquire on WhatsApp</span>
+          </a>
+
+          <div class="secondary-actions-row">
+            <button type="button" class="btn-panel-action btn-outline" (click)="toggleShortlist()">
+              <span class="material-symbols-outlined">{{ isShortlisted() ? 'favorite' : 'favorite_border' }}</span>
+              <span>{{ isShortlisted() ? 'Shortlisted' : 'Shortlist' }}</span>
+            </button>
+            <button type="button" class="btn-panel-action btn-outline" (click)="sharePlot()">
+              <span class="material-symbols-outlined">share</span>
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    }
+
+    <!-- OVERLAY: Bottom Gallery Carousel Strip -->
+    <div class="bottom-gallery-strip">
+      <button type="button" class="gallery-nav-btn btn-left" (click)="scrollGallery('left')" title="Scroll Left">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+
+      <div class="gallery-items-track" #galleryTrack>
+        @for (item of galleryItems(); track item.id) {
+          <div 
+            class="gallery-thumbnail-card"
+            [class.active]="activeGalleryId() === item.id"
+            (click)="selectGalleryItem(item)">
+            <div class="thumb-img-wrapper">
+              <img [src]="item.image" [alt]="item.title" loading="lazy">
+            </div>
+            <span class="thumb-caption">{{ item.title }}</span>
+          </div>
         }
       </div>
-    </div>
-  </div>
 
-  <!-- STATS SUMMARY BAR -->
-  <div class="plotex-summary-footer">
-    <div class="summary-stat">
-      <span class="stat-count text-green">{{ availableCount() }}</span>
-      <span class="stat-name">Plots Available</span>
+      <button type="button" class="gallery-nav-btn btn-right" (click)="scrollGallery('right')" title="Scroll Right">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
     </div>
-    <div class="stat-divider"></div>
-    <div class="summary-stat">
-      <span class="stat-count text-red">{{ soldCount() }}</span>
-      <span class="stat-name">Plots Sold Out</span>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="summary-stat">
-      <span class="stat-count text-blue">9.0 M</span>
-      <span class="stat-name">Internal Concrete Road</span>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="summary-stat">
-      <span class="stat-count text-amber">CMDA / RERA</span>
-      <span class="stat-name">Approved Layout</span>
-    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    @if (toastMessage()) {
+      <div class="toast-popup">
+        <span class="material-symbols-outlined">info</span>
+        <span>{{ toastMessage() }}</span>
+      </div>
+    }
   </div>
 </div>

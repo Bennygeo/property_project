@@ -163,10 +163,10 @@ export class AdminService {
     const tryLogin = (url: string) => this.http.post<{ success: boolean; data: { admin: any }; message: string }>(url, body);
 
     return tryLogin(`${environment.apiUrl}/admin/login.php`).pipe(
+      catchError(() => tryLogin('/P_demo_4/backend/api/admin/login.php')),
+      catchError(() => tryLogin('/p_demo_4/backend/api/admin/login.php')),
+      catchError(() => tryLogin('/p_demo_3/backend/api/admin/login.php')),
       catchError(() => tryLogin('/api/admin/login.php')),
-      catchError(() => tryLogin('/demo1/backend/api/admin/login.php')),
-      catchError(() => tryLogin('/demo1/api/admin/login.php')),
-      catchError(() => tryLogin('http://localhost:8000/api/admin/login.php')),
       catchError(() => tryLogin('http://localhost/the-property-project/backend/api/admin/login.php')),
       map(res => {
         this.isLoading.set(false);
@@ -248,16 +248,16 @@ export class AdminService {
     );
 
     tryGet(`${environment.apiUrl}/admin/properties.php`).pipe(
+      catchError(() => tryGet('/P_demo_4/backend/api/admin/properties.php')),
+      catchError(() => tryGet('/p_demo_4/backend/api/admin/properties.php')),
+      catchError(() => tryGet('/p_demo_3/backend/api/admin/properties.php')),
       catchError(() => tryGet('/api/admin/properties.php')),
-      catchError(() => tryGet('/demo1/backend/api/admin/properties.php')),
-      catchError(() => tryGet('/demo1/api/admin/properties.php')),
-      catchError(() => tryGet('http://localhost:8000/api/admin/properties.php')),
       catchError(() => tryGet('http://localhost/the-property-project/backend/api/admin/properties.php')),
       catchError(err => {
         console.error('Error fetching admin data:', err);
         return of(null);
       })
-    ).subscribe(res => {
+    ).subscribe((res: any) => {
       this.isLoading.set(false);
       if (res && res.success && res.data) {
         this.stats.set(res.data.stats);
@@ -449,12 +449,12 @@ export class AdminService {
     const tryProfile = (url: string) => this.http.get<{ success: boolean; data: any }>(url, { params });
 
     return tryProfile(`${environment.apiUrl}/admin/profile.php`).pipe(
+      catchError(() => tryProfile('/P_demo_4/backend/api/admin/profile.php')),
+      catchError(() => tryProfile('/p_demo_4/backend/api/admin/profile.php')),
+      catchError(() => tryProfile('/p_demo_3/backend/api/admin/profile.php')),
       catchError(() => tryProfile('/api/admin/profile.php')),
-      catchError(() => tryProfile('/demo1/backend/api/admin/profile.php')),
-      catchError(() => tryProfile('/demo1/api/admin/profile.php')),
-      catchError(() => tryProfile('http://localhost:8000/api/admin/profile.php')),
       catchError(() => tryProfile('http://localhost/the-property-project/backend/api/admin/profile.php')),
-      map(res => (res && res.success && res.data) ? res.data : null),
+      map((res: any) => (res && res.success && res.data) ? res.data : null),
       catchError(err => {
         console.error('Error fetching admin profile:', err);
         return of(null);
@@ -474,16 +474,16 @@ export class AdminService {
     const tryGet = (url: string) => this.http.get<{ success: boolean; data: AdminFinancialData }>(url, { params });
 
     tryGet(`${environment.apiUrl}/admin/financials.php`).pipe(
+      catchError(() => tryGet('/P_demo_4/backend/api/admin/financials.php')),
+      catchError(() => tryGet('/p_demo_4/backend/api/admin/financials.php')),
+      catchError(() => tryGet('/p_demo_3/backend/api/admin/financials.php')),
       catchError(() => tryGet('/api/admin/financials.php')),
-      catchError(() => tryGet('/demo1/backend/api/admin/financials.php')),
-      catchError(() => tryGet('/demo1/api/admin/financials.php')),
-      catchError(() => tryGet('http://localhost:8000/api/admin/financials.php')),
       catchError(() => tryGet('http://localhost/the-property-project/backend/api/admin/financials.php')),
       catchError(err => {
         console.error('Error fetching admin financials:', err);
         return of(null);
       })
-    ).subscribe(res => {
+    ).subscribe((res: any) => {
       this.isFinancialLoading.set(false);
       if (res && res.success && res.data) {
         this.financialData.set(res.data);
@@ -510,12 +510,12 @@ export class AdminService {
     const tryPost = (url: string) => this.http.post<{ success: boolean; message: string; data: any }>(url, body);
 
     return tryPost(`${environment.apiUrl}/admin/financials.php`).pipe(
+      catchError(() => tryPost('/P_demo_4/backend/api/admin/financials.php')),
+      catchError(() => tryPost('/p_demo_4/backend/api/admin/financials.php')),
+      catchError(() => tryPost('/p_demo_3/backend/api/admin/financials.php')),
       catchError(() => tryPost('/api/admin/financials.php')),
-      catchError(() => tryPost('/demo1/backend/api/admin/financials.php')),
-      catchError(() => tryPost('/demo1/api/admin/financials.php')),
-      catchError(() => tryPost('http://localhost:8000/api/admin/financials.php')),
       catchError(() => tryPost('http://localhost/the-property-project/backend/api/admin/financials.php')),
-      map(res => {
+      map((res: any) => {
         this.isSubmitting.set(false);
         if (res && res.success) {
           this.notificationService.show({

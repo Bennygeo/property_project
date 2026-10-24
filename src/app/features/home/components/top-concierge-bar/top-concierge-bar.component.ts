@@ -10,10 +10,6 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
     <aside class="concierge-bar">
       <div class="max-w-content bar-content">
         <div class="bar-left">
-          <span class="live-pill">
-            <span class="pulse-dot"></span>
-            Live Cadastre
-          </span>
           <span class="text-white hidden-sm">100% Direct Owner Deeds &amp; RERA Sanctioned Audits</span>
 
           <!-- Visitor Purpose Indicator & Switcher Button -->
@@ -22,32 +18,18 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
             class="goal-pill-btn" 
             (click)="visitorService.openModal()"
             title="Click to personalize or change your visit purpose">
-            <span class="material-symbols-outlined goal-icon">
-              {{ visitorService.getSelectedOption()?.icon || 'explore' }}
-            </span>
             <span>Goal: {{ visitorService.getSelectedOption()?.title || 'Personalize' }}</span>
             <span class="material-symbols-outlined goal-arrow">tune</span>
           </button>
         </div>
         
-        <div class="bar-right">
-          <a class="wa-link" href="https://wa.me/919444100000" target="_blank" rel="noopener">
-            <span class="material-symbols-outlined icon-small">chat</span>
-            <span>WhatsApp</span>
-          </a>
-          <span class="divider">|</span>
-          <a class="phone-link" href="tel:18004196266">
-            <span class="material-symbols-outlined icon-small">call</span>
-            <span>TOLL-FREE: 1800-419-MANNIDAM</span>
-          </a>
-        </div>
       </div>
     </aside>
   `,
   styles: [`
     .concierge-bar {
       width: 100%;
-      background-color: #020617;
+      background-color: var(--brand-teal);
       color: #cbd5e1;
       padding: 0.5rem 0;
       font-size: 12px;
@@ -74,7 +56,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
       background-color: rgba(16, 185, 129, 0.2);
       color: #6ee7b7;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -123,7 +105,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
       align-items: center;
       gap: 4px;
       color: #e2e8f0;
-      font-weight: 700;
+      font-weight: 600;
       text-decoration: none;
       transition: color 0.15s;
     }
@@ -143,7 +125,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
       border: 1px solid rgba(255, 255, 255, 0.16);
       color: #f1f5f9;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.15s ease;
       white-space: nowrap;
@@ -161,6 +143,13 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
     .goal-arrow {
       font-size: 13px;
       color: #94a3b8;
+    }
+    @media (max-width: 480px) {
+      .hidden-xs { display: none; }
+      .bar-content { gap: 0.35rem; }
+      .bar-left { gap: 0.35rem; }
+      .bar-right { gap: 0.5rem; font-size: 10px; }
+      .goal-pill-btn { padding: 2px 7px; font-size: 10px; }
     }
     @media (max-width: 640px) {
       .hidden-sm { display: none; }

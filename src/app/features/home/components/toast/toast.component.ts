@@ -78,7 +78,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
     }
     .toast-title {
       font-size: 0.8125rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #ffffff;
       line-height: 1.3;
     }

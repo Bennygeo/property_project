@@ -6,15 +6,13 @@ import { HeroSearchComponent } from '../../components/hero-search/hero-search.co
 import { EconomyBannerComponent } from '../../components/economy-banner/economy-banner.component';
 import { ValuePropsComponent } from '../../components/value-props/value-props.component';
 import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
-import { NewLaunchesSpotlightComponent } from '../../components/new-launches-spotlight/new-launches-spotlight.component';
 import { FeaturedPropertiesComponent } from '../../components/featured-properties/featured-properties.component';
-import { PricingPacksComponent } from '../../components/pricing-packs/pricing-packs.component';
 import { WhyChooseUsComponent } from '../../components/why-choose-us/why-choose-us.component';
-import { MetroLocalityIndexComponent } from '../../components/metro-locality-index/metro-locality-index.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { PropertyMediaModalComponent } from '../../components/property-media-modal/property-media-modal.component';
 import { TopupDialogComponent } from '../../components/topup-dialog/topup-dialog.component';
 import { ToastComponent } from '../../components/toast/toast.component';
+import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-modal.component';
 
 @Component({
   selector: 'app-home-page',
@@ -25,17 +23,13 @@ import { ToastComponent } from '../../components/toast/toast.component';
     HeaderComponent,
     HeroSearchComponent,
     EconomyBannerComponent,
-    ValuePropsComponent,
-    CategoryGridComponent,
-    NewLaunchesSpotlightComponent,
     FeaturedPropertiesComponent,
-    PricingPacksComponent,
     WhyChooseUsComponent,
-    MetroLocalityIndexComponent,
     FooterComponent,
     PropertyMediaModalComponent,
     TopupDialogComponent,
-    ToastComponent
+    ToastComponent,
+    AiChatModalComponent
   ],
   template: `
     <div class="page-wrapper">
@@ -46,32 +40,17 @@ import { ToastComponent } from '../../components/toast/toast.component';
       <app-header />
 
       <main class="page-main">
-        <!-- Hero Search Console -->
+        <!-- Hero Search Console (Search-Section Background starts flush below header, containing header banner, intent strip & search console) -->
         <app-hero-search />
 
-        <!-- Pay-Per-Unlock Economy Banner Strip -->
+        <!-- Buyer Assurance & Verification Banner Strip -->
         <app-economy-banner />
 
-        <!-- Value Proposition Badges -->
-        <app-value-props />
-
-        <!-- Browse by Architectural Category -->
-        <app-category-grid />
-
-        <!-- New Launches Spotlight (The Coromandel Courtyard) -->
-        <app-new-launches-spotlight />
-
-        <!-- Featured No-Brokerage Properties Grid -->
+        <!-- Featured Verified Properties Grid -->
         <app-featured-properties />
 
-        <!-- Transparent Pay-Per-View Points & Pricing -->
-        <app-pricing-packs />
-
-        <!-- Why Choose Mannidam vs Traditional Brokers -->
+        <!-- Why Choose Find a Plot vs Traditional Brokers -->
         <app-why-choose-us />
-
-        <!-- Pan-India Metros & Locality Price & Rental Yield Index -->
-        <app-metro-locality-index />
       </main>
 
       <!-- Comprehensive Footer -->
@@ -81,6 +60,7 @@ import { ToastComponent } from '../../components/toast/toast.component';
       <app-property-media-modal />
       <app-topup-dialog />
       <app-toast />
+      <app-ai-chat-modal />
     </div>
   `,
   styles: [`
@@ -96,17 +76,30 @@ import { ToastComponent } from '../../components/toast/toast.component';
       width: 100%;
       background-color: #ffffff;
       position: relative;
+      z-index: 1;
     }
     app-hero-search {
       display: block;
       position: relative;
-      z-index: 50;
+      z-index: 10;
     }
     app-economy-banner {
       display: block;
       position: relative;
       z-index: 1;
     }
+    app-featured-properties {
+      display: block;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+    app-why-choose-us {
+      display: block;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
   `]
 })
-export class HomePageComponent {}
+export class HomePageComponent { }

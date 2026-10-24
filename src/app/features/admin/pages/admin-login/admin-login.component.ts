@@ -69,18 +69,9 @@ export class AdminLoginComponent {
   readonly adminService = inject(AdminService);
   readonly router = inject(Router);
 
-  readonly adminAccounts = ADMIN_CREDENTIALS;
-
-  loginId = signal<string>('ezhil@mannidam.com');
-  password = signal<string>('ezhil@2026');
+  loginId = signal<string>('');
+  password = signal<string>('');
   errorMessage = signal<string>('');
-
-  // Select admin and populate their distinct credentials
-  selectAdmin(admin: AdminCredentialInfo): void {
-    this.loginId.set(admin.email);
-    this.password.set(admin.defaultPassword);
-    this.errorMessage.set('');
-  }
 
   onSubmit(): void {
     if (!this.loginId().trim()) {

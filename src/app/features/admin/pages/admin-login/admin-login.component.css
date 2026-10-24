@@ -5,7 +5,7 @@
 .admin-login-layout {
   min-height: 100vh;
   background: radial-gradient(circle at 50% 20%, #0f2744 0%, #071426 100%);
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   color: #f8fafc;
   display: flex;
   align-items: center;
@@ -63,7 +63,7 @@
   border: 1px solid rgba(56, 189, 248, 0.3);
   color: #38bdf8;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 600;
   padding: 3px 10px;
   border-radius: 999px;
   letter-spacing: 0.06em;
@@ -71,7 +71,7 @@
 
 .portal-title {
   font-size: 1.45rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #ffffff;
   margin: 0;
   letter-spacing: -0.01em;
@@ -119,7 +119,7 @@
 
 .form-label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -178,7 +178,7 @@
   color: #ffffff;
   border: none;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 12px 20px;
   border-radius: 8px;
   cursor: pointer;
@@ -213,7 +213,7 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -261,14 +261,22 @@
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   color: #ffffff;
   flex-shrink: 0;
 }
 
-.card-avatar.ez { background: #7c3aed; }
-.card-avatar.ra { background: #059669; }
-.card-avatar.be { background: #2563eb; }
+.card-avatar.ez {
+  background: #7c3aed;
+}
+
+.card-avatar.ra {
+  background: #059669;
+}
+
+.card-avatar.be {
+  background: #2563eb;
+}
 
 .card-text {
   display: flex;
@@ -285,13 +293,13 @@
 
 .adm-name {
   font-size: 13.5px;
-  font-weight: 800;
+  font-weight: 600;
   color: #ffffff;
 }
 
 .adm-role-tag {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   color: #38bdf8;
   background: rgba(56, 189, 248, 0.12);
   border: 1px solid rgba(56, 189, 248, 0.25);
@@ -338,12 +346,12 @@
   padding: 1px 6px;
   border-radius: 4px;
   font-family: monospace;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .btn-fast-login {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: #38bdf8;
   opacity: 0.8;
 }

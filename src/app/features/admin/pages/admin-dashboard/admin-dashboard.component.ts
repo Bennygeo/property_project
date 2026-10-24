@@ -1,7 +1,11 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
+import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
 import { AdminService, ADMIN_PERSONAS } from '../../../../core/services/admin.service';
 import { PropertyService } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -19,7 +23,7 @@ import {
   AdminChannelItem 
 } from '../../../../core/services/admin.service';
 
-export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials';
+export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset';
 
 export interface UploadedImageItem {
   id: string;
@@ -51,6 +55,8 @@ export class AdminDashboardComponent {
   readonly adminService = inject(AdminService);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
+  readonly userBehaviorService = inject(UserBehaviorService);
+  private readonly http = inject(HttpClient);
   readonly router = inject(Router);
   readonly route = inject(ActivatedRoute);
   readonly personas = ADMIN_PERSONAS;
@@ -86,6 +92,40 @@ export class AdminDashboardComponent {
         this.autoPopulateDefaultPlots();
       }
     }
+    if (tab === 'user_mindset') {
+      this.loadMindsetLeads();
+    }
+  }
+
+  // Buyer Mindset Leads State
+  readonly mindsetLeads = signal<any[]>([]);
+
+  loadMindsetLeads(): void {
+    this.http.get<{ success: boolean; data: any[] }>('http://localhost:8000/api/analytics/user-mindset.php?phone=all').pipe(
+      catchError(() => this.http.get<{ success: boolean; data: any[] }>('/api/analytics/user-mindset.php?phone=all')),
+      catchError(() => of({
+        success: true,
+        data: [{
+          userPhone: '9486140936',
+          totalViewed: 5,
+          plotsCount: 4,
+          flatsCount: 1,
+          plotsPercentage: 80,
+          flatsPercentage: 20,
+          priceRange: '22 Lakhs to 35 Lakhs',
+          avgPriceFormatted: '29.2 Lakhs',
+          topLocalities: ['Tambaram', 'Vandalur', 'Perungalathur'],
+          mindsetBrief: '9486140936 user viewed between 22 Lakhs to 35 Lakhs, He viewed 4 plots and 1 flat, so the 80% of interest towards plots and optionally viewed flats.',
+          buyerArchetype: 'Strategic Land Investor',
+          urgency: 'High Intent (Ready Buyer)',
+          recommendation: 'Pitch CMDA/DTCP registered plots in Tambaram, Vandalur, Perungalathur within 22 Lakhs - 35 Lakhs with clear Patta and instant registration.'
+        }]
+      }))
+    ).subscribe(res => {
+      if (res && res.data) {
+        this.mindsetLeads.set(Array.isArray(res.data) ? res.data : [res.data]);
+      }
+    });
   }
 
   // Financial Filters & State
@@ -163,7 +203,8 @@ export class AdminDashboardComponent {
     commercialType: 'Commercial Office Space',
     powerBackup: '100% DG Redundancy',
     waterSource: 'Dedicated Borewell & Canal',
-    farmBoundary: 'Solar Fenced Perimeter'
+    farmBoundary: 'Solar Fenced Perimeter',
+    interactiveMapUrl: 'assets/secura-masterplan-3d.html'
   });
 
   isAdminPlot(): boolean {
@@ -1064,7 +1105,8 @@ export class AdminDashboardComponent {
           commercialType: 'Commercial Office Space',
           powerBackup: '100% DG Redundancy',
           waterSource: 'Dedicated Borewell & Canal',
-          farmBoundary: 'Solar Fenced Perimeter'
+          farmBoundary: 'Solar Fenced Perimeter',
+          interactiveMapUrl: 'assets/secura-masterplan-3d.html'
         });
         // Switch to Review Queue tab to see the pending peer review listing
         this.activeTab.set('review_queue');

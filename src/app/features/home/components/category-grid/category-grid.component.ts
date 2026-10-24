@@ -38,9 +38,15 @@ import { NotificationService } from '../../../../core/services/notification.serv
   `,
   styles: [`
     .categories-section {
-      padding-top: 4rem;
-      padding-bottom: 3rem;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
       background: #ffffff;
+    }
+    @media (min-width: 640px) {
+      .categories-section {
+        padding-top: 4rem;
+        padding-bottom: 3rem;
+      }
     }
     .section-header-row {
       display: flex;
@@ -62,19 +68,19 @@ import { NotificationService } from '../../../../core/services/notification.serv
     }
     .section-title {
       font-size: 1.5rem;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--text-slate-950);
       letter-spacing: -0.02em;
       margin-top: 0.25rem;
     }
     @media (min-width: 640px) {
       .section-title {
-        font-size: 1.875rem;
+        font-size: 1.5rem;
       }
     }
     .view-all-link {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-800);
       text-decoration: none;
       display: inline-flex;
@@ -143,7 +149,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
     }
     .cat-name {
       font-size: 0.875rem;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-950);
       transition: color 0.15s;
     }
@@ -155,6 +161,28 @@ import { NotificationService } from '../../../../core/services/notification.serv
       font-weight: 500;
       color: var(--text-slate-500);
       margin-top: 0.25rem;
+    }
+    @media (max-width: 640px) {
+      .categories-grid {
+        gap: 0.625rem;
+      }
+      .category-tile {
+        padding: 0.75rem 0.5rem;
+      }
+      .icon-circle {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 0.5rem;
+      }
+      .icon-circle span {
+        font-size: 24px;
+      }
+      .cat-name {
+        font-size: 0.8rem;
+      }
+      .cat-count {
+        font-size: 10px;
+      }
     }
   `]
 })

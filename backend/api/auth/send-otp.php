@@ -30,12 +30,12 @@ if (strlen(preg_replace('/[^\d]/', '', $cleanPhone)) < 10) {
     Response::error('Please enter a valid 10-digit mobile number', 422);
 }
 
-// Dummy OTP for test / development mode
-$dummyOtp = '1234';
+// OTP for development mode (password kept as 1111 until production)
+$dummyOtp = '1111';
 
 Response::success([
     'phone'      => $cleanPhone,
     'dummyOtp'   => $dummyOtp,
     'expiresIn'  => 300, // seconds
-    'isDemo'     => true,
-], "OTP sent successfully to {$cleanPhone}. For demo testing, use code: {$dummyOtp}");
+    'isDemo'     => false,
+], "OTP sent successfully to {$cleanPhone}.");

@@ -17,7 +17,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
           <span class="editorial-tag text-red">PAN-INDIA CADASTRAL SRO BENCHMARK</span>
           <h2 class="index-title">Metro &amp; Micro-Market Valuation Index</h2>
           <p class="index-subtitle">
-            Real-time transaction rate averages, annual capital appreciation, and verified zero-brokerage supply across major economic corridors.
+            Real-time transaction rate averages, annual capital appreciation, and verified property supply across major economic corridors.
           </p>
         </div>
         <div class="header-live-badge">
@@ -110,6 +110,10 @@ import { NotificationService } from '../../../../core/services/notification.serv
               class="mat-input-text" 
               [value]="searchQuery()"
               (input)="onSearchInput($event)"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               placeholder="Search locality, sector or corridor..."
               aria-label="Filter micro markets">
             @if (searchQuery()) {
@@ -123,6 +127,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
             }
           </div>
         </div>
+      </div>
+
+      <!-- Mobile Table Swipe Hint -->
+      <div class="mobile-table-hint">
+        <span>↔ Swipe table horizontally for complete rates &amp; supply</span>
       </div>
 
       <!-- Material 3 Styled Table Container -->
@@ -193,10 +202,16 @@ import { NotificationService } from '../../../../core/services/notification.serv
   `,
   styles: [`
     .metro-index-section {
-      padding-top: 3.5rem;
-      padding-bottom: 4rem;
+      padding-top: 2rem;
+      padding-bottom: 2.5rem;
       background: #ffffff;
       border-top: 1px solid var(--hairline-border);
+    }
+    @media (min-width: 640px) {
+      .metro-index-section {
+        padding-top: 3.5rem;
+        padding-bottom: 4rem;
+      }
     }
     .index-section-header {
       display: flex;
@@ -217,8 +232,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
       color: var(--brand-red);
     }
     .index-title {
-      font-size: 1.625rem;
-      font-weight: 800;
+      font-size: 1.35rem;
+      font-weight: 600;
       color: var(--text-slate-950);
       letter-spacing: -0.02em;
       margin-top: 0.25rem;
@@ -265,7 +280,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       font-size: 11px;
       font-family: ui-monospace, monospace;
       color: var(--text-slate-700);
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: 0.04em;
     }
     .material-controls-bar {
@@ -294,7 +309,14 @@ import { NotificationService } from '../../../../core/services/notification.serv
       }
     }
     .mat-city-select-field {
-      min-width: 250px;
+      min-width: 0;
+      width: 100%;
+    }
+    @media (min-width: 640px) {
+      .mat-city-select-field {
+        min-width: 250px;
+        width: auto;
+      }
     }
     .mat-chips-group {
       display: flex;
@@ -309,7 +331,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       background: #f1f5f9;
       color: #047857;
       font-family: ui-monospace, monospace;
-      font-weight: 700;
+      font-weight: 600;
       transition: all 0.15s ease;
     }
     .mat-chip.active .chip-badge {
@@ -317,7 +339,32 @@ import { NotificationService } from '../../../../core/services/notification.serv
       color: var(--brand-red);
     }
     .mat-search-field {
-      min-width: 300px;
+      min-width: 0;
+      width: 100%;
+    }
+    @media (min-width: 1024px) {
+      .mat-search-field {
+        min-width: 300px;
+        width: auto;
+      }
+    }
+    .mobile-table-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-slate-500);
+      background: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-bottom: 0.625rem;
+      border: 1px dashed #cbd5e1;
+    }
+    @media (min-width: 768px) {
+      .mobile-table-hint {
+        display: none;
+      }
     }
     .mat-clear-btn {
       background: none;
@@ -356,12 +403,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      font-weight: 700;
+      font-weight: 600;
       border-bottom: 1.5px solid #e2e8f0;
     }
     th {
       padding: 0.875rem 1rem;
-      font-weight: 700;
+      font-weight: 600;
     }
     .th-left { text-align: left; }
     .th-right { text-align: right; }
@@ -380,7 +427,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       padding: 0.875rem 1rem;
     }
     .td-market .market-name {
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-950);
     }
     .td-market .sub-corridor {
@@ -407,14 +454,14 @@ import { NotificationService } from '../../../../core/services/notification.serv
     .td-rate {
       text-align: right;
       font-family: ui-monospace, monospace;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-slate-950);
     }
     .td-growth {
       text-align: right;
       font-family: ui-monospace, monospace;
       color: #047857;
-      font-weight: 700;
+      font-weight: 600;
     }
     .td-yield {
       text-align: right;
@@ -437,7 +484,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--brand-red);
       background: var(--brand-red-subtle);
       border: 1px solid var(--brand-red-border);
@@ -501,7 +548,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       border: 1.5px solid var(--brand-red);
       color: var(--brand-red);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       cursor: pointer;
@@ -531,7 +578,7 @@ export class MetroLocalityIndexComponent {
     if (!query) {
       return rows;
     }
-    return rows.filter(r => 
+    return rows.filter(r =>
       r.loc.toLowerCase().includes(query) ||
       r.sub.toLowerCase().includes(query) ||
       r.tag.toLowerCase().includes(query)
