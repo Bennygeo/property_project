@@ -24,6 +24,7 @@ import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
 import { InteractivePlotLayoutComponent } from '../../../../shared/components/interactive-plot-layout/interactive-plot-layout.component';
 import { PlotexViewerComponent } from '../../../../shared/components/plotex-viewer/plotex-viewer.component';
+import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
 
 export type MediaStageTab = 'photos' | 'walkthrough' | 'drone' | '3dmap';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
@@ -57,7 +58,8 @@ function parsePriceToNumber(priceStr: string): number {
     ToastComponent,
     PropertyMediaModalComponent,
     InteractivePlotLayoutComponent,
-    PlotexViewerComponent
+    PlotexViewerComponent,
+    SecureVideoPlayerComponent
   ],
   templateUrl: './property-details-page.component.html',
   styleUrls: ['./property-details-page.component.css']

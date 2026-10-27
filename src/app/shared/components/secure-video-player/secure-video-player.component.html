@@ -1,0 +1,99 @@
+<div 
+  class="secure-player-container" 
+  (contextmenu)="preventContextMenu($event)"
+  (dragstart)="preventDrag($event)"
+  [class.is-blurred]="isWindowBlurred()">
+
+  <!-- 1. CLOUDFLARE STREAM IFRAME PLAYER -->
+  @if (isCloudflareStream() && cloudflareIframeUrl(); as streamUrl) {
+    <div class="stream-iframe-wrapper">
+      <iframe 
+        [src]="streamUrl" 
+        class="cloudflare-stream-iframe"
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+        title="Cloudflare Stream Secure Video"
+        loading="lazy">
+      </iframe>
+    </div>
+  } @else {
+    <!-- 2. HIGH-SECURITY HTML5 VIDEO PLAYER (No Download, No PiP, Protected) -->
+    <video 
+      #videoElement
+      [src]="videoUrl"
+      [poster]="posterUrl"
+      controls
+      autoplay
+      playsinline
+      controlsList="nodownload noplaybackrate"
+      disablePictureInPicture
+      class="secure-html5-video"
+      (contextmenu)="preventContextMenu($event)"
+      (play)="isPlaying.set(true)"
+      (pause)="isPlaying.set(false)">
+      Your browser does not support protected high-definition video streaming.
+    </video>
+  }
+
+  <!-- 3. DYNAMIC FORENSIC WATERMARK (Anti-Piracy & Traceability) -->
+  <div class="forensic-watermark-overlay" pointer-events="none">
+    
+    <!-- Drifting Dynamic Quadrant Watermark (moves every 8 seconds) -->
+    <div class="drifting-watermark-pill" [attr.data-quadrant]="watermarkQuadrant()">
+      <div class="watermark-indicator">
+        <span class="pulse-red-dot"></span>
+        <span class="watermark-auth-label">VERIFIED DOSSIER</span>
+      </div>
+      <div class="watermark-identity">{{ viewerWatermarkLabel() }}</div>
+      <div class="watermark-meta">
+        <span>{{ propertyRef || 'CONFIDENTIAL' }}</span>
+        <span class="watermark-dot">•</span>
+        <span class="watermark-clock">{{ liveTimestamp() }}</span>
+      </div>
+    </div>
+
+    <!-- Ultra-subtle diagonal grid watermark across full frame -->
+    <div class="diagonal-security-pattern" aria-hidden="true">
+      <span class="diag-line">{{ viewerWatermarkLabel() }} • MANNIDAM PROPERTY REGISTRY • {{ liveTimestamp() }}</span>
+      <span class="diag-line">{{ viewerWatermarkLabel() }} • PROPRIETARY 4K SURVEY • UNAUTHORIZED RECORDING FORBIDDEN</span>
+    </div>
+  </div>
+
+  <!-- 4. ANTI-SCREEN CAPTURE / WINDOW BLUR SECURITY SHIELD -->
+  @if (isWindowBlurred()) {
+    <div class="security-privacy-shield" (click)="resumePlayback()">
+      <div class="shield-card" (click)="$event.stopPropagation()">
+        <div class="shield-icon-badge">
+          <span class="material-symbols-outlined shield-icon">shield_lock</span>
+        </div>
+        <h4 class="shield-title">Playback Paused for Content Security</h4>
+        <p class="shield-desc">
+          Screen capture utility, snipping tool, or window switch detected.
+          To protect proprietary architectural records and owner privacy, video is concealed while the browser is out of focus.
+        </p>
+        <div class="shield-meta-box">
+          <span class="material-symbols-outlined text-amber">verified_user</span>
+          <span>Dossier Protection Active • {{ liveTimestamp() }}</span>
+        </div>
+        <button type="button" class="btn-resume-stream" (click)="resumePlayback()">
+          <span class="material-symbols-outlined">play_circle</span>
+          <span>Return &amp; Resume Playback</span>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- 5. TEMPORARY SECURITY WARNING TOAST -->
+  @if (securityAlertTriggered()) {
+    <div class="security-alert-toast">
+      <span class="material-symbols-outlined toast-icon">gpp_maybe</span>
+      <span>{{ securityAlertMessage() }}</span>
+    </div>
+  }
+
+  <!-- 6. STREAM SECURITY BADGE -->
+  <div class="stream-tech-badge">
+    <span class="material-symbols-outlined badge-icon">lock</span>
+    <span>{{ isCloudflareStream() ? 'Cloudflare Stream HLS • DRM Protected' : 'Secure Streaming • Download Prohibited' }}</span>
+  </div>
+
+</div>

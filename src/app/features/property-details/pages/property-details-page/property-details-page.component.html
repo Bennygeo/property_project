@@ -204,8 +204,13 @@
             @if (activeMediaTab() === 'walkthrough') {
             <div class="hanu-video-frame">
               @if (prop.isMediaUnlocked && getWalkthroughVideo(); as video) {
-              <video controls autoplay playsinline class="hanu-html5-video" [src]="video.url"
-                [poster]="video.thumbnailUrl"></video>
+              <app-secure-video-player
+                [videoUrl]="video.url"
+                [posterUrl]="video.thumbnailUrl"
+                [title]="video.title"
+                [propertyRef]="'REF #' + prop.id"
+                [cloudflareStreamId]="video.cloudflareStreamId || ''">
+              </app-secure-video-player>
               } @else {
               <div class="hanu-locked-media">
                 <img [src]="prop.imageUrl" alt="Locked video preview" class="hanu-locked-bg" loading="lazy" decoding="async">
@@ -232,8 +237,13 @@
             @if (activeMediaTab() === 'drone') {
             <div class="hanu-video-frame">
               @if (prop.isMediaUnlocked && getDroneVideo(); as drone) {
-              <video controls autoplay playsinline class="hanu-html5-video" [src]="drone.url"
-                [poster]="drone.thumbnailUrl"></video>
+              <app-secure-video-player
+                [videoUrl]="drone.url"
+                [posterUrl]="drone.thumbnailUrl"
+                [title]="drone.title"
+                [propertyRef]="'REF #' + prop.id"
+                [cloudflareStreamId]="drone.cloudflareStreamId || ''">
+              </app-secure-video-player>
               } @else {
               <div class="hanu-locked-media">
                 <img [src]="prop.imageUrl" alt="Locked drone preview" class="hanu-locked-bg" loading="lazy" decoding="async">

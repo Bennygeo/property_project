@@ -13,10 +13,10 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "   PACKAGING FIND A PLOT FOR /P_demo_4/  " -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
-# 1. Run production Angular build with base-href /P_demo_4/
-Write-Host "`n[Step 1/5] Building Angular app with base-href /P_demo_4/..." -ForegroundColor Yellow
+# 1. Run production Angular build with base-href /p_demo_4/
+Write-Host "`n[Step 1/5] Building Angular app with base-href /p_demo_4/..." -ForegroundColor Yellow
 Set-Location $baseDir
-npx ng build --configuration production --base-href /P_demo_4/
+npx ng build --configuration production --base-href /p_demo_4/
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Angular build failed!"
@@ -34,11 +34,11 @@ New-Item -ItemType Directory -Path "$stageDir\database_schemas" -Force | Out-Nul
 Write-Host "`n[Step 3/5] Copying compiled frontend, .htaccess, and assets..." -ForegroundColor Yellow
 Copy-Item -Recurse -Force "$baseDir\dist\property-registry\browser\*" "$stageDir\"
 
-# Ensure .htaccess has RewriteBase /P_demo_4/
+# Ensure .htaccess has RewriteBase /p_demo_4/
 $htaccessContent = @"
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /P_demo_4/
+  RewriteBase /p_demo_4/
 
   # If an existing asset or directory is requested, serve directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -94,34 +94,34 @@ if (Test-Path "$baseDir\backend\database") {
 
 # Add Deployment Guide
 $readmeContent = @"
-# Find a Plot - /P_demo_4/ Deployment Guide
+# Find a Plot - /p_demo_4/ Deployment Guide
 ======================================================
 Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 
 ## Target Configuration:
-- Base Href: `<base href="/P_demo_4/">`
-- Apache RewriteBase: `RewriteBase /P_demo_4/`
-- API Endpoint: `/P_demo_4/backend/api/...`
-- Images & Static Assets: All loaded relative to `/P_demo_4/` (never from domain root `/`)
+- Base Href: `<base href="/p_demo_4/">`
+- Apache RewriteBase: `RewriteBase /p_demo_4/`
+- API Endpoint: `/p_demo_4/backend/api/...`
+- Images & Static Assets: All loaded relative to `/p_demo_4/` (never from domain root `/`)
 
 ## How to deploy:
-1. In your web server root (public_html/ or htdocs/), create or open the `P_demo_4` folder.
-2. Extract all contents of this package directly into `P_demo_4/`.
+1. In your web server root (public_html/ or htdocs/), create or open the `p_demo_4` folder.
+2. Extract all contents of this package directly into `p_demo_4/`.
    - Result:
-     `P_demo_4/index.html`
-     `P_demo_4/.htaccess`
-     `P_demo_4/main-*.js`
-     `P_demo_4/backend/`
-     `P_demo_4/assets/`
-     `P_demo_4/skyline.svg`
-     `P_demo_4/logo.svg`
-     `P_demo_4/logo_footer.svg`
-     `P_demo_4/hero-bg.jpg`
+     `p_demo_4/index.html`
+     `p_demo_4/.htaccess`
+     `p_demo_4/main-*.js`
+     `p_demo_4/backend/`
+     `p_demo_4/assets/`
+     `p_demo_4/skyline.svg`
+     `p_demo_4/logo.svg`
+     `p_demo_4/logo_footer.svg`
+     `p_demo_4/hero-bg.jpg`
 3. Database Setup:
    - In MySQL/phpMyAdmin, import `database_schemas/full_live_dump.sql` (or `schema.sql` and `seed.sql`).
    - Update `backend/config/database.php` with your database credentials.
 4. Access:
-   - Navigate to `http://<your-domain>/P_demo_4/` in your browser.
+   - Navigate to `http://<your-domain>/p_demo_4/` in your browser.
 "@
 Set-Content -Path "$stageDir\P_DEMO_4_DEPLOYMENT_GUIDE.md" -Value $readmeContent -Encoding UTF8
 

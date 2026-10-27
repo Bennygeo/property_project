@@ -4,11 +4,12 @@ import { PropertyService } from '../../../../core/services/property.service';
 import { WalletService } from '../../../../core/services/wallet.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { PremiumMediaItem } from '../../../../core/models/property.model';
+import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
 
 @Component({
   selector: 'app-property-media-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SecureVideoPlayerComponent],
   template: `
     @if (propertyService.activeModalProperty(); as prop) {
       <div class="modal-backdrop" (click)="onBackdropClick($event)">
@@ -111,14 +112,13 @@ import { PremiumMediaItem } from '../../../../core/models/property.model';
                   <div class="unlocked-video-stage">
                     @if (selectedMediaItem()?.type === 'video') {
                       <div class="video-player-box">
-                        <video 
-                          controls 
-                          autoplay 
-                          playsinline
-                          [src]="selectedMediaItem()?.url || prop.premiumMedia[0].url" 
-                          class="html5-video">
-                          Your browser does not support high-definition video playback.
-                        </video>
+                        <app-secure-video-player
+                          [videoUrl]="selectedMediaItem()?.url || prop.premiumMedia[0].url"
+                          [posterUrl]="selectedMediaItem()?.thumbnailUrl || prop.imageUrl"
+                          [title]="selectedMediaItem()?.title || prop.premiumMedia[0].title"
+                          [propertyRef]="'REF #' + prop.id"
+                          [cloudflareStreamId]="selectedMediaItem()?.cloudflareStreamId || ''">
+                        </app-secure-video-player>
                       </div>
                     } @else {
                       <div class="hd-photo-box">

@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /P_demo_4/
+  RewriteBase /p_demo_4/
 
   # If an existing asset or directory is requested, serve directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]

@@ -11,6 +11,7 @@ export interface PremiumMediaItem {
   thumbnailUrl: string;
   duration?: string;
   tag: string;
+  cloudflareStreamId?: string;
 }
 
 export interface FloorPlanItem {

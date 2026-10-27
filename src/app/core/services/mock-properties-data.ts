@@ -39,11 +39,21 @@ export const MOCK_50_PROPERTIES: Property[] = [
             {
                 "id": "v-p-1",
                 "type": "video",
-                "title": "4K Cadastral Site Inspection",
+                "title": "4K Architectural Walkthrough",
                 "url": "https://www.w3schools.com/html/mov_bbb.mp4",
                 "thumbnailUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
                 "duration": "2:30 min",
                 "tag": "4K Video Tour"
+            },
+            {
+                "id": "v-p-1-cf",
+                "type": "video",
+                "title": "Cloudflare Stream 360° Drone Aerial Survey",
+                "url": "https://iframe.videodelivery.net/5d5ba37ff33a0b8d5d3c3763b71e5e85",
+                "cloudflareStreamId": "5d5ba37ff33a0b8d5d3c3763b71e5e85",
+                "thumbnailUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+                "duration": "3:10 min",
+                "tag": "Drone Survey"
             }
         ],
         "interactiveMapUrl": "assets/secura-masterplan-3d.html"
