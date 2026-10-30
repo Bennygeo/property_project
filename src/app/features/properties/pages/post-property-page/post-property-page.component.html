@@ -35,232 +35,506 @@
 
       <form (submit)="$event.preventDefault(); onSubmit()" class="user-post-form">
 
-        <!-- SECTION 1: CORE CATEGORY -->
-        <div class="form-block">
-          <h3 class="block-heading">
-            <span class="material-symbols-outlined block-icon">category</span>
-            <span>1. Property Type &amp; Transaction Mode</span>
-          </h3>
-          <p class="section-subtext">
-            Select the property classification. The specifications below will automatically adapt to your property type.
-          </p>
-
-          <!-- Visual Interactive Property Type Cards -->
-          <div class="type-selector-grid">
-            @for (item of propertyTypes; track item.id) {
-            <div class="type-selector-card" [class.selected]="form.propertyType === item.id"
-              (click)="selectPropertyType(item.id)">
-              <div class="type-icon-box">
-                <span class="material-symbols-outlined">{{ item.icon }}</span>
-              </div>
-              <div class="type-text-box">
-                <span class="type-title">{{ item.label }}</span>
-                <span class="type-desc">{{ item.desc }}</span>
-              </div>
-              @if (form.propertyType === item.id) {
-              <span class="material-symbols-outlined type-check">check_circle</span>
-              }
+        <!-- EXCEL SHEET MASTER BANNER -->
+        <div class="excel-guide-banner">
+          <div class="guide-banner-left">
+            <span class="material-symbols-outlined guide-icon">table_chart</span>
+            <div>
+              <h4 class="guide-title">Property Master Registry Data</h4>
+              <p class="guide-sub">
+                Enter comprehensive layout, cadastral, infrastructure, and valuation specifications according to the Property Master standard.
+              </p>
             </div>
-            }
           </div>
-
-          <div class="form-grid-2 mode-select-row">
-            <div class="input-group">
-              <label class="input-label">Listing Mode *</label>
-              <select class="form-select" [(ngModel)]="form.listingMode" name="listingMode">
-                <option value="buy">Sell Property (Outright Purchase)</option>
-                <option value="rent">Rent / Long-term Lease</option>
-                <option value="plots">Plot / Land Parcel</option>
-                <option value="commercial">Commercial Space</option>
-              </select>
-            </div>
-
-            @if (isResidential()) {
-            <div class="input-group">
-              <label class="input-label">Bedrooms / Configuration *</label>
-              <select class="form-select" [(ngModel)]="form.bhkBadge" name="bhkBadge">
-                <option value="1 BHK">1 BHK</option>
-                <option value="2 BHK">2 BHK</option>
-                <option value="3 BHK">3 BHK</option>
-                <option value="4 BHK">4 BHK</option>
-                <option value="5+ BHK Villa">5+ BHK Mansion / Villa</option>
-              </select>
-            </div>
-            }
+          <div class="guide-banner-right">
+            <span class="badge-autocalc">
+              <span class="material-symbols-outlined">calculate</span>
+              Auto-Calculated Cents &amp; Total Valuation
+            </span>
           </div>
         </div>
 
-        <div class="form-divider"></div>
-
-        <!-- SECTION 2: TITLE & LOCATION -->
+        <!-- ========================================================= -->
+        <!-- GROUP 1: PROJECT & LEGAL                                  -->
+        <!-- ========================================================= -->
         <div class="form-block">
-          <h3 class="block-heading">
-            <span class="material-symbols-outlined block-icon">pin_drop</span>
-            <span>2. Title &amp; Geographical Location</span>
-          </h3>
-
-          <div class="form-grid-2">
-            <div class="input-group full-col">
-              <label class="input-label">Property Title / Project Name *</label>
-              <input type="text" class="form-input" [(ngModel)]="form.title" name="title"
-                placeholder="e.g. Elegant 3BHK East-Facing Apartment with Lake View" required />
-              <span class="field-hint">A descriptive title gets 3x more investor walkthrough unlocks.</span>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">City *</label>
-              <select class="form-select" [(ngModel)]="form.cityName" name="cityName">
-                <option value="Chennai">Chennai</option>
-                <option value="Bengaluru">Bengaluru</option>
-                <option value="Hyderabad">Hyderabad</option>
-                <option value="Coimbatore">Coimbatore</option>
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Locality / Sector / Landmark *</label>
-              <input type="text" class="form-input" [(ngModel)]="form.localityName" name="localityName"
-                placeholder="e.g. Anna Nagar West Extension" required />
-            </div>
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">gavel</span>
+              <span>1. Project &amp; Legal Details</span>
+            </h3>
+            <span class="group-badge">PROJECT &amp; LEGAL</span>
           </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- SECTION 3: PRICING & MEASUREMENTS -->
-        <div class="form-block">
-          <h3 class="block-heading">
-            <span class="material-symbols-outlined block-icon">currency_rupee</span>
-            <span>3. Valuation &amp; Built-up Specifications</span>
-          </h3>
+          <p class="section-subtext">Core promoter credentials, government layout sanction numbers, and legal title certifications.</p>
 
           <div class="form-grid-3">
             <div class="input-group">
-              <label class="input-label">Expected Total Price *</label>
-              <input type="text" class="form-input" [(ngModel)]="form.price" name="price"
-                placeholder="e.g. ₹ 1.45 Cr or ₹ 65,000/mo" required />
+              <label class="input-label">Project Name *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.projectName" name="projectName" placeholder="e.g. Green Meadows Phase 2" required />
             </div>
 
             <div class="input-group">
-              <label class="input-label">{{ getPricePerUnitLabel() }}</label>
-              <input type="text" class="form-input" [(ngModel)]="form.pricePerSqft" name="pricePerSqft"
-                [placeholder]="getPricePerUnitPlaceholder()" />
+              <label class="input-label">Property ID</label>
+              <input type="text" class="form-input font-mono auto-calc-field" [(ngModel)]="master.propertyId" name="propertyId" readonly title="Auto-generated registry ID" />
             </div>
 
             <div class="input-group">
-              <label class="input-label">{{ getAreaLabel() }}</label>
-              <input type="text" class="form-input" [(ngModel)]="form.sqft" name="sqft"
-                [placeholder]="getAreaPlaceholder()" required />
-            </div>
-
-            <!-- Dynamic Specialized Fields for Plots & Land -->
-            @if (isPlot()) {
-            <div class="input-group">
-              <label class="input-label">Approval Authority *</label>
-              <select class="form-select" [(ngModel)]="form.plotApproval" name="plotApproval">
-                <option value="CMDA Approved">CMDA Sanctioned Layout</option>
-                <option value="DTCP Approved">DTCP Sanctioned Layout</option>
-                <option value="RERA Registered">RERA Registered Layout</option>
-                <option value="Panchayat Approved">Panchayat Approved</option>
-                <option value="Freehold Patta Land">Freehold Patta Deed</option>
-              </select>
+              <label class="input-label">Developer / Promoter Name *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.developer" name="developer" placeholder="e.g. ABC Promoters Pvt Ltd" required />
             </div>
 
             <div class="input-group">
-              <label class="input-label">Frontage Road Width</label>
-              <select class="form-select" [(ngModel)]="form.roadWidth" name="roadWidth">
-                <option value="24 Feet Road">24 Feet Internal Road</option>
-                <option value="30 Feet Road">30 Feet Blacktop Road</option>
-                <option value="40 Feet Road">40 Feet Main Sector Road</option>
-                <option value="60 Feet Road">60 Feet Avenue Corridor</option>
-                <option value="100+ Feet Road">100+ Feet Arterial Highway</option>
-              </select>
+              <label class="input-label">RERA Registration Number</label>
+              <input type="text" class="form-input" [(ngModel)]="master.reraNumber" name="reraNumber" placeholder="e.g. TN/29/Layout/0123/2025" />
             </div>
 
             <div class="input-group">
-              <label class="input-label">Plot Dimensions (L x W)</label>
-              <input type="text" class="form-input" [(ngModel)]="form.plotDimensions" name="plotDimensions"
-                placeholder="e.g. 40 ft x 60 ft (2,400 sq.ft)" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Boundary Wall &amp; Fencing</label>
-              <select class="form-select" [(ngModel)]="form.boundaryWall" name="boundaryWall">
-                <option value="Gated & Compounded">Full Brick Compound Wall</option>
-                <option value="Fenced Boundary">Stone Pillar &amp; Wire Fenced</option>
-                <option value="Corner Open Plot">Corner Double-Road Open</option>
-                <option value="Open Layout">Marked Survey Stones</option>
-              </select>
-            </div>
-            }
-
-            <!-- Dynamic Specialized Fields for Commercial Spaces -->
-            @if (isCommercial()) {
-            <div class="input-group">
-              <label class="input-label">Commercial Asset Type *</label>
-              <select class="form-select" [(ngModel)]="form.commercialType" name="commercialType">
-                <option value="Commercial Office Space">Grade-A Corporate Office Space</option>
-                <option value="Retail Showroom / Shop">High-Street Retail Showroom / Shop</option>
-                <option value="Bare Shell Floor">Bare Shell Commercial Floor Plate</option>
-                <option value="Warehouse / Logistics">Industrial Warehouse / Logistics Hub</option>
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Power Backup / DG Redundancy</label>
-              <select class="form-select" [(ngModel)]="form.powerBackup" name="powerBackup">
-                <option value="100% DG Redundancy">100% Full DG Redundancy (N+1)</option>
-                <option value="Common Area Backup">Common Area &amp; Elevator Backup</option>
-                <option value="Standard EB Grid">Standard 3-Phase Commercial EB</option>
-              </select>
-            </div>
-            }
-
-            <!-- Dynamic Specialized Fields for Farm Land & Estates -->
-            @if (isFarmLand()) {
-            <div class="input-group">
-              <label class="input-label">Water Source &amp; Irrigation *</label>
-              <select class="form-select" [(ngModel)]="form.waterSource" name="waterSource">
-                <option value="Dedicated Borewell & Canal">Dedicated Borewell &amp; Perennial Canal</option>
-                <option value="Open Farm Well">Traditional Copious Open Well</option>
-                <option value="Drip Irrigation Network">Fully Automated Drip Network</option>
-                <option value="Seasonal Ground Water">Seasonal Ground Water</option>
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Boundary &amp; Approach Road</label>
-              <select class="form-select" [(ngModel)]="form.boundaryWall" name="farmBoundary">
-                <option value="Solar Fenced Perimeter">Solar Electric Fenced Perimeter</option>
-                <option value="Live Green Bio-fence">Live Green Tree Bio-Fence</option>
-                <option value="Barbed Wire Fencing">Barbed Wire with Concrete Posts</option>
-                <option value="Open Agricultural Stretch">Open Contiguous Acreage</option>
-              </select>
-            </div>
-            }
-
-            <div class="input-group">
-              <label class="input-label">Facing / Direction</label>
-              <select class="form-select" [(ngModel)]="form.facingOrView" name="facingOrView">
-                <option value="East Facing">East Facing</option>
-                <option value="North Facing">North Facing</option>
-                <option value="North-East Facing">North-East Facing</option>
-                <option value="West Facing">West Facing</option>
-                <option value="South Facing">South Facing</option>
-                @if (isPlot() || isCommercial()) {
-                <option value="Corner Double-Road Facing">Corner Double-Road Facing</option>
-                <option value="Main Avenue Facing">Main Avenue Corridor Facing</option>
-                } @else {
-                <option value="Sea / Bay Facing">Sea / Bay Facing</option>
-                <option value="Park Canopy Facing">Park Canopy Facing</option>
+              <label class="input-label">DTCP Approved *</label>
+              <select class="form-select" [(ngModel)]="master.dtcpApproved" name="dtcpApproved">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
                 }
               </select>
             </div>
 
             <div class="input-group">
-              <label class="input-label">RERA or CMDA / Patta Reference</label>
-              <input type="text" class="form-input" [(ngModel)]="form.reraNumber" name="reraNumber"
-                placeholder="e.g. TN/29/Building/0192/2026 or Patta #491" />
+              <label class="input-label">DTCP / LP Approval No.</label>
+              <input type="text" class="form-input" [(ngModel)]="master.dtcpApprovalNo" name="dtcpApprovalNo" placeholder="e.g. LP/No.123/2025" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Patta Type *</label>
+              <select class="form-select" [(ngModel)]="master.pattaType" name="pattaType">
+                <option value="">-- Select Patta Type --</option>
+                @for (opt of pattaOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Clear Title / EC Available *</label>
+              <select class="form-select" [(ngModel)]="master.clearTitleAvailable" name="clearTitleAvailable">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Bank Loan Approved *</label>
+              <select class="form-select" [(ngModel)]="master.bankLoanApproved" name="bankLoanApproved">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ========================================================= -->
+        <!-- GROUP 2: LOCATION                                         -->
+        <!-- ========================================================= -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">pin_drop</span>
+              <span>2. Cadastral &amp; Geographical Location</span>
+            </h3>
+            <span class="group-badge">LOCATION</span>
+          </div>
+          <p class="section-subtext">Jurisdiction boundaries, village records, sub-registrar revenue division, and navigation links.</p>
+
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label class="input-label">Area / Location *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.areaLocation" name="areaLocation" placeholder="e.g. Guduvanchery" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Village / Locality *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.villageLocality" name="villageLocality" placeholder="e.g. Nandivaram" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Taluk</label>
+              <input type="text" class="form-input" [(ngModel)]="master.taluk" name="taluk" placeholder="e.g. Chengalpattu" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">District *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.district" name="district" placeholder="e.g. Chengalpattu" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Pincode *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.pincode" name="pincode" placeholder="e.g. 603202" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Google Maps Link</label>
+              <input type="text" class="form-input" [(ngModel)]="master.googleMapsLink" name="googleMapsLink" placeholder="https://maps.google.com/..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ========================================================= -->
+        <!-- GROUP 3: PLOT DETAILS & VALUATION                         -->
+        <!-- ========================================================= -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">square_foot</span>
+              <span>3. Plot Details &amp; Valuation (Auto-Calculated)</span>
+            </h3>
+            <span class="group-badge">PLOT DETAILS</span>
+          </div>
+          <p class="section-subtext">
+            Enter sq.ft and rate. Cents (sq.ft ÷ 435.6) and Total Price are auto-calculated in real time.
+          </p>
+
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label class="input-label">Plot No. *</label>
+              <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo" placeholder="e.g. A-12" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Plot Size (sq.ft) *</label>
+              <input type="number" class="form-input" [(ngModel)]="master.plotSizeSqft" name="plotSizeSqft" (ngModelChange)="onPlotSizeSqftChange()" placeholder="e.g. 1200" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">
+                Plot Size (cents)
+                <span class="auto-calc-tag">Auto: sq.ft ÷ 435.6</span>
+              </label>
+              <div class="calc-box-wrapper">
+                <input type="number" step="0.01" class="form-input auto-calc-field font-mono" [ngModel]="master.plotSizeCents" name="plotSizeCents" readonly />
+                <span class="calc-unit-pill">Cents</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Dimension (ft)</label>
+              <input type="text" class="form-input" [(ngModel)]="master.dimension" name="dimension" placeholder="e.g. 30 x 40" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Facing *</label>
+              <select class="form-select" [(ngModel)]="master.facing" name="facing">
+                <option value="">-- Select Facing --</option>
+                @for (opt of facingOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Corner Plot *</label>
+              <select class="form-select" [(ngModel)]="master.cornerPlot" name="cornerPlot">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Land Use *</label>
+              <select class="form-select" [(ngModel)]="master.landUse" name="landUse">
+                <option value="">-- Select Land Use --</option>
+                @for (opt of landUseOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Price per sq.ft (₹) *</label>
+              <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft" (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">
+                Total Price (₹)
+                <span class="auto-calc-tag">Auto: sq.ft × rate</span>
+              </label>
+              <div class="calc-box-wrapper">
+                <input type="number" class="form-input auto-calc-field font-bold" [ngModel]="master.totalPrice" name="totalPrice" readonly />
+                <span class="calc-unit-pill highlight">{{ getFormattedTotalPrice() }}</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Availability *</label>
+              <select class="form-select" [(ngModel)]="master.availability" name="availability">
+                @for (opt of availabilityOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ========================================================= -->
+        <!-- GROUP 4: NEARBY FACILITIES & DISTANCES (KM)                -->
+        <!-- ========================================================= -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">near_me</span>
+              <span>4. Nearby Facilities &amp; Distances (km)</span>
+            </h3>
+            <span class="group-badge">NEARBY FACILITIES</span>
+          </div>
+          <p class="section-subtext">Strategic growth corridor, transit stations, and social infrastructure access.</p>
+
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label class="input-label">Strategic Corridor *</label>
+              <select class="form-select" [(ngModel)]="master.corridor" name="corridor">
+                <option value="">-- Select Strategic Corridor --</option>
+                @for (opt of corridorOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Highway Name</label>
+              <input type="text" class="form-input" [(ngModel)]="master.highwayName" name="highwayName" placeholder="e.g. GST Road (NH45)" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Highway Access Distance (km)</label>
+              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.highwayDistance" name="highwayDistance" placeholder="e.g. 1.0" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Petrol Bunk Distance (km)</label>
+              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.petrolBunkDistance" name="petrolBunkDistance" placeholder="e.g. 1.2" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Bus Stop Distance (km)</label>
+              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.busStopDistance" name="busStopDistance" placeholder="e.g. 0.8" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Airport Distance (km)</label>
+              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.airportDistance" name="airportDistance" placeholder="e.g. 28" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Schools (Name &amp; km)</label>
+              <input type="text" class="form-input" [(ngModel)]="master.schoolsNearby" name="schoolsNearby" placeholder="e.g. DAV School - 1.5 km" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Colleges (Name &amp; km)</label>
+              <input type="text" class="form-input" [(ngModel)]="master.collegesNearby" name="collegesNearby" placeholder="e.g. SRM University - 6 km" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Hospital (Name &amp; km)</label>
+              <input type="text" class="form-input" [(ngModel)]="master.hospitalNearby" name="hospitalNearby" placeholder="e.g. Apollo Clinic - 3 km" />
+            </div>
+
+            <div class="input-group full-col">
+              <label class="input-label">Railway Station (Name &amp; km)</label>
+              <input type="text" class="form-input" [(ngModel)]="master.railwayStationNearby" name="railwayStationNearby" placeholder="e.g. Guduvanchery - 2.5 km" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ========================================================= -->
+        <!-- GROUP 5: SUITABILITY & POSSESSION                         -->
+        <!-- ========================================================= -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">verified</span>
+              <span>5. Suitability &amp; Possession</span>
+            </h3>
+            <span class="group-badge">SUITABILITY</span>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="input-group">
+              <label class="input-label">Suited For *</label>
+              <select class="form-select" [(ngModel)]="master.suitedFor" name="suitedFor">
+                <option value="">-- Select Suitability --</option>
+                @for (opt of suitedForOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Possession Timeline</label>
+              <input type="text" class="form-input" [(ngModel)]="master.possessionTimeline" name="possessionTimeline" placeholder="e.g. Immediate / Ready to Build" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ========================================================= -->
+        <!-- GROUP 6: INFRASTRUCTURE & UTILITIES                       -->
+        <!-- ========================================================= -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">engineering</span>
+              <span>6. Infrastructure &amp; On-Site Utilities</span>
+            </h3>
+            <span class="group-badge">INFRASTRUCTURE</span>
+          </div>
+          <p class="section-subtext">Internal roadway finish, water source, power grid, and physical boundary development.</p>
+
+          <div class="form-grid-3">
+            <div class="input-group">
+              <label class="input-label">Electricity *</label>
+              <select class="form-select" [(ngModel)]="master.electricity" name="electricity">
+                <option value="">-- Select Status --</option>
+                @for (opt of utilityOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Water Connection *</label>
+              <select class="form-select" [(ngModel)]="master.waterConnection" name="waterConnection">
+                <option value="">-- Select Status --</option>
+                @for (opt of utilityOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Drainage Facility *</label>
+              <select class="form-select" [(ngModel)]="master.drainageFacility" name="drainageFacility">
+                <option value="">-- Select Facility --</option>
+                @for (opt of drainageOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Road Width (ft) *</label>
+              <input type="number" class="form-input" [(ngModel)]="master.roadWidthFt" name="roadWidthFt" placeholder="e.g. 30" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Road Type *</label>
+              <select class="form-select" [(ngModel)]="master.roadType" name="roadType">
+                <option value="">-- Select Road Type --</option>
+                @for (opt of roadTypeOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Street Lights *</label>
+              <select class="form-select" [(ngModel)]="master.streetLights" name="streetLights">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Compound Wall / Gated *</label>
+              <select class="form-select" [(ngModel)]="master.compoundWallGated" name="compoundWallGated">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Park / Open Space *</label>
+              <select class="form-select" [(ngModel)]="master.park" name="park">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Developer Maintenance after Handover (yrs)</label>
+              <input type="number" class="form-input" [(ngModel)]="master.developerMaintenanceYears" name="developerMaintenanceYears" placeholder="e.g. 2" />
+            </div>
+
+            <div class="input-group full-col">
+              <label class="input-label">Other Amenities</label>
+              <input type="text" class="form-input" [(ngModel)]="master.otherAmenities" name="otherAmenities" placeholder="e.g. Temple, play area, CCTV, Avenue plantation" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ========================================================= -->
+        <!-- GROUP 7: RISK & REMARKS                                   -->
+        <!-- ========================================================= -->
+        <div class="form-block">
+          <div class="block-heading-row">
+            <h3 class="block-heading">
+              <span class="material-symbols-outlined block-icon">shield</span>
+              <span>7. Environmental Risk Audit &amp; Remarks</span>
+            </h3>
+            <span class="group-badge">RISK &amp; REMARKS</span>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="input-group">
+              <label class="input-label">Flood Zone Risk *</label>
+              <select class="form-select" [(ngModel)]="master.floodZone" name="floodZone">
+                <option value="">-- Select Risk Level --</option>
+                @for (opt of floodZoneOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Waterlogging History *</label>
+              <select class="form-select" [(ngModel)]="master.waterloggingHistory" name="waterloggingHistory">
+                <option value="">-- Select --</option>
+                @for (opt of yesNoOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Contact Person / Phone *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.contactPersonPhone" name="contactPersonPhone" placeholder="e.g. Mr. Kumar - 9876543210" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Remarks / Special Highlights</label>
+              <input type="text" class="form-input" [(ngModel)]="master.remarks" name="remarks" placeholder="e.g. Near upcoming metro extension, rapid capital appreciation" />
             </div>
           </div>
         </div>
@@ -462,7 +736,7 @@
                 <span class="status-dot-pulse"></span>
                 <span class="showcase-badge-text">MARKETPLACE COVER PREVIEW</span>
               </div>
-              <h5 class="showcase-title">{{ form.title || 'Your Architectural Listing Title' }}</h5>
+              <h5 class="showcase-title">{{ form.title || master.projectName || 'Your Architectural Listing Title' }}</h5>
               <p class="showcase-location">{{ form.localityName || 'Locality' }}, {{ form.cityName }} • {{ form.price ||
                 'Expected Price' }}</p>
             </div>

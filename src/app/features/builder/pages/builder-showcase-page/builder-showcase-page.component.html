@@ -1,0 +1,437 @@
+<div class="builder-showcase-wrapper">
+  <!-- Top Concierge Bar -->
+  <app-top-concierge-bar />
+
+  <!-- Navigation Header -->
+  <app-header />
+
+  <!-- SUB-NAVIGATION BAR -->
+  <nav class="builder-subnav-bar">
+    <div class="max-w-content subnav-inner">
+      <button type="button" class="btn-subnav-back" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Back to Registry</span>
+      </button>
+
+      <div class="subnav-breadcrumbs">
+        <a routerLink="/" class="crumb-link">Home</a>
+        <span class="crumb-sep">/</span>
+        <a routerLink="/search" class="crumb-link">Developers</a>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{{ builderDossier()?.name || builderName() }}</span>
+      </div>
+
+      <div class="subnav-actions">
+        <button type="button" class="btn-share-portfolio" (click)="shareBuilderProfile()" title="Share Developer Portfolio">
+          <span class="material-symbols-outlined">share</span>
+          <span>Share Profile</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  @if (isLoading()) {
+    <!-- SKELETON LOADER STATE -->
+    <div class="builder-loading-state max-w-content">
+      <div class="loader-spinner"></div>
+      <h3>Loading Verified Developer Portfolio...</h3>
+      <p>Fetching project cadastral records and TNRERA sanction orders from database</p>
+    </div>
+  } @else {
+
+    <!-- 1. EXECUTIVE ARCHITECTURAL SHOWCASE HERO (DISTINCT THEME) -->
+    <header class="executive-builder-hero">
+      <div class="hero-blueprint-grid"></div>
+
+      <div class="max-w-content hero-content-inner">
+        <div class="hero-identity-row">
+          <!-- Developer Corporate Monogram Emblem -->
+          <div class="developer-monogram-box">
+            <span class="material-symbols-outlined monogram-icon">apartment</span>
+            <div class="monogram-verified-glow"></div>
+          </div>
+
+          <!-- Developer Name & Verification Credentials -->
+          <div class="developer-title-meta">
+            <div class="developer-badges-strip">
+              <span class="badge-tnrera-gold">
+                <span class="material-symbols-outlined">verified</span>
+                <span>TNRERA Registered Promoter</span>
+              </span>
+              <span class="badge-dtcp-green">
+                <span class="material-symbols-outlined">gavel</span>
+                <span>DTCP / CMDA Approved</span>
+              </span>
+              <span class="badge-verified-cadastral">
+                <span class="material-symbols-outlined">fact_check</span>
+                <span>Cadastral Verified</span>
+              </span>
+            </div>
+
+            <h1 class="developer-official-name">{{ builderDossier()?.name || builderName() }}</h1>
+
+            <p class="developer-subtitle">
+              <span class="material-symbols-outlined">location_on</span>
+              <span>Active in <strong>{{ builderDossier()?.districts?.join(', ') || 'Tamil Nadu' }}</strong></span>
+              <span class="sub-dot">•</span>
+              <span>Est. <strong>{{ builderDossier()?.estYear || '2016' }}</strong></span>
+              <span class="sub-dot">•</span>
+              <span><strong>{{ builderDossier()?.complianceRating || '99.4%' }}</strong> Title Clearance</span>
+            </p>
+          </div>
+
+          <!-- Developer Contact Action CTAs -->
+          <div class="hero-actions-col">
+            <a [href]="'https://wa.me/919444100000?text=Hi+Find+a+Plot%2C+I+am+interested+in+projects+by+' + (builderDossier()?.name || builderName())"
+               target="_blank" rel="noopener" class="btn-hero-wa">
+              <span class="material-symbols-outlined">chat</span>
+              <span>Contact Developer Desk</span>
+            </a>
+            <a routerLink="/search" [queryParams]="{ developer: builderDossier()?.rawName || builderName() }" class="btn-hero-search">
+              <span class="material-symbols-outlined">search</span>
+              <span>Search in Registry</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- KPI COUNTERS BANNER -->
+        <div class="hero-kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Active Projects</span>
+            <div class="kpi-value-row">
+              <span class="kpi-num">{{ builderDossier()?.totalProjects || projectsList().length }}</span>
+              <span class="kpi-tag">Master Layouts</span>
+            </div>
+            <span class="kpi-sub">DTCP &amp; RERA Sanctioned</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Available Properties</span>
+            <div class="kpi-value-row">
+              <span class="kpi-num">{{ builderDossier()?.totalProperties || propertiesList().length }}</span>
+              <span class="kpi-tag">Plots &amp; Units</span>
+            </div>
+            <span class="kpi-sub">Direct Registry Dossiers</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Operating Districts</span>
+            <div class="kpi-value-row">
+              <span class="kpi-num">{{ builderDossier()?.districts?.length || 1 }}</span>
+              <span class="kpi-tag">Hubs</span>
+            </div>
+            <span class="kpi-sub">{{ builderDossier()?.districts?.join(' • ') || 'Tamil Nadu' }}</span>
+          </div>
+
+          <div class="kpi-card kpi-price-card">
+            <span class="kpi-label">Starting Price</span>
+            <div class="kpi-value-row">
+              <span class="kpi-num-price">{{ builderDossier()?.minPrice || '₹ 25 Lakhs' }}</span>
+            </div>
+            <span class="kpi-sub">Up to {{ builderDossier()?.maxPrice || '₹ 1.8 Cr' }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. STICKY IN-PAGE NAVIGATION TABS -->
+    <nav class="builder-nav-tabs-wrapper">
+      <div class="max-w-content tabs-inner">
+        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'properties'" (click)="setTab('properties')">
+          <span class="material-symbols-outlined">terrain</span>
+          <span>Properties &amp; Plots ({{ propertiesList().length }})</span>
+        </button>
+
+        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'projects'" (click)="setTab('projects')">
+          <span class="material-symbols-outlined">domain</span>
+          <span>Master Projects ({{ projectsList().length }})</span>
+        </button>
+
+        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'credentials'" (click)="setTab('credentials')">
+          <span class="material-symbols-outlined">gavel</span>
+          <span>Cadastral Compliance</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- 3. MAIN PORTFOLIO SHOWCASE CONTAINER -->
+    <main class="max-w-content builder-main-content">
+
+      <!-- SECTION: ABOUT DEVELOPER -->
+      <section class="builder-about-card">
+        <div class="section-gold-header">
+          <span class="material-symbols-outlined">info</span>
+          <h2>About {{ builderDossier()?.name || builderName() }}</h2>
+        </div>
+        <p class="about-text-body">
+          {{ builderDossier()?.about }}
+        </p>
+
+        <div class="credentials-quick-badges">
+          <div class="cred-pill">
+            <span class="material-symbols-outlined">verified</span>
+            <span>100% Clear Title Patta Guarantee</span>
+          </div>
+          <div class="cred-pill">
+            <span class="material-symbols-outlined">account_balance</span>
+            <span>Pre-Approved Bank Loan Tie-ups (SBI, HDFC, ICICI)</span>
+          </div>
+          <div class="cred-pill">
+            <span class="material-symbols-outlined">history_edu</span>
+            <span>30-Year SRO Encumbrance Audit Verified</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: ALL PROPERTIES & PLOTS (ACTIVE BY DEFAULT) -->
+      @if (activeTab() === 'properties') {
+      <section class="builder-properties-section" id="properties-view">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">CADASTRAL VERIFIED LISTINGS</span>
+            <h2 class="section-main-heading">Properties &amp; Land Plots</h2>
+          </div>
+          <span class="badge-project-count">{{ filteredProperties().length }} Properties</span>
+        </div>
+
+        <!-- Filter & Sort Strip -->
+        <div class="properties-filter-toolbar">
+          <div class="filter-chips-row">
+            <button type="button" class="project-chip" [class.active]="selectedProjectFilter() === 'all'" (click)="setProjectFilter('all')">
+              All Projects ({{ propertiesList().length }})
+            </button>
+            @for (proj of projectsList(); track proj.name) {
+            <button type="button" class="project-chip" [class.active]="selectedProjectFilter() === proj.name" (click)="setProjectFilter(proj.name)">
+              {{ proj.name }} ({{ proj.propertyCount }})
+            </button>
+            }
+          </div>
+
+          <div class="sort-select-box">
+            <label for="builder-sort-select">Sort By:</label>
+            <select id="builder-sort-select" [value]="sortBy()" (change)="setSortBy($any($event.target).value)">
+              <option value="featured">Featured First</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="sqft-desc">Plot Extent: Largest</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Properties Grid in Executive Theme -->
+        @if (filteredProperties().length > 0) {
+        <div class="builder-properties-grid">
+          @for (prop of filteredProperties(); track prop.id) {
+          <article class="builder-prop-card">
+            <div class="prop-card-media" [routerLink]="['/property', prop.id]">
+              <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" loading="lazy" decoding="async">
+              <div class="prop-media-overlay"></div>
+
+              <div class="prop-top-badges">
+                <span class="badge-rera-pill">
+                  <span class="material-symbols-outlined">verified</span>
+                  {{ prop.badges.rera }}
+                </span>
+                <span class="badge-tag-pill">{{ prop.badges.specialTag }}</span>
+              </div>
+
+              <div class="prop-bottom-badges">
+                <span class="prop-tour-tag">
+                  <span class="material-symbols-outlined">smart_display</span>
+                  4K Tour &amp; Drone
+                </span>
+                <span class="prop-photos-tag">
+                  <span class="material-symbols-outlined">photo_library</span>
+                  {{ prop.freePhotos.length }} Photos
+                </span>
+              </div>
+            </div>
+
+            <div class="prop-card-content">
+              <!-- Price Banner -->
+              <div class="prop-price-row">
+                <span class="prop-price-main">{{ prop.price }}</span>
+                <span class="prop-rate">{{ prop.pricePerSqFt }}</span>
+              </div>
+
+              <!-- Title & Locality -->
+              <h3 class="prop-card-title">
+                <a [routerLink]="['/property', prop.id]">{{ prop.title }}</a>
+              </h3>
+
+              <p class="prop-locality-text">
+                <span class="material-symbols-outlined">location_on</span>
+                <span>{{ prop.locality }}, {{ prop.city }}</span>
+              </p>
+
+              <!-- Specifications Strip -->
+              <div class="prop-specs-badges">
+                <span class="spec-pill">{{ prop.bhkBadge }}</span>
+                <span class="spec-pill">{{ prop.sqft }}</span>
+                <span class="spec-pill">{{ prop.facingOrView }}</span>
+              </div>
+
+              <!-- Cadastral Highlights -->
+              <div class="prop-highlights-list">
+                @for (hl of prop.highlights.slice(0, 3); track $index) {
+                <div class="hl-bullet">
+                  <span class="material-symbols-outlined">check</span>
+                  <span>{{ hl }}</span>
+                </div>
+                }
+              </div>
+
+              <!-- Card Actions -->
+              <div class="prop-card-actions">
+                <a [routerLink]="['/property', prop.id]" class="btn-view-dossier">
+                  <span>View Cadastral Dossier</span>
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+                <a [href]="prop.whatsappUrl" target="_blank" rel="noopener" class="btn-wa-inquire" title="Chat on WhatsApp">
+                  <span class="material-symbols-outlined">chat</span>
+                </a>
+              </div>
+            </div>
+          </article>
+          }
+        </div>
+        } @else {
+        <div class="no-properties-box">
+          <span class="material-symbols-outlined">search_off</span>
+          <h3>No properties match the selected project filter</h3>
+          <button type="button" class="btn-reset-filter" (click)="setProjectFilter('all')">View All Projects</button>
+        </div>
+        }
+      </section>
+      }
+
+      <!-- SECTION: MASTER PROJECTS SHOWCASE -->
+      @if (activeTab() === 'projects') {
+      <section class="builder-projects-section">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">APPROVED LAYOUT DEVELOPMENTS</span>
+            <h2 class="section-main-heading">Master Projects Portfolio</h2>
+          </div>
+          <span class="badge-project-count">{{ projectsList().length }} Projects</span>
+        </div>
+
+        <div class="projects-showcase-grid">
+          @for (proj of projectsList(); track proj.name) {
+          <article class="project-showcase-card" [class.selected]="selectedProjectFilter() === proj.name">
+            <div class="project-card-media">
+              <img [src]="proj.thumbnail" [alt]="proj.name" (error)="onImgError($event)" loading="lazy" decoding="async">
+              <div class="project-media-gradient"></div>
+              
+              <div class="project-card-badges">
+                @if (proj.reraNumber) {
+                <span class="badge-rera-glass" title="RERA Order: {{ proj.reraNumber }}">
+                  <span class="material-symbols-outlined">verified</span>
+                  {{ proj.reraNumber }}
+                </span>
+                }
+                <span class="badge-units-glass">{{ proj.propertyCount }} Verified Plots</span>
+              </div>
+            </div>
+
+            <div class="project-card-body">
+              <div class="project-loc-tag">
+                <span class="material-symbols-outlined">location_on</span>
+                <span>{{ proj.locality }}, {{ proj.district }}</span>
+              </div>
+
+              <h3 class="project-name-heading">{{ proj.name }}</h3>
+
+              <div class="project-specs-row">
+                <div class="proj-spec-col">
+                  <span class="spec-label">Starting Price</span>
+                  <strong class="spec-val-price">{{ proj.startingPrice }}</strong>
+                </div>
+                <div class="proj-spec-col">
+                  <span class="spec-label">Plot Extent</span>
+                  <strong class="spec-val-area">{{ proj.startingSqft }}</strong>
+                </div>
+              </div>
+
+              @if (proj.highwayName) {
+              <div class="project-corridor-row">
+                <span class="material-symbols-outlined">add_road</span>
+                <span>{{ proj.highwayName }}</span>
+              </div>
+              }
+
+              <div class="project-card-actions">
+                <button type="button" class="btn-filter-project" (click)="setProjectFilter(proj.name); setTab('properties')">
+                  <span class="material-symbols-outlined">filter_list</span>
+                  <span>View {{ proj.propertyCount }} Plots in this Project</span>
+                </button>
+                @if (proj.samplePropertyId) {
+                <a [routerLink]="['/property', proj.samplePropertyId]" class="btn-project-dossier" title="Open Master Dossier">
+                  <span class="material-symbols-outlined">visibility</span>
+                </a>
+                }
+              </div>
+            </div>
+          </article>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- SECTION: CADASTRAL COMPLIANCE & LEGAL CLEARANCES -->
+      @if (activeTab() === 'credentials') {
+      <section class="builder-compliance-section">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">STATUTORY VERIFICATION MATRIX</span>
+            <h2 class="section-main-heading">Compliance &amp; Legal Sanctions</h2>
+          </div>
+        </div>
+
+        <div class="compliance-cards-grid">
+          <div class="compliance-card">
+            <div class="comp-icon-box">
+              <span class="material-symbols-outlined">verified</span>
+            </div>
+            <h4>TNRERA Statutory Registration</h4>
+            <p>Every active project under {{ builderDossier()?.name || builderName() }} is mapped with official TNRERA sanction orders verifying promoter credentials and project layout maps.</p>
+            <div class="comp-tag-green">Official Registry Clearance</div>
+          </div>
+
+          <div class="compliance-card">
+            <div class="comp-icon-box">
+              <span class="material-symbols-outlined">approval</span>
+            </div>
+            <h4>DTCP / CMDA Sanctions</h4>
+            <p>All layouts adhere to government roadway standards (30–60 ft wide bitumen tar roads), earmarked OSR public parks, and designated utility corridors.</p>
+            <div class="comp-tag-green">Sanctioned Master Plans</div>
+          </div>
+
+          <div class="compliance-card">
+            <div class="comp-icon-box">
+              <span class="material-symbols-outlined">description</span>
+            </div>
+            <h4>Revenue Patta Classification</h4>
+            <p>Direct freehold title deeds guaranteeing individual revenue patta generation upon Sub-Registrar Office registration with nil parent deed ambiguities.</p>
+            <div class="comp-tag-green">Direct SRO Freehold</div>
+          </div>
+
+          <div class="compliance-card">
+            <div class="comp-icon-box">
+              <span class="material-symbols-outlined">account_balance</span>
+            </div>
+            <h4>Pre-Approved Banking Partners</h4>
+            <p>Direct loan sanctions available through SBI, HDFC Bank, ICICI Bank, and Axis Bank with pre-vetted legal paperwork for immediate disbursement.</p>
+            <div class="comp-tag-green">80% Loan Support</div>
+          </div>
+        </div>
+      </section>
+      }
+
+    </main>
+  }
+
+  <!-- Footer -->
+  <app-footer />
+</div>
+

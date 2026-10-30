@@ -9,9 +9,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../helpers/property_master_helper.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
+use Mannidam\Helpers\PropertyMasterHelper;
 
 Response::initCors();
 

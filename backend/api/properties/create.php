@@ -9,9 +9,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../helpers/property_master_helper.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
+use Mannidam\Helpers\PropertyMasterHelper;
 
 Response::initCors();
 
@@ -39,6 +41,37 @@ $reraNumber   = trim($input['reraNumber'] ?? 'Applied / SRO Sanctioned');
 $userId       = (int)($input['userId'] ?? 1);
 $userName     = trim($input['userName'] ?? 'Verified Investor');
 
+
+$masterDetails = $input['masterDetails'] ?? $input['masterData'] ?? null;
+if (!empty($masterDetails) && is_array($masterDetails)) {
+    if (empty($title)) {
+        $pName = trim((string)($masterDetails['projectName'] ?? 'Verified Plot'));
+        $pNo   = trim((string)($masterDetails['plotNo'] ?? ''));
+        $title = $pName . ($pNo !== '' ? " - Plot {$pNo}" : '');
+    }
+    if (empty($price) && !empty($masterDetails['totalPrice'])) {
+        $price = '₹ ' . number_format((float)$masterDetails['totalPrice']);
+    }
+    if (empty($pricePerSqft) && !empty($masterDetails['pricePerSqft'])) {
+        $pricePerSqft = '₹ ' . number_format((float)$masterDetails['pricePerSqft']) . '/sq.ft';
+    }
+    if (empty($sqft) && !empty($masterDetails['plotSizeSqft'])) {
+        $cVal = (float)($masterDetails['plotSizeCents'] ?? 0);
+        $sqft = $masterDetails['plotSizeSqft'] . ' sq.ft' . ($cVal > 0 ? " ({$cVal} Cents)" : '');
+    }
+    if (empty($localityName) || $localityName === 'Anna Nagar') {
+        $localityName = !empty($masterDetails['areaLocation']) ? $masterDetails['areaLocation'] : (!empty($masterDetails['villageLocality']) ? $masterDetails['villageLocality'] : $localityName);
+    }
+    if (!empty($masterDetails['district'])) {
+        $cityName = $masterDetails['district'];
+    }
+    if (!empty($masterDetails['reraNumber'])) {
+        $reraNumber = $masterDetails['reraNumber'];
+    }
+    if (!empty($masterDetails['facing'])) {
+        $facingOrView = $masterDetails['facing'] . ' Facing' . (($masterDetails['cornerPlot'] ?? '') === 'Yes' ? ' (Corner)' : '');
+    }
+}
 if (empty($title)) {
     Response::error('Property title is mandatory', 400);
 }
@@ -250,6 +283,14 @@ if (!empty($highlights) && is_array($highlights)) {
         }
     }
 
+
+if (!empty($masterDetails) && is_array($masterDetails)) {
+        try {
+            PropertyMasterHelper::saveMasterDetails($db, $propId, $masterDetails);
+        } catch (\Throwable $e) {
+            error_log('User post master details insert error: ' . $e->getMessage());
+        }
+    }
 
 Response::success([
     'propertyId' => $propId,

@@ -1,3 +1,4 @@
+import { PropertyMasterData } from './property-master.model';
 export type PropertyReviewStatus = 
   | 'published' 
   | 'pending_review' 
@@ -69,6 +70,7 @@ export interface PostPropertyPayload {
   authorName: string;
   authorRole: string;
   galleryImages?: string[];
+  masterDetails?: PropertyMasterData;
 }
 
 export interface ReviewDecisionPayload {

@@ -1,7 +1,6 @@
 import { Component, inject, signal, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { WalletService } from '../../../../core/services/wallet.service';
 import { PropertyService } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -81,16 +80,6 @@ import { AuthService } from '../../../../core/services/auth.service';
 
         <!-- Right Actions -->
         <div class="header-actions">
-          <!-- Minimalistic Points View -->
-          <a 
-            routerLink="/wallet" 
-            (click)="walletService.navigateToWallet()" 
-            class="minimal-points-pill" 
-            title="Media Points Balance: {{ walletService.balance() }} (Click for Wallet)">
-            <span class="material-symbols-outlined points-glyph">token</span>
-            <span class="points-val">{{ walletService.balance() }}</span>
-            <span class="points-lbl">Pts</span>
-          </a>
 
           <!-- Shortlist Counter -->
           <a class="shortlist-btn" href="#featured-section" title="Saved Properties">
@@ -127,20 +116,12 @@ import { AuthService } from '../../../../core/services/auth.service';
                   <div class="user-dropdown-header">
                     <div class="dd-name">{{ authService.currentUser()?.name }}</div>
                     <div class="dd-phone">{{ authService.currentUser()?.phone }}</div>
-                    <div class="dd-points" (click)="walletService.navigateToWallet(); isUserMenuOpen.set(false)" style="cursor: pointer;" title="Open Dedicated Wallet">
-                      <span class="coin-icon">🪙</span>
-                      <span>{{ walletService.balance() }} Media Points (Click for Wallet)</span>
-                    </div>
                   </div>
 
                   <div class="user-dropdown-body">
                     <a routerLink="/admin" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined text-purple">admin_panel_settings</span>
                       <span>Admin Review Portal (Maker-Checker)</span>
-                    </a>
-                    <a routerLink="/wallet" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
-                      <span class="material-symbols-outlined text-amber">account_balance_wallet</span>
-                      <span>Media Wallet &amp; Payments</span>
                     </a>
                     <a routerLink="/profile" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined">dashboard</span>
@@ -207,8 +188,6 @@ import { AuthService } from '../../../../core/services/auth.service';
                   <div class="drawer-user-info">
                     <span class="drawer-user-name">{{ authService.currentUser()?.name }}</span>
                     <span class="drawer-user-role">{{ authService.currentUser()?.phone }}</span>
-                    <div class="drawer-user-pts" (click)="walletService.navigateToWallet(); closeMobileMenu()">
-                    </div>
                   </div>
                 </div>
               } @else {
@@ -263,11 +242,6 @@ import { AuthService } from '../../../../core/services/auth.service';
                   <a class="drawer-nav-item" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined">domain</span>
                     <span>Commercial Spaces</span>
-                  </a>
-                  <a class="drawer-nav-item" routerLink="/wallet" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined text-amber">account_balance_wallet</span>
-                    <span>Media Points Wallet</span>
-                    <span class="pts-badge">{{ walletService.balance() }} Pts</span>
                   </a>
                   <a class="drawer-nav-item" href="#featured-section" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined text-red">favorite</span>
@@ -529,12 +503,6 @@ import { AuthService } from '../../../../core/services/auth.service';
       .header-actions {
         gap: 0.45rem;
       }
-      .minimal-points-pill {
-        padding: 0.3rem 0.55rem;
-      }
-      .points-lbl {
-        display: none;
-      }
       .signin-btn {
         height: 36px;
         padding: 0 0.65rem;
@@ -554,37 +522,6 @@ import { AuthService } from '../../../../core/services/auth.service';
     }
 
     /* Minimalistic Points Pill */
-    .minimal-points-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #0f172a;
-      text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .minimal-points-pill:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-      transform: translateY(-1px);
-    }
-    .points-glyph {
-      font-size: 16px;
-      color: var(--brand-red);
-    }
-    .points-val {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .points-lbl {
-      font-size: 11px;
-      font-weight: 600;
-      color: #64748b;
-    }
 
     /* Shortlist Button */
     .shortlist-btn {
@@ -781,19 +718,6 @@ import { AuthService } from '../../../../core/services/auth.service';
       font-size: 12px;
       color: var(--text-slate-500);
       margin-top: 2px;
-    }
-    .dd-points {
-      margin-top: 0.5rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0.25rem 0.5rem;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #92400e;
     }
     .user-dropdown-body {
       padding: 0.5rem;
@@ -1272,7 +1196,6 @@ import { AuthService } from '../../../../core/services/auth.service';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
-  readonly walletService = inject(WalletService);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
 

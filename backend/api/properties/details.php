@@ -35,7 +35,7 @@ $db = (new Database())->getConnection();
 $propStmt = $db->prepare("
     SELECT 
         p.*,
-        c.city_key AS cityKey,
+        COALESCE(c.city_key, LOWER(p.city_name), 'chennai') AS cityKey,
         d.id AS dev_id,
         d.name AS dev_name,
         d.established_year AS dev_est_year,
@@ -46,7 +46,7 @@ $propStmt = $db->prepare("
         d.about_text AS dev_about,
         d.logo_url AS dev_logo
     FROM properties p
-    JOIN cities c ON p.city_id = c.id
+    LEFT JOIN cities c ON p.city_id = c.id
     LEFT JOIN developers d ON p.developer_id = d.id
     WHERE p.id = ?
     LIMIT 1
@@ -264,6 +264,85 @@ $developer = !empty($prop['dev_id']) ? [
     'aboutText'         => $prop['dev_about'],
 ] : null;
 
+// 11. Property Master Details from Excel Schema
+$masterStmt = $db->prepare("SELECT * FROM property_master_details WHERE property_id = ? LIMIT 1");
+$masterStmt->execute([$id]);
+$masterRow = $masterStmt->fetch();
+$masterDetails = null;
+if ($masterRow) {
+    $masterDetails = [
+        'propertyId'                => $masterRow['property_id'],
+        'projectName'               => $masterRow['project_name'],
+        'developer'                 => $masterRow['developer'],
+        'reraNumber'                => $masterRow['rera_number'],
+        'dtcpApproved'              => $masterRow['dtcp_approved'],
+        'dtcpApprovalNo'            => $masterRow['dtcp_approval_no'],
+        'pattaType'                 => $masterRow['patta_type'],
+        'clearTitleAvailable'       => $masterRow['clear_title_available'],
+        'bankLoanApproved'          => $masterRow['bank_loan_approved'],
+        'areaLocation'              => $masterRow['area_location'],
+        'villageLocality'           => $masterRow['village_locality'],
+        'taluk'                     => $masterRow['taluk'],
+        'district'                  => $masterRow['district'],
+        'pincode'                   => $masterRow['pincode'],
+        'googleMapsLink'            => $masterRow['google_maps_link'],
+        'plotNo'                    => $masterRow['plot_no'],
+        'plotSizeSqft'              => (float)$masterRow['plot_size_sqft'],
+        'plotSizeCents'             => (float)$masterRow['plot_size_cents'],
+        'dimension'                 => $masterRow['dimension'],
+        'facing'                    => $masterRow['facing'],
+        'cornerPlot'                => $masterRow['corner_plot'],
+        'landUse'                   => $masterRow['land_use'],
+        'pricePerSqft'              => (float)$masterRow['price_per_sqft'],
+        'totalPrice'                => (float)$masterRow['total_price'],
+        'availability'              => $masterRow['availability'],
+        'petrolBunkDistance'        => $masterRow['petrol_bunk_distance'] !== null ? (float)$masterRow['petrol_bunk_distance'] : null,
+        'schoolsNearby'             => $masterRow['schools_nearby'],
+        'collegesNearby'            => $masterRow['colleges_nearby'],
+        'hospitalNearby'            => $masterRow['hospital_nearby'],
+        'corridor'                  => $masterRow['corridor'],
+        'busStopDistance'           => $masterRow['bus_stop_distance'] !== null ? (float)$masterRow['bus_stop_distance'] : null,
+        'railwayStationNearby'      => $masterRow['railway_station_nearby'],
+        'highwayName'               => $masterRow['highway_name'],
+        'highwayDistance'           => $masterRow['highway_distance'] !== null ? (float)$masterRow['highway_distance'] : null,
+        'airportDistance'           => $masterRow['airport_distance'] !== null ? (float)$masterRow['airport_distance'] : null,
+        'suitedFor'                 => $masterRow['suited_for'],
+        'possessionTimeline'        => $masterRow['possession_timeline'],
+        'electricity'               => $masterRow['electricity'],
+        'waterConnection'           => $masterRow['water_connection'],
+        'drainageFacility'          => $masterRow['drainage_facility'],
+        'roadWidthFt'               => $masterRow['road_width_ft'] !== null ? (int)$masterRow['road_width_ft'] : null,
+        'roadType'                  => $masterRow['road_type'],
+        'streetLights'              => $masterRow['street_lights'],
+        'compoundWallGated'         => $masterRow['compound_wall_gated'],
+        'park'                      => $masterRow['park'],
+        'otherAmenities'            => $masterRow['other_amenities'],
+        'developerMaintenanceYears' => $masterRow['developer_maintenance_years'] !== null ? (int)$masterRow['developer_maintenance_years'] : null,
+        'floodZone'                 => $masterRow['flood_zone'],
+        'waterloggingHistory'       => $masterRow['waterlogging_history'],
+        'contactPersonPhone'        => $masterRow['contact_person_phone'],
+        'remarks'                   => $masterRow['remarks'],
+    ];
+}
+
+// Determine developer projects count (to hide dedicated builder page if only 1 project)
+$devName = $masterRow['developer'] ?? ($prop['dev_name'] ?? null);
+$developerProjectsCount = 1;
+if (!empty($devName)) {
+    try {
+        $devCountStmt = $db->prepare("
+            SELECT COUNT(DISTINCT CASE WHEN TRIM(COALESCE(project_name, '')) != '' THEN TRIM(project_name) ELSE property_id END)
+            FROM property_master_details
+            WHERE TRIM(developer) = ?
+        ");
+        $devCountStmt->execute([trim((string)$devName)]);
+        $cnt = (int)$devCountStmt->fetchColumn();
+        if ($cnt > 0) {
+            $developerProjectsCount = $cnt;
+        }
+    } catch (\Throwable $e) {}
+}
+
 // Assemble Final Property Response Payload
 $response = array_merge([
     'id'                => $prop['id'],
@@ -302,6 +381,9 @@ $response = array_merge([
     'cadastralAudit'    => $cadastralAudit,
     'faqs'              => $faqs,
     'developer'         => $developer,
+    'developerName'     => $devName,
+    'developerProjectsCount' => $developerProjectsCount,
+    'masterDetails'     => $masterDetails,
     'subdividedPlots'   => $subdividedPlots,
 ], $typeFactsheet);
 

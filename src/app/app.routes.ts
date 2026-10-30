@@ -17,14 +17,14 @@ export const routes: Routes = [
     title: 'Property Details — Find a Plot Verified Registry'
   },
   {
+    path: 'builder/:name',
+    loadComponent: () => import('./features/builder/pages/builder-showcase-page/builder-showcase-page.component').then(m => m.BuilderShowcasePageComponent),
+    title: 'Developer Profile & Verified Projects — Find a Plot'
+  },
+  {
     path: 'profile',
     loadComponent: () => import('./features/profile/pages/user-profile-page/user-profile-page.component').then(m => m.UserProfilePageComponent),
     title: 'Investor Dashboard & Profile — Find a Plot Verified Registry'
-  },
-  {
-    path: 'wallet',
-    loadComponent: () => import('./features/wallet/pages/wallet-page/wallet-page.component').then(m => m.WalletPageComponent),
-    title: 'Media Points Wallet & Payments — Find a Plot Verified Registry'
   },
   {
     path: 'admin/login',

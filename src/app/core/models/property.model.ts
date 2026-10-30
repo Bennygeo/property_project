@@ -1,3 +1,4 @@
+import { PropertyMasterData } from './property-master.model';
 import { SubdividedPlot } from './subdivided-plot.model';
 
 export type PropertyType = 'Apartments & Flats' | 'Independent Villas' | 'Luxury Penthouses' | 'Gated CMDA Plots' | 'Commercial Spaces';
@@ -169,4 +170,38 @@ export interface Property {
   faqs?: FaqItem[];
   subdividedPlots?: SubdividedPlot[];
   interactiveMapUrl?: string;
+  masterDetails?: PropertyMasterData;
+  googleMapsLink?: string;
+  latitude?: number;
+  longitude?: number;
+  isGpsValid?: boolean;
+  gpsErrorReason?: string;
+  gpsFormatted?: string;
+  distanceKm?: number;
+
+  // Master property factsheet fields from bulk upload
+  developerName?: string;
+  projectName?: string;
+  villageLocality?: string;
+  district?: string;
+  taluk?: string;
+  corridor?: string;
+  pincode?: string;
+  plotSizeSqft?: number;
+  plotSizeCents?: number;
+  facing?: string;
+  pattaType?: string;
+  dtcpApproved?: string;
+  dtcpApprovalNo?: string;
+  roadWidthFt?: number;
+  highwayName?: string;
+  developerProjectsCount?: number;
+  isRadiusSuggestion?: boolean;
+  isClosestProximity?: boolean;
+  isSuggested?: boolean;
+  closestNeighborDistanceKm?: number;
+  closestNeighborLocality?: string;
+  closestNeighborId?: string;
 }
+
+export * from './property-master.model';

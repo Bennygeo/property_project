@@ -18,19 +18,275 @@
         <span class="crumb-current">Verified Cadastral Registry Search</span>
       </nav>
 
-      <!-- Main Omnibox Search Field -->
+      <!-- Main Omnibox Search Field with Target District Prefix Dropdown -->
       <div class="search-omnibox-row">
-        <div class="search-omnibox">
+        <!-- Target District Custom Selector Dropdown (Matches Omnibox & Search UI) -->
+        <div class="district-target-selector"
+             [class.has-selection]="!!selectedDistrict()"
+             [class.is-open]="isDistrictDropdownOpen()"
+             (click)="toggleDistrictDropdown($event)"
+             role="combobox"
+             [attr.aria-expanded]="isDistrictDropdownOpen()"
+             aria-haspopup="listbox"
+             aria-label="Select Target District">
+          
+          <div class="district-trigger-content">
+            <span class="material-symbols-outlined district-selector-icon">location_on</span>
+            <div class="district-trigger-texts">
+              <span class="district-trigger-label">Target Area</span>
+              <span class="district-trigger-value" [title]="selectedDistrict() || 'All Districts & Regions'">
+                {{ selectedDistrict() || 'All Districts & Regions' }}
+              </span>
+            </div>
+          </div>
+
+          @if (selectedDistrict()) {
+            <button type="button"
+                    class="district-clear-mini"
+                    (click)="clearDistrictSelection($event)"
+                    title="Clear district filter"
+                    aria-label="Clear district filter">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+
+          <span class="material-symbols-outlined district-arrow-icon" [class.is-rotated]="isDistrictDropdownOpen()">expand_more</span>
+
+          <!-- Modern Custom Popover Dropdown Panel -->
+          @if (isDistrictDropdownOpen()) {
+            <div class="district-custom-dropdown" (click)="$event.stopPropagation()" role="listbox">
+              <div class="district-dropdown-header">
+                <div class="dist-header-title-wrap">
+                  <span class="dist-header-title">Target Area / District</span>
+                  <span class="dist-header-sub">Narrow locality suggestions to your preferred region</span>
+                </div>
+                <span class="dist-header-badge">{{ totalDistrictsCount() }} Districts</span>
+              </div>
+
+              <!-- Quick In-Dropdown Search Filter -->
+              <div class="district-search-bar" (click)="$event.stopPropagation()">
+                <span class="material-symbols-outlined dist-search-icon">search</span>
+                <input type="text"
+                       class="dist-search-input"
+                       placeholder="Filter districts (e.g. Chennai, Coimbatore, Salem)..."
+                       [value]="districtSearchQuery()"
+                       (input)="districtSearchQuery.set($any($event.target).value)"
+                       (click)="$event.stopPropagation()">
+                @if (districtSearchQuery()) {
+                  <button type="button" class="dist-search-clear" (click)="districtSearchQuery.set(''); $event.stopPropagation()" aria-label="Clear filter">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                }
+              </div>
+
+              <div class="district-scroll-area">
+                <!-- Option: All Districts & Regions -->
+                @if (!districtSearchQuery()) {
+                  <div class="district-opt-item district-opt-all"
+                       [class.is-active]="!selectedDistrict()"
+                       (click)="onSelectDistrictOption('')"
+                       role="option"
+                       [attr.aria-selected]="!selectedDistrict()">
+                    <div class="opt-left">
+                      <div class="opt-icon-circle opt-icon-globe">
+                        <span class="material-symbols-outlined">public</span>
+                      </div>
+                      <div class="opt-text">
+                        <div class="opt-name-row">
+                          <span class="opt-name">All Districts &amp; Regions</span>
+                        </div>
+                        <span class="opt-sub">Statewide Tamil Nadu property search</span>
+                      </div>
+                    </div>
+                    <div class="opt-right">
+                      <span class="opt-count-pill">{{ totalAllPropertiesCount() }} properties</span>
+                      @if (!selectedDistrict()) {
+                        <span class="material-symbols-outlined opt-check">check_circle</span>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- 🌟 10 Main Areas -->
+                @if (filteredMainHubs().length > 0) {
+                  <div class="district-group-section">
+                    <div class="group-header group-header-hubs">
+                      <span class="group-title">
+                        <span class="group-emoji">🌟</span> 10 Main Areas
+                      </span>
+                      <span class="group-badge">Major Real Estate Hubs</span>
+                    </div>
+                    <div class="group-grid">
+                      @for (hub of filteredMainHubs(); track hub.name) {
+                        <div class="district-opt-card"
+                             [class.is-active]="selectedDistrict() === hub.name"
+                             (click)="onSelectDistrictOption(hub.name)"
+                             role="option"
+                             [attr.aria-selected]="selectedDistrict() === hub.name">
+                          <div class="card-top">
+                            <span class="material-symbols-outlined hub-icon">apartment</span>
+                            <span class="card-name">{{ hub.name }}</span>
+                            @if (selectedDistrict() === hub.name) {
+                              <span class="material-symbols-outlined card-check">check_circle</span>
+                            }
+                          </div>
+                          <div class="card-meta">
+                            <span class="card-count">{{ hub.propertyCount }} properties</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Regional Groups (Western, Southern, Central, Northern) -->
+                @for (group of filteredRegionalGroups(); track group.regionName) {
+                  <div class="district-group-section">
+                    <div class="group-header">
+                      <span class="group-title">
+                        <span class="material-symbols-outlined group-icon-geo">explore</span>
+                        {{ group.regionName }}
+                      </span>
+                      <span class="group-count-tag">{{ group.districts.length }} districts</span>
+                    </div>
+                    <div class="group-list">
+                      @for (dist of group.districts; track dist.name) {
+                        <div class="district-opt-item"
+                             [class.is-active]="selectedDistrict() === dist.name"
+                             (click)="onSelectDistrictOption(dist.name)"
+                             role="option"
+                             [attr.aria-selected]="selectedDistrict() === dist.name">
+                          <div class="opt-left">
+                            <div class="opt-icon-circle">
+                              <span class="material-symbols-outlined">domain</span>
+                            </div>
+                            <div class="opt-text">
+                              <span class="opt-name">{{ dist.name }}</span>
+                              <span class="opt-sub">{{ dist.region }}</span>
+                            </div>
+                          </div>
+                          <div class="opt-right">
+                            <span class="opt-count-pill">{{ dist.propertyCount }} properties</span>
+                            @if (selectedDistrict() === dist.name) {
+                              <span class="material-symbols-outlined opt-check">check_circle</span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @if (filteredMainHubs().length === 0 && filteredRegionalGroups().length === 0) {
+                  <div class="district-empty-results">
+                    <span class="material-symbols-outlined">search_off</span>
+                    <p>No districts found matching "{{ districtSearchQuery() }}"</p>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="search-omnibox" [class.has-dropdown]="isSuggestionsOpen() && searchSuggestions().length > 0">
           <span class="material-symbols-outlined omnibox-icon">search</span>
-          <input type="text" class="omnibox-input" [value]="searchQuery()"
-            (input)="onSearchInput($any($event.target).value)" autocomplete="off" autocorrect="off" autocapitalize="off"
-            spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
-            placeholder="Search by locality (e.g. OMR, Whitefield, Powai), project, or title keyword...">
-          @if (searchQuery()) {
+
+          <!-- Multi-Level Selected Locality / Area Tags (e.g. Porur, Ramapuram) -->
+          <div class="omnibox-tags-container">
+            @for (loc of selectedLocalities(); track loc; let idx = $index) {
+            <span class="locality-tag-badge">
+              <span class="material-symbols-outlined tag-loc-icon">location_on</span>
+              <span class="tag-loc-text">{{ loc }}</span>
+              <button type="button" class="tag-loc-remove" (click)="removeLocalityTag(idx)" title="Remove {{ loc }}">&times;</button>
+            </span>
+            }
+
+            @if (isNearbyGpsActive()) {
+            <span class="locality-tag-badge gps-active-tag">
+              <span class="material-symbols-outlined tag-loc-icon">my_location</span>
+              <span class="tag-loc-text">Near Me (&le; 5 km)</span>
+              <button type="button" class="tag-loc-remove" (click)="clearNearbyGps()" title="Exit Near Me Search">&times;</button>
+            </span>
+            }
+
+            <input #omniboxInput type="text" class="omnibox-input" [value]="rawSearchInput()"
+              (input)="onSearchInput($any($event.target).value)"
+              (focus)="onSearchFocus()"
+              (blur)="onSearchBlur()"
+              (keydown)="onSearchKeydown($event)"
+              autocomplete="off" autocorrect="off" autocapitalize="off"
+              spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
+              [placeholder]="isNearbyGpsActive() ? 'Searching within 5 km of your location...' : (selectedDistrict() ? ('Search localities in ' + selectedDistrict() + ' (e.g. ' + getDistrictLocalityHint(selectedDistrict()) + ')...') : (selectedLocalities().length > 0 ? 'Add more localities (e.g. Ramapuram, Guindy)...' : 'Add locality (e.g. Porur, Ramapuram, Coimbatore), builder, or project...'))">
+          </div>
+
+          <!-- GPS Locate Button (Inside Omnibox Input Field) -->
+          @if (isGeolocationAvailable()) {
+          <button type="button"
+                  class="omnibox-gps-btn"
+                  [class.is-active]="isNearbyGpsActive()"
+                  [class.is-loading]="isNearbyLoading()"
+                  (click)="triggerNearbySearch()"
+                  [title]="isNearbyGpsActive() ? 'Nearby Search Active (< 5 km) - Click to exit' : 'Find Properties Near Me (< 5 km)'"
+                  aria-label="Find Properties Near Me (< 5 km)">
+            @if (isNearbyLoading()) {
+              <span class="material-symbols-outlined gps-spin">progress_activity</span>
+            } @else {
+              <span class="material-symbols-outlined">{{ isNearbyGpsActive() ? 'my_location' : 'near_me' }}</span>
+            }
+            <span class="gps-btn-text">
+              @if (isNearbyLoading()) {
+                Locating...
+              } @else if (isNearbyGpsActive()) {
+                < 5km Active
+              } @else {
+                Near Me
+              }
+            </span>
+          </button>
+          }
+
+          @if (selectedLocalities().length > 0 || rawSearchInput() || isNearbyGpsActive()) {
           <button type="button" class="omnibox-clear-btn" (click)="clearSearchQuery()"
-            aria-label="Clear keyword search">
+            aria-label="Clear all locality searches">
             <span class="material-symbols-outlined">close</span>
           </button>
+          }
+
+          <!-- NoBroker Style Live Autocomplete Dropdown -->
+          @if (isSuggestionsOpen() && searchSuggestions().length > 0) {
+          <div class="search-suggestions-dropdown">
+            <div class="suggestions-header">
+              <span class="sugg-header-title">
+                @if (selectedDistrict()) {
+                  <span>Top Localities in <strong>{{ selectedDistrict() }}</strong></span>
+                } @else {
+                  <span>{{ rawSearchInput().length >= 2 ? 'Verified Places & Locations' : 'Popular & Trending Locations' }}</span>
+                }
+              </span>
+              <span class="sugg-header-tag">{{ selectedDistrict() ? (selectedDistrict() + ' Targeted') : (rawSearchInput().length >= 2 ? 'Google Places Active' : 'Explore') }}</span>
+            </div>
+            <ul class="suggestions-list">
+              @for (item of searchSuggestions(); track item.query + item.label) {
+              <li class="suggestion-item" (mousedown)="selectSuggestion(item)">
+                <div class="suggestion-icon-wrap" [attr.data-type]="item.type">
+                  <span class="material-symbols-outlined">{{ item.icon }}</span>
+                </div>
+                <div class="suggestion-text">
+                  <div class="suggestion-title-row">
+                    <span class="suggestion-label">{{ item.label }}</span>
+                    @if (item.type === 'google_place') {
+                      <span class="google-place-pill">Google Place</span>
+                    }
+                  </div>
+                  <span class="suggestion-sub">{{ item.sub }}</span>
+                </div>
+                @if (item.query) {
+                  <span class="suggestion-type-badge">+ Add</span>
+                }
+              </li>
+              }
+            </ul>
+          </div>
           }
         </div>
       </div>
@@ -70,6 +326,26 @@
           </button>
         </div>
       </div>
+
+      <!-- Nearby Locality Areas Strip -->
+      @if (nearbyLocalities().length > 0) {
+      <div class="nearby-localities-strip">
+        <div class="nearby-strip-header">
+          <span class="material-symbols-outlined nearby-pin-icon">near_me</span>
+          <span class="nearby-strip-title">{{ nearbyContextLabel() }}</span>
+          <span class="nearby-count-badge">{{ nearbyLocalities().length }} nearby areas</span>
+        </div>
+        <div class="nearby-chips-scroll">
+          @for (loc of nearbyLocalities(); track loc.name) {
+          <button type="button" class="nearby-loc-chip" (click)="selectNearbyLocality(loc)" [title]="loc.distanceTag">
+            <span class="material-symbols-outlined chip-loc-icon">location_on</span>
+            <span class="nearby-chip-name">{{ loc.name }}</span>
+            <span class="nearby-chip-count" [title]="loc.propertyCount + ' verified properties available'">{{ loc.propertyCount }}</span>
+          </button>
+          }
+        </div>
+      </div>
+      }
     </div>
   </section>
 
@@ -100,24 +376,7 @@
         </div>
 
         <div class="sidebar-scrollable" [class.mobile-open]="isMobileFilterOpen()">
-          <!-- 1. Metro Jurisdiction -->
-          <div class="filter-group">
-            <label class="filter-group-label">
-              <span class="material-symbols-outlined label-icon">location_city</span>
-              <span>Metro Jurisdiction</span>
-            </label>
-            <div class="chips-stack">
-              @for (c of cities; track c.value) {
-              <button type="button" class="choice-chip" [class.selected]="selectedCity() === c.value"
-                (click)="setCity(c.value)">
-                <span class="material-symbols-outlined chip-icon">{{ c.icon }}</span>
-                <span>{{ c.label }}</span>
-              </button>
-              }
-            </div>
-          </div>
-
-          <!-- 2. Asset Class / Property Type -->
+          <!-- 1. Asset Class / Property Type -->
           <div class="filter-group">
             <label class="filter-group-label">
               <span class="material-symbols-outlined label-icon">category</span>
@@ -134,7 +393,54 @@
             </div>
           </div>
 
-          <!-- 3. Budget Bracket -->
+          <!-- 2. Verified Builders & Developers (Direct from MySQL Database) -->
+          <div class="filter-group builders-filter-group">
+            <div class="filter-group-header-row">
+              <label class="filter-group-label">
+                <span class="material-symbols-outlined label-icon">corporate_fare</span>
+                <span>Builders / Developers</span>
+              </label>
+              <span class="builders-count-badge">{{ buildersList().length }}</span>
+            </div>
+
+            <!-- Builder Quick Search Input -->
+            <div class="builder-search-box">
+              <span class="material-symbols-outlined builder-search-icon">search</span>
+              <input type="text" class="builder-search-input" [value]="builderSearchQuery()"
+                (input)="onBuilderSearch($any($event.target).value)" placeholder="Filter builders...">
+              @if (builderSearchQuery()) {
+              <button type="button" class="builder-search-clear" (click)="onBuilderSearch('')">&times;</button>
+              }
+            </div>
+
+            <!-- Builders Scrollable Selection Stack -->
+            <div class="builders-chips-stack">
+              <button type="button" class="builder-choice-item" [class.selected]="selectedDeveloper() === 'all'"
+                (click)="setDeveloper('all')">
+                <span class="builder-name">All Builders</span>
+                <span class="builder-pill-total">{{ totalAllBuildersProperties() }}</span>
+              </button>
+
+              @for (b of displayedBuilders(); track b.name) {
+              <button type="button" class="builder-choice-item" [class.selected]="selectedDeveloper() === b.name"
+                (click)="setDeveloper(b.name)" [title]="b.name">
+                <span class="material-symbols-outlined builder-item-icon">apartment</span>
+                <span class="builder-name">{{ b.name }}</span>
+                <span class="builder-prop-count">{{ b.propertyCount }}</span>
+              </button>
+              }
+            </div>
+
+            <!-- Show More / Less Toggle Button -->
+            @if (filteredBuilders().length > 8 && !builderSearchQuery().trim()) {
+            <button type="button" class="btn-toggle-builders" (click)="toggleBuilderExpand()">
+              <span>{{ isBuilderListExpanded() ? 'Show Fewer Builders' : '+ Show All ' + filteredBuilders().length + ' Builders' }}</span>
+              <span class="material-symbols-outlined chevron-sm" [class.rotated]="isBuilderListExpanded()">expand_more</span>
+            </button>
+            }
+          </div>
+
+          <!-- 4. Budget Bracket -->
           <div class="filter-group">
             <label class="filter-group-label">
               <span class="material-symbols-outlined label-icon">payments</span>
@@ -278,12 +584,39 @@
         <!-- Results Counter & Active Pills -->
         <div class="controls-left">
           <h1 class="results-heading">
-            <span class="results-count">{{ filteredProperties().length }}</span>
-            <span class="results-label">Properties &amp; Land Found</span>
+            <span class="results-count">{{ isNearbyGpsActive() ? filteredProperties().length : (propertyService.totalApiProperties() || filteredProperties().length) }}</span>
+            <span class="results-label">
+              @if (isNearbyGpsActive()) {
+                {{ isGpsAutoExpanded() ? 'Nearest Properties with GPS (Beyond 5 km)' : 'Properties Found Within 5 km' }}
+              } @else {
+                Properties &amp; Land Found
+              }
+            </span>
           </h1>
 
           <!-- Active Filter Tags -->
           <div class="active-tags-row">
+            @if (isNearbyGpsActive()) {
+            <div class="active-tag-pill active-tag-gps">
+              <span class="material-symbols-outlined" style="font-size: 14px;">my_location</span>
+              <span>Nearby: &le; 5 km Radius</span>
+              <button type="button" (click)="clearNearbyGps()" title="Exit Nearby Search">&times;</button>
+            </div>
+            }
+            @if (selectedDistrict()) {
+            <div class="active-tag-pill active-tag-district">
+              <span class="material-symbols-outlined" style="font-size: 14px;">domain</span>
+              <span>District: {{ selectedDistrict() }}</span>
+              <button type="button" (click)="onDistrictChange('')" title="Clear District">&times;</button>
+            </div>
+            }
+            @for (loc of selectedLocalities(); track loc; let idx = $index) {
+            <div class="active-tag-pill active-tag-multiloc">
+              <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
+              <span>{{ loc }}</span>
+              <button type="button" (click)="removeLocalityTag(idx)">&times;</button>
+            </div>
+            }
             @if (selectedCity() !== 'all') {
             <div class="active-tag-pill">
               <span>City: {{ selectedCity() | uppercase }}</span>
@@ -294,6 +627,12 @@
             <div class="active-tag-pill">
               <span>Type: {{ selectedType() }}</span>
               <button type="button" (click)="setType('all')">&times;</button>
+            </div>
+            }
+            @if (selectedDeveloper() !== 'all') {
+            <div class="active-tag-pill active-tag-builder">
+              <span>Builder: {{ selectedDeveloper() }}</span>
+              <button type="button" (click)="setDeveloper('all')">&times;</button>
             </div>
             }
             @if (selectedBudget() !== 'all') {
@@ -392,12 +731,97 @@
       </div>
       }
 
+      <!-- NEARBY GPS SCANNING LOADER -->
+      @if (isNearbyLoading()) {
+      <div class="nearby-scanner-loader">
+        <div class="radar-scan-circle">
+          <div class="radar-pulse"></div>
+          <div class="radar-pulse radar-pulse-delayed"></div>
+          <span class="material-symbols-outlined radar-center-icon">my_location</span>
+        </div>
+        <div class="scanner-text-block">
+          <h3 class="scanner-title">
+            {{ isLocatingUser() ? 'Acquiring Your Exact GPS Location...' : 'Scanning Properties Within 5 km Radius...' }}
+          </h3>
+          <p class="scanner-desc">
+            {{ isLocatingUser() 
+               ? 'Requesting high-accuracy device coordinates to pinpoint nearby properties...' 
+               : 'Calculating real-time Haversine distances against survey-verified cadastral deeds...' }}
+          </p>
+          <div class="scanner-progress-bar">
+            <div class="scanner-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- LIVE GEOLOCATION 5KM RADIUS BANNER -->
+      @if (isNearbyGpsActive() && !isNearbyLoading()) {
+      <div class="nearby-gps-banner" [class.is-fallback]="isGpsAutoExpanded()">
+        <div class="nearby-gps-icon-circle">
+          <span class="material-symbols-outlined nearby-gps-icon">
+            {{ isGpsAutoExpanded() ? 'explore' : 'my_location' }}
+          </span>
+        </div>
+        <div class="nearby-gps-content">
+          <div class="nearby-gps-title-row">
+            <h3 class="nearby-gps-heading">
+              {{ isGpsAutoExpanded() ? 'Nearest Verified Properties' : 'Live GPS: Properties Within 5 km' }}
+            </h3>
+            <span class="nearby-gps-badge" [class.is-warn]="isGpsAutoExpanded()">
+              {{ isGpsAutoExpanded() ? 'Beyond 5 km' : 'Within 5 km Radius' }}
+            </span>
+          </div>
+          @if (detectedAddress()) {
+            <div class="nearby-confirmed-addr">
+              <span class="material-symbols-outlined addr-pin">pin_drop</span>
+              <span class="addr-text">{{ detectedAddress()?.compactTitle || detectedAddress()?.displayName }}</span>
+              <button type="button" class="btn-adjust-loc" (click)="isLocationConfirmModalOpen.set(true)" title="Change or adjust location">
+                <span class="material-symbols-outlined">edit</span>
+                <span>Adjust</span>
+              </button>
+            </div>
+          }
+          <p class="nearby-gps-desc">
+            @if (isGpsAutoExpanded()) {
+              No verified properties were found within a 5 km radius of your location. We've automatically found the <strong>nearest verified properties with valid GPS coordinates</strong>, sorted from closest to farthest.
+            } @else {
+              Displaying <strong>{{ filteredProperties().length }} verified properties</strong> located within 5 km of your current device position, sorted by closest distance. Properties without valid cadastral GPS data are excluded.
+            }
+          </p>
+        </div>
+        <button type="button" class="btn-clear-gps-action" (click)="clearNearbyGps()" title="Exit Nearby Search">
+          <span class="material-symbols-outlined">close</span>
+          <span>Exit Near Me</span>
+        </button>
+      </div>
+      }
+
+      <!-- 5KM GPS RADIUS EXTENSION BANNER -->
+      @if (isRadiusExtendedSearch()) {
+      <div class="radius-search-banner">
+        <div class="radius-icon-circle">
+          <span class="material-symbols-outlined radius-icon">radar</span>
+        </div>
+        <div class="radius-content">
+          <div class="radius-title-row">
+            <h3 class="radius-heading">Extended 5 km GPS Radius Search</h3>
+            <span class="radius-badge-pill">5 km Radius Applied</span>
+          </div>
+          <p class="radius-desc">
+            No exact property matched "<strong>{{ radiusSearchLocationName() }}</strong>". We automatically expanded your search to include <strong>{{ radiusFoundCount() }} verified properties within a 5 km GPS radius</strong> using cadastral coordinate distance calculation.
+          </p>
+        </div>
+      </div>
+      }
+
+      @if (!isNearbyLoading()) {
       <!-- RESULTS CONTAINER -->
       @if (filteredProperties().length > 0) {
       <!-- 1. GRID VIEW -->
       @if (viewMode() === 'grid') {
       <div class="results-grid">
-        @for (prop of filteredProperties(); track prop.id) {
+        @for (prop of displayedProperties(); track prop.id) {
         <app-property-card [property]="prop" />
         }
       </div>
@@ -406,21 +830,37 @@
       <!-- 2. COMPACT LIST DOSSIER VIEW -->
       @if (viewMode() === 'list') {
       <div class="results-list">
-        @for (prop of filteredProperties(); track prop.id) {
+        @for (prop of displayedProperties(); track prop.id) {
         <article class="list-dossier-card">
           <!-- Thumbnail with Badges (Links to Details) -->
           <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
             <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
+            
+            <div class="list-thumb-badges">
+              @if (prop.isClosestProximity) {
+              <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
+                <span class="material-symbols-outlined">near_me</span>
+                <span>Closest Proximity ({{ prop.closestNeighborDistanceKm }} km)</span>
+              </span>
+              } @else if (prop.distanceKm !== undefined && prop.distanceKm !== null && prop.distanceKm <= 5.0) {
+              <span class="list-closest-proximity-badge" title="Closest Proximity (< 5 km)">
+                <span class="material-symbols-outlined">near_me</span>
+                <span>Closest Proximity ({{ prop.distanceKm }} km)</span>
+              </span>
+              }
+
+              @if (prop.isMediaUnlocked) {
+              <span class="list-unlocked-badge">
+                <span class="material-symbols-outlined">smart_display</span>
+                4K Unlocked
+              </span>
+              }
+            </div>
+
             <span class="list-photo-count">
               <span class="material-symbols-outlined">photo_camera</span>
               {{ prop.freePhotos?.length || 0 }} Photos
             </span>
-            @if (prop.isMediaUnlocked) {
-            <span class="list-unlocked-badge">
-              <span class="material-symbols-outlined">smart_display</span>
-              4K Unlocked
-            </span>
-            }
           </div>
 
           <!-- Info Section -->
@@ -441,9 +881,38 @@
               <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
             </h3>
 
+            @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
+              @if ((prop.developerProjectsCount || 0) > 1) {
+              <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
+                 class="list-builder-row"
+                 title="View Developer Portfolio">
+                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                <span class="list-builder-text">By <strong>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong></span>
+                <span class="material-symbols-outlined" style="font-size: 13px; color: #0284c7; margin-left: 2px;">arrow_forward</span>
+              </a>
+              } @else {
+              <div class="list-builder-row non-clickable"
+                   title="Promoter / Developer">
+                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                <span class="list-builder-text">By <strong>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong></span>
+              </div>
+              }
+            }
+
             <div class="list-locality">
               <span class="material-symbols-outlined loc-icon">location_on</span>
               <span>{{ prop.locality }}, {{ prop.city }}</span>
+              @if (prop.isClosestProximity) {
+              <span class="pill-closest-proximity-sm" [title]="'Within ' + prop.closestNeighborDistanceKm + ' km of neighboring property'">
+                <span class="material-symbols-outlined">near_me</span>
+                Closest Proximity ({{ prop.closestNeighborDistanceKm }} km)
+              </span>
+              } @else if (prop.distanceKm !== undefined && prop.distanceKm !== null && prop.distanceKm <= 5.0) {
+              <span class="pill-closest-proximity-sm" title="Closest Proximity (< 5 km)">
+                <span class="material-symbols-outlined">near_me</span>
+                Closest Proximity ({{ prop.distanceKm }} km)
+              </span>
+              }
             </div>
 
             <div class="list-highlights-row">
@@ -494,44 +963,248 @@
         }
       </div>
       }
-      } @else {
-      <!-- 3. EMPTY STATE -->
-      <div class="empty-state-card">
-        <div class="empty-icon-circle">
-          <span class="material-symbols-outlined">search_off</span>
-        </div>
-        <h2 class="empty-title">No Matching Cadastral Records Found</h2>
-        <p class="empty-desc">
-          We couldn't find any verified deeds matching your current filter criteria. Try adjusting your budget,
-          selecting all metros, or resetting active filters.
-        </p>
 
-        <div class="empty-actions">
-          <button type="button" class="btn-empty-reset" (click)="resetAllFilters()">
+      <!-- Infinite Scroll Trigger (No Pagination: Initial 20, Next 10 on Scroll) -->
+      <!-- Progressive API Scroll Loader & Skeleton Placeholders -->
+      @if (propertyService.isFetchingApi()) {
+        <div class="scroll-skeleton-grid">
+          <div class="skeleton-card" *ngFor="let s of [1, 2, 3]">
+            <div class="skeleton-thumb-frame shimmer-bg">
+              <div class="skeleton-badge shimmer-bg"></div>
+            </div>
+            <div class="skeleton-content-frame">
+              <div class="skeleton-line shimmer-bg line-title"></div>
+              <div class="skeleton-line shimmer-bg line-sub"></div>
+              <div class="skeleton-meta-row">
+                <div class="skeleton-tag shimmer-bg"></div>
+                <div class="skeleton-tag shimmer-bg"></div>
+              </div>
+              <div class="skeleton-foot-row">
+                <div class="skeleton-price-line shimmer-bg"></div>
+                <div class="skeleton-btn shimmer-bg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="api-scroll-loader-banner">
+          <div class="loader-spinner-circle"></div>
+          <div class="loader-info">
+            <span class="loader-main-text">Loading verified properties...</span>
+            <span class="loader-sub-text">Fetching next 10 properties from registry database</span>
+          </div>
+          <div class="loader-pulsing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      }
+
+      @if (!propertyService.isFetchingApi() && propertyService.hasMoreApiProperties()) {
+      <div class="infinite-scroll-container">
+        <button type="button" class="btn-infinite-expand" (click)="loadMore()">
+          <span class="material-symbols-outlined expand-icon">expand_more</span>
+          <span>Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() }} properties • Scroll down for next 10</span>
+        </button>
+      </div>
+      } @else if (!propertyService.isFetchingApi() && displayedProperties().length > 0 && propertyService.totalApiProperties() > 0) {
+      <div class="infinite-scroll-container">
+        <div class="all-loaded-badge">
+          <span class="material-symbols-outlined">verified</span>
+          <span>All {{ displayedProperties().length }} verified properties loaded</span>
+        </div>
+      </div>
+      }
+      } @else {
+      <!-- 3. EMPTY STATE STATUS & SUGGESTED ITEMS BELOW -->
+      <div class="no-items-status-card">
+        <div class="no-items-header-row">
+          <div class="no-items-icon-box">
+            <span class="material-symbols-outlined">search_off</span>
+          </div>
+          <div class="no-items-text-block">
+            <div class="no-items-status-pill">
+              <span class="status-indicator-dot"></span>
+              <span>Status: No items found</span>
+            </div>
+            <h2 class="no-items-title">No Matching Properties Found</h2>
+            <p class="no-items-desc">
+              We couldn't find any verified cadastral records matching 
+              @if (selectedLocalities().length > 0) {
+                <span>locality <strong>"{{ selectedLocalities().join(', ') }}"</strong></span>
+              }
+              @if (searchQuery()) {
+                <span> query <strong>"{{ searchQuery() }}"</strong></span>
+              }
+              @if (selectedDeveloper() !== 'all') {
+                <span> builder <strong>"{{ selectedDeveloper() }}"</strong></span>
+              }
+              @if (selectedCity() !== 'all') {
+                <span> in <strong>{{ selectedCity() | uppercase }}</strong></span>
+              }
+              . See our hand-picked recommendations below or try resetting your filters.
+            </p>
+          </div>
+        </div>
+
+        <div class="no-items-actions">
+          @if (searchQuery() || selectedLocalities().length > 0 || selectedDeveloper() !== 'all') {
+            <button type="button" class="btn-clear-search-action" (click)="clearSearchQuery()">
+              <span class="material-symbols-outlined">backspace</span>
+              <span>Clear Search Query</span>
+            </button>
+          }
+          <button type="button" class="btn-reset-filters-action" (click)="resetAllFilters()">
             <span class="material-symbols-outlined">restart_alt</span>
             <span>Reset All Filters</span>
           </button>
         </div>
+      </div>
 
-        <!-- Suggested Quick Searches -->
+      <!-- SUGGESTED PROPERTIES SECTION (Displayed Below Status Notice) -->
+      <div class="suggested-items-container">
+        <div class="suggested-header-bar">
+          <div class="suggested-headline-wrap">
+            <div class="suggested-icon-circle">
+              <span class="material-symbols-outlined">recommend</span>
+            </div>
+            <div>
+              <h3 class="suggested-title">Suggested Properties for You</h3>
+              <p class="suggested-subtitle">
+                Explore trending verified layouts and prime properties with clean titles, 4K video tours, and DTCP/RERA approvals
+              </p>
+            </div>
+          </div>
+          <span class="suggested-badge">{{ suggestedProperties().length }} Recommended</span>
+        </div>
+
+        <!-- 1. GRID VIEW -->
+        @if (viewMode() === 'grid') {
+        <div class="results-grid">
+          @for (prop of suggestedProperties(); track prop.id) {
+            <app-property-card [property]="prop" />
+          }
+        </div>
+        }
+
+        <!-- 2. COMPACT LIST DOSSIER VIEW -->
+        @if (viewMode() === 'list') {
+        <div class="results-list">
+          @for (prop of suggestedProperties(); track prop.id) {
+          <article class="list-dossier-card">
+            <!-- Thumbnail with Badges (Links to Details) -->
+            <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
+              <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
+              
+              <div class="list-thumb-badges">
+                <span class="badge-tag-sm" style="background:#2563eb;color:#ffffff;font-weight:700;">Suggested For You</span>
+                @if (prop.isClosestProximity) {
+                <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
+                  <span class="material-symbols-outlined">near_me</span>
+                  <span>Closest Proximity ({{ prop.closestNeighborDistanceKm }} km)</span>
+                </span>
+                }
+              </div>
+
+              <span class="list-photo-count">
+                <span class="material-symbols-outlined">photo_camera</span>
+                {{ prop.freePhotos?.length || 0 }} Photos
+              </span>
+            </div>
+
+            <!-- Info Section -->
+            <div class="list-info">
+              <div class="list-meta-top">
+                <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
+                <span class="badge-tag-sm">{{ prop.badges?.specialTag || 'Suggested For You' }}</span>
+                <span class="badge-pts-sm">{{ prop.mediaPoints || 2 }} Pts 4K</span>
+              </div>
+
+              <h3 class="list-title">
+                <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
+              </h3>
+
+              <div class="list-locality">
+                <span class="material-symbols-outlined loc-icon">location_on</span>
+                <span>{{ prop.locality }}, {{ prop.city }}</span>
+              </div>
+
+              <div class="list-highlights-row">
+                <span class="dimension-tag">{{ prop.sqft }}</span>
+                <span class="dot-sep">•</span>
+                <span>{{ prop.facingOrView }}</span>
+                <span class="dot-sep">•</span>
+                @for (hl of prop.highlights; track $index; let last = $last) {
+                <span class="hl-item">{{ hl }}</span>
+                @if (!last) { <span class="dot-sep">•</span> }
+                }
+              </div>
+            </div>
+
+            <!-- Price & Action Section -->
+            <div class="list-price-action">
+              <div class="list-price-block">
+                <div class="list-main-price">{{ prop.price }}</div>
+                <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+              </div>
+
+              <div class="list-actions-stack">
+                <button type="button" class="btn-list-media" [class.unlocked]="prop.isMediaUnlocked"
+                  (click)="propertyService.openMediaModal(prop, prop.isMediaUnlocked ? 'premium' : 'free')">
+                  <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'photo_library' }}</span>
+                  <span>{{ prop.isMediaUnlocked ? 'Watch 4K Tour' : 'Photos & 4K' }}</span>
+                </button>
+
+                <div class="list-secondary-actions">
+                  <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener">
+                    <span class="material-symbols-outlined">chat</span>
+                    <span>Concierge</span>
+                  </a>
+
+                  <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
+                    (click)="propertyService.toggleShortlist(prop.id)">
+                    <span class="material-symbols-outlined">
+                      {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+          }
+        </div>
+        }
+
+        <!-- Quick Locality Suggestions Below Cards -->
         <div class="empty-suggestions">
-          <span class="suggestions-label">Try searching for:</span>
+          <span class="suggestions-label">Popular Searches &amp; Layouts:</span>
           <div class="suggestion-chips">
-            <button type="button" class="sugg-chip" (click)="setType('Gated CMDA Plots'); setCity('chennai')">
-              CMDA Plots in Chennai
+            <button type="button" class="sugg-chip" (click)="addLocalityTag('Porur')">
+              Porur, Chennai
             </button>
-            <button type="button" class="sugg-chip" (click)="setType('Apartments & Flats'); setCity('bengaluru')">
-              Flats in Bengaluru
+            <button type="button" class="sugg-chip" (click)="addLocalityTag('Ramapuram')">
+              Ramapuram, Chennai
             </button>
-            <button type="button" class="sugg-chip" (click)="setType('Independent Villas'); setCity('hyderabad')">
-              Villas in Hyderabad
+            <button type="button" class="sugg-chip" (click)="addLocalityTag('Coimbatore')">
+              Coimbatore Plots
             </button>
-            <button type="button" class="sugg-chip" (click)="setBudget('under-50l')">
-              Properties under ₹50 Lakh
+            <button type="button" class="sugg-chip" (click)="addLocalityTag('Hosur')">
+              Hosur IT Corridor
+            </button>
+            <button type="button" class="sugg-chip" (click)="addLocalityTag('Chennai-Bengaluru Highway')">
+              NH48 Highway Corridor
+            </button>
+            <button type="button" class="sugg-chip" (click)="addLocalityTag('DTCP')">
+              DTCP Approved Layouts
+            </button>
+            <button type="button" class="sugg-chip" (click)="resetAllFilters()">
+              View All Properties
             </button>
           </div>
         </div>
       </div>
+      }
       }
     </section>
 
@@ -636,6 +1309,110 @@
 
   <!-- Comprehensive Footer -->
   <app-footer />
+
+  <!-- Live Address Confirmation Modal (Option 3 Reverse Geocoding) -->
+  @if (isLocationConfirmModalOpen()) {
+    <div class="loc-modal-overlay" (click)="cancelLocationConfirm()">
+      <div class="loc-modal-card" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="loc-modal-header">
+          <div class="loc-modal-title-wrap">
+            <div class="loc-modal-icon-badge">
+              <span class="material-symbols-outlined">my_location</span>
+            </div>
+            <div>
+              <h3 class="loc-modal-title">Confirm Your Location</h3>
+              <p class="loc-modal-sub">Review or adjust your address before searching properties within 5 km.</p>
+            </div>
+          </div>
+          <button type="button" class="loc-modal-close" (click)="cancelLocationConfirm()" title="Close">&times;</button>
+        </div>
+
+        <!-- Accuracy Advisory Banner -->
+        <div class="loc-advisory-banner">
+          <span class="material-symbols-outlined advisory-icon">info</span>
+          <div class="advisory-text">
+            <strong>Desktop / Wi-Fi Precision Notice:</strong>
+            Wired ethernet and desktop Wi-Fi connections can detect approximate ISP routing centroids. If the detected location is slightly off, search and pick your exact neighborhood below.
+          </div>
+        </div>
+
+        <!-- Detected Address Card -->
+        @if (detectedAddress(); as addr) {
+          <div class="loc-detected-box">
+            <div class="loc-detected-label">
+              <span class="material-symbols-outlined label-icon">place</span>
+              <span>Detected Address</span>
+            </div>
+            <div class="loc-detected-main">
+              <div class="loc-detected-heading">
+                {{ addr.compactTitle || addr.displayName }}
+              </div>
+              @if (addr.locality || addr.city || addr.postcode) {
+                <div class="loc-detected-meta">
+                  @if (addr.locality) { <span class="loc-tag">{{ addr.locality }}</span> }
+                  @if (addr.city) { <span class="loc-tag">{{ addr.city }}</span> }
+                  @if (addr.postcode) { <span class="loc-tag">PIN: {{ addr.postcode }}</span> }
+                  <span class="loc-tag coord-tag">GPS: {{ pendingCoords()?.latitude | number:'1.4-4' }}, {{ pendingCoords()?.longitude | number:'1.4-4' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Search / Fine-Tune Input Field with Autocomplete -->
+        <div class="loc-search-section">
+          <label class="loc-search-label" for="locAddressInput">
+            <span class="material-symbols-outlined label-search-icon">edit_location</span>
+            <span>Wrong locality? Search &amp; select your exact area or street:</span>
+          </label>
+          <div class="loc-input-wrapper">
+            <span class="material-symbols-outlined input-icon">search</span>
+            <input
+              id="locAddressInput"
+              type="text"
+              class="loc-text-input"
+              [value]="manualAddressInput()"
+              (input)="onManualAddressInput($any($event.target).value)"
+              placeholder="e.g. Porur, Anna Nagar, Velachery, T Nagar, Coimbatore..."
+              autocomplete="off"
+            />
+            @if (isAddressSearching()) {
+              <span class="material-symbols-outlined input-spinner">progress_activity</span>
+            }
+          </div>
+
+          <!-- Autocomplete Dropdown List -->
+          @if (addressSearchSuggestions().length > 0) {
+            <div class="loc-suggestions-list">
+              <div class="suggestions-header">Search Results (Tap to select)</div>
+              @for (item of addressSearchSuggestions(); track item.displayName) {
+                <div class="suggestion-item" (click)="selectAddressSuggestion(item)">
+                  <span class="material-symbols-outlined sug-icon">location_on</span>
+                  <div class="sug-info">
+                    <span class="sug-title">{{ item.compactTitle || item.name || item.locality }}</span>
+                    <span class="sug-full">{{ item.displayName }}</span>
+                  </div>
+                  <span class="material-symbols-outlined sug-select-icon">check</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="loc-modal-actions">
+          <button type="button" class="btn-loc-cancel" (click)="cancelLocationConfirm()">
+            Cancel
+          </button>
+          <button type="button" class="btn-loc-confirm" (click)="confirmLocationAndProceed()">
+            <span class="material-symbols-outlined">radar</span>
+            <span>Confirm &amp; Find Properties (&le; 5 km)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- Global Modals & Notifications -->
   <app-property-media-modal />

@@ -49,7 +49,7 @@ export interface PropertyTypeOption {
       <app-deals-scrolling-banner />
 
       <!-- Direct Registry Gateway & Buyer Matchmaking Cards (Below Banner, Above Search Console) -->
-      <app-land-intent-strip />
+      <!-- <app-land-intent-strip /> -->
 
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
@@ -136,7 +136,33 @@ export interface PropertyTypeOption {
                     </div>
                   }
 
-                  <!-- 2. Corridors & Localities Section -->
+                  <!-- 2. Google Places & Geocoded Locations Section -->
+                  @if (googlePlacesList().length > 0) {
+                    <div class="suggest-section">
+                      <div class="suggest-header suggest-header-places">
+                        <span>Google Places Verified Locations ({{ googlePlacesList().length }})</span>
+                      </div>
+                      <div class="suggest-list">
+                        @for (place of googlePlacesList(); track place.placeId || place.label) {
+                          <div class="suggest-item suggest-item-google" (click)="selectGooglePlace(place)">
+                            <div class="suggest-item-left">
+                              <span class="material-symbols-outlined loc-pin google-pin">explore</span>
+                              <div class="suggest-item-texts">
+                                <div class="suggest-title-flex">
+                                  <span class="suggest-name">{{ place.label }}</span>
+                                  <span class="google-badge-tag">Google Place</span>
+                                </div>
+                                <span class="suggest-sub">{{ place.sub }}</span>
+                              </div>
+                            </div>
+                            <span class="suggest-tag-add">+ Select</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- 3. Corridors & Localities Section -->
                   @if (filteredTrendingLocations().length > 0) {
                     <div class="suggest-section">
                       <div class="suggest-header">
@@ -930,6 +956,37 @@ export interface PropertyTypeOption {
       white-space: nowrap;
     }
 
+    .suggest-item-google:hover {
+      background: #f0fdfa !important;
+    }
+    .google-pin {
+      color: #0d9488 !important;
+    }
+    .suggest-title-flex {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .google-badge-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #e0f2fe;
+      color: #0284c7;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .suggest-tag-add {
+      font-size: 11px;
+      font-weight: 600;
+      color: #0d9488;
+      background: #ccfbf1;
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
     /* Matched Property Suggest Item */
     .suggest-prop-item {
       display: flex;
@@ -1375,7 +1432,7 @@ export class HeroSearchComponent {
     { value: 'Gated CMDA Plots', label: 'Gated CMDA / DTCP Plots', icon: 'terrain', desc: 'Sanctioned residential land' },
     { value: 'Commercial Spaces', label: 'Commercial Office & SCO', icon: 'domain', desc: 'Grade-A retail & office parks' }
   ];
-  readonly selectedTypes = signal<string[]>(['Apartments & Flats']);
+  readonly selectedTypes = signal<string[]>([]);
   readonly isTypeDropdownOpen = signal<boolean>(false);
 
   // 4. Budget Selector
@@ -1393,6 +1450,7 @@ export class HeroSearchComponent {
 
   // 5. Trending & Auto-Suggest
   readonly isLocationSuggestOpen = signal<boolean>(false);
+  readonly googlePlacesList = signal<any[]>([]);
   readonly trendingLocations: LocationSuggestion[] = [
     { name: 'OMR IT Corridor', city: 'Chennai', tag: 'High Rental Yield', sub: 'Thoraipakkam to Siruseri' },
     { name: 'Whitefield & ITPL', city: 'Bengaluru', tag: 'Tech Hub', sub: 'Hope Farm to Kadugodi' },
@@ -1438,12 +1496,7 @@ export class HeroSearchComponent {
 
   onInputEnter(event: Event): void {
     event.preventDefault();
-    const matched = this.matchedProperties();
-    if (matched.length === 1) {
-      this.selectProperty(matched[0]);
-    } else {
-      this.executeSearch();
-    }
+    this.executeSearch();
   }
 
   // 6. Voice Search State
@@ -1495,14 +1548,42 @@ export class HeroSearchComponent {
     this.isLocationSuggestOpen.set(false);
   }
 
+  selectGooglePlace(place: any): void {
+    const text = place.label || place.query || place.fullText;
+    this.propertyService.searchQuery.set(text);
+    this.isLocationSuggestOpen.set(false);
+  }
+
   clearSearchInput(): void {
     this.propertyService.searchQuery.set('');
+    this.googlePlacesList.set([]);
   }
+
+  private heroDebounceTimer: any = null;
 
   onSearchInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.propertyService.searchQuery.set(val);
     this.isLocationSuggestOpen.set(true);
+
+    if (this.heroDebounceTimer) {
+      clearTimeout(this.heroDebounceTimer);
+    }
+    this.heroDebounceTimer = setTimeout(() => {
+      const trimmed = val.trim();
+      if (trimmed.length >= 2) {
+        this.propertyService.fetchGooglePlaces(trimmed).subscribe(places => {
+          this.googlePlacesList.set(places || []);
+        });
+        this.propertyService.loadPropertiesFromApi({
+          q: trimmed,
+          limit: 10,
+          append: false
+        });
+      } else {
+        this.googlePlacesList.set([]);
+      }
+    }, 280);
   }
 
   // Voice Search (Speech Recognition)
@@ -1686,7 +1767,7 @@ export class HeroSearchComponent {
     else if (rawBudget.includes('3.0 – 5.0')) budgetParam = '3cr-5cr';
     else if (rawBudget.includes('5.0 Cr+') || rawBudget.includes('10CR')) budgetParam = 'above-5cr';
 
-    const typesParam = this.selectedTypes().join(',');
+    const typesParam = this.selectedTypes().length > 0 ? this.selectedTypes().join(',') : null;
 
     this.router.navigate(['/search'], {
       queryParams: {

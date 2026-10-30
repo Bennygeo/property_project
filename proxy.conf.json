@@ -5,10 +5,49 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
+  "/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/P_demo_4/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/P_demo_4/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/p_demo_4/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/p_demo_4/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/p_demo_3/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/p_demo_3/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/p_demo_2/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/p_demo_2/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
   "/uploads": {
     "target": "http://localhost:8000",
     "secure": false,
-    "changeOrigin": true,
-    "logLevel": "debug"
+    "changeOrigin": true
   }
 }

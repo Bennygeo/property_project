@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
@@ -33,7 +33,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           type="button" 
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'all'"
-          (click)="propertyService.setCategoryFilter('all')">
+          (click)="setCategory('all')">
           <span>All Properties</span>
         </button>
 
@@ -41,7 +41,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           type="button" 
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'apartments'"
-          (click)="propertyService.setCategoryFilter('apartments')">
+          (click)="setCategory('apartments')">
           <span>Apartments &amp; Flats</span>
         </button>
 
@@ -49,7 +49,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           type="button" 
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'plots'"
-          (click)="propertyService.setCategoryFilter('plots')">
+          (click)="setCategory('plots')">
           <span>Plots &amp; Land</span>
         </button>
 
@@ -57,7 +57,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           type="button" 
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'villas'"
-          (click)="propertyService.setCategoryFilter('villas')">
+          (click)="setCategory('villas')">
           <span>Villas &amp; Penthouses</span>
         </button>
 
@@ -65,7 +65,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           type="button" 
           class="filter-chip"
           [class.active]="propertyService.activeCategoryFilter() === 'commercial'"
-          (click)="propertyService.setCategoryFilter('commercial')">
+          (click)="setCategory('commercial')">
           <span>Commercial</span>
         </button>
       </div>
@@ -77,6 +77,57 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
             <app-property-card [property]="prop" />
           }
         </div>
+        <!-- Progressive API Scroll Loader & Skeletons -->
+        @if (propertyService.isFetchingApi()) {
+          <div class="scroll-skeleton-grid">
+            <div class="skeleton-card" *ngFor="let s of [1, 2, 3]">
+              <div class="skeleton-thumb-frame shimmer-bg">
+                <div class="skeleton-badge shimmer-bg"></div>
+              </div>
+              <div class="skeleton-content-frame">
+                <div class="skeleton-line shimmer-bg line-title"></div>
+                <div class="skeleton-line shimmer-bg line-sub"></div>
+                <div class="skeleton-meta-row">
+                  <div class="skeleton-tag shimmer-bg"></div>
+                  <div class="skeleton-tag shimmer-bg"></div>
+                </div>
+                <div class="skeleton-foot-row">
+                  <div class="skeleton-price-line shimmer-bg"></div>
+                  <div class="skeleton-btn shimmer-bg"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-scroll-loader-banner">
+            <div class="loader-spinner-circle"></div>
+            <div class="loader-info">
+              <span class="loader-main-text">Loading verified properties...</span>
+              <span class="loader-sub-text">Fetching next 10 plots from registry database</span>
+            </div>
+            <div class="loader-pulsing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        }
+
+        @if (!propertyService.isFetchingApi() && propertyService.hasMoreApiProperties()) {
+          <div class="infinite-scroll-container">
+            <button type="button" class="btn-infinite-expand" (click)="loadMore()">
+              <span class="material-symbols-outlined expand-icon">expand_more</span>
+              <span>Showing {{ propertyService.properties().length }} of {{ propertyService.totalApiProperties() }} properties • Scroll down for next 10</span>
+            </button>
+          </div>
+        } @else if (!propertyService.isFetchingApi() && propertyService.properties().length > 0 && propertyService.totalApiProperties() > 0) {
+          <div class="infinite-scroll-container">
+            <div class="all-loaded-badge">
+              <span class="material-symbols-outlined">verified</span>
+              <span>All {{ propertyService.properties().length }} verified properties loaded</span>
+            </div>
+          </div>
+        }
       } @else {
         <div class="empty-results-box">
           <div class="empty-icon-wrap">
@@ -356,12 +407,55 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
 export class FeaturedPropertiesComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
 
+  // Infinite Scroll: Initially show 20, load next 10 on scroll
+  readonly displayedCount = signal<number>(20);
+  readonly displayedProperties = computed(() => {
+    return this.propertyService.properties().slice(0, this.displayedCount());
+  });
+  readonly hasMore = computed<boolean>(() => {
+    return this.displayedCount() < this.propertyService.properties().length;
+  });
+
+  private isScrollThrottled = false;
+
+  loadMore(): void {
+    if (this.propertyService.hasMoreApiProperties() && !this.propertyService.isFetchingApi()) {
+      this.propertyService.loadNextBatch(10, {
+        propertyType: this.propertyService.activeCategoryFilter() !== 'all' ? this.propertyService.activeCategoryFilter() : undefined
+      });
+    }
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    if (!this.propertyService.hasMoreApiProperties() || this.propertyService.isFetchingApi() || this.isScrollThrottled) return;
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const threshold = document.documentElement.scrollHeight - 700;
+    if (scrollPosition >= threshold) {
+      this.isScrollThrottled = true;
+      this.loadMore();
+      setTimeout(() => {
+        this.isScrollThrottled = false;
+      }, 400);
+    }
+  }
+
+  setCategory(cat: string): void {
+    this.propertyService.setCategoryFilter(cat);
+    this.propertyService.loadPropertiesFromApi({
+      offset: 0,
+      limit: 20,
+      append: false,
+      propertyType: cat !== 'all' ? cat : undefined
+    });
+  }
+
   ngOnInit(): void {
     this.propertyService.loadPropertiesFromApi();
   }
 
   resetSearch(): void {
     this.propertyService.searchQuery.set('');
-    this.propertyService.setCategoryFilter('all');
+    this.setCategory('all');
   }
 }

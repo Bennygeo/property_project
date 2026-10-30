@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -10,7 +11,7 @@ import {
   AmenityItem, 
   ConnectivityItem 
 } from '../../../../core/models/property.model';
-import { PropertyService } from '../../../../core/services/property.service';
+import { PropertyService, NearbyLocality } from '../../../../core/services/property.service';
 import { WalletService } from '../../../../core/services/wallet.service';
 import { MetroService } from '../../../../core/services/metro.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -22,11 +23,10 @@ import { TopConciergeBarComponent } from '../../../home/components/top-concierge
 import { TopupDialogComponent } from '../../../home/components/topup-dialog/topup-dialog.component';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
-import { InteractivePlotLayoutComponent } from '../../../../shared/components/interactive-plot-layout/interactive-plot-layout.component';
-import { PlotexViewerComponent } from '../../../../shared/components/plotex-viewer/plotex-viewer.component';
+import { PropertyCardComponent } from '../../../home/components/property-card/property-card.component';
 import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
 
-export type MediaStageTab = 'photos' | 'walkthrough' | 'drone' | '3dmap';
+export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
 
 function parsePriceToNumber(priceStr: string): number {
@@ -57,8 +57,7 @@ function parsePriceToNumber(priceStr: string): number {
     TopupDialogComponent,
     ToastComponent,
     PropertyMediaModalComponent,
-    InteractivePlotLayoutComponent,
-    PlotexViewerComponent,
+    PropertyCardComponent,
     SecureVideoPlayerComponent
   ],
   templateUrl: './property-details-page.component.html',
@@ -77,15 +76,22 @@ export class PropertyDetailsPageComponent implements OnInit {
   readonly userBehaviorService = inject(UserBehaviorService);
 
   readonly propertyId = signal<string>('');
+  readonly fetchedProperty = signal<Property | null>(null);
+  readonly nearbyLocalities = signal<NearbyLocality[]>([]);
+  readonly nearbyProperties = signal<Property[]>([]);
   readonly property = computed<Property | null>(() => {
+    if (this.fetchedProperty()) {
+      return this.fetchedProperty();
+    }
     const id = this.propertyId();
     if (!id) return null;
     return this.propertyService.getPropertyById(id) || this.propertyService.allProperties()[0] || null;
   });
 
-  readonly sanitizedInteractiveMapUrl = computed<SafeResourceUrl | null>(() => {
-    const url = this.property()?.interactiveMapUrl;
-    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+  readonly gpsAudit = computed<GpsValidationResult>(() => {
+    const prop = this.property();
+    const rawLink = prop?.googleMapsLink || prop?.masterDetails?.googleMapsLink || (prop?.latitude && prop?.longitude ? `${prop.latitude}, ${prop.longitude}` : '');
+    return validateGpsData(rawLink);
   });
 
   readonly isPlot = computed<boolean>(() => {
@@ -107,8 +113,6 @@ export class PropertyDetailsPageComponent implements OnInit {
   readonly activeModalFloorPlan = signal<FloorPlanItem | null>(null);
 
   // Plot Layout View Mode: 'plotex3d' (Plotex WebGL 3D) or 'plan2d' (Aerial Plan)
-  readonly plotViewMode = signal<'plotex3d' | 'plan2d'>('plotex3d');
-
   // Amenities Filter State
   readonly selectedAmenityCategory = signal<AmenityFilterCategory>('all');
   readonly filteredAmenities = computed<AmenityItem[]>(() => {
@@ -219,6 +223,9 @@ export class PropertyDetailsPageComponent implements OnInit {
 
         // Fetch real-time dossier from MySQL backend
         this.propertyService.fetchPropertyDetails(id).subscribe(prop => {
+          if (prop) {
+            this.fetchedProperty.set(prop);
+          }
           const resolved = prop || this.propertyService.getPropertyById(id);
           if (resolved) {
             this.userBehaviorService.trackPropertyView(resolved);
@@ -226,9 +233,26 @@ export class PropertyDetailsPageComponent implements OnInit {
             if (priceNum > 0) {
               this.loanAmount.set(Math.round(priceNum * 0.8));
             }
+            this.loadNearbyLocalities(resolved);
           }
         });
       }
+    });
+  }
+
+  loadNearbyLocalities(prop: Property): void {
+    const loc = prop.villageLocality || prop.locality || prop.masterDetails?.villageLocality || '';
+    const district = prop.district || prop.masterDetails?.district || prop.city || '';
+    const taluk = prop.taluk || prop.masterDetails?.taluk || '';
+
+    this.propertyService.fetchNearbyData({
+      propertyId: prop.id,
+      locality: loc,
+      district: district,
+      taluk: taluk
+    }).subscribe(res => {
+      this.nearbyLocalities.set(res.nearbyLocalities || []);
+      this.nearbyProperties.set(res.nearbyProperties || []);
     });
   }
 

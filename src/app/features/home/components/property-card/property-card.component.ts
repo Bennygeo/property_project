@@ -24,9 +24,35 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
 
         <!-- Top Badges Group -->
         <div class="badges-overlay">
+          @if (property.isClosestProximity) {
+            <span class="badge-closest-proximity" [title]="'Closest neighboring property: ' + (property.closestNeighborLocality ? property.closestNeighborLocality + ' (' + property.closestNeighborDistanceKm + ' km)' : property.closestNeighborDistanceKm + ' km away')">
+              <span class="material-symbols-outlined badge-icon">near_me</span>
+              <span>Closest Proximity ({{ property.closestNeighborDistanceKm }} km)</span>
+            </span>
+          } @else if (property.distanceKm !== undefined && property.distanceKm !== null && property.distanceKm <= 5.0) {
+            <span class="badge-closest-proximity" title="Closest Proximity (< 5 km)">
+              <span class="material-symbols-outlined badge-icon">near_me</span>
+              <span>Closest Proximity ({{ property.distanceKm }} km)</span>
+            </span>
+          }
+
           <span class="badge-verified">
             <span>{{ property.badges.specialTag || property.badges.rera || 'Verified' }}</span>
           </span>
+
+          @if (property.isGpsValid === false) {
+            <span class="badge-gps-red" title="GPS coordinates unverified or inaccurate">
+              <span class="material-symbols-outlined badge-icon" style="font-size:12px;margin-right:2px;">error</span>
+              <span>GPS Inaccurate</span>
+            </span>
+          }
+
+          @if (!property.isRadiusSuggestion && property.distanceKm !== undefined && property.distanceKm !== null && property.distanceKm > 5.0) {
+            <span class="badge-proximity" title="GPS Distance">
+              <span class="material-symbols-outlined badge-icon" style="font-size:12px;margin-right:2px;">near_me</span>
+              <span>{{ property.distanceKm }} km away</span>
+            </span>
+          }
 
           @if (property.isMediaUnlocked) {
             <span class="badge-tour">
@@ -34,12 +60,7 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
             </span>
           }
 
-          @if (property.interactiveMapUrl || property.propertyType === 'Gated CMDA Plots') {
-            <span class="badge-3dmap">
-              <span class="material-symbols-outlined badge-icon">view_in_ar</span>
-              <span>3D Map</span>
-            </span>
-          }
+
         </div>
 
         <!-- Shortlist Heart Button -->
@@ -68,10 +89,38 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
           <a [routerLink]="['/property', property.id]" class="title-link">{{ property.title }}</a>
         </h3>
 
+        <!-- Builder / Developer Name -->
+        @if (property.developerName || property.masterDetails?.developer || property.developer?.name) {
+          <a [routerLink]="['/builder', property.developerName || property.masterDetails?.developer || property.developer?.name]"
+             (click)="$event.stopPropagation()"
+             class="card-builder-row" 
+             [title]="'Explore Builder: ' + (property.developerName || property.masterDetails?.developer || property.developer?.name)">
+            <span class="material-symbols-outlined card-builder-icon">corporate_fare</span>
+            <span class="card-builder-text">By {{ property.developerName || property.masterDetails?.developer || property.developer?.name }}</span>
+            <span class="material-symbols-outlined" style="font-size: 13px; margin-left: auto; color: #0284c7;">chevron_right</span>
+          </a>
+        }
+
         <!-- Locality -->
         <p class="locality-row" [title]="property.locality + ', ' + property.city">
-          <span class="material-symbols-outlined loc-icon">location_on</span>
-          <span class="locality-text">{{ property.locality }}, {{ property.city }}</span>
+          <span class="material-symbols-outlined loc-icon" [style.color]="property.isGpsValid === false ? '#dc2626' : ''">location_on</span>
+          <span class="locality-text" [style.color]="property.isGpsValid === false ? '#991b1b' : ''">{{ property.locality }}, {{ property.city }}</span>
+          @if (property.isGpsValid === false) {
+            <span class="pill-gps-error" title="GPS data is inaccurate or missing">GPS Inaccurate</span>
+          }
+          @if (property.isClosestProximity) {
+            <span class="pill-closest-proximity" [title]="'Within ' + property.closestNeighborDistanceKm + ' km of neighboring property'">
+              <span class="material-symbols-outlined" style="font-size:11px;margin-right:2px;">near_me</span>
+              Closest Proximity ({{ property.closestNeighborDistanceKm }} km)
+            </span>
+          } @else if (property.distanceKm !== undefined && property.distanceKm !== null && property.distanceKm <= 5.0) {
+            <span class="pill-closest-proximity" title="Closest Proximity (< 5 km)">
+              <span class="material-symbols-outlined" style="font-size:11px;margin-right:2px;">near_me</span>
+              Closest Proximity ({{ property.distanceKm }} km)
+            </span>
+          } @else if (property.distanceKm !== undefined && property.distanceKm !== null) {
+            <span class="pill-distance">{{ property.distanceKm }} km away</span>
+          }
         </p>
 
         <!-- Minimalist Inline Specifications Strip -->
@@ -163,6 +212,96 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
     }
 
     /* Minimalist Badges Overlay */
+    .badge-gps-red {
+      background: #dc2626;
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(220, 38, 38, 0.4);
+    }
+    .badge-proximity {
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .pill-gps-error {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #f87171;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .pill-distance {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .loc-icon.text-red {
+      color: #dc2626 !important;
+    }
+    .badge-closest-proximity {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+      animation: pulseRadiusGlow 2.5s infinite ease-in-out;
+    }
+    .badge-closest-proximity .badge-icon {
+      font-size: 13px;
+      color: #67e8f9;
+    }
+    .pill-closest-proximity {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    @keyframes pulseRadiusGlow {
+      0%, 100% {
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+      }
+      50% {
+        box-shadow: 0 2px 12px rgba(14, 165, 233, 0.75);
+      }
+    }
     .badges-overlay {
       position: absolute;
       top: 0.75rem;
@@ -170,6 +309,8 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
       display: flex;
       align-items: center;
       gap: 0.375rem;
+      flex-wrap: wrap;
+      max-width: calc(100% - 3.5rem);
       z-index: 2;
     }
 
@@ -210,23 +351,7 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
       font-size: 13px;
     }
 
-    .badge-3dmap {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 0.25rem 0.55rem;
-      border-radius: 6px;
-      background: rgba(14, 165, 233, 0.95);
-      backdrop-filter: blur(6px);
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.35);
-    }
 
-    .badge-3dmap .badge-icon {
-      font-size: 13px;
-    }
 
     /* Shortlist Button */
     .btn-shortlist {
@@ -307,6 +432,44 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
       -webkit-box-orient: vertical;
       overflow: hidden;
       margin: 0;
+    }
+
+    .card-builder-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      color: #0369a1;
+      background: #f0f9ff;
+      border: 1px solid #e0f2fe;
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .card-builder-row:hover {
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+    }
+
+    .card-builder-icon {
+      font-size: 13px;
+      flex-shrink: 0;
+      color: #0284c7;
+    }
+
+    .card-builder-text {
+      font-weight: 600;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .title-link {
@@ -483,7 +646,7 @@ export class PropertyCardComponent {
   onImgError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target && !target.src.includes('property-placeholder.svg')) {
-      target.src = 'property-placeholder.svg';
+      target.src = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
     }
   }
 }

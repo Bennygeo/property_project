@@ -1,3 +1,21 @@
+import {
+  PropertyMasterData,
+  createBlankMasterData,
+  createDefaultMasterData,
+  calculateCents,
+  calculateTotalPrice,
+  MASTER_YES_NO_OPTIONS,
+  MASTER_FACING_OPTIONS,
+  MASTER_PATTA_OPTIONS,
+  MASTER_LAND_USE_OPTIONS,
+  MASTER_AVAILABILITY_OPTIONS,
+  MASTER_CORRIDOR_OPTIONS,
+  MASTER_SUITED_FOR_OPTIONS,
+  MASTER_UTILITY_OPTIONS,
+  MASTER_DRAINAGE_OPTIONS,
+  MASTER_ROAD_TYPE_OPTIONS,
+  MASTER_FLOOD_ZONE_OPTIONS
+} from '../../../../core/models/property-master.model';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -61,30 +79,67 @@ export class PostPropertyPageComponent {
   readonly uploadedImages = signal<UploadedImageItem[]>([]);
   readonly isUploadingAny = computed(() => this.uploadedImages().some(img => img.isUploading));
 
+  // Comprehensive Property Master Data from Excel Schema
+  master: PropertyMasterData = createBlankMasterData();
+
+  // Excel Dropdown Options
+  readonly yesNoOptions = MASTER_YES_NO_OPTIONS;
+  readonly facingOptions = MASTER_FACING_OPTIONS;
+  readonly pattaOptions = MASTER_PATTA_OPTIONS;
+  readonly landUseOptions = MASTER_LAND_USE_OPTIONS;
+  readonly availabilityOptions = MASTER_AVAILABILITY_OPTIONS;
+  readonly corridorOptions = MASTER_CORRIDOR_OPTIONS;
+  readonly suitedForOptions = MASTER_SUITED_FOR_OPTIONS;
+  readonly utilityOptions = MASTER_UTILITY_OPTIONS;
+  readonly drainageOptions = MASTER_DRAINAGE_OPTIONS;
+  readonly roadTypeOptions = MASTER_ROAD_TYPE_OPTIONS;
+  readonly floodZoneOptions = MASTER_FLOOD_ZONE_OPTIONS;
+
+  onPlotSizeSqftChange(): void {
+    this.master.plotSizeCents = calculateCents(this.master.plotSizeSqft);
+    this.master.totalPrice = calculateTotalPrice(this.master.plotSizeSqft, this.master.pricePerSqft);
+  }
+
+  onPricePerSqftChange(): void {
+    this.master.totalPrice = calculateTotalPrice(this.master.plotSizeSqft, this.master.pricePerSqft);
+  }
+
+  getFormattedTotalPrice(): string {
+    const total = this.master.totalPrice;
+    if (!total || total <= 0) return '₹ 0';
+    if (total >= 10000000) {
+      return `₹ ${(total / 10000000).toFixed(2)} Cr`;
+    }
+    if (total >= 100000) {
+      return `₹ ${(total / 100000).toFixed(2)} Lakhs`;
+    }
+    return `₹ ${total.toLocaleString('en-IN')}`;
+  }
+
   // Form Model
   form = {
     title: '',
-    propertyType: 'Apartments & Flats',
-    listingMode: 'buy',
-    cityName: 'Chennai',
-    localityName: 'Anna Nagar',
+    propertyType: 'Gated CMDA Plots',
+    listingMode: 'plots',
+    cityName: '',
+    localityName: '',
     price: '',
     pricePerSqft: '',
     sqft: '',
-    bhkBadge: '3 BHK',
-    facingOrView: 'East Facing',
+    bhkBadge: 'Sanctioned Plot',
+    facingOrView: '',
     reraNumber: '',
     mainImageUrl: '',
     description: '',
     // Dynamic Plot & Specialized Fields
-    plotApproval: 'CMDA Approved',
-    roadWidth: '30 Feet Road',
+    plotApproval: '',
+    roadWidth: '',
     plotDimensions: '',
-    boundaryWall: 'Gated & Compounded',
-    commercialType: 'Commercial Office Space',
-    powerBackup: '100% DG Redundancy',
-    waterSource: 'Dedicated Borewell & Canal',
-    interactiveMapUrl: 'assets/secura-masterplan-3d.html'
+    boundaryWall: '',
+    commercialType: '',
+    powerBackup: '',
+    waterSource: '',
+    interactiveMapUrl: ''
   };
 
   // Property Type Visual Card Selector Definitions
@@ -170,193 +225,24 @@ export class PostPropertyPageComponent {
 
   // Master Layout Factsheet for Plots
   readonly plotFactsheet = signal<PlotDetails>({
-    layoutSanctionNo: 'CMDA Sanctioned Layout PPD/LO No. 48/2023',
-    reraLayoutNo: 'TN/01/Layout/0291/2024',
-    frontageRoadWidth: '40 Feet Wide Bitumen Road',
-    waterTableDepth: 'Sweet Potable Water at 18–24 Feet',
-    soilBearingCapacity: 'Certified 220 kN/sq.m (Tested by IIT Madras)',
-    fsiPermissible: '2.0 FSI (G+3 Floors Permissible)',
-    ebSubstation: 'Dedicated 11kV Substation Commissioned',
-    boundaryWall: '6-Foot Reinforced Perimeter Wall with Gated Security',
-    drainageSystem: 'Underground Stormwater & Sewerage Grid Ready',
-    pattaStatus: 'Individual Computerized Patta Issued',
-    dimensionRanges: '40 ft x 60 ft (2,400 sq.ft standard corner)'
+    layoutSanctionNo: '',
+    reraLayoutNo: '',
+    frontageRoadWidth: '',
+    waterTableDepth: '',
+    soilBearingCapacity: '',
+    fsiPermissible: '',
+    ebSubstation: '',
+    boundaryWall: '',
+    drainageSystem: '',
+    pattaStatus: '',
+    dimensionRanges: ''
   });
 
-  readonly subdividedPlots = signal<SubdividedPlot[]>([
-    {
-      id: 248,
-      plotNo: '248',
-      status: 'sold',
-      superBuiltUpYds: 172.50,
-      netPlotAreaYds: 118.20,
-      superBuiltUpSqft: 1552,
-      widthMeters: 12.50,
-      lengthMeters: 7.80,
-      widthFeet: 41.0,
-      lengthFeet: 25.6,
-      facing: 'South Facing (Corner)',
-      priceInLakhs: 44.0,
-      formattedPrice: '₹44.00 L',
-      isCorner: true,
-      hasTrees: true,
-      x: -28,
-      y: -15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 247,
-      plotNo: '247',
-      status: 'sold',
-      superBuiltUpYds: 165.20,
-      netPlotAreaYds: 110.50,
-      superBuiltUpSqft: 1487,
-      widthMeters: 11.80,
-      lengthMeters: 7.80,
-      widthFeet: 38.7,
-      lengthFeet: 25.6,
-      facing: 'South Facing',
-      priceInLakhs: 41.5,
-      formattedPrice: '₹41.50 L',
-      isCorner: false,
-      hasTrees: false,
-      x: -12,
-      y: -15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 221,
-      plotNo: '221',
-      status: 'sold',
-      superBuiltUpYds: 158.40,
-      netPlotAreaYds: 106.00,
-      superBuiltUpSqft: 1425,
-      widthMeters: 11.20,
-      lengthMeters: 7.80,
-      widthFeet: 36.7,
-      lengthFeet: 25.6,
-      facing: 'South Facing',
-      priceInLakhs: 39.8,
-      formattedPrice: '₹39.80 L',
-      isCorner: false,
-      hasTrees: false,
-      x: 12,
-      y: -15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 222,
-      plotNo: '222',
-      status: 'available',
-      superBuiltUpYds: 172.50,
-      netPlotAreaYds: 118.20,
-      superBuiltUpSqft: 1552,
-      widthMeters: 12.50,
-      lengthMeters: 7.80,
-      widthFeet: 41.0,
-      lengthFeet: 25.6,
-      facing: 'South Facing (Corner)',
-      priceInLakhs: 44.0,
-      formattedPrice: '₹44.00 L',
-      isCorner: true,
-      hasTrees: false,
-      x: 28,
-      y: -15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 249,
-      plotNo: '249',
-      status: 'available',
-      superBuiltUpYds: 155.00,
-      netPlotAreaYds: 104.50,
-      superBuiltUpSqft: 1395,
-      widthMeters: 11.50,
-      lengthMeters: 7.59,
-      widthFeet: 37.7,
-      lengthFeet: 24.9,
-      facing: 'North Facing',
-      priceInLakhs: 39.0,
-      formattedPrice: '₹39.00 L',
-      isCorner: false,
-      hasTrees: true,
-      x: -28,
-      y: 15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 246,
-      plotNo: '246',
-      status: 'available',
-      superBuiltUpYds: 150.76,
-      netPlotAreaYds: 101.18,
-      superBuiltUpSqft: 1357,
-      widthMeters: 11.37,
-      lengthMeters: 7.59,
-      widthFeet: 37.3,
-      lengthFeet: 24.9,
-      facing: 'North Facing',
-      priceInLakhs: 38.0,
-      formattedPrice: '₹38.00 L',
-      isCorner: false,
-      hasTrees: true,
-      x: -12,
-      y: 15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 245,
-      plotNo: '245',
-      status: 'available',
-      superBuiltUpYds: 150.76,
-      netPlotAreaYds: 101.18,
-      superBuiltUpSqft: 1357,
-      widthMeters: 11.37,
-      lengthMeters: 7.59,
-      widthFeet: 37.3,
-      lengthFeet: 24.9,
-      facing: 'North Facing',
-      priceInLakhs: 38.0,
-      formattedPrice: '₹38.00 L',
-      isCorner: false,
-      hasTrees: true,
-      x: 12,
-      y: 15,
-      w: 13,
-      h: 11
-    },
-    {
-      id: 250,
-      plotNo: '250',
-      status: 'available',
-      superBuiltUpYds: 162.00,
-      netPlotAreaYds: 109.20,
-      superBuiltUpSqft: 1458,
-      widthMeters: 11.80,
-      lengthMeters: 7.59,
-      widthFeet: 38.7,
-      lengthFeet: 24.9,
-      facing: 'North Facing (Corner)',
-      priceInLakhs: 40.5,
-      formattedPrice: '₹40.50 L',
-      isCorner: true,
-      hasTrees: false,
-      x: 28,
-      y: 15,
-      w: 13,
-      h: 11
-    }
-  ]);
+  readonly subdividedPlots = signal<SubdividedPlot[]>([]);
 
   constructor() {
     // Default preset initialized for fallback
-    this.form.mainImageUrl = this.sampleImages[0].url;
+    this.form.mainImageUrl = '';
   }
 
   // Active cover preview computed from uploaded cover image, or direct URL
@@ -367,7 +253,7 @@ export class PostPropertyPageComponent {
         return cover.previewUrl || cover.serverUrl;
       }
     }
-    return this.form.mainImageUrl || this.sampleImages[0].url;
+    return this.form.mainImageUrl || '';
   });
 
   setMediaTab(tab: 'upload' | 'url' | 'presets'): void {
@@ -573,21 +459,49 @@ export class PostPropertyPageComponent {
   }
 
   onSubmit(): void {
-    if (!this.form.title.trim()) {
+    // Synchronize master sheet fields with top-level listing properties
+    if (!this.form.title.trim() && this.master.projectName) {
+      this.form.title = this.master.projectName + (this.master.plotNo ? ` - Plot ${this.master.plotNo}` : '');
+    }
+    if (!this.form.price.trim() && this.master.totalPrice > 0) {
+      this.form.price = this.getFormattedTotalPrice();
+    }
+    if (!this.form.pricePerSqft.trim() && this.master.pricePerSqft) {
+      this.form.pricePerSqft = `₹ ${this.master.pricePerSqft.toLocaleString('en-IN')}/sq.ft`;
+    }
+    if (!this.form.sqft.trim() && this.master.plotSizeSqft) {
+      this.form.sqft = `${this.master.plotSizeSqft} sq.ft` + (this.master.plotSizeCents > 0 ? ` (${this.master.plotSizeCents} Cents)` : '');
+    }
+    if (!this.form.localityName.trim()) {
+      this.form.localityName = this.master.villageLocality || this.master.areaLocation || '';
+    }
+    if (!this.form.cityName.trim()) {
+      this.form.cityName = this.master.district || this.master.taluk || 'Chennai';
+    }
+    if (!this.form.reraNumber.trim() && this.master.reraNumber) {
+      this.form.reraNumber = this.master.reraNumber;
+    }
+    if (!this.form.facingOrView.trim() && this.master.facing) {
+      this.form.facingOrView = this.master.facing + ' Facing' + (this.master.cornerPlot === 'Yes' ? ' (Corner)' : '');
+    }
+
+    const effectiveTitle = this.form.title.trim() || this.master.projectName?.trim();
+    if (!effectiveTitle) {
       this.notificationService.show({
         type: 'error',
-        title: 'Title Required',
-        message: 'Please enter a property title before submitting.',
+        title: 'Project Name Required',
+        message: 'Please enter the Project Name in Section 1 before submitting.',
         icon: 'error'
       });
       return;
     }
 
-    if (!this.form.price.trim()) {
+    const effectivePrice = this.form.price.trim() || (this.master.totalPrice > 0 ? this.getFormattedTotalPrice() : '');
+    if (!effectivePrice) {
       this.notificationService.show({
         type: 'error',
-        title: 'Price Required',
-        message: 'Please enter the expected valuation (e.g. ₹ 1.45 Cr).',
+        title: 'Plot Pricing Required',
+        message: 'Please enter Plot Size (sq.ft) and Price Per Sq.Ft in Section 3.',
         icon: 'error'
       });
       return;
@@ -619,13 +533,8 @@ export class PostPropertyPageComponent {
     }
 
     if (!finalMainImageUrl) {
-      this.notificationService.show({
-        type: 'error',
-        title: 'Image Required',
-        message: 'Please upload at least one property photo or select a showcase cover.',
-        icon: 'photo_camera'
-      });
-      return;
+      // Default placeholder if none chosen
+      finalMainImageUrl = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
     }
 
     // Additional gallery images (only valid server URLs)
@@ -661,8 +570,14 @@ export class PostPropertyPageComponent {
       if (this.form.boundaryWall) customHighlights.push(this.form.boundaryWall);
     }
 
+    this.isSubmitting.set(true);
+
     const payload: any = {
       ...this.form,
+      title: effectiveTitle,
+      price: effectivePrice,
+      masterData: this.master,
+      masterDetails: this.master,
       bhkBadge: finalBhkBadge,
       highlights: customHighlights,
       mainImageUrl: finalMainImageUrl,
@@ -681,6 +596,31 @@ export class PostPropertyPageComponent {
       if (res.success) {
         this.submittedPropId.set(res.propertyId || 'prop-submitted');
         this.isSuccessModalOpen.set(true);
+        this.master = createBlankMasterData();
+        this.uploadedImages.set([]);
+        this.form = {
+          title: '',
+          propertyType: 'Gated CMDA Plots',
+          listingMode: 'plots',
+          cityName: '',
+          localityName: '',
+          price: '',
+          pricePerSqft: '',
+          sqft: '',
+          bhkBadge: 'Sanctioned Plot',
+          facingOrView: '',
+          reraNumber: '',
+          mainImageUrl: '',
+          description: '',
+          plotApproval: '',
+          roadWidth: '',
+          plotDimensions: '',
+          boundaryWall: '',
+          commercialType: '',
+          powerBackup: '',
+          waterSource: '',
+          interactiveMapUrl: ''
+        };
         this.notificationService.show({
           type: 'success',
           title: 'Property Submitted!',

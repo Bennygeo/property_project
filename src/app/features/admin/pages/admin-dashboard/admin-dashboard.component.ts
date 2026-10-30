@@ -1,3 +1,74 @@
+
+export const CANONICAL_BULK_HEADERS = [
+  'Property ID',
+  'Developer',
+  'Project Name',
+  'RERA Number',
+  'DTCP Approved',
+  'DTCP / LP Approval No.',
+  'Patta Type',
+  'Clear Title / EC Available',
+  'Bank Loan Approved',
+  'Area / Location',
+  'Village / Locality',
+  'Taluk',
+  'District',
+  'Pincode',
+  'Google Maps Link',
+  'Plot No.',
+  'Plot Size (sq.ft)',
+  'Facing',
+  'Corner Plot',
+  'Land Use',
+  'Price per sq.ft (₹)',
+  'Total Price (₹)',
+  'Availability',
+  'Petrol Bunk Distance (km)',
+  'Schools (Name & km)',
+  'Colleges (Name & km)',
+  'Hospital (Name & km)',
+  'Corridor',
+  'Bus Stop Distance (km)',
+  'Railway Station (Name & km)',
+  'Highway Name',
+  'Highway Access Distance (km)',
+  'Airport Distance (km)',
+  'Suited For',
+  'Possession Timeline',
+  'Electricity',
+  'Water Connection',
+  'Drainage Facility',
+  'Road Width (ft)',
+  'Road Type',
+  'Street Lights',
+  'Compound Wall / Gated',
+  'Park',
+  'Other Amenities',
+  'Developer Maintenance after Handover (yrs)',
+  'Flood Zone',
+  'Waterlogging History',
+  'Contact Person / Phone',
+  'Remarks'
+] as const;
+
+import {
+  PropertyMasterData,
+  createBlankMasterData,
+  createDefaultMasterData,
+  calculateCents,
+  calculateTotalPrice,
+  MASTER_YES_NO_OPTIONS,
+  MASTER_FACING_OPTIONS,
+  MASTER_PATTA_OPTIONS,
+  MASTER_LAND_USE_OPTIONS,
+  MASTER_AVAILABILITY_OPTIONS,
+  MASTER_CORRIDOR_OPTIONS,
+  MASTER_SUITED_FOR_OPTIONS,
+  MASTER_UTILITY_OPTIONS,
+  MASTER_DRAINAGE_OPTIONS,
+  MASTER_ROAD_TYPE_OPTIONS,
+  MASTER_FLOOD_ZONE_OPTIONS
+} from '../../../../core/models/property-master.model';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -17,13 +88,15 @@ import { PlotexViewerComponent } from '../../../../shared/components/plotex-view
 import { InteractivePlotLayoutComponent } from '../../../../shared/components/interactive-plot-layout/interactive-plot-layout.component';
 
 import { ActivatedRoute } from '@angular/router';
+import * as XLSX from 'xlsx';
+import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
 import { 
   AdminFinancialTransaction, 
   AdminFinancialSummary, 
   AdminChannelItem 
 } from '../../../../core/services/admin.service';
 
-export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset';
+export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset' | 'bulk_upload';
 
 export interface UploadedImageItem {
   id: string;
@@ -52,6 +125,42 @@ export interface UploadedImageItem {
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent {
+  // Comprehensive Property Master Data from Excel Schema
+  adminMaster: PropertyMasterData = createDefaultMasterData();
+
+  readonly adminYesNoOptions = MASTER_YES_NO_OPTIONS;
+  readonly adminFacingOptions = MASTER_FACING_OPTIONS;
+  readonly adminPattaOptions = MASTER_PATTA_OPTIONS;
+  readonly adminLandUseOptions = MASTER_LAND_USE_OPTIONS;
+  readonly adminAvailabilityOptions = MASTER_AVAILABILITY_OPTIONS;
+  readonly adminCorridorOptions = MASTER_CORRIDOR_OPTIONS;
+  readonly adminSuitedForOptions = MASTER_SUITED_FOR_OPTIONS;
+  readonly adminUtilityOptions = MASTER_UTILITY_OPTIONS;
+  readonly adminDrainageOptions = MASTER_DRAINAGE_OPTIONS;
+  readonly adminRoadTypeOptions = MASTER_ROAD_TYPE_OPTIONS;
+  readonly adminFloodZoneOptions = MASTER_FLOOD_ZONE_OPTIONS;
+
+  onAdminPlotSizeSqftChange(): void {
+    this.adminMaster.plotSizeCents = calculateCents(this.adminMaster.plotSizeSqft);
+    this.adminMaster.totalPrice = calculateTotalPrice(this.adminMaster.plotSizeSqft, this.adminMaster.pricePerSqft);
+  }
+
+  onAdminPricePerSqftChange(): void {
+    this.adminMaster.totalPrice = calculateTotalPrice(this.adminMaster.plotSizeSqft, this.adminMaster.pricePerSqft);
+  }
+
+  getAdminFormattedTotalPrice(): string {
+    const total = this.adminMaster.totalPrice;
+    if (!total || total <= 0) return '₹ 0';
+    if (total >= 10000000) {
+      return `₹ ${(total / 10000000).toFixed(2)} Cr`;
+    }
+    if (total >= 100000) {
+      return `₹ ${(total / 100000).toFixed(2)} Lakhs`;
+    }
+    return `₹ ${total.toLocaleString('en-IN')}`;
+  }
+
   readonly adminService = inject(AdminService);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
@@ -68,7 +177,7 @@ export class AdminDashboardComponent {
     }
 
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'financials'].includes(params['tab'])) {
+      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'financials', 'user_mindset', 'bulk_upload'].includes(params['tab'])) {
         this.setTab(params['tab'] as AdminActiveTab);
       }
     });
@@ -1085,6 +1194,7 @@ export class AdminDashboardComponent {
       if (success) {
         // Reset form & upload state
         this.adminUploadedImages.set([]);
+        this.adminMaster = createBlankMasterData();
         this.newProp.set({
           title: '',
           propertyType: 'Apartments & Flats',
@@ -1223,4 +1333,602 @@ export class AdminDashboardComponent {
     link.click();
     document.body.removeChild(link);
   }
+
+  // =========================================================================
+  // BULK EXCEL UPLOAD STATE & BUSINESS LOGIC
+  // =========================================================================
+  readonly isUploadingBulk = signal<boolean>(false);
+  readonly isClearingDb = signal<boolean>(false);
+  readonly bulkClearExisting = signal<boolean>(true); // User requirement: "Remove all the existing DB property data"
+  readonly bulkParsedRows = signal<any[]>([]);
+  readonly bulkFileName = signal<string>('');
+  readonly bulkUploadStats = signal<{ total: number; validGps: number; invalidGps: number } | null>(null);
+  readonly bulkUploadSuccess = signal<string>('');
+  readonly bulkUploadError = signal<string>('');
+  readonly isDragOverBulk = signal<boolean>(false);
+
+  onBulkDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverBulk.set(true);
+  }
+
+  onBulkDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverBulk.set(false);
+  }
+
+  onBulkFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverBulk.set(false);
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.processSelectedExcelFile(files[0]);
+    }
+  }
+
+  onBulkFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.processSelectedExcelFile(input.files[0]);
+      input.value = ''; // Reset input to allow re-upload
+    }
+  }
+
+  processSelectedExcelFile(file: File): void {
+    this.bulkUploadError.set('');
+    this.bulkUploadSuccess.set('');
+    this.bulkFileName.set(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const buffer = e.target.result;
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+          this.bulkUploadError.set('The uploaded Excel spreadsheet contains no visible sheets.');
+          return;
+        }
+
+        // Select the appropriate data sheet
+        let sheetName = workbook.SheetNames[0];
+        const nonInstructionSheets = workbook.SheetNames.filter(name => {
+          const n = name.trim().toLowerCase();
+          return !n.includes('instruction') && !n.includes('list') && !n.includes('guide') && !n.includes('readme');
+        });
+        if (nonInstructionSheets.length > 0) {
+          const preferred = nonInstructionSheets.find(name => {
+            const n = name.toLowerCase();
+            return n.includes('master') || n.includes('property') || n.includes('plot') || n.includes('data');
+          });
+          sheetName = preferred || nonInstructionSheets[0];
+        }
+        const activeSheet = workbook.Sheets[sheetName];
+        const sheet2d: any[][] = XLSX.utils.sheet_to_json(activeSheet, { header: 1, defval: '' });
+
+        if (!sheet2d || sheet2d.length === 0) {
+          this.bulkUploadError.set(`No data found in sheet "${sheetName}".`);
+          return;
+        }
+
+        // Detect header row by matching property keywords
+        const headerKeywords = [
+          'property', 'project', 'developer', 'rera', 'dtcp', 'patta', 'location', 'locality', 
+          'area', 'plot', 'sqft', 'cents', 'dimension', 'facing', 'price', 'rate', 'road', 
+          'electricity', 'water', 'drainage', 'remarks', 'amenities', 'corridor', 'pincode'
+        ];
+
+        let headerRowIdx = 0;
+        let maxScore = 0;
+        for (let r = 0; r < Math.min(10, sheet2d.length); r++) {
+          const rowCells = sheet2d[r] || [];
+          const normalizedJoined = rowCells.map(c => String(c || '').toLowerCase().replace(/[^a-z0-9]/g, '')).join(' ');
+          const score = headerKeywords.filter(kw => normalizedJoined.includes(kw)).length;
+          if (score > maxScore) {
+            maxScore = score;
+            headerRowIdx = r;
+          }
+        }
+
+        const headers = (sheet2d[headerRowIdx] || []).map((h, i) => {
+          const str = String(h || '').trim();
+          return str !== '' ? str : `_col_${i}`;
+        });
+
+        const rawDataRows = sheet2d.slice(headerRowIdx + 1);
+        const validDataRows = rawDataRows.filter(r => {
+          if (!r || r.length === 0) return false;
+          return r.some(cell => cell !== '' && cell !== null && cell !== undefined);
+        });
+
+        if (validDataRows.length === 0) {
+          this.bulkUploadError.set(`No valid property rows found below the header row in sheet "${sheetName}".`);
+          return;
+        }
+
+        // Map flexible headers to standard PropertyMasterData keys
+        let validGpsCount = 0;
+        let invalidGpsCount = 0;
+        const seenIds = new Set<string>();
+
+        const isInvalidIdValue = (val: string): boolean => {
+          if (!val || val.length === 0) return true;
+          const lower = val.toLowerCase().trim();
+          const nonIdWords = [
+            'individual patta', 'promoter patta', 'chitta', 'panchayat', 'not available',
+            'yes', 'no', 'available', 'booked', 'sold', 'residential', 'commercial',
+            'east', 'west', 'north', 'south', 'it corridor', 'gst road', 'omr'
+          ];
+          return nonIdWords.includes(lower);
+        };
+
+        const mappedRows = validDataRows.map((r, idx) => {
+          // Prepare cell lookup table with column headers and normalized keys
+          const cells = headers.map((hdr, cIdx) => {
+            const val = r[cIdx] !== undefined && r[cIdx] !== null ? r[cIdx] : '';
+            const norm = hdr.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return { header: hdr, norm, value: val, colIdx: cIdx };
+          });
+
+          // Helper to fetch text value by alias patterns or exact column index
+          const getCol = (colIdx: number, ...aliasPatterns: string[]): any => {
+            const normAliases = aliasPatterns.map(a => a.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            // 1. Exact normalized match on header name (Highest priority)
+            for (const alias of normAliases) {
+              const match = cells.find(c => c.norm === alias && c.value !== '' && c.value !== null && c.value !== undefined);
+              if (match) return match.value;
+            }
+            // 2. StartsWith match on header name (only if alias is at least 4 characters long)
+            for (const alias of normAliases) {
+              if (alias.length >= 4) {
+                const match = cells.find(c => c.norm.startsWith(alias) && c.value !== '' && c.value !== null && c.value !== undefined);
+                if (match) return match.value;
+              }
+            }
+            // 3. Fallback to column index position (0-48)
+            if (r[colIdx] !== undefined && r[colIdx] !== null && String(r[colIdx]).trim() !== '') {
+              return r[colIdx];
+            }
+            return '';
+          };
+
+          // Helper to fetch numeric value by alias patterns or exact column index
+          const getNumCol = (colIdx: number, ...aliasPatterns: string[]): number | null => {
+            const normAliases = aliasPatterns.map(a => a.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            const matchingCells = cells.filter(c => {
+              if (c.value === '' || c.value === null || c.value === undefined) return false;
+              return normAliases.some(alias => c.norm === alias || (alias.length >= 4 && c.norm.startsWith(alias)));
+            });
+
+            // Priority 1: Check for clean single numbers in matching header cells
+            for (const mc of matchingCells) {
+              const str = String(mc.value).trim();
+              if (typeof mc.value === 'number') return mc.value;
+              if (!str.includes('-')) {
+                const parsed = parseFloat(str.replace(/[^0-9.-]/g, ''));
+                if (!isNaN(parsed) && parsed > 0) return parsed;
+              }
+            }
+
+            // Priority 2: Fall back to parsing any header match
+            for (const mc of matchingCells) {
+              const parsed = parseFloat(String(mc.value).replace(/[^0-9.-]/g, ''));
+              if (!isNaN(parsed)) return parsed;
+            }
+
+            // Priority 3: Fall back to direct column index cell
+            if (r[colIdx] !== undefined && r[colIdx] !== null && String(r[colIdx]).trim() !== '') {
+              if (typeof r[colIdx] === 'number') return r[colIdx];
+              const parsed = parseFloat(String(r[colIdx]).replace(/[^0-9.-]/g, ''));
+              if (!isNaN(parsed)) return parsed;
+            }
+
+            return null;
+          };
+
+          // 49 Canonical Headers Extraction (0-48):
+          // 0: Property ID (Ensure unique ID for every single row)
+          let rawPId = String(getCol(0, 'propertyid', 'propid', 'refid', 'pid') || '').trim();
+          if (isInvalidIdValue(rawPId) || seenIds.has(rawPId)) {
+            rawPId = `PRJ-${String(1001 + idx).padStart(4, '0')}`;
+          }
+          seenIds.add(rawPId);
+          const pId = rawPId;
+
+          // 1: Developer
+          const developer = String(getCol(1, 'developer', 'builder', 'promoter', 'company') || 'Mannidam Verified Developer').trim();
+          // 2: Project Name
+          const projectName = String(getCol(2, 'projectname', 'layoutname', 'communityname', 'project') || 'Verified Cadastral Layout').trim();
+          // 3: RERA Number
+          const reraNo = String(getCol(3, 'reranumber', 'rerano', 'rera', 'reraregno') || 'CMDA / DTCP Sanctioned').trim();
+          // 4: DTCP Approved
+          const dtcpApproved = String(getCol(4, 'dtcpapproved', 'cmdaapproved', 'approved') || 'Yes').trim();
+          // 5: DTCP / LP Approval No.
+          const dtcpApprovalNo = String(getCol(5, 'dtcplpapprovalno', 'dtcpapprovalno', 'lpapprovalno', 'dtcpno', 'approvalno', 'sanctionno') || '').trim();
+          // 6: Patta Type
+          const pattaType = String(getCol(6, 'pattatype', 'patta') || 'Individual Patta').trim();
+          // 7: Clear Title / EC Available
+          const clearTitleAvailable = String(getCol(7, 'cleartitleecavailable', 'cleartitleavailable', 'cleartitle') || 'Yes').trim();
+          // 8: Bank Loan Approved
+          const bankLoanApproved = String(getCol(8, 'bankloanapproved', 'bankloan', 'bankapproval') || 'Yes').trim();
+          // 9: Area / Location
+          const areaLocation = String(getCol(9, 'arealocation', 'area', 'location') || 'Guduvanchery').trim();
+          // 10: Village / Locality
+          const villageLocality = String(getCol(10, 'villagelocality', 'locality', 'village', 'neighborhood') || areaLocation).trim();
+          // 11: Taluk
+          const taluk = String(getCol(11, 'taluk', 'tehsil') || 'Vandalur').trim();
+          // 12: District
+          const district = String(getCol(12, 'district', 'city') || 'Chengalpattu').trim();
+          // 13: Pincode
+          const pincode = String(getCol(13, 'pincode', 'pin', 'postalcode') || '603202').trim();
+          // 14: Google Maps Link
+          const googleMapsLink = String(getCol(14, 'googlemapslink', 'mapslink', 'gpslink', 'gps', 'locationlink', 'maplink', 'coordinates', 'latlong') || '').trim();
+          // 15: Plot No.
+          let rawPlotNo = String(getCol(15, 'plotno', 'plotnumber', 'siteno', 'surveyno') || '').trim();
+          if (!rawPlotNo || rawPlotNo.toLowerCase().includes('.com') || rawPlotNo.toLowerCase().includes('http')) {
+            rawPlotNo = String(idx + 1);
+          }
+          const plotNo = rawPlotNo;
+
+          // 16: Plot Size (sq.ft)
+          let sqft = getNumCol(16, 'plotsizesqft', 'sqft', 'plotsize', 'areainsqft', 'extent');
+          let cents = sqft && sqft > 0 ? Math.round((sqft / 435.6) * 100) / 100 : 2.75;
+          const dimension = sqft ? `${Math.round(Math.sqrt(sqft))} x ${Math.round(Math.sqrt(sqft))}` : '30 x 40';
+
+          // 17: Facing
+          const facing = String(getCol(17, 'facing', 'direction', 'plotfacing') || 'East').trim();
+          // 18: Corner Plot
+          const cornerPlot = String(getCol(18, 'cornerplot', 'corner') || 'No').trim();
+          // 19: Land Use
+          const landUse = String(getCol(19, 'landuse', 'purpose', 'zoning') || 'Residential').trim();
+
+          // 20: Price per sq.ft (₹)
+          let rateSqft = getNumCol(20, 'pricepersqft', 'ratepersqft', 'rate', 'ratesqft', 'pricesqft', 'sqftrate');
+          // 21: Total Price (₹)
+          let totalPrice = getNumCol(21, 'totalprice', 'price', 'totalcost', 'totalamount', 'cost', 'amount', 'value');
+          if ((!totalPrice || totalPrice <= 0) && sqft && rateSqft) {
+            totalPrice = Math.round(sqft * rateSqft);
+          }
+          if ((!rateSqft || rateSqft <= 0) && sqft && totalPrice) {
+            rateSqft = Math.round(totalPrice / sqft);
+          }
+
+          // 22: Availability
+          const availability = String(getCol(22, 'availability', 'status', 'plotstatus') || 'Available').trim();
+          // 23: Petrol Bunk Distance (km)
+          const petrolBunkDistance = getNumCol(23, 'petrolbunkdistancekm', 'petrolbunkdistance', 'petrolbunk');
+          // 24: Schools (Name & km)
+          const schoolsNearby = String(getCol(24, 'schoolsnamekm', 'schoolsnearby', 'schools') || '').trim();
+          // 25: Colleges (Name & km)
+          const collegesNearby = String(getCol(25, 'collegesnamekm', 'collegesnearby', 'colleges') || '').trim();
+          // 26: Hospital (Name & km)
+          const hospitalNearby = String(getCol(26, 'hospitalnamekm', 'hospitalnearby', 'hospital', 'hospitals') || '').trim();
+          // 27: Corridor
+          const corridor = String(getCol(27, 'corridor', 'growthcorridor') || 'GST Road').trim();
+          // 28: Bus Stop Distance (km)
+          const busStopDistance = getNumCol(28, 'busstopdistancekm', 'busstopdistance', 'busstop');
+          // 29: Railway Station (Name & km)
+          const railwayStationNearby = String(getCol(29, 'railwaystationnamekm', 'railwaystationnearby', 'railwaystation') || '').trim();
+          // 30: Highway Name
+          const highwayName = String(getCol(30, 'highwayname', 'highway', 'mainroad') || '').trim();
+          // 31: Highway Access Distance (km)
+          const highwayDistance = getNumCol(31, 'highwayaccessdistancekm', 'highwaydistancekm', 'highwaydistance', 'highwayaccessdistance');
+          // 32: Airport Distance (km)
+          const airportDistance = getNumCol(32, 'airportdistancekm', 'airportdistance', 'airport');
+          // 33: Suited For
+          const suitedFor = String(getCol(33, 'suitedfor', 'suitability') || 'Both').trim();
+          // 34: Possession Timeline
+          const possessionTimeline = String(getCol(34, 'possessiontimeline', 'possession') || 'Immediate').trim();
+          // 35: Electricity
+          const electricity = String(getCol(35, 'electricity', 'power', 'eb') || 'Available').trim();
+          // 36: Water Connection
+          const waterConnection = String(getCol(36, 'waterconnection', 'water') || 'Available').trim();
+          // 37: Drainage Facility
+          const drainageFacility = String(getCol(37, 'drainagefacility', 'drainage') || 'Underground').trim();
+          // 38: Road Width (ft)
+          const roadWidthFt = getNumCol(38, 'roadwidthft', 'roadwidth', 'roadsize') || 30;
+          // 39: Road Type
+          const roadType = String(getCol(39, 'roadtype', 'road', 'roadsurface') || 'Tar Road').trim();
+          // 40: Street Lights
+          const streetLights = String(getCol(40, 'streetlights', 'streetlight') || 'Yes').trim();
+          // 41: Compound Wall / Gated
+          const compoundWallGated = String(getCol(41, 'compoundwallgated', 'compoundwall', 'gated') || 'Yes').trim();
+          // 42: Park
+          const park = String(getCol(42, 'park', 'garden') || 'Yes').trim();
+          // 43: Other Amenities
+          const otherAmenities = String(getCol(43, 'otheramenities', 'amenities', 'facilities') || '').trim();
+          // 44: Developer Maintenance after Handover (yrs)
+          const developerMaintenanceYears = getNumCol(44, 'developermaintenanceafterhandoveryrs', 'developermaintenanceyears', 'developermaintenance') || 2;
+          // 45: Flood Zone
+          const floodZone = String(getCol(45, 'floodzone', 'floodrisk') || 'No').trim();
+          // 46: Waterlogging History
+          const waterloggingHistory = String(getCol(46, 'waterlogginghistory', 'waterlogging') || 'No').trim();
+          // 47: Contact Person / Phone
+          const contactPersonPhone = String(getCol(47, 'contactpersonphone', 'contactperson', 'phone', 'contact', 'mobile') || '+91 94441 00000').trim();
+          // 48: Remarks
+          const remarks = String(getCol(48, 'remarks', 'notes', 'comments', 'description') || '').trim();
+
+          // Validate GPS for red highlighting
+          const gpsAudit = validateGpsData(googleMapsLink);
+          if (gpsAudit.isValid) {
+            validGpsCount++;
+          } else {
+            invalidGpsCount++;
+          }
+
+          return {
+            propertyId: pId,
+            projectName,
+            plotNo,
+            developer,
+            reraNumber: reraNo,
+            dtcpApproved: dtcpApproved === 'No' ? 'No' : 'Yes',
+            dtcpApprovalNo,
+            pattaType,
+            clearTitleAvailable: clearTitleAvailable === 'No' ? 'No' : 'Yes',
+            bankLoanApproved: bankLoanApproved === 'No' ? 'No' : 'Yes',
+            areaLocation,
+            villageLocality,
+            taluk,
+            district,
+            pincode,
+            googleMapsLink,
+            plotSizeSqft: sqft || 1200,
+            plotSizeCents: cents || 2.75,
+            dimension,
+            facing,
+            cornerPlot: cornerPlot === 'Yes' ? 'Yes' : 'No',
+            landUse,
+            pricePerSqft: rateSqft || 3200,
+            totalPrice: totalPrice || 3840000,
+            availability,
+            petrolBunkDistance,
+            schoolsNearby,
+            collegesNearby,
+            hospitalNearby,
+            corridor,
+            busStopDistance,
+            railwayStationNearby,
+            highwayName,
+            highwayDistance,
+            airportDistance,
+            suitedFor,
+            possessionTimeline,
+            electricity,
+            waterConnection,
+            drainageFacility,
+            roadWidthFt,
+            roadType,
+            streetLights,
+            compoundWallGated,
+            park,
+            otherAmenities,
+            developerMaintenanceYears,
+            floodZone,
+            waterloggingHistory,
+            contactPersonPhone,
+            remarks,
+            _gpsAudit: gpsAudit
+          };
+        });
+
+        this.bulkParsedRows.set(mappedRows);
+        this.bulkUploadStats.set({
+          total: mappedRows.length,
+          validGps: validGpsCount,
+          invalidGps: invalidGpsCount
+        });
+
+        this.notificationService.show({
+          type: 'success',
+          title: 'Excel File Parsed',
+          message: `Successfully loaded ${mappedRows.length} property rows from ${file.name}.`,
+          icon: 'table_chart'
+        });
+      } catch (err: any) {
+        console.error('Error parsing Excel spreadsheet:', err);
+        this.bulkUploadError.set('Failed to parse file: ' + (err.message || 'Invalid format'));
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  executeBulkImport(): void {
+    const rows = this.bulkParsedRows();
+    if (!rows || rows.length === 0) {
+      this.bulkUploadError.set('Please select and parse an Excel spreadsheet first.');
+      return;
+    }
+
+    this.isUploadingBulk.set(true);
+    this.bulkUploadError.set('');
+    this.bulkUploadSuccess.set('');
+
+    const clearExisting = this.bulkClearExisting();
+
+    this.propertyService.bulkUploadProperties(rows, clearExisting).subscribe({
+      next: (res) => {
+        this.isUploadingBulk.set(false);
+        if (res && res.success) {
+          const count = res.importedCount || rows.length;
+          this.bulkUploadSuccess.set(`Import successful! ${count} properties were inserted into the live database${clearExisting ? ' (existing DB data was cleared)' : ''}.`);
+          this.notificationService.show({
+            type: 'success',
+            title: 'Bulk Properties Imported',
+            message: `${count} properties imported successfully.`,
+            icon: 'cloud_done'
+          });
+          // Refresh property registry
+          this.propertyService.loadPropertiesFromApi();
+        } else {
+          this.bulkUploadError.set(res?.message || 'Bulk upload failed on the server.');
+        }
+      },
+      error: (err) => {
+        this.isUploadingBulk.set(false);
+        this.bulkUploadError.set('Server error during bulk upload: ' + (err.message || 'Check PHP connection'));
+      }
+    });
+  }
+
+  clearAllDatabaseProperties(): void {
+    if (!confirm('Are you sure you want to delete ALL property records from the database? This action cannot be undone.')) {
+      return;
+    }
+
+    this.isClearingDb.set(true);
+    this.propertyService.clearAllProperties().subscribe({
+      next: (res) => {
+        this.isClearingDb.set(false);
+        if (res && res.success) {
+          this.bulkParsedRows.set([]);
+          this.bulkUploadStats.set(null);
+          this.bulkUploadSuccess.set('All database properties have been permanently removed.');
+          this.notificationService.show({
+            type: 'info',
+            title: 'Database Wiped',
+            message: 'All properties removed from registry database.',
+            icon: 'delete_sweep'
+          });
+          this.propertyService.loadPropertiesFromApi();
+        } else {
+          this.bulkUploadError.set(res?.message || 'Failed to wipe database');
+        }
+      },
+      error: (err) => {
+        this.isClearingDb.set(false);
+        this.bulkUploadError.set('Error clearing database: ' + err.message);
+      }
+    });
+  }
+
+  downloadExcelTemplate(): void {
+    const templateHeaders = [...CANONICAL_BULK_HEADERS];
+
+    const sampleRow1 = [
+      'PRJ-1001',                                       // Property ID
+      'Greenfield Housing Ltd',                         // Developer
+      'Greenfield Royal Palms',                         // Project Name
+      'TN/01/Layout/1234/2026',                         // RERA Number
+      'Yes',                                            // DTCP Approved
+      'DTCP/LP/89/2026',                                // DTCP / LP Approval No.
+      'Individual Patta',                               // Patta Type
+      'Yes',                                            // Clear Title / EC Available
+      'Yes',                                            // Bank Loan Approved
+      'Guduvanchery',                                   // Area / Location
+      'Nandivaram',                                     // Village / Locality
+      'Vandalur',                                       // Taluk
+      'Chengalpattu',                                   // District
+      '603202',                                         // Pincode
+      'https://www.google.com/maps?q=12.8436,80.0601',   // Google Maps Link
+      '12',                                             // Plot No.
+      1200,                                             // Plot Size (sq.ft)
+      'East',                                           // Facing
+      'No',                                             // Corner Plot
+      'Residential',                                    // Land Use
+      3200,                                             // Price per sq.ft (₹)
+      3840000,                                          // Total Price (₹)
+      'Available',                                      // Availability
+      1.2,                                              // Petrol Bunk Distance (km)
+      'SSM School (1.5 km)',                            // Schools (Name & km)
+      'SRM University (6 km)',                          // Colleges (Name & km)
+      'SRM Global Hospital (6 km)',                     // Hospital (Name & km)
+      'GST Road',                                       // Corridor
+      0.8,                                              // Bus Stop Distance (km)
+      'Guduvanchery Railway Station (2.5 km)',          // Railway Station (Name & km)
+      'GST Road (NH 45)',                               // Highway Name
+      2.0,                                              // Highway Access Distance (km)
+      28.0,                                             // Airport Distance (km)
+      'Both',                                           // Suited For
+      'Immediate',                                      // Possession Timeline
+      'Available',                                      // Electricity
+      'Available',                                      // Water Connection
+      'Underground',                                    // Drainage Facility
+      30,                                               // Road Width (ft)
+      'Tar Road',                                       // Road Type
+      'Yes',                                            // Street Lights
+      'Yes',                                            // Compound Wall / Gated
+      'Yes',                                            // Park
+      'Clubhouse, Solar Street Lights, Avenue Trees',   // Other Amenities
+      2,                                                // Developer Maintenance after Handover (yrs)
+      'No',                                             // Flood Zone
+      'No',                                             // Waterlogging History
+      '+91 94441 00000',                                // Contact Person / Phone
+      'Clear patta freehold land ready for immediate registration' // Remarks
+    ];
+
+    const sampleRow2 = [
+      'PRJ-1002',                                       // Property ID
+      'Prestige Developers',                            // Developer
+      'Serene Emerald Enclave',                         // Project Name
+      'TN/01/Layout/1235/2026',                         // RERA Number
+      'Yes',                                            // DTCP Approved
+      'DTCP/LP/90/2026',                                // DTCP / LP Approval No.
+      'Individual Patta',                               // Patta Type
+      'Yes',                                            // Clear Title / EC Available
+      'Yes',                                            // Bank Loan Approved
+      'Kelambakkam',                                    // Area / Location
+      'Kelambakkam Town',                               // Village / Locality
+      'Thiruporur',                                     // Taluk
+      'Chengalpattu',                                   // District
+      '603103',                                         // Pincode
+      '12.7845, 80.2223',                               // Google Maps Link
+      '24',                                             // Plot No.
+      1500,                                             // Plot Size (sq.ft)
+      'North',                                          // Facing
+      'Yes',                                            // Corner Plot
+      'Residential',                                    // Land Use
+      3500,                                             // Price per sq.ft (₹)
+      5250000,                                          // Total Price (₹)
+      'Available',                                      // Availability
+      0.8,                                              // Petrol Bunk Distance (km)
+      'Hiranandani Upscale School (4 km)',              // Schools (Name & km)
+      'Chettinad Medical College (2 km)',               // Colleges (Name & km)
+      'Chettinad Super Speciality (2 km)',              // Hospital (Name & km)
+      'OMR',                                            // Corridor
+      0.4,                                              // Bus Stop Distance (km)
+      'Vandalur Railway Station (14 km)',               // Railway Station (Name & km)
+      'Old Mahabalipuram Road (SH 49A)',                // Highway Name
+      0.5,                                              // Highway Access Distance (km)
+      32.0,                                             // Airport Distance (km)
+      'Both',                                           // Suited For
+      'Immediate',                                      // Possession Timeline
+      'Available',                                      // Electricity
+      'Available',                                      // Water Connection
+      'Underground',                                    // Drainage Facility
+      40,                                               // Road Width (ft)
+      'Tar Road',                                       // Road Type
+      'Yes',                                            // Street Lights
+      'Yes',                                            // Compound Wall / Gated
+      'Yes',                                            // Park
+      '24x7 Security, Blacktop Roads, Compound Wall',   // Other Amenities
+      3,                                                // Developer Maintenance after Handover (yrs)
+      'No',                                             // Flood Zone
+      'No',                                             // Waterlogging History
+      '+91 94441 11111',                                // Contact Person / Phone
+      'Corner plot with dual road access and DTCP sanction.' // Remarks
+    ];
+
+    const wsData = [templateHeaders, sampleRow1, sampleRow2];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Auto-fit column widths
+    ws['!cols'] = templateHeaders.map(h => ({ wch: Math.max(h.length + 3, 14) }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Property Master Template');
+
+    XLSX.writeFile(wb, 'Property_Master_Data_Bulk_Template.xlsx');
+
+    this.notificationService.show({
+      type: 'info',
+      title: 'Template Downloaded',
+      message: 'Property Master Bulk Upload template downloaded with the 49 canonical fields.',
+      icon: 'download'
+    });
+  }
+
 }

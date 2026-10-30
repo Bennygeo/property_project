@@ -24,7 +24,6 @@ import { RouterLink } from '@angular/router';
           <nav class="footer-links-inline" aria-label="Footer Navigation">
             <a routerLink="/search" class="footer-link">Properties</a>
             <a routerLink="/post-property" class="footer-link">Post Listing</a>
-            <a routerLink="/wallet" class="footer-link">Media Wallet</a>
             <a href="tel:18004197568" class="footer-link phone-link" title="Concierge Desk">
               <span class="material-symbols-outlined icon-xs">call</span>
               <span>1800-419-PLOT</span>

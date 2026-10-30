@@ -21,7 +21,7 @@ class Database {
     private ?PDO $connection = null;
 
     public function __construct() {
-        $this->host     = $_ENV['DB_HOST'] ?? 'localhost';
+        $this->host     = $_ENV['DB_HOST'] ?? '127.0.0.1';
         $this->dbName   = $_ENV['DB_NAME'] ?? 'onenesgw_property_project';
         $this->username = $_ENV['DB_USER'] ?? 'onenesgw_pp';
         $this->password = $_ENV['DB_PASS'] ?? 'property@77';
@@ -41,8 +41,8 @@ class Database {
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->charset} COLLATE utf8mb4_unicode_ci",
+            PDO::ATTR_EMULATE_PREPARES   => true,
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->charset} COLLATE utf8mb4_general_ci",
         ];
 
         try {
@@ -52,11 +52,17 @@ class Database {
             // Local dev / XAMPP fallback
             if ($this->host === 'localhost' || $this->host === '127.0.0.1') {
                 try {
-                    $localDsn = "mysql:host={$this->host};dbname=mannidam_property_db;charset={$this->charset}";
+                    $localDsn = "mysql:host={$this->host};dbname={$this->dbName};charset={$this->charset}";
                     $this->connection = new PDO($localDsn, 'root', '', $options);
                     return $this->connection;
                 } catch (PDOException $fallbackErr) {
-                    // Fall through to standard error response below
+                    try {
+                        $localDsn2 = "mysql:host={$this->host};dbname=mannidam_property_db;charset={$this->charset}";
+                        $this->connection = new PDO($localDsn2, 'root', '', $options);
+                        return $this->connection;
+                    } catch (PDOException $fallbackErr2) {
+                        // Fall through to standard error response below
+                    }
                 }
             }
 

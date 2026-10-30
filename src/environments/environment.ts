@@ -1,5 +1,8 @@
 function detectApiUrl(): string {
   if (typeof window === 'undefined') return '/P_demo_4/backend/api';
+  if (window.location && (window.location.port === '4200' || window.location.hostname === 'localhost')) {
+    return '/api';
+  }
   const path = window.location.pathname;
   if (path.includes('/P_demo_4')) return '/P_demo_4/backend/api';
   if (path.includes('/p_demo_4')) return '/p_demo_4/backend/api';
@@ -8,7 +11,7 @@ function detectApiUrl(): string {
   if (path.includes('/p_demo_1')) return '/p_demo_1/backend/api';
   if (path.includes('/p_demo')) return '/p_demo/backend/api';
   if (path.includes('/demo1')) return '/demo1/backend/api';
-  return '/P_demo_4/backend/api';
+  return '/api';
 }
 
 export const environment = {

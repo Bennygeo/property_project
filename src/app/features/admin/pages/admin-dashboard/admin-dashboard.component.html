@@ -201,6 +201,16 @@
         <span>Buyer Mindset &amp; Leads</span>
         <span class="tab-badge-studio" style="background:#fef3c7;color:#92400e;">AI INTEL</span>
       </button>
+
+      <button 
+        type="button" 
+        class="admin-nav-item" 
+        [class.active]="activeTab() === 'bulk_upload'"
+        (click)="setTab('bulk_upload')">
+        <span class="material-symbols-outlined text-cyan">upload_file</span>
+        <span>Bulk Excel Upload</span>
+        <span class="tab-badge-studio" style="background:#0284c7;color:#ffffff;">BULK DB</span>
+      </button>
     </div>
 
     <!-- TAB CONTENT 1: REVIEW QUEUE (MAKER-CHECKER ENFORCEMENT) -->
@@ -353,98 +363,461 @@
           </div>
 
           <form (submit)="$event.preventDefault(); onSubmitNewProperty()" class="post-property-form">
-            
-            <div class="form-grid-2">
-              <div class="form-field full-width">
-                <label class="field-label">Property Title *</label>
-                <input 
-                  type="text" 
-                  class="field-input" 
-                  [(ngModel)]="newProp().title" 
-                  name="title" 
-                  placeholder="e.g. Skyline Pavilion 4BHK Penthouse with Private Terrace" 
-                  required />
-              </div>
 
-              <!-- Property Classification: Visual Interactive Cards -->
-              <div class="form-field full-width">
-                <label class="field-label">Property Category &amp; Classification *</label>
-                <div class="admin-type-selector-grid">
-                  @for (item of propertyTypes; track item.id) {
-                    <div 
-                      class="admin-type-selector-card" 
-                      [class.selected]="newProp().propertyType === item.id"
-                      (click)="selectAdminPropertyType(item.id)">
-                      <div class="admin-type-icon-box">
-                        <span class="material-symbols-outlined">{{ item.icon }}</span>
-                      </div>
-                      <div class="admin-type-text-box">
-                        <span class="admin-type-title">{{ item.label }}</span>
-                        <span class="admin-type-desc">{{ item.desc }}</span>
-                      </div>
-                      @if (newProp().propertyType === item.id) {
-                        <span class="material-symbols-outlined admin-type-check">check_circle</span>
-                      }
-                    </div>
-                  }
+            <!-- EXCEL SHEET MASTER BANNER -->
+            <div class="excel-guide-banner">
+              <div class="guide-banner-left">
+                <span class="material-symbols-outlined guide-icon">table_chart</span>
+                <div>
+                  <h4 class="guide-title">Administrative Property Master Registry Data</h4>
+                  <p class="guide-sub">
+                    Direct entry according to the official Property Master sheet. Captures complete project, cadastral location, plot valuation, infrastructure, and risk audit.
+                  </p>
                 </div>
               </div>
+              <div class="guide-banner-right">
+                <span class="badge-autocalc">
+                  <span class="material-symbols-outlined">calculate</span>
+                  Auto-Calculated Cents &amp; Total Valuation
+                </span>
+              </div>
+            </div>
 
-              <div class="form-field">
-                <label class="field-label">Listing Mode *</label>
-                <select class="field-select" [(ngModel)]="newProp().listingMode" name="listingMode">
-                  <option value="buy">Buy (Freehold Deed)</option>
-                  <option value="rent">Rent / Lease</option>
-                  <option value="plots">Plots / Land Parcel</option>
-                  <option value="commercial">Commercial Space</option>
-                </select>
+            <!-- GROUP 1: PROJECT & LEGAL -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-purple">gavel</span>
+                  <h4 class="group-heading">1. Project &amp; Legal Details</h4>
+                </div>
+                <span class="group-badge">PROJECT &amp; LEGAL</span>
               </div>
 
-              <!-- BEDROOMS CONFIGURATION (ONLY FOR RESIDENTIAL PROPERTIES) -->
-              @if (isAdminResidential()) {
+              <div class="form-grid-3">
                 <div class="form-field">
-                  <label class="field-label">Bedrooms / Configuration *</label>
-                  <select class="field-select" [(ngModel)]="newProp().bhkBadge" name="bhkBadge">
-                    <option value="1 BHK">1 BHK</option>
-                    <option value="2 BHK">2 BHK</option>
-                    <option value="3 BHK">3 BHK</option>
-                    <option value="4 BHK">4 BHK</option>
-                    <option value="5+ BHK Villa">5+ BHK Mansion / Villa</option>
+                  <label class="field-label">Project Name *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.projectName" name="admProjectName" placeholder="e.g. Green Meadows Phase 2" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Property ID</label>
+                  <input type="text" class="field-input font-mono auto-calc-field" [(ngModel)]="adminMaster.propertyId" name="admPropertyId" readonly title="Auto-generated registry ID" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Developer / Promoter Name *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.developer" name="admDeveloper" placeholder="e.g. ABC Promoters Pvt Ltd" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">RERA Registration Number</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.reraNumber" name="admReraNumber" placeholder="e.g. TN/29/Layout/0123/2025" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">DTCP Approved *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.dtcpApproved" name="admDtcpApproved">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
                   </select>
                 </div>
-              }
 
-              <div class="form-field">
-                <label class="field-label">City *</label>
-                <select class="field-select" [(ngModel)]="newProp().cityName" name="cityName">
-                  <option value="Chennai">Chennai</option>
-                  <option value="Bengaluru">Bengaluru</option>
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Coimbatore">Coimbatore</option>
-                </select>
+                <div class="form-field">
+                  <label class="field-label">DTCP / LP Approval No.</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.dtcpApprovalNo" name="admDtcpApprovalNo" placeholder="e.g. LP/No.123/2025" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Patta Type *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.pattaType" name="admPattaType">
+                    @for (opt of adminPattaOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Clear Title / EC Available *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.clearTitleAvailable" name="admClearTitle">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Bank Loan Approved *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.bankLoanApproved" name="admBankLoan">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- GROUP 2: LOCATION -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-teal">pin_drop</span>
+                  <h4 class="group-heading">2. Cadastral &amp; Geographical Location</h4>
+                </div>
+                <span class="group-badge">LOCATION</span>
               </div>
 
-              <div class="form-field">
-                <label class="field-label">Locality / Sector / Landmark *</label>
-                <input type="text" class="field-input" [(ngModel)]="newProp().localityName" name="localityName" placeholder="e.g. Anna Nagar West Extension" required />
+              <div class="form-grid-3">
+                <div class="form-field">
+                  <label class="field-label">Area / Location *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.areaLocation" name="admAreaLocation" placeholder="e.g. Guduvanchery" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Village / Locality *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.villageLocality" name="admVillageLocality" placeholder="e.g. Nandivaram" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Taluk</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.taluk" name="admTaluk" placeholder="e.g. Chengalpattu" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">District *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.district" name="admDistrict" placeholder="e.g. Chengalpattu" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Pincode *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.pincode" name="admPincode" placeholder="e.g. 603202" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Google Maps Link</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.googleMapsLink" name="admGoogleMaps" placeholder="https://maps.google.com/..." />
+                </div>
+              </div>
+            </div>
+
+            <!-- GROUP 3: PLOT DETAILS & VALUATION -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-emerald">square_foot</span>
+                  <h4 class="group-heading">3. Plot Details &amp; Valuation (Auto-Calculated)</h4>
+                </div>
+                <span class="group-badge">PLOT DETAILS</span>
               </div>
 
-              <div class="form-field">
-                <label class="field-label">Expected Price *</label>
-                <input type="text" class="field-input" [(ngModel)]="newProp().price" name="price" placeholder="e.g. ₹ 2.65 Cr" required />
+              <div class="form-grid-3">
+                <div class="form-field">
+                  <label class="field-label">Plot No. *</label>
+                  <input type="text" class="field-input font-bold" [(ngModel)]="adminMaster.plotNo" name="admPlotNo" placeholder="e.g. A-12" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Plot Size (sq.ft) *</label>
+                  <input type="number" class="field-input" [(ngModel)]="adminMaster.plotSizeSqft" name="admPlotSizeSqft" (ngModelChange)="onAdminPlotSizeSqftChange()" placeholder="e.g. 1200" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Plot Size (cents)
+                    <span class="auto-calc-tag">Auto: sq.ft ÷ 435.6</span>
+                  </label>
+                  <div class="calc-box-wrapper">
+                    <input type="number" step="0.01" class="field-input auto-calc-field font-mono" [ngModel]="adminMaster.plotSizeCents" name="admPlotSizeCents" readonly />
+                    <span class="calc-unit-pill">Cents</span>
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Dimension (ft)</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.dimension" name="admDimension" placeholder="e.g. 30 x 40" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Facing *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.facing" name="admFacing">
+                    @for (opt of adminFacingOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Corner Plot *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.cornerPlot" name="admCornerPlot">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Land Use *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.landUse" name="admLandUse">
+                    @for (opt of adminLandUseOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Price per sq.ft (₹) *</label>
+                  <input type="number" class="field-input" [(ngModel)]="adminMaster.pricePerSqft" name="admPricePerSqft" (ngModelChange)="onAdminPricePerSqftChange()" placeholder="e.g. 3200" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Total Price (₹)
+                    <span class="auto-calc-tag">Auto: sq.ft × rate</span>
+                  </label>
+                  <div class="calc-box-wrapper">
+                    <input type="number" class="field-input auto-calc-field font-bold" [ngModel]="adminMaster.totalPrice" name="admTotalPrice" readonly />
+                    <span class="calc-unit-pill highlight">{{ getAdminFormattedTotalPrice() }}</span>
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Availability *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.availability" name="admAvailability">
+                    @for (opt of adminAvailabilityOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- GROUP 4: NEARBY FACILITIES & DISTANCES (KM) -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-blue">near_me</span>
+                  <h4 class="group-heading">4. Nearby Facilities &amp; Distances (km)</h4>
+                </div>
+                <span class="group-badge">NEARBY FACILITIES</span>
               </div>
 
-              <div class="form-field">
-                <label class="field-label">{{ getAdminPricePerUnitLabel() }}</label>
-                <input type="text" class="field-input" [(ngModel)]="newProp().pricePerSqft" name="pricePerSqft" [placeholder]="getAdminPricePerUnitPlaceholder()" />
+              <div class="form-grid-3">
+                <div class="form-field">
+                  <label class="field-label">Strategic Corridor *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.corridor" name="admCorridor">
+                    @for (opt of adminCorridorOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Highway Name</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.highwayName" name="admHighwayName" placeholder="e.g. GST Road (NH45)" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Highway Access Distance (km)</label>
+                  <input type="number" step="0.1" class="field-input" [(ngModel)]="adminMaster.highwayDistance" name="admHighwayDist" placeholder="e.g. 1.0" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Petrol Bunk Distance (km)</label>
+                  <input type="number" step="0.1" class="field-input" [(ngModel)]="adminMaster.petrolBunkDistance" name="admPetrolBunk" placeholder="e.g. 1.2" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Bus Stop Distance (km)</label>
+                  <input type="number" step="0.1" class="field-input" [(ngModel)]="adminMaster.busStopDistance" name="admBusStop" placeholder="e.g. 0.8" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Airport Distance (km)</label>
+                  <input type="number" step="0.1" class="field-input" [(ngModel)]="adminMaster.airportDistance" name="admAirport" placeholder="e.g. 28" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Schools (Name &amp; km)</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.schoolsNearby" name="admSchools" placeholder="e.g. DAV School - 1.5 km" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Colleges (Name &amp; km)</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.collegesNearby" name="admColleges" placeholder="e.g. SRM University - 6 km" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Hospital (Name &amp; km)</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.hospitalNearby" name="admHospital" placeholder="e.g. Apollo Clinic - 3 km" />
+                </div>
+
+                <div class="form-field full-width">
+                  <label class="field-label">Railway Station (Name &amp; km)</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.railwayStationNearby" name="admRailway" placeholder="e.g. Guduvanchery - 2.5 km" />
+                </div>
+              </div>
+            </div>
+
+            <!-- GROUP 5: SUITABILITY -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-green">verified</span>
+                  <h4 class="group-heading">5. Suitability &amp; Possession</h4>
+                </div>
+                <span class="group-badge">SUITABILITY</span>
               </div>
 
-              <div class="form-field">
-                <label class="field-label">{{ getAdminAreaLabel() }}</label>
-                <input type="text" class="field-input" [(ngModel)]="newProp().sqft" name="sqft" [placeholder]="getAdminAreaPlaceholder()" required />
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label class="field-label">Suited For *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.suitedFor" name="admSuitedFor">
+                    @for (opt of adminSuitedForOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Possession Timeline</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.possessionTimeline" name="admPossession" placeholder="e.g. Immediate / Ready to Build" />
+                </div>
+              </div>
+            </div>
+
+            <!-- GROUP 6: INFRASTRUCTURE -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-orange">engineering</span>
+                  <h4 class="group-heading">6. Infrastructure &amp; On-Site Utilities</h4>
+                </div>
+                <span class="group-badge">INFRASTRUCTURE</span>
               </div>
 
-              <!-- DYNAMIC SPECIALIZED FIELDS: PLOTS & LAND (MASTER FACTSHEET & SUBDIVIDED UNITS) -->
+              <div class="form-grid-3">
+                <div class="form-field">
+                  <label class="field-label">Electricity *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.electricity" name="admElectricity">
+                    @for (opt of adminUtilityOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Water Connection *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.waterConnection" name="admWater">
+                    @for (opt of adminUtilityOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Drainage Facility *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.drainageFacility" name="admDrainage">
+                    @for (opt of adminDrainageOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Road Width (ft) *</label>
+                  <input type="number" class="field-input" [(ngModel)]="adminMaster.roadWidthFt" name="admRoadWidth" placeholder="e.g. 30" />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Road Type *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.roadType" name="admRoadType">
+                    @for (opt of adminRoadTypeOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Street Lights *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.streetLights" name="admStreetLights">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Compound Wall / Gated *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.compoundWallGated" name="admCompoundWall">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Park / Open Space *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.park" name="admPark">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Developer Maintenance (yrs)</label>
+                  <input type="number" class="field-input" [(ngModel)]="adminMaster.developerMaintenanceYears" name="admDevMaint" placeholder="e.g. 2" />
+                </div>
+
+                <div class="form-field full-width">
+                  <label class="field-label">Other Amenities</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.otherAmenities" name="admAmenities" placeholder="e.g. Temple, play area, CCTV, Avenue plantation" />
+                </div>
+              </div>
+            </div>
+
+            <!-- GROUP 7: RISK & REMARKS -->
+            <div class="admin-form-group-block">
+              <div class="group-header-row">
+                <div class="group-title-box">
+                  <span class="material-symbols-outlined text-red">shield</span>
+                  <h4 class="group-heading">7. Environmental Risk Audit &amp; Remarks</h4>
+                </div>
+                <span class="group-badge">RISK &amp; REMARKS</span>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label class="field-label">Flood Zone Risk *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.floodZone" name="admFloodZone">
+                    @for (opt of adminFloodZoneOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Waterlogging History *</label>
+                  <select class="field-select" [(ngModel)]="adminMaster.waterloggingHistory" name="admWaterlogging">
+                    @for (opt of adminYesNoOptions; track opt) {
+                      <option [value]="opt">{{ opt }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Contact Person / Phone *</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.contactPersonPhone" name="admContactPerson" placeholder="e.g. Mr. Kumar - 9876543210" required />
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Remarks / Special Highlights</label>
+                  <input type="text" class="field-input" [(ngModel)]="adminMaster.remarks" name="admRemarks" placeholder="e.g. Near upcoming metro extension, rapid capital appreciation" />
+                </div>
+              </div>
+            </div>
+
+            <!-- DYNAMIC SPECIALIZED FIELDS: PLOTS & LAND (MASTER FACTSHEET & SUBDIVIDED UNITS) -->
               @if (isAdminPlot()) {
                 <div class="form-field full-width">
                   <div class="admin-plot-management-wrapper">
@@ -1129,7 +1502,6 @@
                   </div>
                 </div>
               </div>
-            </div>
 
             <!-- Submission Footer -->
             <div class="form-actions-row">
@@ -2381,6 +2753,259 @@
       </section>
     }
 
+
+  
+    <!-- TAB CONTENT: BULK EXCEL PROPERTY UPLOAD & DB SYNCHRONIZATION -->
+    @if (activeTab() === 'bulk_upload') {
+      <section class="tab-pane-section bulk-upload-pane">
+
+        <!-- Top Header & Mission Statement -->
+        <div class="bulk-header-banner">
+          <div class="bulk-header-content">
+            <div class="bulk-title-group">
+              <span class="material-symbols-outlined bulk-main-icon">upload_file</span>
+              <div>
+                <h2 class="bulk-main-title">Bulk Property Excel Import &amp; Database Manager</h2>
+                <p class="bulk-subtitle">
+                  Batch import multi-parcel cadastral land listings from <strong>.xlsx, .xls, or .csv</strong> spreadsheets directly into the live SQL database.
+                </p>
+              </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="bulk-header-actions">
+              <button type="button" class="btn-download-tmpl" (click)="downloadExcelTemplate()">
+                <span class="material-symbols-outlined">download</span>
+                <span>Download Excel Template</span>
+              </button>
+
+              <button type="button" class="btn-danger-wipe" (click)="clearAllDatabaseProperties()" [disabled]="isClearingDb()">
+                <span class="material-symbols-outlined">delete_forever</span>
+                <span>{{ isClearingDb() ? 'Wiping Database...' : 'Wipe All DB Properties' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback Alert Messages -->
+        @if (bulkUploadSuccess()) {
+          <div class="bulk-alert-box alert-success">
+            <span class="material-symbols-outlined alert-icon">check_circle</span>
+            <div class="alert-content">
+              <strong>Import Success:</strong>
+              <p>{{ bulkUploadSuccess() }}</p>
+            </div>
+          </div>
+        }
+
+        @if (bulkUploadError()) {
+          <div class="bulk-alert-box alert-error">
+            <span class="material-symbols-outlined alert-icon">error</span>
+            <div class="alert-content">
+              <strong>Import Error:</strong>
+              <p>{{ bulkUploadError() }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- Upload Drag & Drop Zone -->
+        <div 
+          class="bulk-dropzone" 
+          [class.drag-over]="isDragOverBulk()"
+          (dragover)="onBulkDragOver($event)"
+          (dragleave)="onBulkDragLeave($event)"
+          (drop)="onBulkFileDrop($event)">
+          
+          <input 
+            type="file" 
+            #excelFileInput 
+            accept=".xlsx, .xls, .csv" 
+            (change)="onBulkFileSelected($event)" 
+            style="display:none" />
+
+          <div class="dropzone-center">
+            <div class="dropzone-icon-ring">
+              <span class="material-symbols-outlined drop-icon">cloud_upload</span>
+            </div>
+
+            <h3 class="dropzone-title">Drag &amp; Drop Property Master Excel File Here</h3>
+            <p class="dropzone-sub">
+              Supports <strong>.xlsx, .xls, and .csv</strong> files containing up to 100+ columns (51 Canonical Cadastral Fields).
+            </p>
+
+            <button type="button" class="btn-browse-file" (click)="excelFileInput.click()">
+              <span class="material-symbols-outlined">folder_open</span>
+              <span>Browse Computer Files</span>
+            </button>
+
+            @if (bulkFileName()) {
+              <div class="file-loaded-badge">
+                <span class="material-symbols-outlined">description</span>
+                <span>Active File: <strong>{{ bulkFileName() }}</strong></span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Import Options Ribbon -->
+        <div class="bulk-options-card">
+          <div class="option-checkbox-row">
+            <label class="custom-toggle-label">
+              <input type="checkbox" [(ngModel)]="bulkClearExisting" class="custom-checkbox" />
+              <div class="toggle-text">
+                <strong class="toggle-title">Remove all existing DB property data before import</strong>
+                <span class="toggle-desc">When checked, purges existing property table records to start with a pristine, verified inventory.</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Summary Stats Counters -->
+          @if (bulkUploadStats(); as stats) {
+            <div class="bulk-stats-strip">
+              <div class="stat-pill-item total">
+                <span class="stat-num">{{ stats.total }}</span>
+                <span class="stat-label">Total Properties</span>
+              </div>
+
+              <div class="stat-pill-item valid">
+                <span class="material-symbols-outlined stat-icon-green">check_circle</span>
+                <span class="stat-num">{{ stats.validGps }}</span>
+                <span class="stat-label">Valid GPS Coordinates</span>
+              </div>
+
+              <div class="stat-pill-item invalid" [class.has-errors]="stats.invalidGps > 0">
+                <span class="material-symbols-outlined stat-icon-red">error</span>
+                <span class="stat-num">{{ stats.invalidGps }}</span>
+                <span class="stat-label">Inaccurate / Missing GPS (Flagged in Red)</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Live Parsed Rows Preview Table -->
+        @if (bulkParsedRows().length > 0) {
+          <div class="bulk-preview-container">
+            <div class="preview-header-bar">
+              <div class="preview-title-block">
+                <h3>Live Spreadsheet Preview ({{ bulkParsedRows().length }} Rows Loaded)</h3>
+                <p>Verify data columns and GPS validation status before committing to the database.</p>
+              </div>
+
+              <div class="preview-commit-actions">
+                <button 
+                  type="button" 
+                  class="btn-commit-import" 
+                  (click)="executeBulkImport()" 
+                  [disabled]="isUploadingBulk()">
+                  <span class="material-symbols-outlined">
+                    {{ isUploadingBulk() ? 'sync' : 'cloud_upload' }}
+                  </span>
+                  <span>{{ isUploadingBulk() ? 'Importing into Database...' : 'Commit & Import ' + bulkParsedRows().length + ' Properties' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Scrollable Table Grid -->
+            <div class="table-responsive-wrapper">
+              <table class="bulk-data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Property ID</th>
+                    <th>Developer</th>
+                    <th>Project Name &amp; Plot</th>
+                    <th>RERA / DTCP</th>
+                    <th>Locality / District</th>
+                    <th>Area (Sq.ft / Cents)</th>
+                    <th>Price / Rate</th>
+                    <th>Facing / Corner</th>
+                    <th>Cadastral GPS Status</th>
+                    <th>Contact</th>
+                    <th>Maps Link</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of bulkParsedRows(); track $index) {
+                    <tr [class.row-gps-invalid]="!row._gpsAudit?.isValid">
+                      <td class="col-idx">{{ $index + 1 }}</td>
+                      <td><code class="cell-code">{{ row.propertyId }}</code></td>
+                      <td>
+                        <strong>{{ row.developer }}</strong>
+                      </td>
+                      <td>
+                        <strong>{{ row.projectName }}</strong>
+                        <span class="cell-sub">Plot No: {{ row.plotNo }}</span>
+                      </td>
+                      <td>
+                        <div>{{ row.reraNumber }}</div>
+                        <span class="cell-sub">DTCP: {{ row.dtcpApproved }} {{ row.dtcpApprovalNo }}</span>
+                      </td>
+                      <td>
+                        <div>{{ row.villageLocality }}</div>
+                        <span class="cell-sub">{{ row.district }} ({{ row.pincode }})</span>
+                      </td>
+                      <td>
+                        <strong>{{ row.plotSizeSqft | number }} sq.ft</strong>
+                        <span class="cell-sub">({{ row.plotSizeCents }} Cents)</span>
+                      </td>
+                      <td>
+                        <strong class="text-price">₹ {{ row.totalPrice | number }}</strong>
+                        <span class="cell-sub">₹ {{ row.pricePerSqft | number }}/sq.ft</span>
+                      </td>
+                      <td>
+                        <div>{{ row.facing }}</div>
+                        <span class="cell-sub">{{ row.cornerPlot === 'Yes' ? 'Corner Plot' : 'Regular' }}</span>
+                      </td>
+                      <td>
+                        @if (row._gpsAudit?.isValid) {
+                          <span class="cell-badge-gps-valid">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span>{{ row._gpsAudit.formattedText }}</span>
+                          </span>
+                        } @else {
+                          <span class="cell-badge-gps-error" [title]="row._gpsAudit?.reason || 'Invalid coordinates'">
+                            <span class="material-symbols-outlined">error</span>
+                            <span>GPS Inaccurate: {{ row._gpsAudit?.reason || 'Audit Pending' }}</span>
+                          </span>
+                        }
+                      </td>
+                      <td>
+                        <div>{{ row.contactPersonPhone }}</div>
+                      </td>
+                      <td class="col-link">
+                        @if (row.googleMapsLink && row.googleMapsLink.startsWith('http')) {
+                          <a [href]="row.googleMapsLink" target="_blank" rel="noopener" class="tbl-link">
+                            <span class="material-symbols-outlined">open_in_new</span>
+                          </a>
+                        } @else {
+                          <span class="text-muted-dash">-</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Bottom Floating Commit Strip -->
+            <div class="bulk-bottom-commit-strip">
+              <div class="commit-stats-note">
+                Ready to insert <strong>{{ bulkParsedRows().length }}</strong> properties into <strong>properties</strong> and <strong>property_master_details</strong> SQL tables.
+              </div>
+              <button 
+                type="button" 
+                class="btn-commit-import-large" 
+                (click)="executeBulkImport()" 
+                [disabled]="isUploadingBulk()">
+                <span class="material-symbols-outlined">cloud_upload</span>
+                <span>{{ isUploadingBulk() ? 'Importing...' : 'Confirm & Import All Properties' }}</span>
+              </button>
+            </div>
+          </div>
+        }
+
+      </section>
+    }
 
   </main>
 
