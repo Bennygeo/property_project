@@ -89,12 +89,7 @@ import { AuthService } from '../../../../core/services/auth.service';
             <span class="shortlist-count">{{ propertyService.shortlistCount() }}</span>
           </a>
 
-          <!-- Post Property CTA (Desktop Only) -->
-          <button class="post-property-btn desktop-only-btn" (click)="onPostPropertyClick()">
-            <span class="material-symbols-outlined">add_home</span>
-            <span>POST PROPERTY</span>
-            <span class="badge-free">FREE</span>
-          </button>
+
 
           <!-- Account / User Menu Dropdown (Desktop Only) -->
           @if (authService.isLoggedIn()) {
@@ -266,18 +261,7 @@ import { AuthService } from '../../../../core/services/auth.service';
                 </nav>
               </div>
 
-              <!-- Post Property FREE CTA Card -->
-              <div class="drawer-post-card">
-                <div class="post-card-texts">
-                  <div class="post-card-tag">DIRECT OWNER PLATFORM</div>
-                  <div class="post-card-title">List Property with Verified Title</div>
-                </div>
-                <button type="button" class="btn-drawer-post" (click)="onPostPropertyClick(); closeMobileMenu()">
-                  <span class="material-symbols-outlined">add_home</span>
-                  <span>Post Property</span>
-                  <span class="badge-free">FREE</span>
-                </button>
-              </div>
+
 
               <!-- Sign Out (if logged in) -->
               @if (authService.isLoggedIn()) {
