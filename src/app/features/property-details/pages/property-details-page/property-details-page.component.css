@@ -4075,7 +4075,7 @@
   border-radius: 14px;
   padding: 1.25rem 1.75rem;
   margin-bottom: 1.75rem;
-  box-shadow: 0 4px 16px -4px rgba(16, 185, 129, 0.12);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
 }
@@ -4107,7 +4107,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid #6ee7b7;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+  box-shadow: none;
   flex-shrink: 0;
 }
 
@@ -4194,7 +4194,7 @@
 .highlighted-maintenance-card {
   border: 2px solid #10b981 !important;
   background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%) !important;
-  box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.18) !important;
+  box-shadow: none !important;
 }
 
 .highlighted-maintenance-card .infra-category-tag {

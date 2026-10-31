@@ -490,7 +490,7 @@ export interface PropertyTypeOption {
       padding: 0.35rem 0.5rem;
       border-radius: 9999px;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      box-shadow: none;
       margin-top: 1.25rem;
       margin-bottom: 0.25rem;
     }
@@ -518,7 +518,7 @@ export interface PropertyTypeOption {
     .buy-sell-tab-btn.active {
       background: var(--brand-red, #b91c1c);
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(185, 28, 28, 0.25);
+      box-shadow: none;
     }
 
     .buy-sell-tab-btn.btn-sell-link:hover {
