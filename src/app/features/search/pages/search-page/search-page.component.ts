@@ -370,7 +370,6 @@ export class SearchPageComponent implements OnInit {
     this.selectedDeveloper.set('all');
     this.selectedBudget.set('all');
     this.selectedBhk.set('all');
-    this.reraOnly.set(false);
     this.cmdaOnly.set(false);
     this.directOwnerOnly.set(false);
     this.videoOnly.set(false);
@@ -552,7 +551,6 @@ export class SearchPageComponent implements OnInit {
   }
 
   // Toggle Signals
-  readonly reraOnly = signal<boolean>(false);
   readonly cmdaOnly = signal<boolean>(false);
   readonly directOwnerOnly = signal<boolean>(false);
   readonly videoOnly = signal<boolean>(false);
@@ -664,7 +662,6 @@ export class SearchPageComponent implements OnInit {
     count += this.selectedLocalities().length;
     if (this.selectedBudget() !== 'all') count++;
     if (this.selectedBhk() !== 'all') count++;
-    if (this.reraOnly()) count++;
     if (this.cmdaOnly()) count++;
     if (this.directOwnerOnly()) count++;
     if (this.videoOnly()) count++;
@@ -679,7 +676,6 @@ export class SearchPageComponent implements OnInit {
     const all = this.propertyService.allProperties();
     const budget = this.selectedBudget();
     const bhk = this.selectedBhk();
-    const rera = this.reraOnly();
     const cmda = this.cmdaOnly();
     const directOwner = this.directOwnerOnly();
     const video = this.videoOnly();
@@ -710,13 +706,7 @@ export class SearchPageComponent implements OnInit {
         }
       }
 
-      // 3. RERA Approved
-      if (rera) {
-        const reraText = (p.badges?.rera || '').toLowerCase();
-        if (!reraText.includes('rera') && !reraText.includes('approved') && !reraText.includes('sanctioned')) return false;
-      }
-
-      // 4. CMDA / DTCP Sanctioned
+      // 3. CMDA / DTCP Sanctioned
       if (cmda) {
         const isPlot = p.propertyType === 'Gated CMDA Plots';
         const reraText = (p.badges?.rera || '').toLowerCase();
@@ -1004,9 +994,6 @@ export class SearchPageComponent implements OnInit {
       if (params['drone'] === 'true') {
         this.droneOnly.set(true);
       }
-      if (params['rera'] === 'true') {
-        this.reraOnly.set(true);
-      }
       if (params['cmda'] === 'true') {
         this.cmdaOnly.set(true);
       }
@@ -1260,10 +1247,6 @@ export class SearchPageComponent implements OnInit {
     this.droneOnly.update(v => !v);
   }
 
-  toggleRera(): void {
-    this.reraOnly.update(v => !v);
-  }
-
   toggleCmda(): void {
     this.cmdaOnly.update(v => !v);
   }
@@ -1325,7 +1308,6 @@ export class SearchPageComponent implements OnInit {
     this.builderSearchQuery.set('');
     this.selectedBudget.set('all');
     this.selectedBhk.set('all');
-    this.reraOnly.set(false);
     this.cmdaOnly.set(false);
     this.directOwnerOnly.set(false);
     this.videoOnly.set(false);

@@ -514,18 +514,6 @@
               <span>Verified Title &amp; SRO</span>
             </label>
             <div class="toggle-list">
-              <label class="toggle-item" (click)="toggleRera()">
-                <div class="custom-checkbox" [class.checked]="reraOnly()">
-                  @if (reraOnly()) {
-                  <span class="material-symbols-outlined check-icon">check</span>
-                  }
-                </div>
-                <div class="toggle-text">
-                  <span class="toggle-title">RERA Approved</span>
-                  <span class="toggle-sub">State RERA sanctioned dossiers</span>
-                </div>
-              </label>
-
               <label class="toggle-item" (click)="toggleCmda()">
                 <div class="custom-checkbox" [class.checked]="cmdaOnly()">
                   @if (cmdaOnly()) {
@@ -692,12 +680,6 @@
             <div class="active-tag-pill">
               <span>Drone Survey</span>
               <button type="button" (click)="toggleDroneOnly()">&times;</button>
-            </div>
-            }
-            @if (reraOnly()) {
-            <div class="active-tag-pill">
-              <span>RERA</span>
-              <button type="button" (click)="toggleRera()">&times;</button>
             </div>
             }
             @if (cmdaOnly()) {
