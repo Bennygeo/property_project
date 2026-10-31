@@ -11,7 +11,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
@@ -26,15 +26,21 @@ try {
     $stmt = $db->query("
         SELECT 
             TRIM(pmd.developer) AS raw_name,
-            COUNT(DISTINCT p.id) AS propertyCount
+            COUNT(DISTINCT p.id) AS propertyCount,
+            COUNT(DISTINCT CASE WHEN TRIM(COALESCE(pmd.project_name, '')) != '' THEN TRIM(pmd.project_name) ELSE p.id END) AS projectCount,
+            GROUP_CONCAT(DISTINCT COALESCE(NULLIF(TRIM(pmd.district), ''), NULLIF(TRIM(p.city_name), '')) SEPARATOR ', ') AS districts,
+            MAX(d.logo_url) AS dev_logo,
+            MAX(d.projects_completed) AS dev_completed_str,
+            MAX(d.established_year) AS dev_est_year
         FROM property_master_details pmd
         INNER JOIN properties p ON pmd.property_id = p.id
+        LEFT JOIN developers d ON LOWER(TRIM(d.name)) = LOWER(TRIM(pmd.developer))
         WHERE pmd.developer IS NOT NULL 
           AND TRIM(pmd.developer) != ''
           AND (p.status = 'published' OR p.status IS NULL)
         GROUP BY TRIM(pmd.developer)
         HAVING propertyCount > 0
-        ORDER BY propertyCount DESC, raw_name ASC
+        ORDER BY projectCount DESC, propertyCount DESC, raw_name ASC
     ");
 
     $rawBuilders = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -56,10 +62,36 @@ try {
         $key = strtolower($clean);
         if (!isset($seen[$key])) {
             $seen[$key] = true;
+
+            $rawProjects = (int)($r['projectCount'] ?? 1);
+            $completedStr = trim((string)($r['dev_completed_str'] ?? ''));
+            if (!empty($completedStr) && preg_match('/(\d+)/', $completedStr, $m)) {
+                $projectsCount = max((int)$m[1], $rawProjects);
+            } else {
+                $projectsCount = max($rawProjects, 1);
+            }
+
+            // Generate clean initials for logo badge
+            $words = preg_split('/\s+/', $clean);
+            $initials = '';
+            foreach ($words as $w) {
+                $ch = strtoupper(substr($w, 0, 1));
+                if (ctype_alpha($ch)) {
+                    $initials .= $ch;
+                }
+                if (strlen($initials) >= 2) break;
+            }
+
+            $rawDistricts = !empty($r['districts']) ? array_slice(array_unique(array_filter(array_map('trim', explode(',', $r['districts'])))), 0, 3) : ['Tamil Nadu'];
+
             $builders[] = [
                 'name' => $clean,
                 'rawName' => $raw,
-                'propertyCount' => (int)$r['propertyCount']
+                'propertyCount' => (int)$r['propertyCount'],
+                'projectCount' => $projectsCount,
+                'districts' => $rawDistricts,
+                'logoUrl' => !empty($r['dev_logo']) ? $r['dev_logo'] : null,
+                'initials' => $initials ?: 'DV'
             ];
         }
     }

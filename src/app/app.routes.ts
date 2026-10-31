@@ -22,6 +22,16 @@ export const routes: Routes = [
     title: 'Developer Profile & Verified Projects — Find a Plot'
   },
   {
+    path: 'developers',
+    loadComponent: () => import('./features/builder/pages/developers-page/developers-page.component').then(m => m.DevelopersPageComponent),
+    title: 'Verified Developers & Builders — Find a Plot'
+  },
+  {
+    path: 'builders',
+    redirectTo: 'developers',
+    pathMatch: 'full'
+  },
+  {
     path: 'profile',
     loadComponent: () => import('./features/profile/pages/user-profile-page/user-profile-page.component').then(m => m.UserProfilePageComponent),
     title: 'Investor Dashboard & Profile — Find a Plot Verified Registry'

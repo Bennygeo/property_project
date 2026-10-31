@@ -47,6 +47,16 @@ export interface DistrictHubItem {
   topLocalities?: string[];
 }
 
+export interface DeveloperSummary {
+  name: string;
+  rawName?: string;
+  propertyCount: number;
+  projectCount: number;
+  districts?: string[];
+  logoUrl?: string | null;
+  initials?: string;
+}
+
 export interface RegionalGroupItem {
   regionName: string;
   districts: DistrictHubItem[];
@@ -677,7 +687,7 @@ export class PropertyService {
   /**
    * Fetch list of all builders/developers from database
    */
-  public fetchBuilders(): Observable<{ name: string; propertyCount: number }[]> {
+  public fetchBuilders(): Observable<DeveloperSummary[]> {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: any }>(baseUrl);
     return (tryGet(environment.apiUrl + '/builders/list.php').pipe(
       catchError(() => tryGet('/P_demo_4/backend/api/builders/list.php')),

@@ -75,6 +75,7 @@ import { AuthService } from '../../../../core/services/auth.service';
         <nav class="nav-links">
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }">Plots &amp; Land</a>
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }">Commercial</a>
+          <a class="nav-link" routerLink="/developers">Developers</a>
           <a class="nav-link" routerLink="/search">Search Registry</a>
         </nav>
 
@@ -242,6 +243,10 @@ import { AuthService } from '../../../../core/services/auth.service';
                   <a class="drawer-nav-item" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined">domain</span>
                     <span>Commercial Spaces</span>
+                  </a>
+                  <a class="drawer-nav-item" routerLink="/developers" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined">domain_add</span>
+                    <span>Verified Developers</span>
                   </a>
                   <a class="drawer-nav-item" href="#featured-section" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined text-red">favorite</span>

@@ -23,6 +23,7 @@ import { RouterLink } from '@angular/router';
           <!-- Central Minimalist Navigation -->
           <nav class="footer-links-inline" aria-label="Footer Navigation">
             <a routerLink="/search" class="footer-link">Properties</a>
+            <a routerLink="/developers" class="footer-link">Developers</a>
             <a routerLink="/post-property" class="footer-link">Post Listing</a>
             <a href="tel:18004197568" class="footer-link phone-link" title="Concierge Desk">
               <span class="material-symbols-outlined icon-xs">call</span>

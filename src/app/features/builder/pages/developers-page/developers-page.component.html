@@ -1,0 +1,181 @@
+<app-top-concierge-bar></app-top-concierge-bar>
+<app-header></app-header>
+
+<main class="developers-container">
+  <!-- Contextual Breadcrumb & Header -->
+  <header class="developers-header">
+    <div class="max-w-content">
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <a routerLink="/" class="breadcrumb-link">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Developers</span>
+      </nav>
+
+      <div class="header-hero-content">
+        <div class="header-title-group">
+          <div class="header-badge">
+            <span class="material-symbols-outlined badge-icon">verified</span>
+            <span>RERA Registered Directory</span>
+          </div>
+          <h1 class="header-title">Verified Developers &amp; Builders</h1>
+          <p class="header-subtitle">
+            Browse licensed real estate promoters and developers with verified plotted layouts and gated communities across Tamil Nadu.
+          </p>
+        </div>
+
+        <div class="header-stats-strip">
+          <div class="stat-pill">
+            <span class="stat-value">{{ allDevelopers().length }}</span>
+            <span class="stat-label">Developers</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-pill">
+            <span class="stat-value">{{ totalProjectsCount() }}+</span>
+            <span class="stat-label">Projects Developed</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-pill">
+            <span class="stat-value">100%</span>
+            <span class="stat-label">RERA &amp; DTCP Sanctioned</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter & Search Toolbar (Short & Contextual) -->
+  <section class="toolbar-section">
+    <div class="max-w-content toolbar-inner">
+      <div class="search-box-wrapper">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input 
+          type="text" 
+          class="developer-search-input"
+          placeholder="Search developer by name or location..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          aria-label="Search developers">
+        <button 
+          *ngIf="searchQuery()" 
+          type="button" 
+          class="search-clear-btn" 
+          (click)="searchQuery.set('')"
+          title="Clear search">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="filter-actions">
+        <div class="select-wrapper" *ngIf="availableDistricts().length > 0">
+          <select 
+            class="district-select"
+            [ngModel]="selectedDistrict()"
+            (ngModelChange)="selectedDistrict.set($event)"
+            aria-label="Filter by District">
+            <option value="all">All Districts ({{ availableDistricts().length }})</option>
+            <option *ngFor="let dist of availableDistricts()" [value]="dist">{{ dist }}</option>
+          </select>
+          <span class="material-symbols-outlined select-chevron">expand_more</span>
+        </div>
+
+        <div class="results-count-badge">
+          <span>{{ filteredDevelopers().length }} found</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content Section: Developers Grid -->
+  <section class="catalog-section">
+    <div class="max-w-content">
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading()" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading verified developers catalog...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading() && filteredDevelopers().length === 0" class="empty-state">
+        <div class="empty-icon-box">
+          <span class="material-symbols-outlined">apartment</span>
+        </div>
+        <h3 class="empty-title">No developers found</h3>
+        <p class="empty-text">No verified developers matched your search "{{ searchQuery() }}". Try adjusting your keywords.</p>
+        <button type="button" class="empty-reset-btn" (click)="clearFilters()">Reset Filters</button>
+      </div>
+
+      <!-- Developer Cards Grid -->
+      <div *ngIf="!isLoading() && filteredDevelopers().length > 0" class="developers-grid">
+        <article 
+          *ngFor="let dev of visibleDevelopers()" 
+          class="developer-card">
+          <a [routerLink]="['/builder', dev.name]" class="card-main-link" [title]="'View projects developed by ' + dev.name">
+            
+            <!-- Top Row: Logo & Badges -->
+            <div class="card-top">
+              <!-- Developer Logo / Branded Monogram -->
+              <div 
+                class="developer-logo-frame"
+                [style.background-color]="getBrandColor(dev.name).bg"
+                [style.border-color]="getBrandColor(dev.name).border"
+                [style.color]="getBrandColor(dev.name).text">
+                <img 
+                  *ngIf="dev.logoUrl" 
+                  [src]="dev.logoUrl" 
+                  [alt]="dev.name + ' Logo'"
+                  class="logo-image"
+                  (error)="dev.logoUrl = null">
+                <span *ngIf="!dev.logoUrl" class="logo-initials">
+                  {{ dev.initials || 'DV' }}
+                </span>
+              </div>
+
+              <!-- RERA / Verified Indicator -->
+              <span class="verified-chip" title="RERA Registered Promoter">
+                <span class="material-symbols-outlined chip-icon">check_circle</span>
+                <span>Verified</span>
+              </span>
+            </div>
+
+            <!-- Developer Identity -->
+            <div class="card-body">
+              <h2 class="developer-name" [title]="dev.name">{{ dev.name }}</h2>
+
+              <!-- Key Metrics: Projects Developed -->
+              <div class="project-metric-banner">
+                <span class="material-symbols-outlined metric-icon">domain_add</span>
+                <span class="project-count-highlight">{{ dev.projectCount }}</span>
+                <span class="project-count-label">{{ dev.projectCount === 1 ? 'Project Developed' : 'Projects Developed' }}</span>
+              </div>
+
+              <!-- Districts / Locations Presence -->
+              <div class="districts-tag-list" *ngIf="dev.districts && dev.districts.length > 0">
+                <span class="material-symbols-outlined loc-pin">location_on</span>
+                <span class="district-text">{{ dev.districts.join(' · ') }}</span>
+              </div>
+            </div>
+
+            <!-- Card Action Footer -->
+            <div class="card-footer">
+              <span class="cta-text">View Developer Portfolio</span>
+              <span class="material-symbols-outlined cta-arrow">arrow_forward</span>
+            </div>
+          </a>
+        </article>
+      </div>
+
+      <!-- Load More Action -->
+      <div *ngIf="!isLoading() && hasMore()" class="load-more-container">
+        <button type="button" class="load-more-btn" (click)="loadMore()">
+          <span>Show More Developers ({{ filteredDevelopers().length - visibleDevelopers().length }} remaining)</span>
+          <span class="material-symbols-outlined">expand_more</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>
+
