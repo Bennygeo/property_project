@@ -64,14 +64,15 @@
               </div>
 
               <!-- Quick In-Dropdown Search Filter -->
-              <div class="district-search-bar" (click)="$event.stopPropagation()">
+              <div class="district-search-bar" (click)="$event.stopPropagation(); scrollToTop()">
                 <span class="material-symbols-outlined dist-search-icon">search</span>
                 <input type="text"
                        class="dist-search-input"
                        placeholder="Filter districts (e.g. Chennai, Coimbatore, Salem)..."
                        [value]="districtSearchQuery()"
                        (input)="districtSearchQuery.set($any($event.target).value)"
-                       (click)="$event.stopPropagation()">
+                       (focus)="scrollToTop()"
+                       (click)="$event.stopPropagation(); scrollToTop()">
                 @if (districtSearchQuery()) {
                   <button type="button" class="dist-search-clear" (click)="districtSearchQuery.set(''); $event.stopPropagation()" aria-label="Clear filter">
                     <span class="material-symbols-outlined">close</span>
@@ -188,7 +189,9 @@
           }
         </div>
 
-        <div class="search-omnibox" [class.has-dropdown]="isSuggestionsOpen() && searchSuggestions().length > 0">
+        <div class="search-omnibox"
+             [class.has-dropdown]="isSuggestionsOpen() && searchSuggestions().length > 0"
+             (click)="onSearchOmniboxClick($event)">
           <span class="material-symbols-outlined omnibox-icon">search</span>
 
           <!-- Multi-Level Selected Locality / Area Tags (e.g. Porur, Ramapuram) -->
@@ -213,6 +216,7 @@
               (input)="onSearchInput($any($event.target).value)"
               (focus)="onSearchFocus()"
               (blur)="onSearchBlur()"
+              (click)="scrollToTop()"
               (keydown)="onSearchKeydown($event)"
               autocomplete="off" autocorrect="off" autocapitalize="off"
               spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"

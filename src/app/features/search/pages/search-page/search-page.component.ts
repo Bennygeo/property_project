@@ -122,6 +122,18 @@ export class SearchPageComponent implements OnInit {
       .filter(g => g.districts.length > 0);
   });
 
+  scrollToTop(): void {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+      document.documentElement?.scrollTo?.({ top: 0, behavior: 'smooth' });
+      document.body?.scrollTo?.({ top: 0, behavior: 'smooth' });
+    }
+  }
+
   toggleDistrictDropdown(event?: Event): void {
     if (event) {
       event.stopPropagation();
@@ -130,6 +142,7 @@ export class SearchPageComponent implements OnInit {
     this.isDistrictDropdownOpen.set(nextState);
     if (nextState) {
       this.isSuggestionsOpen.set(false);
+      this.scrollToTop();
     }
   }
 
@@ -1137,7 +1150,16 @@ export class SearchPageComponent implements OnInit {
     }, 220);
   }
 
+  onSearchOmniboxClick(event?: Event): void {
+    this.scrollToTop();
+    const target = event?.target as HTMLElement;
+    if (target && !target.closest('.omnibox-gps-btn') && !target.closest('.omnibox-clear-btn') && !target.closest('.tag-loc-remove')) {
+      this.omniboxInputRef?.nativeElement?.focus();
+    }
+  }
+
   onSearchFocus(): void {
+    this.scrollToTop();
     this.isSuggestionsOpen.set(true);
     const trimmed = this.rawSearchInput().trim();
     const dist = this.selectedDistrict();
