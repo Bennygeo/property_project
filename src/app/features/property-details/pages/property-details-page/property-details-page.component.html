@@ -1307,13 +1307,11 @@
       <div class="sv-eyebrow">
         <span class="sv-pulse-dot"></span>
         <span class="material-symbols-outlined sv-eyebrow-icon">tour</span>
-        <span>HIGH-INTENT VISITOR PRIVILEGE</span>
+        <span>SITE INSPECTION</span>
       </div>
-      <h3 id="sv-modal-title" class="sv-title">Interested in exploring this plot in person?</h3>
+      <h3 id="sv-modal-title" class="sv-title">Schedule a Site Visit</h3>
       <p class="sv-subtitle">
-        You've spent quality time reviewing this dossier. Schedule a <strong>Free Guided Site Inspection</strong> with
-        our cadastral field representative to verify road frontage, survey stones, and neighborhood ambience
-        firsthand.
+        Pick your preferred date and time slot to inspect the property and boundaries in person.
       </p>
     </div>
 
@@ -1329,10 +1327,6 @@
         <div class="sv-prop-price-row">
           <span class="sv-price">{{ formatPriceIndian(prop.price) }}</span>
           <span class="sv-rate">({{ prop.pricePerSqFt }})</span>
-          <span class="sv-pill-free">
-            <span class="material-symbols-outlined" style="font-size: 13px;">directions_car</span>
-            <span>Free Site Cab Included</span>
-          </span>
         </div>
       </div>
     </div>
@@ -1394,26 +1388,19 @@
           <span>Scheduling...</span>
           } @else {
           <span class="material-symbols-outlined">event_available</span>
-          <span>Schedule Free Site Visit</span>
+          <span>Schedule Site Visit</span>
           }
         </button>
 
         <a [href]="getPromptWhatsAppUrl()" target="_blank" rel="noopener" class="sv-btn-wa"
           (click)="closeSiteVisitPrompt()" title="Coordinate on WhatsApp">
           <span class="material-symbols-outlined">chat</span>
-          <span>WhatsApp Field Desk</span>
+          <span>WhatsApp</span>
         </a>
 
         <button type="button" class="sv-btn-secondary" (click)="closeSiteVisitPrompt()">
           Maybe Later
         </button>
-      </div>
-
-      <!-- Security / Guarantee Note -->
-      <div class="sv-guarantee-note">
-        <span class="material-symbols-outlined">verified_user</span>
-        <span>Zero pressure, no brokerage commitment. Field representative escorts you directly to GPS boundary
-          markers.</span>
       </div>
     </form>
 
