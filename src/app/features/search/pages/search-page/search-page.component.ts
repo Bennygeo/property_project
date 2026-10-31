@@ -782,7 +782,7 @@ export class SearchPageComponent implements OnInit {
 
         if (!coords) {
           const rawLink = p.googleMapsLink || (p.masterDetails && p.masterDetails.googleMapsLink) || p.interactiveMapUrl;
-          const validation = validateGpsData(rawLink);
+          const validation = validateGpsData(rawLink, p.latitude, p.longitude, p.locality, p.city);
           if (validation.isValid && validation.coordinates) {
             coords = validation.coordinates;
           }

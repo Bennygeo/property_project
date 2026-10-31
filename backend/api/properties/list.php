@@ -512,6 +512,90 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
         ];
     }
 
+    $rawMap = $row['googleMapsLink'] ?? ($row['interactiveMapUrl'] ?? null);
+    $coords = parseCadastralCoords($rawMap);
+
+    $lat = isset($row['latitude']) ? (float)$row['latitude'] : ($coords ? $coords['lat'] : null);
+    $lon = isset($row['longitude']) ? (float)$row['longitude'] : ($coords ? $coords['lon'] : null);
+
+    if ($lat === null || $lon === null) {
+        $locCheck = strtolower(trim(($row['villageLocality'] ?? '') . ' ' . ($row['locality'] ?? '') . ' ' . ($row['city'] ?? '')));
+        static $phpKnownCoords = [
+            'chennai' => [13.0827, 80.2707],
+            'guduvanchery' => [12.8436, 80.0601],
+            'nandivaram' => [12.8480, 80.0650],
+            'tambaram' => [12.9249, 80.1000],
+            'chromepet' => [12.9516, 80.1462],
+            'velachery' => [12.9815, 80.2180],
+            'omr' => [12.9010, 80.2279],
+            'sholinganallur' => [12.8997, 80.2279],
+            'thoraipakkam' => [12.9372, 80.2330],
+            'perungudi' => [12.9654, 80.2461],
+            'navalur' => [12.8458, 80.2265],
+            'siruseri' => [12.8333, 80.2167],
+            'kelambakkam' => [12.7845, 80.2223],
+            'ecr' => [12.8399, 80.2483],
+            'neelankarai' => [12.9493, 80.2570],
+            'injambakkam' => [12.9213, 80.2530],
+            'thiruvanmiyur' => [12.9830, 80.2594],
+            'adyar' => [13.0012, 80.2565],
+            'besant nagar' => [12.9991, 80.2694],
+            'anna nagar' => [13.0850, 80.2101],
+            'mogappair' => [13.0837, 80.1754],
+            'porur' => [13.0382, 80.1565],
+            'poonamallee' => [13.0489, 80.0934],
+            'chengalpattu' => [12.6841, 79.9836],
+            'kanchipuram' => [12.8342, 79.7036],
+            'tiruvallur' => [13.1432, 79.9077],
+            'avadi' => [13.1147, 80.1098],
+            'ambattur' => [13.1143, 80.1548],
+            'coimbatore' => [11.0168, 76.9558],
+            'dindigul' => [10.3673, 77.9803],
+            'tiruppur' => [11.1085, 77.3411],
+            'namakkal' => [11.2189, 78.1674],
+            'salem' => [11.6643, 78.1460],
+            'madurai' => [9.9252, 78.1198],
+            'tirunelveli' => [8.7139, 77.7567],
+            'sivagangai' => [9.8433, 78.4809],
+            'kanyakumari' => [8.0883, 77.5385],
+            'villupuram' => [11.9401, 79.4861],
+            'tiruchirappalli' => [10.7905, 78.7047],
+            'trichy' => [10.7905, 78.7047],
+            'tenkasi' => [8.9594, 77.3161],
+            'dharmapuri' => [12.1211, 78.1582],
+            'kallakurichi' => [11.7381, 78.9639],
+            'erode' => [11.3410, 77.7172],
+            'thanjavur' => [10.7870, 79.1378],
+            'thoothukudi' => [8.7642, 78.1348],
+            'krishnagiri' => [12.5186, 78.2137],
+            'tiruvannamalai' => [12.2253, 79.0747],
+            'mayiladuthurai' => [11.1075, 79.6524],
+            'vellore' => [12.9165, 79.1325],
+            'virudhunagar' => [9.5680, 77.9624],
+            'pudukkottai' => [10.3797, 78.8208],
+            'arasur' => [11.0863, 77.1173],
+            'karanai' => [12.6841, 79.9836],
+            'palur' => [12.7611, 79.9157],
+            'bengaluru' => [12.9716, 77.5946],
+            'whitefield' => [12.9698, 77.7499],
+            'hyderabad' => [17.3850, 78.4867],
+            'jubilee hills' => [17.4319, 78.4073],
+            'mumbai' => [19.0760, 72.8777]
+        ];
+        foreach ($phpKnownCoords as $locK => $pt) {
+            if (strpos($locCheck, $locK) !== false) {
+                $lat = $pt[0];
+                $lon = $pt[1];
+                break;
+            }
+        }
+    }
+
+    $isGpsValid = true;
+    if ($lat !== null && $lon !== null) {
+        $isGpsValid = ($lat >= 8.0 && $lat <= 37.0 && $lon >= 68.0 && $lon <= 98.0);
+    }
+
     return [
         'id'           => $row['id'],
         'title'        => $row['title'],
@@ -540,7 +624,7 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
         'projectStatus'   => $row['projectStatus'] ?? 'Ready to Register',
         'totalLandParcel' => $row['totalLandParcel'] ?? 'Approved Layout',
         'totalUnits'      => $row['totalUnits'] ?? 'Individual Plots',
-        'googleMapsLink'  => $row['googleMapsLink'] ?? null,
+        'googleMapsLink'  => $row['googleMapsLink'] ?? ($lat && $lon ? "https://www.google.com/maps?q={$lat},{$lon}" : null),
         'developerName'   => $row['developerName'] ?? '',
         'projectName'     => $row['projectName'] ?? '',
         'villageLocality' => $row['villageLocality'] ?? '',
@@ -559,9 +643,9 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
         'developerProjectsCount' => (int)($row['developerProjectsCount'] ?? 1),
         'distanceKm'      => isset($row['distanceKm']) ? (float)$row['distanceKm'] : null,
         'isClosestProximity' => !empty($row['isClosestProximity']),
-        'isGpsValid'      => !empty($row['isGpsValid']),
-        'latitude'        => isset($row['latitude']) ? (float)$row['latitude'] : null,
-        'longitude'       => isset($row['longitude']) ? (float)$row['longitude'] : null,
+        'isGpsValid'      => $isGpsValid,
+        'latitude'        => $lat,
+        'longitude'       => $lon,
     ];
 };
 

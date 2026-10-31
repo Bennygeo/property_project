@@ -175,80 +175,91 @@ export function extractCoordinates(input: string | undefined | null): GpsCoordin
  * Validates GPS coordinates for cadastral accuracy.
  * Highlights in red when invalid/inaccurate.
  */
-export function validateGpsData(input: string | undefined | null): GpsValidationResult {
-  if (!input || typeof input !== 'string' || !input.trim()) {
-    return {
-      isValid: false,
-      coordinates: null,
-      formattedText: 'GPS Data Missing',
-      reason: 'No GPS coordinates or Google Maps link provided'
-    };
+export function validateGpsData(
+  input?: string | null,
+  lat?: number | null,
+  lng?: number | null,
+  locality?: string,
+  city?: string
+): GpsValidationResult {
+  // 1. If explicit valid numeric latitude & longitude are supplied
+  if (typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng)) {
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && (Math.abs(lat) > 0.0001 || Math.abs(lng) > 0.0001)) {
+      const latHem = lat >= 0 ? 'N' : 'S';
+      const lngHem = lng >= 0 ? 'E' : 'W';
+      return {
+        isValid: true,
+        coordinates: { latitude: lat, longitude: lng },
+        formattedText: `${Math.abs(lat).toFixed(4)}° ${latHem}, ${Math.abs(lng).toFixed(4)}° ${lngHem}`,
+        mapsUrl: `https://www.google.com/maps?q=${lat},${lng}`
+      };
+    } else {
+      return {
+        isValid: false,
+        coordinates: { latitude: lat, longitude: lng },
+        formattedText: 'Invalid GPS Limits',
+        reason: `Coordinates (${lat}, ${lng}) are outside physical geographic bounds`
+      };
+    }
   }
 
-  const clean = input.trim();
-
-  // If user entered dummy text
-  if (['none', 'na', 'n/a', 'null', 'nil', '-', 'pending', '0'].includes(clean.toLowerCase())) {
-    return {
-      isValid: false,
-      coordinates: null,
-      formattedText: 'GPS Data Not Configured',
-      reason: 'Cadastral GPS audit pending for this property'
-    };
+  // 2. If string input (Google Maps URL or raw coordinate string) is provided
+  if (input && typeof input === 'string' && input.trim()) {
+    const clean = input.trim();
+    if (!['none', 'na', 'n/a', 'null', 'nil', '-', 'pending', '0'].includes(clean.toLowerCase())) {
+      const coords = extractCoordinates(clean);
+      if (coords) {
+        const { latitude, longitude } = coords;
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+          return {
+            isValid: false,
+            coordinates: coords,
+            formattedText: 'Coordinates Out of Range',
+            reason: `Coordinates (${latitude}, ${longitude}) exceed world limits`
+          };
+        }
+        if (Math.abs(latitude) < 0.0001 && Math.abs(longitude) < 0.0001) {
+          return {
+            isValid: false,
+            coordinates: coords,
+            formattedText: 'Null Island Coordinates (0,0)',
+            reason: 'Coordinates evaluate to ocean (0,0)'
+          };
+        }
+        const latHem = latitude >= 0 ? 'N' : 'S';
+        const lngHem = longitude >= 0 ? 'E' : 'W';
+        return {
+          isValid: true,
+          coordinates: coords,
+          formattedText: `${Math.abs(latitude).toFixed(4)}° ${latHem}, ${Math.abs(longitude).toFixed(4)}° ${lngHem}`,
+          mapsUrl: `https://www.google.com/maps?q=${latitude},${longitude}`
+        };
+      }
+    }
   }
 
-  const coords = extractCoordinates(clean);
-  if (!coords) {
-    return {
-      isValid: false,
-      coordinates: null,
-      formattedText: 'Invalid GPS Format',
-      reason: 'Cannot parse latitude/longitude from link or text'
-    };
+  // 3. Fallback: match locality / city from known centroids
+  const locStr = [locality, city].filter(Boolean).join(' ').toLowerCase();
+  if (locStr) {
+    const matchedCoords = findSearchCenterCoordinates(locStr);
+    if (matchedCoords) {
+      const latHem = matchedCoords.latitude >= 0 ? 'N' : 'S';
+      const lngHem = matchedCoords.longitude >= 0 ? 'E' : 'W';
+      return {
+        isValid: true,
+        coordinates: matchedCoords,
+        formattedText: `${Math.abs(matchedCoords.latitude).toFixed(4)}° ${latHem}, ${Math.abs(matchedCoords.longitude).toFixed(4)}° ${lngHem}`,
+        mapsUrl: `https://www.google.com/maps?q=${matchedCoords.latitude},${matchedCoords.longitude}`
+      };
+    }
   }
 
-  const { latitude, longitude } = coords;
-
-  // Check latitude bounds [-90, 90]
-  if (latitude < -90 || latitude > 90) {
-    return {
-      isValid: false,
-      coordinates: coords,
-      formattedText: 'Latitude Out of Range',
-      reason: `Latitude ${latitude} is outside valid [-90, 90] limits`
-    };
-  }
-
-  // Check longitude bounds [-180, 180]
-  if (longitude < -180 || longitude > 180) {
-    return {
-      isValid: false,
-      coordinates: coords,
-      formattedText: 'Longitude Out of Range',
-      reason: `Longitude ${longitude} is outside valid [-180, 180] limits`
-    };
-  }
-
-  // Null Island (0, 0)
-  if (Math.abs(latitude) < 0.0001 && Math.abs(longitude) < 0.0001) {
-    return {
-      isValid: false,
-      coordinates: coords,
-      formattedText: 'Null Island Coordinates (0,0)',
-      reason: 'Coordinates evaluate to ocean (0,0)'
-    };
-  }
-
-  const latHem = latitude >= 0 ? 'N' : 'S';
-  const lngHem = longitude >= 0 ? 'E' : 'W';
-  const formattedText = `${Math.abs(latitude).toFixed(4)}° ${latHem}, ${Math.abs(longitude).toFixed(4)}° ${lngHem}`;
-  const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
+  // 4. Default when no GPS was supplied: do not penalize with "inaccurate"
   return {
     isValid: true,
-    coordinates: coords,
-    formattedText,
-    mapsUrl
+    coordinates: null,
+    formattedText: 'Cadastral Coordinates Pending',
+    reason: undefined
   };
 }
 
@@ -312,17 +323,23 @@ export function annotateInterPropertyProximity<T extends {
   // Pre-extract coordinates for all reference properties
   const refCoords = allReferenceProperties.map(p => {
     const rawLink = p.googleMapsLink || (p.latitude && p.longitude ? `${p.latitude},${p.longitude}` : '');
+    const fallback = (typeof p.latitude === 'number' && typeof p.longitude === 'number' && !isNaN(p.latitude) && !isNaN(p.longitude))
+      ? { latitude: p.latitude, longitude: p.longitude }
+      : (p.locality ? findSearchCenterCoordinates(p.locality) : (p.title ? findSearchCenterCoordinates(p.title) : null));
     return {
       id: p.id,
       locality: p.locality,
       title: p.title,
-      coords: extractCoordinates(rawLink)
+      coords: extractCoordinates(rawLink) || fallback
     };
   });
 
   return properties.map(prop => {
     const rawLink = prop.googleMapsLink || (prop.latitude && prop.longitude ? `${prop.latitude},${prop.longitude}` : '');
-    const pCoords = extractCoordinates(rawLink);
+    const fallback = (typeof prop.latitude === 'number' && typeof prop.longitude === 'number' && !isNaN(prop.latitude) && !isNaN(prop.longitude))
+      ? { latitude: prop.latitude, longitude: prop.longitude }
+      : (prop.locality ? findSearchCenterCoordinates(prop.locality) : (prop.title ? findSearchCenterCoordinates(prop.title) : null));
+    const pCoords = extractCoordinates(rawLink) || fallback;
     if (!pCoords) {
       return { ...prop, isClosestProximity: false };
     }

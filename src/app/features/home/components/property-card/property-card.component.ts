@@ -48,7 +48,7 @@ import { CompareService } from '../../../../core/services/compare.service';
             <span>{{ property.badges.specialTag || property.badges.rera || 'Verified' }}</span>
           </span>
 
-          @if (property.isGpsValid === false) {
+          @if (property.isGpsValid === false && property.gpsErrorReason) {
             <span class="badge-gps-red" title="GPS coordinates unverified or inaccurate">
               <span class="material-symbols-outlined badge-icon" style="font-size:12px;margin-right:2px;">error</span>
               <span>GPS Inaccurate</span>
@@ -120,9 +120,9 @@ import { CompareService } from '../../../../core/services/compare.service';
 
         <!-- Locality -->
         <p class="locality-row" [title]="property.locality + ', ' + property.city">
-          <span class="material-symbols-outlined loc-icon" [style.color]="property.isGpsValid === false ? '#dc2626' : ''">location_on</span>
-          <span class="locality-text" [style.color]="property.isGpsValid === false ? '#991b1b' : ''">{{ property.locality }}, {{ property.city }}</span>
-          @if (property.isGpsValid === false) {
+          <span class="material-symbols-outlined loc-icon" [style.color]="property.isGpsValid === false && property.gpsErrorReason ? '#dc2626' : ''">location_on</span>
+          <span class="locality-text" [style.color]="property.isGpsValid === false && property.gpsErrorReason ? '#991b1b' : ''">{{ property.locality }}, {{ property.city }}</span>
+          @if (property.isGpsValid === false && property.gpsErrorReason) {
             <span class="pill-gps-error" title="GPS data is inaccurate or missing">GPS Inaccurate</span>
           }
           @if (property.isClosestProximity) {

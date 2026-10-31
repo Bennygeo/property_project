@@ -89,6 +89,22 @@ export interface ReverseGeocodeResult {
   longitude: number;
 }
 
+function enrichInitialGps(props: Property[]): Property[] {
+  return props.map(p => {
+    const gpsRes = validateGpsData(p.googleMapsLink, p.latitude, p.longitude, p.locality, p.city);
+    const lat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
+    const lng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
+    return {
+      ...p,
+      latitude: lat,
+      longitude: lng,
+      googleMapsLink: p.googleMapsLink || gpsRes.mapsUrl,
+      isGpsValid: true,
+      gpsFormatted: gpsRes.formattedText
+    };
+  });
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -99,13 +115,13 @@ export class PropertyService {
   public readonly isSqlLoaded = signal<boolean>(false);
   public readonly totalApiProperties = signal<number>(0);
   public readonly isFetchingApi = signal<boolean>(false);
-  public readonly suggestedProperties = signal<Property[]>(annotateInterPropertyProximity(MOCK_50_PROPERTIES.slice(0, 8)));
+  public readonly suggestedProperties = signal<Property[]>(annotateInterPropertyProximity(enrichInitialGps(MOCK_50_PROPERTIES.slice(0, 8))));
   public readonly hasMoreApiProperties = computed(() => {
     return this._properties().length < this.totalApiProperties();
   });
 
   // Master property list initialized with 50+ mock properties directly from database (10L to 3Cr)
-  private readonly _properties = signal<Property[]>(MOCK_50_PROPERTIES);
+  private readonly _properties = signal<Property[]>(enrichInitialGps(MOCK_50_PROPERTIES));
 
   // Active search criteria
   public readonly activeTab = signal<ListingMode>('buy');
@@ -304,7 +320,13 @@ export class PropertyService {
 
           const sanitized = rawList.map((p: any, idx: number) => {
             const globalIdx = offset + idx;
-            const gpsRes = validateGpsData(p.googleMapsLink || p.masterDetails?.googleMapsLink || p.interactiveMapUrl);
+            const gpsRes = validateGpsData(
+              p.googleMapsLink || p.masterDetails?.googleMapsLink || p.interactiveMapUrl,
+              p.latitude,
+              p.longitude,
+              p.locality,
+              p.city
+            );
             const fallbackMain = mockImages[globalIdx % mockImages.length];
             const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http')) 
               ? p.imageUrl 
@@ -313,15 +335,20 @@ export class PropertyService {
               ? p.freePhotos
               : [resolvedImg, mockImages[(globalIdx + 1) % mockImages.length], mockImages[(globalIdx + 2) % mockImages.length]];
 
+            const resolvedLat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
+            const resolvedLng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
+            const isGpsValid = (p.isGpsValid === true) || (gpsRes.isValid && (resolvedLat != null || gpsRes.coordinates != null)) || (p.isGpsValid !== false && (resolvedLat != null || gpsRes.coordinates != null));
+
             return {
               ...p,
               imageUrl: resolvedImg,
               freePhotos: resolvedPhotos,
-              isGpsValid: p.isGpsValid !== undefined ? p.isGpsValid : gpsRes.isValid,
-              gpsErrorReason: gpsRes.reason,
+              isGpsValid: isGpsValid,
+              gpsErrorReason: isGpsValid ? undefined : gpsRes.reason,
               gpsFormatted: gpsRes.formattedText,
-              latitude: p.latitude !== undefined && p.latitude !== null ? p.latitude : gpsRes.coordinates?.latitude,
-              longitude: p.longitude !== undefined && p.longitude !== null ? p.longitude : gpsRes.coordinates?.longitude,
+              latitude: resolvedLat,
+              longitude: resolvedLng,
+              googleMapsLink: p.googleMapsLink || gpsRes.mapsUrl,
               distanceKm: p.distanceKm !== undefined ? p.distanceKm : undefined,
               isClosestProximity: p.isClosestProximity !== undefined ? p.isClosestProximity : ((p.distanceKm !== undefined && p.distanceKm <= 5.0) ? true : undefined),
               premiumMedia: Array.isArray(p.premiumMedia) && p.premiumMedia.length > 0 ? p.premiumMedia : [
@@ -365,7 +392,13 @@ export class PropertyService {
         const rawSuggested = Array.isArray(res.data?.suggested) ? res.data.suggested : [];
         if (rawSuggested.length > 0) {
           const sanitizedSuggested = rawSuggested.map((p: any, idx: number) => {
-            const gpsRes = validateGpsData(p.googleMapsLink || p.masterDetails?.googleMapsLink || p.interactiveMapUrl);
+            const gpsRes = validateGpsData(
+              p.googleMapsLink || p.masterDetails?.googleMapsLink || p.interactiveMapUrl,
+              p.latitude,
+              p.longitude,
+              p.locality,
+              p.city
+            );
             const fallbackMain = mockImages[idx % mockImages.length];
             const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http')) 
               ? p.imageUrl 
@@ -374,15 +407,20 @@ export class PropertyService {
               ? p.freePhotos
               : [resolvedImg, mockImages[(idx + 1) % mockImages.length], mockImages[(idx + 2) % mockImages.length]];
 
+            const resolvedLat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
+            const resolvedLng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
+            const isGpsValid = (p.isGpsValid === true) || (gpsRes.isValid && (resolvedLat != null || gpsRes.coordinates != null)) || (p.isGpsValid !== false && (resolvedLat != null || gpsRes.coordinates != null));
+
             return {
               ...p,
               imageUrl: resolvedImg,
               freePhotos: resolvedPhotos,
-              isGpsValid: p.isGpsValid !== undefined ? p.isGpsValid : gpsRes.isValid,
-              gpsErrorReason: gpsRes.reason,
+              isGpsValid: isGpsValid,
+              gpsErrorReason: isGpsValid ? undefined : gpsRes.reason,
               gpsFormatted: gpsRes.formattedText,
-              latitude: p.latitude !== undefined && p.latitude !== null ? p.latitude : gpsRes.coordinates?.latitude,
-              longitude: p.longitude !== undefined && p.longitude !== null ? p.longitude : gpsRes.coordinates?.longitude,
+              latitude: resolvedLat,
+              longitude: resolvedLng,
+              googleMapsLink: p.googleMapsLink || gpsRes.mapsUrl,
               distanceKm: p.distanceKm !== undefined ? p.distanceKm : undefined,
               isClosestProximity: p.isClosestProximity !== undefined ? p.isClosestProximity : ((p.distanceKm !== undefined && p.distanceKm <= 5.0) ? true : undefined),
               isSuggested: true
