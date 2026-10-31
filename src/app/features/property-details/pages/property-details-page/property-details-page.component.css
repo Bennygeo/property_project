@@ -4047,3 +4047,173 @@
   flex-shrink: 0;
   margin-top: 1px;
 }
+
+/* ==========================================================================
+   FREE MAINTENANCE SERVICE HIGHLIGHTS & BADGES
+   ========================================================================== */
+.hanu-badge-free-maint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #10b981;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.01em;
+}
+
+.free-maint-feature-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdfa 100%);
+  border: 1.5px solid #a7f3d0;
+  border-radius: 14px;
+  padding: 1.25rem 1.75rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 4px 16px -4px rgba(16, 185, 129, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.free-maint-feature-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.maint-banner-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.15rem;
+  flex: 1;
+}
+
+.maint-icon-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #6ee7b7;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+  flex-shrink: 0;
+}
+
+.maint-icon-badge .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.maint-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.maint-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.maint-tag {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #047857;
+  text-transform: uppercase;
+}
+
+.maint-duration {
+  font-size: 11px;
+  font-weight: 700;
+  background: #059669;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
+.maint-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #064e3b;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.maint-subtitle {
+  font-size: 0.875rem;
+  color: #065f46;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 680px;
+}
+
+.maint-banner-right {
+  flex-shrink: 0;
+}
+
+.maint-perk-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem 0.85rem;
+}
+
+.maint-perk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #065f46;
+  background: #ffffff;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1fae5;
+  white-space: nowrap;
+}
+
+.maint-perk-chip .material-symbols-outlined {
+  font-size: 15px;
+  color: #10b981;
+}
+
+/* Highlighted card in utility grid */
+.highlighted-maintenance-card {
+  border: 2px solid #10b981 !important;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%) !important;
+  box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.18) !important;
+}
+
+.highlighted-maintenance-card .infra-category-tag {
+  color: #059669 !important;
+  font-weight: 800 !important;
+}
+
+.highlighted-maintenance-card .infra-main-title {
+  color: #064e3b !important;
+}
+
+@media (max-width: 900px) {
+  .free-maint-feature-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.25rem;
+  }
+  .maint-perk-chips {
+    grid-template-columns: 1fr;
+    margin-top: 0.5rem;
+  }
+}

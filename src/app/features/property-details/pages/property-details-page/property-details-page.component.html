@@ -86,6 +86,10 @@
             <span class="hanu-badge-type">{{ prop.propertyType }}</span>
             <span class="hanu-badge-verified-listing">Verified Listing</span>
             <span class="hanu-badge-direct">Direct Seller</span>
+            <span class="hanu-badge-free-maint">
+              <span class="material-symbols-outlined" style="font-size: 14px;">home_repair_service</span>
+              <span>{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : 'Free Maintenance Included' }}</span>
+            </span>
           </div>
 
           <h1 class="hanu-title">{{ prop.title }}</h1>
@@ -379,6 +383,45 @@
         </div>
 
         <!-- ====================================================================== -->
+        <!-- FREE MAINTENANCE SERVICE HIGHLIGHT CALLOUT                            -->
+        <!-- ====================================================================== -->
+        <div class="free-maint-feature-banner">
+          <div class="maint-banner-left">
+            <div class="maint-icon-badge">
+              <span class="material-symbols-outlined">home_repair_service</span>
+            </div>
+            <div class="maint-content">
+              <div class="maint-eyebrow-row">
+                <span class="maint-tag">DEVELOPER PRIVILEGE</span>
+                <span class="maint-duration">{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears + ' Years Free') : '2 Years Free Support' }}</span>
+              </div>
+              <h3 class="maint-title">{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance Service Included') : 'Free Maintenance Service Included' }}</h3>
+              <p class="maint-subtitle">Enjoy complete peace of mind with 100% developer-managed caretaker support: includes blacktop road upkeep, avenue tree care, active solar street lighting, and stormwater drain clearing at zero maintenance fee.</p>
+            </div>
+          </div>
+          <div class="maint-banner-right">
+            <div class="maint-perk-chips">
+              <span class="maint-perk-chip">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Zero Maintenance Cost</span>
+              </span>
+              <span class="maint-perk-chip">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Road &amp; Drain Upkeep</span>
+              </span>
+              <span class="maint-perk-chip">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Avenue Tree Grooming</span>
+              </span>
+              <span class="maint-perk-chip">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Active Street Lighting</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================== -->
         <!-- CONNECTED WORKSPACE SHELL (CONNECTED TAB + INTEGRATED CONTENT WINDOW)  -->
         <!-- ====================================================================== -->
           <div class="connected-workspace-shell" id="details-context-workspace">
@@ -605,24 +648,24 @@
                 </div>
 
                 <!-- 8. Developer Maintenance Guarantee -->
-                <div class="infra-card theme-maintenance">
+                <div class="infra-card theme-maintenance highlighted-maintenance-card">
                   <div class="infra-card-header-row">
                     <div class="infra-icon-emblem">
-                      <span class="material-symbols-outlined">verified_user</span>
+                      <span class="material-symbols-outlined">home_repair_service</span>
                     </div>
-                    <div class="infra-pill purple">
+                    <div class="infra-pill emerald">
                       <span class="pill-dot"></span>
-                      <span>Free Support</span>
+                      <span>100% Free Service</span>
                     </div>
                   </div>
                   <div class="infra-card-details">
-                    <span class="infra-category-tag">MAINTENANCE GUARANTEE</span>
+                    <span class="infra-category-tag">FREE MAINTENANCE SERVICE</span>
                     <h4 class="infra-main-title">{{ prop.masterDetails?.developerMaintenanceYears ?
                       (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : '2 Years Free
                       Maintenance Support' }}</h4>
                     <p class="infra-summary-text">
                       Comprehensive developer caretaker support including road maintenance, avenue tree trimming, street
-                      light upkeep, and security supervision.
+                      light upkeep, and perimeter drainage clearing at zero extra cost.
                     </p>
                   </div>
                 </div>
