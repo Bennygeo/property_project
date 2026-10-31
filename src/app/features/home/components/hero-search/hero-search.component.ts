@@ -67,7 +67,7 @@ export interface PropertyTypeOption {
           <div class="search-pill-bar">
             
             <!-- Segment 1: Locality / Project -->
-            <div class="pill-segment segment-locality" (click)="onSearchInputFocus(); $event.stopPropagation()">
+            <div class="pill-segment segment-locality" (click)="openLocationSuggest(); $event.stopPropagation()">
               <div class="segment-input-wrap">
                 <label class="segment-label" for="hero-locality-input">Location / Project</label>
                 <input 
@@ -76,8 +76,8 @@ export interface PropertyTypeOption {
                   type="text" 
                   class="pill-input-text" 
                   [value]="propertyService.searchQuery()"
-                  (focus)="onSearchInputFocus()"
-                  (click)="onSearchInputFocus()"
+                  (focus)="openLocationSuggest()"
+                  (click)="openLocationSuggest(); $event.stopPropagation()"
                   (input)="onSearchInput($event)"
                   (keydown.enter)="onInputEnter($event)"
                   autocomplete="off"
@@ -89,7 +89,7 @@ export interface PropertyTypeOption {
 
               <!-- Clear Input Button -->
               @if (propertyService.searchQuery()) {
-                <button type="button" class="btn-pill-clear" (click)="clearSearchInput()" aria-label="Clear location input">
+                <button type="button" class="btn-pill-clear" (click)="clearSearchInput(); $event.stopPropagation()" aria-label="Clear location input">
                   <span class="clear-cross">&times;</span>
                 </button>
               }
@@ -849,8 +849,8 @@ export interface PropertyTypeOption {
       top: calc(100% + 6px);
       left: 0;
       width: 100%;
-      min-width: 0;
-      max-width: 100%;
+      min-width: min(440px, 90vw);
+      max-width: 520px;
       max-height: 440px;
       background: #ffffff;
       border: 1px solid #cbd5e1;
@@ -1538,13 +1538,7 @@ export class HeroSearchComponent {
 
   // Location Autocomplete & Search Focus Routing Actions
   onSearchInputFocus(): void {
-    const q = this.propertyService.searchQuery()?.trim();
-    this.router.navigate(['/search'], {
-      queryParams: {
-        ...(q ? { q } : {}),
-        focus: 'true'
-      }
-    });
+    this.openLocationSuggest();
   }
 
   openLocationSuggest(): void {
@@ -1554,14 +1548,16 @@ export class HeroSearchComponent {
   }
 
   selectLocation(loc: LocationSuggestion): void {
-    this.propertyService.searchQuery.set(`${loc.name}, ${loc.city}`);
+    this.propertyService.searchQuery.set(loc.name);
     this.isLocationSuggestOpen.set(false);
+    this.executeSearch();
   }
 
   selectGooglePlace(place: any): void {
     const text = place.label || place.query || place.fullText;
     this.propertyService.searchQuery.set(text);
     this.isLocationSuggestOpen.set(false);
+    this.executeSearch();
   }
 
   clearSearchInput(): void {
