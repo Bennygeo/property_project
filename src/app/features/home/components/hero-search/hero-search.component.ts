@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
 import { ListingMode, Property } from '../../../../core/models/property.model';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -23,7 +23,7 @@ export interface PropertyTypeOption {
 @Component({
   selector: 'app-hero-search',
   standalone: true,
-  imports: [CommonModule, DealsScrollingBannerComponent],
+  imports: [CommonModule, RouterModule, DealsScrollingBannerComponent],
   template: `
     <section class="hero-section" id="search-section">
       <!-- Creative Architectural Clean Background -->
@@ -58,8 +58,21 @@ export interface PropertyTypeOption {
             <span class="highlight-red">Choose with Confidence.</span>
           </h1>
           <p class="hero-subline">
-            Explore survey-verified plots and homes through stunning 4K drone views and authenticated cadastral deeds.
+            Explore 100% RERA-registered plots and properties with authenticated cadastral deeds and clear titles.
           </p>
+
+          <!-- Buy / Sell Mode Tabs -->
+          <div class="hero-buy-sell-tabs">
+            <button type="button" class="buy-sell-tab-btn active" title="Search and explore verified properties to buy">
+              <span class="material-symbols-outlined tab-icon">apartment</span>
+              <span>Buy Properties</span>
+            </button>
+            <a routerLink="/post-property" class="buy-sell-tab-btn btn-sell-link" title="Post your RERA-approved property to sell">
+              <span class="material-symbols-outlined tab-icon">add_home_work</span>
+              <span>Sell Property</span>
+              <span class="tab-badge-free">Post Free</span>
+            </a>
+          </div>
         </div>
 
         <!-- Sleek Minimalist Floating Search Pill -->
@@ -465,6 +478,64 @@ export interface PropertyTypeOption {
       margin-right: auto;
       margin-bottom: 2.5rem;
       margin-top: 4.5rem;
+    }
+
+    /* Buy / Sell Mode Tabs */
+    .hero-buy-sell-tabs {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 0.35rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      margin-top: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .buy-sell-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 1.15rem;
+      border-radius: 9999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #64748b;
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .buy-sell-tab-btn .tab-icon {
+      font-size: 18px;
+    }
+
+    .buy-sell-tab-btn.active {
+      background: var(--brand-red, #b91c1c);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(185, 28, 28, 0.25);
+    }
+
+    .buy-sell-tab-btn.btn-sell-link:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .tab-badge-free {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+      padding: 1px 6px;
+      border-radius: 9999px;
     }
     .badge-hero-verified {
       display: inline-flex;
