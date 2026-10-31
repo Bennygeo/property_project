@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Property, PropertyType } from '../../../../core/models/property.model';
-import { PropertyService, NearbyLocality, DistrictItem, DistrictHubItem, RegionalGroupItem, ReverseGeocodeResult } from '../../../../core/services/property.service';
+import { PropertyService, DistrictItem, DistrictHubItem, RegionalGroupItem, ReverseGeocodeResult } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MetroService } from '../../../../core/services/metro.service';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -213,16 +213,8 @@ export class SearchPageComponent implements OnInit {
       });
     }
 
-    // 2. Load contextual nearby localities preview for this district (without querying properties)
     if (district) {
-      this.propertyService.fetchNearbyData({ district }).subscribe(res => {
-        if (res.nearbyLocalities && res.nearbyLocalities.length > 0) {
-          this.nearbyLocalities.set(res.nearbyLocalities);
-          this.nearbyContextLabel.set(`Popular Localities in ${district}`);
-        }
-      });
-
-      // 3. User Experience: Focus the search omnibox so user can quickly type or pick from suggestions
+      // Focus the search omnibox so user can quickly type or pick from suggestions
       setTimeout(() => {
         this.omniboxInputRef?.nativeElement?.focus();
       }, 60);
@@ -239,11 +231,6 @@ export class SearchPageComponent implements OnInit {
   readonly rawSearchInput = signal<string>('');
   readonly liveDbSuggestions = signal<SearchSuggestion[]>([]);
   readonly googlePlacesSuggestions = signal<SearchSuggestion[]>([]);
-
-  // Nearby Locality Areas Signals
-  readonly nearbyLocalities = signal<NearbyLocality[]>([]);
-  readonly nearbyProperties = signal<Property[]>([]);
-  readonly nearbyContextLabel = signal<string>('Nearby Locality Areas');
 
   readonly currentSearchLocalityName = computed<string>(() => {
     const locs = this.selectedLocalities();
@@ -1072,40 +1059,6 @@ export class SearchPageComponent implements OnInit {
       developer: this.selectedDeveloper() !== 'all' ? this.selectedDeveloper() : undefined,
       sort: this.sortBy()
     });
-
-    this.loadNearbyLocalities();
-  }
-
-  loadNearbyLocalities(): void {
-    const locs = this.selectedLocalities();
-    const q = this.searchQuery().trim();
-    const city = this.selectedCity() !== 'all' ? this.selectedCity() : undefined;
-    const district = this.selectedDistrict() || undefined;
-
-    const targetLoc = locs.length > 0 ? locs[0] : (q || undefined);
-
-    if (targetLoc) {
-      this.nearbyContextLabel.set(`Nearby Locality Areas around "${targetLoc}"`);
-    } else if (district) {
-      this.nearbyContextLabel.set(`Prominent Locality Areas in ${district.toUpperCase()}`);
-    } else if (city) {
-      this.nearbyContextLabel.set(`Prominent Locality Areas in ${city.toUpperCase()}`);
-    } else {
-      this.nearbyContextLabel.set('Explore Nearby Locality Areas');
-    }
-
-    this.propertyService.fetchNearbyData({
-      locality: targetLoc,
-      city: city,
-      district: district
-    }).subscribe(res => {
-      this.nearbyLocalities.set(res.nearbyLocalities);
-      this.nearbyProperties.set(res.nearbyProperties);
-    });
-  }
-
-  selectNearbyLocality(loc: NearbyLocality): void {
-    this.addLocalityTag(loc.name);
   }
 
   syncUrlParams(): void {

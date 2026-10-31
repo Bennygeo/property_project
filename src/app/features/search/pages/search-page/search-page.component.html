@@ -381,26 +381,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Nearby Locality Areas Strip -->
-      @if (nearbyLocalities().length > 0) {
-      <div class="nearby-localities-strip">
-        <div class="nearby-strip-header">
-          <span class="material-symbols-outlined nearby-pin-icon">near_me</span>
-          <span class="nearby-strip-title">{{ nearbyContextLabel() }}</span>
-          <span class="nearby-count-badge">{{ nearbyLocalities().length }} nearby areas</span>
-        </div>
-        <div class="nearby-chips-scroll">
-          @for (loc of nearbyLocalities(); track loc.name) {
-          <button type="button" class="nearby-loc-chip" (click)="selectNearbyLocality(loc)" [title]="loc.distanceTag">
-            <span class="material-symbols-outlined chip-loc-icon">location_on</span>
-            <span class="nearby-chip-name">{{ loc.name }}</span>
-            <span class="nearby-chip-count" [title]="loc.propertyCount + ' verified properties available'">{{ loc.propertyCount }}</span>
-          </button>
-          }
-        </div>
-      </div>
-      }
     </div>
   </section>
 
