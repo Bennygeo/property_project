@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CompareService } from '../../../../core/services/compare.service';
+import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
 @Component({
   selector: 'app-property-compare-dock',
@@ -28,7 +29,7 @@ import { CompareService } from '../../../../core/services/compare.service';
                   </div>
                   <div class="slot-info">
                     <span class="slot-title">{{ p1.title }}</span>
-                    <span class="slot-price">{{ p1.price }}</span>
+                    <span class="slot-price">{{ formatPriceIndian(p1.price) }}</span>
                   </div>
                   <button type="button" class="btn-slot-remove" (click)="compareService.removeProperty(p1.id)" title="Remove property">
                     <span class="material-symbols-outlined">close</span>
@@ -50,7 +51,7 @@ import { CompareService } from '../../../../core/services/compare.service';
                   </div>
                   <div class="slot-info">
                     <span class="slot-title">{{ p2.title }}</span>
-                    <span class="slot-price">{{ p2.price }}</span>
+                    <span class="slot-price">{{ formatPriceIndian(p2.price) }}</span>
                   </div>
                   <button type="button" class="btn-slot-remove" (click)="compareService.removeProperty(p2.id)" title="Remove property">
                     <span class="material-symbols-outlined">close</span>
@@ -414,6 +415,7 @@ import { CompareService } from '../../../../core/services/compare.service';
 })
 export class PropertyCompareDockComponent {
   readonly compareService = inject(CompareService);
+  readonly formatPriceIndian = formatPriceIndian;
 
   onImgError(event: Event): void {
     const img = event.target as HTMLImageElement;

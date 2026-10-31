@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ListingMode, Property, PropertyType } from '../models/property.model';
 import { validateGpsData, annotateInterPropertyProximity } from '../utils/gps-helper';
+import { formatPriceIndian, parsePriceToNumber } from '../utils/price-helper';
 import { NotificationService } from './notification.service';
 import { WalletService } from './wallet.service';
 import { enrichPropertyWithMockDetails } from './property-details-mock.helper';
@@ -96,6 +97,7 @@ function enrichInitialGps(props: Property[]): Property[] {
     const lng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
     return {
       ...p,
+      price: formatPriceIndian(p.price),
       latitude: lat,
       longitude: lng,
       googleMapsLink: p.googleMapsLink || gpsRes.mapsUrl,
@@ -341,6 +343,7 @@ export class PropertyService {
 
             return {
               ...p,
+              price: formatPriceIndian(p.price),
               imageUrl: resolvedImg,
               freePhotos: resolvedPhotos,
               isGpsValid: isGpsValid,
@@ -413,6 +416,7 @@ export class PropertyService {
 
             return {
               ...p,
+              price: formatPriceIndian(p.price),
               imageUrl: resolvedImg,
               freePhotos: resolvedPhotos,
               isGpsValid: isGpsValid,
@@ -751,7 +755,14 @@ export class PropertyService {
     return this.http.get<{ success: boolean; data: Property }>(proxyUrl).pipe(
       catchError(() => this.http.get<{ success: boolean; data: Property }>(cliUrl)),
       catchError(() => this.http.get<{ success: boolean; data: Property }>(apacheUrl)),
-      map(res => (res && res.success && res.data) ? res.data : null),
+      map(res => {
+        if (res && res.success && res.data) {
+          const sqlProp = res.data;
+          sqlProp.price = formatPriceIndian(sqlProp.price);
+          return sqlProp;
+        }
+        return null;
+      }),
       tap(sqlProp => {
         if (sqlProp) {
           console.info(`[XHR API] Received details dossier from MySQL for ${id}:`, sqlProp);
@@ -828,10 +839,14 @@ export class PropertyService {
       found = MOCK_50_PROPERTIES.find(p => p.id === id);
     }
     if (!found) return undefined;
-    if (found.floorPlans || found.villaDetails || found.apartmentDetails || found.plotDetails || found.cadastralAudit) {
-      return found;
+    const formattedFound = {
+      ...found,
+      price: formatPriceIndian(found.price)
+    };
+    if (formattedFound.floorPlans || formattedFound.villaDetails || formattedFound.apartmentDetails || formattedFound.plotDetails || formattedFound.cadastralAudit) {
+      return formattedFound;
     }
-    return enrichPropertyWithMockDetails(found);
+    return enrichPropertyWithMockDetails(formattedFound);
   }
 
   unlockMedia(propertyId: string): boolean {

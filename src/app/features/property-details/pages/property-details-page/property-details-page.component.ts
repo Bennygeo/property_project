@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
+import { formatPriceIndian, parsePriceToNumber } from '../../../../core/utils/price-helper';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -29,21 +30,6 @@ export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
 export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_transit' | 'overview';
 
-function parsePriceToNumber(priceStr: string): number {
-  if (!priceStr) return 0;
-  const clean = priceStr.replace(/₹|,/g, '').trim().toLowerCase();
-  if (clean.includes('cr')) {
-    const num = parseFloat(clean.replace('cr', '').trim());
-    return isNaN(num) ? 0 : num * 10000000;
-  }
-  if (clean.includes('lakh') || clean.includes('l')) {
-    const num = parseFloat(clean.replace(/lakh|l/g, '').trim());
-    return isNaN(num) ? 0 : num * 100000;
-  }
-  const direct = parseFloat(clean);
-  return isNaN(direct) ? 0 : direct;
-}
-
 @Component({
   selector: 'app-property-details-page',
   standalone: true,
@@ -63,6 +49,7 @@ function parsePriceToNumber(priceStr: string): number {
   styleUrls: ['./property-details-page.component.css']
 })
 export class PropertyDetailsPageComponent implements OnInit, OnDestroy {
+  readonly formatPriceIndian = formatPriceIndian;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);

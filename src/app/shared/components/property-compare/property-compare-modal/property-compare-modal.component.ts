@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CompareService } from '../../../../core/services/compare.service';
+import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
 @Component({
   selector: 'app-property-compare-modal',
@@ -87,7 +88,7 @@ import { CompareService } from '../../../../core/services/compare.service';
 
                     <div class="hero-details">
                       <div class="hero-price-row">
-                        <span class="hero-price">{{ p1.price }}</span>
+                        <span class="hero-price">{{ formatPriceIndian(p1.price) }}</span>
                         <span class="hero-rate">{{ p1.pricePerSqFt }}</span>
                       </div>
                       
@@ -157,7 +158,7 @@ import { CompareService } from '../../../../core/services/compare.service';
 
                     <div class="hero-details">
                       <div class="hero-price-row">
-                        <span class="hero-price">{{ p2.price }}</span>
+                        <span class="hero-price">{{ formatPriceIndian(p2.price) }}</span>
                         <span class="hero-rate">{{ p2.pricePerSqFt }}</span>
                       </div>
                       
@@ -1337,6 +1338,7 @@ import { CompareService } from '../../../../core/services/compare.service';
   `]
 })
 export class PropertyCompareModalComponent {
+  readonly formatPriceIndian = formatPriceIndian;
   readonly compareService = inject(CompareService);
 
   onBackdropClick(event: MouseEvent): void {

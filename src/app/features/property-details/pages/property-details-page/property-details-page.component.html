@@ -144,7 +144,7 @@
           <!-- Price Card -->
           <div class="header-price-card">
             <div class="header-price-main">
-              <span class="hanu-main-price">{{ prop.price }}</span>
+              <span class="hanu-main-price">{{ formatPriceIndian(prop.price) }}</span>
               <span class="hanu-unit-price">{{ prop.pricePerSqFt }}</span>
             </div>
           </div>
@@ -313,7 +313,7 @@
             </div>
             <div class="snapshot-text">
               <span class="snapshot-label">Price &amp; Rate</span>
-              <strong class="snapshot-val text-brand">{{ prop.price }}</strong>
+              <strong class="snapshot-val text-brand">{{ formatPriceIndian(prop.price) }}</strong>
               <span class="snapshot-sub">{{ prop.pricePerSqFt }}</span>
             </div>
           </div>
@@ -730,9 +730,7 @@
                 <div class="hanu-spec-item">
                   <span class="spec-label">Total Outlay Price</span>
                   <span class="spec-value font-bold text-red">
-                    {{ prop.masterDetails?.totalPrice ? ('₹ ' + prop.masterDetails?.totalPrice?.toLocaleString('en-IN'))
-                    :
-                    prop.price }}
+                    {{ formatPriceIndian(prop.masterDetails?.totalPrice || prop.price) }}
                   </span>
                 </div>
 
@@ -1227,7 +1225,7 @@
               <span class="sim-type">{{ sim.propertyType }}</span>
               <h5 class="sim-title">{{ sim.title }}</h5>
               <div class="sim-price-row">
-                <span class="sim-price">{{ sim.price }}</span>
+                <span class="sim-price">{{ formatPriceIndian(sim.price) }}</span>
                 <span class="sim-sqft">{{ sim.sqft }}</span>
               </div>
             </div>
@@ -1329,7 +1327,7 @@
           <span>{{ prop.villageLocality || prop.locality }}, {{ prop.city }}</span>
         </div>
         <div class="sv-prop-price-row">
-          <span class="sv-price">{{ prop.price }}</span>
+          <span class="sv-price">{{ formatPriceIndian(prop.price) }}</span>
           <span class="sv-rate">({{ prop.pricePerSqFt }})</span>
           <span class="sv-pill-free">
             <span class="material-symbols-outlined" style="font-size: 13px;">directions_car</span>

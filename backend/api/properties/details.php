@@ -343,6 +343,24 @@ if (!empty($devName)) {
     } catch (\Throwable $e) {}
 }
 
+function formatIndianPrice($price) {
+    if (empty($price)) return $price;
+    if (preg_match('/(Lakh|Cr|Crore)/i', (string)$price)) {
+        return $price;
+    }
+    $num = (float)preg_replace('/[^\d.]/', '', (string)$price);
+    if ($num <= 0) return $price;
+    if ($num >= 10000000) {
+        $cr = $num / 10000000;
+        return '₹ ' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
+    }
+    if ($num >= 100000) {
+        $lakhs = $num / 100000;
+        return '₹ ' . (round($lakhs, 2) == round($lakhs, 0) ? number_format($lakhs, 0) : number_format($lakhs, 2)) . ' Lakhs';
+    }
+    return '₹ ' . number_format($num);
+}
+
 // Assemble Final Property Response Payload
 $response = array_merge([
     'id'                => $prop['id'],
@@ -351,7 +369,7 @@ $response = array_merge([
     'locality'          => $prop['locality_name'],
     'city'              => $prop['city_name'],
     'cityKey'           => $prop['cityKey'],
-    'price'             => $prop['price'],
+    'price'             => formatIndianPrice($prop['price']),
     'pricePerSqFt'      => $prop['price_per_sqft'],
     'sqft'              => $prop['sqft'],
     'bhkBadge'          => $prop['bhk_badge'],

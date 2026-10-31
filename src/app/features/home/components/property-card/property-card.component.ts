@@ -6,6 +6,7 @@ import { PropertyService } from '../../../../core/services/property.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
 import { CompareService } from '../../../../core/services/compare.service';
+import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
 @Component({
   selector: 'app-property-card',
@@ -97,7 +98,7 @@ import { CompareService } from '../../../../core/services/compare.service';
       <div class="card-content">
         <!-- Price Row -->
         <div class="price-row">
-          <span class="main-price">{{ property.price }}</span>
+          <span class="main-price">{{ formatPriceIndian(property.price) }}</span>
           <span class="unit-price">{{ property.pricePerSqFt }}</span>
         </div>
 
@@ -747,6 +748,7 @@ import { CompareService } from '../../../../core/services/compare.service';
 })
 export class PropertyCardComponent {
   @Input({ required: true }) property!: Property;
+  readonly formatPriceIndian = formatPriceIndian;
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);
   readonly userBehaviorService = inject(UserBehaviorService);

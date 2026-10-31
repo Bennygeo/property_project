@@ -339,7 +339,16 @@ foreach ($rows as $index => $item) {
         if ($totalVal <= 0 && $sqftVal > 0 && $rateVal > 0) {
             $totalVal = round($sqftVal * $rateVal);
         }
-        $priceDisplay = '₹ ' . number_format($totalVal > 0 ? $totalVal : 3840000);
+        $numToFormat = $totalVal > 0 ? $totalVal : 3840000;
+        if ($numToFormat >= 10000000) {
+            $cr = $numToFormat / 10000000;
+            $priceDisplay = '₹ ' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
+        } elseif ($numToFormat >= 100000) {
+            $lakhs = $numToFormat / 100000;
+            $priceDisplay = '₹ ' . (round($lakhs, 2) == round($lakhs, 0) ? number_format($lakhs, 0) : number_format($lakhs, 2)) . ' Lakhs';
+        } else {
+            $priceDisplay = '₹ ' . number_format($numToFormat);
+        }
 
         $locality = trim((string)($item['villageLocality'] ?? $item['areaLocation'] ?? 'Guduvanchery'));
         $city = trim((string)($item['district'] ?? $item['taluk'] ?? 'Chennai'));

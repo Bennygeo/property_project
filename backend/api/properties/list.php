@@ -475,6 +475,24 @@ $fallbackImages = [
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
 ];
 
+function formatIndianPrice($price) {
+    if (empty($price)) return $price;
+    if (preg_match('/(Lakh|Cr|Crore)/i', (string)$price)) {
+        return $price;
+    }
+    $num = (float)preg_replace('/[^\d.]/', '', (string)$price);
+    if ($num <= 0) return $price;
+    if ($num >= 10000000) {
+        $cr = $num / 10000000;
+        return '₹ ' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
+    }
+    if ($num >= 100000) {
+        $lakhs = $num / 100000;
+        return '₹ ' . (round($lakhs, 2) == round($lakhs, 0) ? number_format($lakhs, 0) : number_format($lakhs, 2)) . ' Lakhs';
+    }
+    return '₹ ' . number_format($num);
+}
+
 // Format response to match Angular Property interface
 $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackImages): array {
     // Fetch highlights
@@ -603,7 +621,7 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
         'locality'     => $row['locality'],
         'city'         => $row['city'],
         'cityKey'      => $row['cityKey'],
-        'price'        => $row['price'],
+        'price'        => formatIndianPrice($row['price']),
         'pricePerSqFt' => $row['pricePerSqFt'],
         'sqft'         => $row['sqft'],
         'bhkBadge'     => $row['bhkBadge'],
