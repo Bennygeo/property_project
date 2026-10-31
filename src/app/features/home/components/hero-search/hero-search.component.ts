@@ -5,7 +5,6 @@ import { PropertyService } from '../../../../core/services/property.service';
 import { ListingMode, Property } from '../../../../core/models/property.model';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { DealsScrollingBannerComponent } from '../deals-scrolling-banner/deals-scrolling-banner.component';
-import { LandIntentStripComponent } from '../land-intent-strip/land-intent-strip.component';
 
 export interface LocationSuggestion {
   name: string;
@@ -24,7 +23,7 @@ export interface PropertyTypeOption {
 @Component({
   selector: 'app-hero-search',
   standalone: true,
-  imports: [CommonModule, DealsScrollingBannerComponent, LandIntentStripComponent],
+  imports: [CommonModule, DealsScrollingBannerComponent],
   template: `
     <section class="hero-section" id="search-section">
       <!-- Creative Architectural Clean Background -->
@@ -68,7 +67,7 @@ export interface PropertyTypeOption {
           <div class="search-pill-bar">
             
             <!-- Segment 1: Locality / Project -->
-            <div class="pill-segment segment-locality" (click)="$event.stopPropagation()">
+            <div class="pill-segment segment-locality" (click)="onSearchInputFocus(); $event.stopPropagation()">
               <div class="segment-input-wrap">
                 <label class="segment-label" for="hero-locality-input">Location / Project</label>
                 <input 
@@ -77,7 +76,8 @@ export interface PropertyTypeOption {
                   type="text" 
                   class="pill-input-text" 
                   [value]="propertyService.searchQuery()"
-                  (focus)="openLocationSuggest()"
+                  (focus)="onSearchInputFocus()"
+                  (click)="onSearchInputFocus()"
                   (input)="onSearchInput($event)"
                   (keydown.enter)="onInputEnter($event)"
                   autocomplete="off"
@@ -1536,7 +1536,17 @@ export class HeroSearchComponent {
     this.selectedStatus.set(status);
   }
 
-  // Location Autocomplete Actions
+  // Location Autocomplete & Search Focus Routing Actions
+  onSearchInputFocus(): void {
+    const q = this.propertyService.searchQuery()?.trim();
+    this.router.navigate(['/search'], {
+      queryParams: {
+        ...(q ? { q } : {}),
+        focus: 'true'
+      }
+    });
+  }
+
   openLocationSuggest(): void {
     this.isLocationSuggestOpen.set(true);
     this.isTypeDropdownOpen.set(false);

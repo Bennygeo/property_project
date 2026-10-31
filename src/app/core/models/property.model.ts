@@ -151,6 +151,8 @@ export interface Property {
   freePhotos: string[];
   premiumMedia: PremiumMediaItem[];
   whatsappUrl?: string;
+  description?: string;
+  amenities?: string[];
 
   // Rich 100acress-style specifications & mock metadata
   developer?: DeveloperProfile;

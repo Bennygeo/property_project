@@ -43,6 +43,7 @@ export interface DistrictHubItem {
   propertyCount: number;
   isMainHub: boolean;
   region: string;
+  topLocalities?: string[];
 }
 
 export interface RegionalGroupItem {
@@ -426,7 +427,7 @@ export class PropertyService {
   }
 
   /**
-   * Fetch Google Places Autocomplete suggestions using Google Places API (New)
+   * Fetch Google Places Autocomplete suggestions using Google Places API (New) with resilient fallback
    */
   public fetchGooglePlaces(query: string, district?: string): Observable<any[]> {
     const q = query.trim();
@@ -446,12 +447,99 @@ export class PropertyService {
       })
     ) as Observable<{ success: boolean; suggestions: any[] }>).pipe(
       map(res => {
-        if (res && res.success && Array.isArray(res.suggestions)) {
+        if (res && res.success && Array.isArray(res.suggestions) && res.suggestions.length > 0) {
           return res.suggestions;
         }
-        return [];
+        return this.getClientFallbackLocalities(q, district);
       })
     );
+  }
+
+  /**
+   * Client-side fallback localities when backend or external Google API is unreachable
+   */
+  private getClientFallbackLocalities(query: string, district?: string): any[] {
+    const catalog = [
+      { label: 'Tambaram', sub: 'South Chennai & Chengalpattu Gateway', district: 'Chengalpattu' },
+      { label: 'East Tambaram', sub: 'Residential & Transit Hub', district: 'Chengalpattu' },
+      { label: 'West Tambaram', sub: 'Commercial & Bus Terminus Corridor', district: 'Chengalpattu' },
+      { label: 'Tambaram Sanatorium', sub: 'GST Road Transit & Health Belt', district: 'Chengalpattu' },
+      { label: 'Velachery', sub: 'South Chennai Transit & Retail Hub', district: 'Chennai' },
+      { label: 'Porur', sub: 'West Chennai IT & Healthcare Hub', district: 'Chennai' },
+      { label: 'Guindy', sub: 'Industrial & Transit Corridor', district: 'Chennai' },
+      { label: 'Adyar', sub: 'South Chennai Premium Coastal Locality', district: 'Chennai' },
+      { label: 'Besant Nagar', sub: 'Coastal Residential & Beach Belt', district: 'Chennai' },
+      { label: 'T. Nagar', sub: 'Commercial & Retail Capital of Chennai', district: 'Chennai' },
+      { label: 'Anna Nagar', sub: 'North-West Chennai Prime Residential', district: 'Chennai' },
+      { label: 'Mylapore', sub: 'Cultural & Heritage Corridor', district: 'Chennai' },
+      { label: 'Alwarpet', sub: 'Central Chennai Luxury Zone', district: 'Chennai' },
+      { label: 'Nungambakkam', sub: 'Central Business & Diplomatic Hub', district: 'Chennai' },
+      { label: 'Kilpauk', sub: 'Central Chennai Medical & Residential', district: 'Chennai' },
+      { label: 'Thiruvanmiyur', sub: 'ECR Starting Junction & Coastal Belt', district: 'Chennai' },
+      { label: 'Perungudi', sub: 'OMR IT Corridor & Express Highway', district: 'Chennai' },
+      { label: 'Sholinganallur', sub: 'OMR IT Expressway Major Junction', district: 'Chennai' },
+      { label: 'Thoraipakkam', sub: 'OMR Radial Road Junction', district: 'Chennai' },
+      { label: 'Navalur', sub: 'OMR IT Hub & Marina Mall Corridor', district: 'Chengalpattu' },
+      { label: 'Siruseri', sub: 'SIPCOT IT Park & Residential Belt', district: 'Chengalpattu' },
+      { label: 'Kelambakkam', sub: 'OMR - Vandalur Link Road Hub', district: 'Chengalpattu' },
+      { label: 'Thiruporur', sub: 'OMR Southern Growth Hub', district: 'Chengalpattu' },
+      { label: 'Medavakkam', sub: 'Tambaram - Velachery Link Junction', district: 'Chengalpattu' },
+      { label: 'Perumbakkam', sub: 'OMR Link Road Growth Corridor', district: 'Chengalpattu' },
+      { label: 'Chromepet', sub: 'GST Road Commercial & Transit Hub', district: 'Chengalpattu' },
+      { label: 'Pallavaram', sub: 'Airport Proximity & GST Highway', district: 'Chengalpattu' },
+      { label: 'Selaiyur', sub: 'Tambaram East Residential Corridor', district: 'Chengalpattu' },
+      { label: 'Chitlapakkam', sub: 'Lake View Residential Belt', district: 'Chengalpattu' },
+      { label: 'Madambakkam', sub: 'Heritage Temple & Residential Zone', district: 'Chengalpattu' },
+      { label: 'Sembakkam', sub: 'Velachery - Tambaram Road Belt', district: 'Chengalpattu' },
+      { label: 'Mudichur', sub: 'Tambaram - Sriperumbudur Link Road', district: 'Chengalpattu' },
+      { label: 'Perungalathur', sub: 'New Kilambakkam Bus Terminus Gateway', district: 'Chengalpattu' },
+      { label: 'Vandalur', sub: 'Zoological Park & Outer Ring Road Interchange', district: 'Chengalpattu' },
+      { label: 'Urapakkam', sub: 'GST Road Fast-Growing Residential', district: 'Chengalpattu' },
+      { label: 'Guduvanchery', sub: 'GST Road Industrial & Township Hub', district: 'Chengalpattu' },
+      { label: 'Maraimalai Nagar', sub: 'Automotive & Industrial Corridor', district: 'Chengalpattu' },
+      { label: 'Singaperumal Koil', sub: 'Mahindra World City Belt', district: 'Chengalpattu' },
+      { label: 'Chengalpattu Town', sub: 'District Headquarters & Rail Junction', district: 'Chengalpattu' },
+      { label: 'Poonamallee', sub: 'Metro Phase 2 Line 4 Western Hub', district: 'Tiruvallur' },
+      { label: 'Avadi', sub: 'Western Rail Corridor & Municipal Hub', district: 'Tiruvallur' },
+      { label: 'Ambattur', sub: 'Industrial Estate & IT Parks', district: 'Tiruvallur' },
+      { label: 'Mogappair', sub: 'West Chennai Premier Residential', district: 'Chennai' },
+      { label: 'Maduravoyal', sub: 'Elevated Expressway & Bypass Junction', district: 'Chennai' },
+      { label: 'Koyambedu', sub: 'Transit Hub & Metro Interchange', district: 'Chennai' },
+      { label: 'Vadapalani', sub: 'Film City, Metro & Hospital Hub', district: 'Chennai' },
+      { label: 'Sriperumbudur', sub: 'Automobile & Electronics SEZ Corridor', district: 'Kancheepuram' },
+      { label: 'Oragadam', sub: 'Industrial Corridor & SIPCOT Belt', district: 'Kancheepuram' },
+      { label: 'Kancheepuram', sub: 'Silk City & Heritage Capital', district: 'Kancheepuram' },
+      { label: 'Tiruvallur', sub: 'District Headquarters & Western Hub', district: 'Tiruvallur' },
+      { label: 'Coimbatore', sub: 'Manchester of South India • Industrial Hub', district: 'Coimbatore' },
+      { label: 'Madurai', sub: 'Cultural Capital & South Central Hub', district: 'Madurai' },
+      { label: 'Tiruchirappalli', sub: 'Central Hub & Educational Corridor', district: 'Tiruchirappalli' },
+      { label: 'Salem', sub: 'Steel City & Western Express Corridor', district: 'Salem' },
+      { label: 'Hosur', sub: 'EV & Industrial Tech Corridor • Krishnagiri', district: 'Krishnagiri' }
+    ];
+
+    const qLower = query.toLowerCase();
+    const dLower = (district || '').toLowerCase();
+
+    return catalog
+      .filter(item => {
+        const matchesQuery = item.label.toLowerCase().includes(qLower) || item.sub.toLowerCase().includes(qLower);
+        if (!matchesQuery) return false;
+        if (dLower && !item.district.toLowerCase().includes(dLower) && !dLower.includes(item.district.toLowerCase())) {
+          return item.label.toLowerCase().startsWith(qLower);
+        }
+        return true;
+      })
+      .map(item => ({
+        placeId: 'loc_' + item.label.toLowerCase().replace(/\s+/g, '_'),
+        label: item.label,
+        sub: `${item.sub} • ${item.district}`,
+        fullText: `${item.label}, ${item.district}, Tamil Nadu, India`,
+        types: ['locality', 'political'],
+        type: 'google_place',
+        icon: 'explore',
+        query: item.label
+      }))
+      .slice(0, 8);
   }
 
   /**

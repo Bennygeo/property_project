@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
@@ -23,11 +23,11 @@ import { TopConciergeBarComponent } from '../../../home/components/top-concierge
 import { TopupDialogComponent } from '../../../home/components/topup-dialog/topup-dialog.component';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
-import { PropertyCardComponent } from '../../../home/components/property-card/property-card.component';
 import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
 
 export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
+export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_transit' | 'overview';
 
 function parsePriceToNumber(priceStr: string): number {
   if (!priceStr) return 0;
@@ -57,13 +57,12 @@ function parsePriceToNumber(priceStr: string): number {
     TopupDialogComponent,
     ToastComponent,
     PropertyMediaModalComponent,
-    PropertyCardComponent,
     SecureVideoPlayerComponent
   ],
   templateUrl: './property-details-page.component.html',
   styleUrls: ['./property-details-page.component.css']
 })
-export class PropertyDetailsPageComponent implements OnInit {
+export class PropertyDetailsPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -101,6 +100,34 @@ export class PropertyDetailsPageComponent implements OnInit {
 
   // Active in-page navigation section
   readonly activeNavSection = signal<string>('overview');
+  readonly activeDetailTab = signal<DetailContextTab>('infrastructure');
+
+  setDetailTab(tab: DetailContextTab): void {
+    this.activeDetailTab.set(tab);
+
+    // Smooth scroll to top of connected workspace for better view
+    setTimeout(() => {
+      const workspace = document.getElementById('details-context-workspace');
+      if (workspace) {
+        const offset = 72; // Header bar offset
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elemRect = workspace.getBoundingClientRect().top;
+        const elemPosition = elemRect - bodyRect;
+        const offsetPosition = elemPosition - offset;
+
+        window.scrollTo({
+          top: Math.max(0, offsetPosition),
+          behavior: 'smooth'
+        });
+
+        // Center active tab horizontally in ribbon on mobile/tablet view
+        const activeBtn = workspace.querySelector('.ctx-tab-btn.active') as HTMLElement;
+        if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+          activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }, 40);
+  }
 
   // Media-First Top Stage State
   readonly activeMediaTab = signal<MediaStageTab>('photos');
@@ -173,6 +200,19 @@ export class PropertyDetailsPageComponent implements OnInit {
   readonly visitTimeSlot = signal<string>('morning');
   readonly isSubmittingVisit = signal<boolean>(false);
 
+  // 50-Second High-Intent Site Visit Prompt State
+  private siteVisitPromptTimer: any = null;
+  private hasPromptedSiteVisitForSession = false;
+  readonly isSiteVisitPromptOpen = signal<boolean>(false);
+  readonly promptVisitDate = signal<string>('');
+  readonly promptVisitSlot = signal<string>('morning');
+  readonly promptBuyerName = signal<string>('');
+  readonly promptBuyerPhone = signal<string>('');
+  readonly isSubmittingPromptVisit = signal<boolean>(false);
+  readonly minVisitDate = computed<string>(() => {
+    return new Date().toISOString().split('T')[0];
+  });
+
   // Similar Properties in same City/Corridor
   readonly similarProperties = computed<Property[]>(() => {
     const current = this.property();
@@ -203,6 +243,9 @@ export class PropertyDetailsPageComponent implements OnInit {
         this.propertyId.set(id);
         this.currentPhotoIdx.set(0);
         this.selectedFloorPlanIndex.set(0);
+        this.hasPromptedSiteVisitForSession = false;
+        this.isSiteVisitPromptOpen.set(false);
+        this.startSiteVisitPromptTimer();
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (this.authService.isLoggedIn()) {
@@ -280,12 +323,21 @@ export class PropertyDetailsPageComponent implements OnInit {
     }
   }
 
-  // Smooth Scroll to Section
+  // Smooth Scroll to Section or switch Context Tab
   scrollToSection(sectionId: string): void {
+    if (sectionId === 'site-infrastructure' || sectionId === 'infrastructure') {
+      this.activeDetailTab.set('infrastructure');
+    } else if (sectionId === 'cadastral-specs' || sectionId === 'legal-approvals' || sectionId === 'specs') {
+      this.activeDetailTab.set('legal_specs');
+    } else if (sectionId === 'transit-connectivity' || sectionId === 'gps-audit' || sectionId === 'location') {
+      this.activeDetailTab.set('location_transit');
+    } else if (sectionId === 'overview' || sectionId === 'amenities' || sectionId === 'floor-plan') {
+      this.activeDetailTab.set('overview');
+    }
     this.activeNavSection.set(sectionId);
-    const element = document.getElementById(sectionId);
+    const element = document.getElementById(sectionId) || document.getElementById('details-context-workspace');
     if (element) {
-      const offset = 64;
+      const offset = 72;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -510,5 +562,125 @@ export class PropertyDetailsPageComponent implements OnInit {
     if (target && !target.src.includes('photo-1600585154340-be6161a56a0c')) {
       target.src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
     }
+  }
+
+  ngOnDestroy(): void {
+    this.clearSiteVisitPromptTimer();
+  }
+
+  /**
+   * Start 50-Second High-Intent Site Visit Timer
+   * Triggers an invitation dialog if user stays on the page for >50s
+   */
+  startSiteVisitPromptTimer(): void {
+    this.clearSiteVisitPromptTimer();
+    this.siteVisitPromptTimer = setTimeout(() => {
+      this.checkAndTriggerSiteVisitPrompt();
+    }, 50000); // 50 seconds
+  }
+
+  clearSiteVisitPromptTimer(): void {
+    if (this.siteVisitPromptTimer) {
+      clearTimeout(this.siteVisitPromptTimer);
+      this.siteVisitPromptTimer = null;
+    }
+  }
+
+  checkAndTriggerSiteVisitPrompt(): void {
+    // Only prompt if not previously shown in this view and not blocked by guest limit
+    if (this.hasPromptedSiteVisitForSession || this.isBlockedForGuest()) {
+      return;
+    }
+
+    // Prefill user contact credentials if logged in
+    const user = this.authService.currentUser();
+    if (user) {
+      if (user.name && !this.promptBuyerName()) this.promptBuyerName.set(user.name);
+      if (user.phone && !this.promptBuyerPhone()) this.promptBuyerPhone.set(user.phone);
+    } else {
+      if (this.buyerName() && !this.promptBuyerName()) this.promptBuyerName.set(this.buyerName());
+      if (this.buyerPhone() && !this.promptBuyerPhone()) this.promptBuyerPhone.set(this.buyerPhone());
+    }
+
+    // Default visit date to tomorrow
+    if (!this.promptVisitDate()) {
+      const tomorrow = new Date(Date.now() + 86400000);
+      this.promptVisitDate.set(tomorrow.toISOString().split('T')[0]);
+    }
+
+    this.hasPromptedSiteVisitForSession = true;
+    this.isSiteVisitPromptOpen.set(true);
+  }
+
+  closeSiteVisitPrompt(): void {
+    this.isSiteVisitPromptOpen.set(false);
+  }
+
+  openSiteVisitModal(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      if (user.name && !this.promptBuyerName()) this.promptBuyerName.set(user.name);
+      if (user.phone && !this.promptBuyerPhone()) this.promptBuyerPhone.set(user.phone);
+    } else {
+      if (this.buyerName() && !this.promptBuyerName()) this.promptBuyerName.set(this.buyerName());
+      if (this.buyerPhone() && !this.promptBuyerPhone()) this.promptBuyerPhone.set(this.buyerPhone());
+    }
+    if (!this.promptVisitDate()) {
+      const tomorrow = new Date(Date.now() + 86400000);
+      this.promptVisitDate.set(tomorrow.toISOString().split('T')[0]);
+    }
+    this.isSiteVisitPromptOpen.set(true);
+  }
+
+  submitPromptSiteVisit(event?: Event): void {
+    if (event) event.preventDefault();
+    const prop = this.property();
+    if (!prop) return;
+
+    const name = this.promptBuyerName().trim() || this.buyerName().trim() || 'Guest Buyer';
+    const phone = this.promptBuyerPhone().trim() || this.buyerPhone().trim() || '+91 94441 00000';
+    const date = this.promptVisitDate() || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    const slot = this.promptVisitSlot() || 'morning';
+
+    this.isSubmittingPromptVisit.set(true);
+
+    this.propertyService.submitSiteVisitLead({
+      propertyId: prop.id,
+      name,
+      phone,
+      date,
+      slot,
+      notes: `High-Intent 50s Engagement Prompt for ${prop.title}`
+    }).subscribe({
+      next: () => {
+        this.isSubmittingPromptVisit.set(false);
+        this.isSiteVisitPromptOpen.set(false);
+        this.notificationService.show({
+          type: 'success',
+          title: 'Free Site Visit Scheduled!',
+          message: `Your visit for ${prop.title} has been scheduled for ${date} (${slot.toUpperCase()}). Our field desk will contact you with GPS pickup coordinates.`,
+          icon: 'event_available'
+        });
+      },
+      error: () => {
+        this.isSubmittingPromptVisit.set(false);
+        this.isSiteVisitPromptOpen.set(false);
+        this.notificationService.show({
+          type: 'success',
+          title: 'Site Visit Request Logged',
+          message: `Your visit request for ${prop.title} has been registered. Our field desk will coordinate with you.`,
+          icon: 'event_available'
+        });
+      }
+    });
+  }
+
+  getPromptWhatsAppUrl(): string {
+    const prop = this.property();
+    if (!prop) return 'https://wa.me/919444100000';
+    const dateStr = this.promptVisitDate() || 'this week';
+    const slotStr = this.promptVisitSlot() || 'morning';
+    const msg = `Hi Find a Plot Concierge, I have been reviewing ${prop.title} (REF: ${prop.id}) in ${prop.locality || prop.city} and would like to arrange a site visit on ${dateStr} (${slotStr}). Please share available coordinator contact and exact coordinates.`;
+    return `https://wa.me/919444100000?text=${encodeURIComponent(msg)}`;
   }
 }

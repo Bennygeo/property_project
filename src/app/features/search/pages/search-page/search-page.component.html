@@ -51,142 +51,6 @@
           }
 
           <span class="material-symbols-outlined district-arrow-icon" [class.is-rotated]="isDistrictDropdownOpen()">expand_more</span>
-
-          <!-- Modern Custom Popover Dropdown Panel -->
-          @if (isDistrictDropdownOpen()) {
-            <div class="district-custom-dropdown" (click)="$event.stopPropagation()" role="listbox">
-              <div class="district-dropdown-header">
-                <div class="dist-header-title-wrap">
-                  <span class="dist-header-title">Target Area / District</span>
-                  <span class="dist-header-sub">Narrow locality suggestions to your preferred region</span>
-                </div>
-                <span class="dist-header-badge">{{ totalDistrictsCount() }} Districts</span>
-              </div>
-
-              <!-- Quick In-Dropdown Search Filter -->
-              <div class="district-search-bar" (click)="$event.stopPropagation(); scrollToTop()">
-                <span class="material-symbols-outlined dist-search-icon">search</span>
-                <input type="text"
-                       class="dist-search-input"
-                       placeholder="Filter districts (e.g. Chennai, Coimbatore, Salem)..."
-                       [value]="districtSearchQuery()"
-                       (input)="districtSearchQuery.set($any($event.target).value)"
-                       (focus)="scrollToTop()"
-                       (click)="$event.stopPropagation(); scrollToTop()">
-                @if (districtSearchQuery()) {
-                  <button type="button" class="dist-search-clear" (click)="districtSearchQuery.set(''); $event.stopPropagation()" aria-label="Clear filter">
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                }
-              </div>
-
-              <div class="district-scroll-area">
-                <!-- Option: All Districts & Regions -->
-                @if (!districtSearchQuery()) {
-                  <div class="district-opt-item district-opt-all"
-                       [class.is-active]="!selectedDistrict()"
-                       (click)="onSelectDistrictOption('')"
-                       role="option"
-                       [attr.aria-selected]="!selectedDistrict()">
-                    <div class="opt-left">
-                      <div class="opt-icon-circle opt-icon-globe">
-                        <span class="material-symbols-outlined">public</span>
-                      </div>
-                      <div class="opt-text">
-                        <div class="opt-name-row">
-                          <span class="opt-name">All Districts &amp; Regions</span>
-                        </div>
-                        <span class="opt-sub">Statewide Tamil Nadu property search</span>
-                      </div>
-                    </div>
-                    <div class="opt-right">
-                      <span class="opt-count-pill">{{ totalAllPropertiesCount() }} properties</span>
-                      @if (!selectedDistrict()) {
-                        <span class="material-symbols-outlined opt-check">check_circle</span>
-                      }
-                    </div>
-                  </div>
-                }
-
-                <!-- 🌟 10 Main Areas -->
-                @if (filteredMainHubs().length > 0) {
-                  <div class="district-group-section">
-                    <div class="group-header group-header-hubs">
-                      <span class="group-title">
-                        <span class="group-emoji">🌟</span> 10 Main Areas
-                      </span>
-                      <span class="group-badge">Major Real Estate Hubs</span>
-                    </div>
-                    <div class="group-grid">
-                      @for (hub of filteredMainHubs(); track hub.name) {
-                        <div class="district-opt-card"
-                             [class.is-active]="selectedDistrict() === hub.name"
-                             (click)="onSelectDistrictOption(hub.name)"
-                             role="option"
-                             [attr.aria-selected]="selectedDistrict() === hub.name">
-                          <div class="card-top">
-                            <span class="material-symbols-outlined hub-icon">apartment</span>
-                            <span class="card-name">{{ hub.name }}</span>
-                            @if (selectedDistrict() === hub.name) {
-                              <span class="material-symbols-outlined card-check">check_circle</span>
-                            }
-                          </div>
-                          <div class="card-meta">
-                            <span class="card-count">{{ hub.propertyCount }} properties</span>
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-
-                <!-- Regional Groups (Western, Southern, Central, Northern) -->
-                @for (group of filteredRegionalGroups(); track group.regionName) {
-                  <div class="district-group-section">
-                    <div class="group-header">
-                      <span class="group-title">
-                        <span class="material-symbols-outlined group-icon-geo">explore</span>
-                        {{ group.regionName }}
-                      </span>
-                      <span class="group-count-tag">{{ group.districts.length }} districts</span>
-                    </div>
-                    <div class="group-list">
-                      @for (dist of group.districts; track dist.name) {
-                        <div class="district-opt-item"
-                             [class.is-active]="selectedDistrict() === dist.name"
-                             (click)="onSelectDistrictOption(dist.name)"
-                             role="option"
-                             [attr.aria-selected]="selectedDistrict() === dist.name">
-                          <div class="opt-left">
-                            <div class="opt-icon-circle">
-                              <span class="material-symbols-outlined">domain</span>
-                            </div>
-                            <div class="opt-text">
-                              <span class="opt-name">{{ dist.name }}</span>
-                              <span class="opt-sub">{{ dist.region }}</span>
-                            </div>
-                          </div>
-                          <div class="opt-right">
-                            <span class="opt-count-pill">{{ dist.propertyCount }} properties</span>
-                            @if (selectedDistrict() === dist.name) {
-                              <span class="material-symbols-outlined opt-check">check_circle</span>
-                            }
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-
-                @if (filteredMainHubs().length === 0 && filteredRegionalGroups().length === 0) {
-                  <div class="district-empty-results">
-                    <span class="material-symbols-outlined">search_off</span>
-                    <p>No districts found matching "{{ districtSearchQuery() }}"</p>
-                  </div>
-                }
-              </div>
-            </div>
-          }
         </div>
 
         <div class="search-omnibox"
@@ -293,6 +157,193 @@
           </div>
           }
         </div>
+
+        <!-- Modern Custom Popover Dropdown Panel - Mega Expanded View -->
+        @if (isDistrictDropdownOpen()) {
+          <div class="district-custom-dropdown expanded-dropdown" (click)="$event.stopPropagation()" role="listbox">
+            <div class="district-dropdown-header">
+              <div class="dist-header-title-wrap">
+                <div class="dist-header-badge-row">
+                  <span class="material-symbols-outlined dist-badge-icon">location_on</span>
+                  <span class="dist-header-title">Target Area &amp; Regional Districts</span>
+                  <span class="dist-header-badge">{{ totalDistrictsCount() }} Districts</span>
+                  <span class="dist-header-badge-sub">{{ totalAllPropertiesCount() }} Verified Dossiers</span>
+                </div>
+                <span class="dist-header-sub">Select your target district to focus localities, cadastral deeds, and verified property dossiers</span>
+              </div>
+              
+              <button type="button" class="btn-close-dropdown" (click)="isDistrictDropdownOpen.set(false)" title="Close dropdown">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <!-- In-Dropdown Search Filter Bar -->
+            <div class="district-search-bar" (click)="$event.stopPropagation(); scrollToTop()">
+              <span class="material-symbols-outlined dist-search-icon">search</span>
+              <input type="text"
+                     class="dist-search-input"
+                     placeholder="Filter by district name or locality (e.g. Chennai, Coimbatore, Salem, Madipakkam)..."
+                     [value]="districtSearchQuery()"
+                     (input)="districtSearchQuery.set($any($event.target).value)"
+                     (focus)="scrollToTop()"
+                     (click)="$event.stopPropagation(); scrollToTop()">
+              @if (districtSearchQuery()) {
+                <button type="button" class="dist-search-clear" (click)="districtSearchQuery.set(''); $event.stopPropagation()" aria-label="Clear filter">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              }
+            </div>
+
+            <div class="district-scroll-area">
+              <!-- Option: All Districts & Regions Banner -->
+              @if (!districtSearchQuery()) {
+                <div class="district-opt-all-banner"
+                     [class.is-active]="!selectedDistrict()"
+                     (click)="onSelectDistrictOption('')"
+                     role="option"
+                     [attr.aria-selected]="!selectedDistrict()">
+                  <div class="all-banner-left">
+                    <div class="opt-icon-globe">
+                      <span class="material-symbols-outlined">public</span>
+                    </div>
+                    <div class="all-banner-texts">
+                      <span class="all-banner-title">All Districts &amp; Regions</span>
+                      <span class="all-banner-sub">Statewide Tamil Nadu property search (Search without district restriction)</span>
+                    </div>
+                  </div>
+                  <div class="all-banner-right">
+                    <span class="all-banner-count">{{ totalAllPropertiesCount() }} properties</span>
+                    @if (!selectedDistrict()) {
+                      <span class="material-symbols-outlined check-active">check_circle</span>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- 🌟 10 Main Areas (5 columns across desktop for zero-scroll visibility) -->
+              @if (filteredMainHubs().length > 0) {
+                <div class="district-group-section hubs-section">
+                  <div class="group-header group-header-hubs">
+                    <span class="group-title">
+                      <span class="group-emoji">🌟</span> 10 Major Real Estate Hubs
+                    </span>
+                    <span class="group-badge">High Demand Market Areas</span>
+                  </div>
+                  <div class="hubs-expanded-grid">
+                    @for (hub of filteredMainHubs(); track hub.name) {
+                      <div class="hub-expanded-card"
+                           [class.is-active]="selectedDistrict() === hub.name"
+                           (click)="onSelectDistrictOption(hub.name)"
+                           role="option"
+                           [attr.aria-selected]="selectedDistrict() === hub.name"
+                           [title]="'Select ' + hub.name + ' (' + hub.propertyCount + ' properties)'">
+                        <div class="hub-card-header">
+                          <span class="material-symbols-outlined hub-icon">apartment</span>
+                          <span class="hub-name">{{ hub.name }}</span>
+                          @if (selectedDistrict() === hub.name) {
+                            <span class="material-symbols-outlined hub-check">check_circle</span>
+                          }
+                        </div>
+                        <div class="hub-card-meta">
+                          <span class="hub-count-pill">{{ hub.propertyCount }} properties</span>
+                          @if (getDistrictLocalityHint(hub.name); as hint) {
+                            <span class="hub-locality-hint" [title]="hint">{{ hint }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Regional Groups (Side-by-Side 4 Columns for zero-scroll visibility) -->
+              @if (filteredRegionalGroups().length > 0) {
+                <div class="regional-clusters-container">
+                  <div class="clusters-header-row">
+                    <div class="clusters-header-title">
+                      <span class="material-symbols-outlined clusters-header-icon">map</span>
+                      <span>All 38 Districts by Geographical Region</span>
+                    </div>
+                    <span class="clusters-header-badge">{{ filteredRegionalGroups().length }} Regional Zones</span>
+                  </div>
+
+                  <div class="regional-clusters-grid">
+                    @for (group of filteredRegionalGroups(); track group.regionName) {
+                      <div class="regional-cluster-col">
+                        <div class="regional-cluster-header">
+                          <div class="cluster-title-wrap">
+                            <span class="material-symbols-outlined cluster-icon">{{ getRegionIcon(group.regionName) }}</span>
+                            <span class="cluster-name">{{ group.regionName }}</span>
+                          </div>
+                          <span class="cluster-count-badge">{{ group.districts.length }}</span>
+                        </div>
+
+                        <div class="cluster-districts-list">
+                          @for (dist of group.districts; track dist.name) {
+                            <div class="district-compact-item"
+                                 [class.is-active]="selectedDistrict() === dist.name"
+                                 (click)="onSelectDistrictOption(dist.name)"
+                                 role="option"
+                                 [attr.aria-selected]="selectedDistrict() === dist.name"
+                                 [title]="dist.name + ' (' + dist.propertyCount + ' properties)'">
+                              <div class="dist-compact-main">
+                                <span class="dist-compact-name">{{ dist.name }}</span>
+                                @if (getDistrictLocalityHint(dist.name); as hint) {
+                                  @if (hint !== 'localities or layouts') {
+                                    <span class="dist-compact-localities" [title]="hint">
+                                      {{ hint }}
+                                    </span>
+                                  }
+                                }
+                              </div>
+                              <div class="dist-compact-right">
+                                <span class="dist-count-chip">{{ dist.propertyCount }}</span>
+                                @if (selectedDistrict() === dist.name) {
+                                  <span class="material-symbols-outlined dist-check-icon">check_circle</span>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (filteredMainHubs().length === 0 && filteredRegionalGroups().length === 0) {
+                <div class="district-empty-results">
+                  <span class="material-symbols-outlined">search_off</span>
+                  <p>No districts found matching "{{ districtSearchQuery() }}"</p>
+                </div>
+              }
+            </div>
+
+            <!-- Dropdown Footer -->
+            <div class="district-dropdown-footer">
+              <div class="footer-selected-info">
+                <span class="material-symbols-outlined footer-info-icon">info</span>
+                @if (selectedDistrict()) {
+                  <span>Selected: <strong>{{ selectedDistrict() }}</strong> (Showing properties in this target area)</span>
+                } @else {
+                  <span>Showing verified properties across <strong>All Districts &amp; Regions</strong></span>
+                }
+              </div>
+              <div class="footer-btn-actions">
+                @if (selectedDistrict()) {
+                  <button type="button" class="btn-footer-clear" (click)="clearDistrictSelection($event)">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                    <span>Reset to All</span>
+                  </button>
+                }
+                <button type="button" class="btn-footer-done" (click)="isDistrictDropdownOpen.set(false)">
+                  Done
+                </button>
+              </div>
+            </div>
+
+          </div>
+        }
       </div>
 
       <!-- Quick Preset Filter Pills -->
@@ -835,12 +886,19 @@
       @if (viewMode() === 'list') {
       <div class="results-list">
         @for (prop of displayedProperties(); track prop.id) {
-        <article class="list-dossier-card">
+        <article class="list-dossier-card" [class.is-in-compare]="compareService.isInCompare(prop.id)">
           <!-- Thumbnail with Badges (Links to Details) -->
           <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
             <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
             
             <div class="list-thumb-badges">
+              @if (compareService.isInCompare(prop.id)) {
+              <span class="list-compare-active-badge">
+                <span class="material-symbols-outlined" style="font-size: 13px;">compare_arrows</span>
+                In Compare
+              </span>
+              }
+
               @if (prop.isClosestProximity) {
               <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
                 <span class="material-symbols-outlined">near_me</span>
@@ -947,6 +1005,15 @@
               </button>
 
               <div class="list-secondary-actions">
+                <button type="button" 
+                  class="btn-list-compare" 
+                  [class.comparing]="compareService.isInCompare(prop.id)"
+                  (click)="compareService.toggleCompare(prop)"
+                  [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property (max 2)'">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                  <span class="compare-btn-text">{{ compareService.isInCompare(prop.id) ? 'In Compare' : 'Compare' }}</span>
+                </button>
+
                 <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
                   rel="noopener">
                   <span class="material-symbols-outlined">chat</span>

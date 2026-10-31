@@ -5,13 +5,14 @@ import { Property } from '../../../../core/models/property.model';
 import { PropertyService } from '../../../../core/services/property.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
+import { CompareService } from '../../../../core/services/compare.service';
 
 @Component({
   selector: 'app-property-card',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <article class="property-card" (click)="onCardClick()">
+    <article class="property-card" [class.is-in-compare]="compareService.isInCompare(property.id)" (click)="onCardClick()">
       <!-- Media Frame (Links to Details) -->
       <div class="card-media" [routerLink]="['/property', property.id]">
         <img 
@@ -24,6 +25,13 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
 
         <!-- Top Badges Group -->
         <div class="badges-overlay">
+          @if (compareService.isInCompare(property.id)) {
+            <span class="badge-in-compare">
+              <span class="material-symbols-outlined badge-icon" style="font-size:12px;margin-right:2px;">compare_arrows</span>
+              <span>In Compare</span>
+            </span>
+          }
+
           @if (property.isClosestProximity) {
             <span class="badge-closest-proximity" [title]="'Closest neighboring property: ' + (property.closestNeighborLocality ? property.closestNeighborLocality + ' (' + property.closestNeighborDistanceKm + ' km)' : property.closestNeighborDistanceKm + ' km away')">
               <span class="material-symbols-outlined badge-icon">near_me</span>
@@ -59,21 +67,30 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
               <span>4K Unlocked</span>
             </span>
           }
-
-
         </div>
 
-        <!-- Shortlist Heart Button -->
-        <button 
-          type="button"
-          class="btn-shortlist" 
-          [class.shortlisted]="property.isShortlisted"
-          [attr.aria-label]="property.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'"
-          (click)="$event.stopPropagation(); propertyService.toggleShortlist(property.id)">
-          <span class="material-symbols-outlined">
-            {{ property.isShortlisted ? 'favorite' : 'favorite_border' }}
-          </span>
-        </button>
+        <!-- Top Action Buttons (Compare & Shortlist) -->
+        <div class="card-top-actions">
+          <button 
+            type="button"
+            class="btn-card-compare" 
+            [class.comparing]="compareService.isInCompare(property.id)"
+            [title]="compareService.isInCompare(property.id) ? 'Remove from comparison' : 'Compare property (max 2)'"
+            (click)="$event.stopPropagation(); compareService.toggleCompare(property)">
+            <span class="material-symbols-outlined">compare_arrows</span>
+          </button>
+
+          <button 
+            type="button"
+            class="btn-shortlist" 
+            [class.shortlisted]="property.isShortlisted"
+            [attr.aria-label]="property.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'"
+            (click)="$event.stopPropagation(); propertyService.toggleShortlist(property.id)">
+            <span class="material-symbols-outlined">
+              {{ property.isShortlisted ? 'favorite' : 'favorite_border' }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <!-- Card Content -->
@@ -142,6 +159,16 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
               <span class="material-symbols-outlined btn-icon">smart_display</span>
             }
             <span>{{ property.isMediaUnlocked ? 'Watch 4K Tour' : 'View Details' }}</span>
+          </button>
+
+          <button 
+            type="button"
+            class="btn-action-compare"
+            [class.comparing]="compareService.isInCompare(property.id)"
+            [title]="compareService.isInCompare(property.id) ? 'Remove from comparison' : 'Compare property (max 2)'"
+            (click)="$event.stopPropagation(); compareService.toggleCompare(property)">
+            <span class="material-symbols-outlined btn-icon">compare_arrows</span>
+            <span class="btn-compare-txt">{{ compareService.isInCompare(property.id) ? 'In Compare' : 'Compare' }}</span>
           </button>
 
           <a 
@@ -353,11 +380,71 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
 
 
 
-    /* Shortlist Button */
-    .btn-shortlist {
+    .badge-in-compare {
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+    }
+
+    .property-card.is-in-compare {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Top Action Buttons (Compare & Shortlist) */
+    .card-top-actions {
       position: absolute;
       top: 0.75rem;
       right: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      z-index: 2;
+    }
+
+    .btn-card-compare {
+      width: 2.125rem;
+      height: 2.125rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      box-shadow: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-card-compare:hover {
+      background: #ffffff;
+      color: #0284c7;
+      transform: scale(1.06);
+    }
+
+    .btn-card-compare.comparing {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+    }
+
+    .btn-card-compare span {
+      font-size: 18px;
+    }
+
+    /* Shortlist Button */
+    .btn-shortlist {
+      position: relative;
       width: 2.125rem;
       height: 2.125rem;
       border-radius: 50%;
@@ -371,7 +458,6 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
       cursor: pointer;
       box-shadow: none;
       transition: all 0.15s ease;
-      z-index: 2;
     }
 
     .btn-shortlist:hover {
@@ -593,6 +679,40 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
       font-size: 18px;
     }
 
+    .btn-action-compare {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 10px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-action-compare:hover {
+      border-color: #0284c7;
+      color: #0284c7;
+      background: #f0f9ff;
+    }
+
+    .btn-action-compare.comparing {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      color: #0284c7;
+      font-weight: 700;
+    }
+
+    .btn-action-compare .btn-icon {
+      font-size: 16px;
+    }
+
     @media (max-width: 640px) {
       .card-content {
         padding: 0.875rem;
@@ -608,6 +728,10 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
       .btn-action-primary {
         height: 42px;
         font-size: 13px;
+      }
+      .btn-action-compare {
+        height: 42px;
+        padding: 0 8px;
       }
       .btn-action-wa {
         height: 42px;
@@ -626,6 +750,7 @@ export class PropertyCardComponent {
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);
   readonly userBehaviorService = inject(UserBehaviorService);
+  readonly compareService = inject(CompareService);
 
   onCardClick(): void {
     if (this.property) {

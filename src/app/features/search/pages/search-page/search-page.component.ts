@@ -16,6 +16,7 @@ import { TopupDialogComponent } from '../../../home/components/topup-dialog/topu
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { AiChatModalComponent } from '../../../home/components/ai-chat-modal/ai-chat-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CompareService } from '../../../../core/services/compare.service';
 import { MOCK_50_PROPERTIES } from '../../../../core/services/mock-properties-data';
 
 export interface FilterOption {
@@ -86,6 +87,7 @@ export class SearchPageComponent implements OnInit {
   readonly notificationService = inject(NotificationService);
   readonly metroService = inject(MetroService);
   readonly authService = inject(AuthService);
+  readonly compareService = inject(CompareService);
 
   // Target District Selection Signal (Dynamically loaded from MySQL Database)
   readonly selectedDistrict = signal<string>('');
@@ -163,7 +165,7 @@ export class SearchPageComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.district-target-selector')) {
+    if (!target.closest('.district-target-selector') && !target.closest('.district-custom-dropdown')) {
       this.isDistrictDropdownOpen.set(false);
     }
   }
@@ -182,6 +184,15 @@ export class SearchPageComponent implements OnInit {
       return found.topLocalities.join(', ');
     }
     return 'localities or layouts';
+  }
+
+  getRegionIcon(regionName: string): string {
+    const lower = regionName.toLowerCase();
+    if (lower.includes('north')) return 'explore';
+    if (lower.includes('west') || lower.includes('kongu')) return 'landscape';
+    if (lower.includes('central') || lower.includes('delta')) return 'water_drop';
+    if (lower.includes('south')) return 'temple_hindu';
+    return 'domain';
   }
 
   onDistrictChange(district: string): void {
@@ -613,16 +624,7 @@ export class SearchPageComponent implements OnInit {
       const combined: SearchSuggestion[] = [];
       const seen = new Set<string>();
 
-      // 1. Database matches first (local verified listings)
-      for (const item of live) {
-        const key = item.label.toLowerCase();
-        if (!seen.has(key)) {
-          seen.add(key);
-          combined.push(item);
-        }
-      }
-
-      // 2. Google Places matches (geocoded locations, landmarks, localities)
+      // 1. Google Places matches first (geocoded locations, landmarks, verified localities)
       for (const item of googleList) {
         const key = item.label.toLowerCase();
         if (!seen.has(key)) {
@@ -631,7 +633,16 @@ export class SearchPageComponent implements OnInit {
         }
       }
 
-      return combined.slice(0, 12);
+      // 2. Database matches (local verified listings, builders, projects)
+      for (const item of live) {
+        const key = item.label.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          combined.push(item);
+        }
+      }
+
+      return combined.slice(0, 15);
     }
 
     if (input.length > 0 && input.length < 2) {
@@ -1017,6 +1028,11 @@ export class SearchPageComponent implements OnInit {
       }
       if (params['ready'] === 'true' || params['status'] === 'ready') {
         this.readyToMoveOnly.set(true);
+      }
+      if (params['focus'] === 'true') {
+        setTimeout(() => {
+          this.omniboxInputRef?.nativeElement?.focus();
+        }, 150);
       }
 
       // Fetch live properties from MySQL backend with synchronized parameters

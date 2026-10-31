@@ -76,83 +76,89 @@
     </div>
     }
 
-    <!-- HEADER SUMMARY BLOCK -->
+    <!-- HEADER SUMMARY BLOCK (BALANCED 2-COLUMN LAYOUT) -->
     <header class="hanu-header-block">
-      <div class="hanu-header-top">
-        <div class="hanu-ref-badges">
-          <span class="hanu-ref-id">REF #{{ prop.id | uppercase }}</span>
-          <span class="hanu-badge-type">{{ prop.propertyType }}</span>
-          <span class="hanu-badge-rera">
-            <span class="material-symbols-outlined">verified</span>
-            {{ prop.badges.rera }}
-          </span>
-          <span class="hanu-badge-verified-listing">Verified Listing</span>
-        </div>
+      <div class="hanu-header-split">
 
-        <div class="hanu-header-price">
-          <span class="hanu-main-price">{{ prop.price }}</span>
-          <span class="hanu-unit-price">{{ prop.pricePerSqFt }}</span>
-        </div>
-      </div>
-
-      <h1 class="hanu-title">{{ prop.title }}</h1>
-
-      @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
-        @if ((prop.developerProjectsCount || 0) > 1) {
-        <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
-           class="hanu-builder-strip"
-           title="Explore {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }} showcase portfolio">
-          <span class="material-symbols-outlined builder-icon">corporate_fare</span>
-          <span class="builder-by-label">By</span>
-          <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong>
-          <span class="builder-badge-verified">
-            <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
-            Verified Developer
-          </span>
-          <span class="builder-view-action">
-            <span>View Developer Page</span>
-            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
-          </span>
-        </a>
-        } @else {
-        <div class="hanu-builder-strip non-clickable"
-             title="Promoted by {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}">
-          <span class="material-symbols-outlined builder-icon">corporate_fare</span>
-          <span class="builder-by-label">By</span>
-          <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong>
-          <span class="builder-badge-verified">
-            <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
-            Verified Developer
-          </span>
-        </div>
-        }
-      }
-
-      <div class="hanu-loc-row">
-        <span class="material-symbols-outlined text-red">location_on</span>
-        <span class="hanu-loc-text">{{ prop.locality }}, {{ prop.city }}</span>
-        <span class="hanu-dot">•</span>
-        <span>{{ prop.facingOrView }}</span>
-        <span class="hanu-dot">•</span>
-        <span>{{ prop.sqft }}</span>
-        @if (prop.bhkBadge && !prop.propertyType.includes('Plots')) {
-        <span class="hanu-dot">•</span>
-        <span>{{ prop.bhkBadge }}</span>
-        }
-      </div>
-      <!-- GPS Cadastral Status Pill in Header -->
-      <div class="gps-header-status-strip">
-        @if (!gpsAudit().isValid) {
-          <div class="gps-pill-alert-red" title="GPS coordinates unverified or inaccurate">
-            <span class="material-symbols-outlined gps-icon-red">error</span>
-            <span class="gps-pill-text"><strong>GPS Inaccurate / Missing:</strong> {{ gpsAudit().reason || 'Coordinates unverified' }}</span>
+        <!-- LEFT COLUMN: BADGES, TITLE, DEVELOPER & LOCATION -->
+        <div class="hanu-header-left">
+          <div class="hanu-ref-badges">
+            <span class="hanu-badge-type">{{ prop.propertyType }}</span>
+            <span class="hanu-badge-verified-listing">Verified Listing</span>
+            <span class="hanu-badge-direct">Direct Seller</span>
           </div>
-        } @else {
-          <div class="gps-pill-alert-green" title="Cadastral coordinates verified">
-            <span class="material-symbols-outlined gps-icon-green">verified</span>
-            <span class="gps-pill-text"><strong>GPS Verified:</strong> {{ gpsAudit().formattedText }}</span>
+
+          <h1 class="hanu-title">{{ prop.title }}</h1>
+
+          @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
+          @if ((prop.developerProjectsCount || 0) > 1) {
+          <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
+            class="hanu-builder-strip"
+            title="Explore {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }} showcase portfolio">
+            <span class="material-symbols-outlined builder-icon">corporate_fare</span>
+            <span class="builder-by-label">By</span>
+            <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer ||
+              prop.developer?.name
+              }}</strong>
+            <span class="builder-badge-verified">
+              <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
+              Verified Developer
+            </span>
+            <span class="builder-view-action">
+              <span>View Developer Page</span>
+              <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </span>
+          </a>
+          } @else {
+          <div class="hanu-builder-strip non-clickable"
+            title="Promoted by {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}">
+            <span class="material-symbols-outlined builder-icon">corporate_fare</span>
+            <span class="builder-by-label">By</span>
+            <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer ||
+              prop.developer?.name
+              }}</strong>
+            <span class="builder-badge-verified">
+              <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
+              Verified Developer
+            </span>
           </div>
-        }
+          }
+          }
+
+          <div class="hanu-loc-row">
+            <span class="material-symbols-outlined text-red">location_on</span>
+            <span class="hanu-loc-text">{{ prop.locality }}, {{ prop.city }}</span>
+            <span class="hanu-dot">•</span>
+            <span>{{ prop.facingOrView }}</span>
+            <span class="hanu-dot">•</span>
+            <span>{{ prop.sqft }}</span>
+            @if (prop.bhkBadge && !prop.propertyType.includes('Plots')) {
+            <span class="hanu-dot">•</span>
+            <span>{{ prop.bhkBadge }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: PRICING, QUICK CONCIERGE ACTIONS & ASSURANCE -->
+        <div class="hanu-header-right">
+          <!-- Price Card -->
+          <div class="header-price-card">
+            <div class="header-price-main">
+              <span class="hanu-main-price">{{ prop.price }}</span>
+              <span class="hanu-unit-price">{{ prop.pricePerSqFt }}</span>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons Deck -->
+          <div class="header-actions-deck">
+            <button type="button" class="btn-hdr-site-visit" (click)="openSiteVisitModal()"
+              title="Schedule Free In-Person Site Inspection">
+              <span class="material-symbols-outlined">event_available</span>
+              <span>Schedule Site Visit</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </header>
 
@@ -172,7 +178,7 @@
               <span>Photos ({{ prop.freePhotos.length }})</span>
             </button>
 
-            
+
 
             <button type="button" class="hanu-tab-btn" [class.active]="activeMediaTab() === 'walkthrough'"
               [class.unlocked]="prop.isMediaUnlocked" (click)="setMediaTab('walkthrough')">
@@ -199,9 +205,8 @@
             @if (activeMediaTab() === 'photos') {
             <div class="hanu-photo-frame">
               <img [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" [alt]="prop.title"
-                (error)="onImgError($event)" (click)="openFullscreen()" class="hanu-main-img"
-                loading="lazy" decoding="async"
-                title="Click to view fullscreen">
+                (error)="onImgError($event)" (click)="openFullscreen()" class="hanu-main-img" loading="lazy"
+                decoding="async" title="Click to view fullscreen">
 
               <!-- Arrows -->
               @if (prop.freePhotos.length > 1) {
@@ -215,7 +220,7 @@
 
               <div class="hanu-photo-meta">
                 <span class="hanu-photo-counter">{{ currentPhotoIdx() + 1 }} / {{ prop.freePhotos.length }}</span>
-                
+
                 <button type="button" class="hanu-btn-fs" (click)="openFullscreen()">
                   <span class="material-symbols-outlined">fullscreen</span>
                   <span>View Fullscreen</span>
@@ -227,7 +232,8 @@
             <div class="hanu-thumb-strip">
               @for (photo of prop.freePhotos; track $index) {
               <div class="hanu-thumb-box" [class.active]="$index === currentPhotoIdx()" (click)="selectPhoto($index)">
-                <img [src]="photo" [alt]="'Photo ' + ($index + 1)" (error)="onImgError($event)" loading="lazy" decoding="async">
+                <img [src]="photo" [alt]="'Photo ' + ($index + 1)" (error)="onImgError($event)" loading="lazy"
+                  decoding="async">
               </div>
               }
             </div>
@@ -237,16 +243,13 @@
             @if (activeMediaTab() === 'walkthrough') {
             <div class="hanu-video-frame">
               @if (prop.isMediaUnlocked && getWalkthroughVideo(); as video) {
-              <app-secure-video-player
-                [videoUrl]="video.url"
-                [posterUrl]="video.thumbnailUrl"
-                [title]="video.title"
-                [propertyRef]="'REF #' + prop.id"
-                [cloudflareStreamId]="video.cloudflareStreamId || ''">
+              <app-secure-video-player [videoUrl]="video.url" [posterUrl]="video.thumbnailUrl" [title]="video.title"
+                [propertyRef]="'REF #' + prop.id" [cloudflareStreamId]="video.cloudflareStreamId || ''">
               </app-secure-video-player>
               } @else {
               <div class="hanu-locked-media">
-                <img [src]="prop.imageUrl" alt="Locked video preview" class="hanu-locked-bg" loading="lazy" decoding="async">
+                <img [src]="prop.imageUrl" alt="Locked video preview" class="hanu-locked-bg" loading="lazy"
+                  decoding="async">
                 <div class="hanu-lock-overlay">
                   <span class="material-symbols-outlined lock-icon-big">lock</span>
                   <h3>4K Ultra-HD Interior Walkthrough</h3>
@@ -270,16 +273,13 @@
             @if (activeMediaTab() === 'drone') {
             <div class="hanu-video-frame">
               @if (prop.isMediaUnlocked && getDroneVideo(); as drone) {
-              <app-secure-video-player
-                [videoUrl]="drone.url"
-                [posterUrl]="drone.thumbnailUrl"
-                [title]="drone.title"
-                [propertyRef]="'REF #' + prop.id"
-                [cloudflareStreamId]="drone.cloudflareStreamId || ''">
+              <app-secure-video-player [videoUrl]="drone.url" [posterUrl]="drone.thumbnailUrl" [title]="drone.title"
+                [propertyRef]="'REF #' + prop.id" [cloudflareStreamId]="drone.cloudflareStreamId || ''">
               </app-secure-video-player>
               } @else {
               <div class="hanu-locked-media">
-                <img [src]="prop.imageUrl" alt="Locked drone preview" class="hanu-locked-bg" loading="lazy" decoding="async">
+                <img [src]="prop.imageUrl" alt="Locked drone preview" class="hanu-locked-bg" loading="lazy"
+                  decoding="async">
                 <div class="hanu-lock-overlay">
                   <span class="material-symbols-outlined lock-icon-big">flight</span>
                   <h3>360° Drone Aerial Survey</h3>
@@ -299,1076 +299,1135 @@
             </div>
             }
 
-            
+
           </div>
         </section>
 
-        <!-- THE HANU REDDY CORE: KEY PROPERTY DETAILS / SPECIFICATIONS TABLE -->
-        <section class="hanu-card">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">real_estate_agent</span>
-            <h2>Property Details &amp; Specifications</h2>
+        <!-- ====================================================================== -->
+        <!-- IMPROVISED EXECUTIVE CONTEXT BAR: 6 CRITICAL PURCHASE VALUE METRICS   -->
+        <!-- ====================================================================== -->
+        <div class="executive-snapshot-grid">
+          <div class="snapshot-tile theme-tile-price">
+            <div class="snapshot-icon-wrap theme-amber">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+            <div class="snapshot-text">
+              <span class="snapshot-label">Price &amp; Rate</span>
+              <strong class="snapshot-val text-brand">{{ prop.price }}</strong>
+              <span class="snapshot-sub">{{ prop.pricePerSqFt }}</span>
+            </div>
           </div>
 
-          <div class="hanu-specs-grid">
-            <div class="hanu-spec-item">
-              <span class="spec-label">Property Code / ID</span>
-              <span class="spec-value font-mono font-bold">#{{ prop.id | uppercase }}</span>
+          <div class="snapshot-tile theme-tile-sqft">
+            <div class="snapshot-icon-wrap theme-green">
+              <span class="material-symbols-outlined">square_foot</span>
             </div>
+            <div class="snapshot-text">
+              <span class="snapshot-label">Plot Extent</span>
+              <strong class="snapshot-val text-emerald">{{ prop.sqft }}</strong>
+              <span class="snapshot-sub">{{ prop.masterDetails?.plotSizeCents ? (prop.masterDetails?.plotSizeCents + '
+                Cents') : (prop.plotDetails?.dimensionRanges || 'Standard Layout') }}</span>
+            </div>
+          </div>
 
-            <div class="hanu-spec-item">
-              <span class="spec-label">Builder / Developer</span>
-              @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
-                @if ((prop.developerProjectsCount || 0) > 1) {
-                  <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]" class="spec-value-link">
-                    <span>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</span>
-                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
-                  </a>
-                } @else {
-                  <span class="spec-value font-bold text-slate-900">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</span>
-                }
-              } @else {
-                <span class="spec-value font-bold text-slate-900">Verified Cadastral Promoter</span>
+          <div class="snapshot-tile theme-tile-road">
+            <div class="snapshot-icon-wrap theme-blue">
+              <span class="material-symbols-outlined">add_road</span>
+            </div>
+            <div class="snapshot-text">
+              <span class="snapshot-label">Road &amp; Frontage</span>
+              <strong class="snapshot-val">{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft
+                Wide') : (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</strong>
+              <span class="snapshot-sub">{{ prop.masterDetails?.roadType || 'Blacktop Tar Road' }}</span>
+            </div>
+          </div>
+
+          <div class="snapshot-tile theme-tile-sanction">
+            <div class="snapshot-icon-wrap theme-emerald">
+              <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div class="snapshot-text">
+              <span class="snapshot-label">Sanction &amp; Title</span>
+              <strong class="snapshot-val text-emerald">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Approved'
+                : (prop.badges.rera || 'CMDA / RERA') }}</strong>
+              <span class="snapshot-sub">{{ prop.masterDetails?.pattaType || 'Individual Patta' }}</span>
+            </div>
+          </div>
+
+          <div class="snapshot-tile theme-tile-facing">
+            <div class="snapshot-icon-wrap theme-purple">
+              <span class="material-symbols-outlined">explore</span>
+            </div>
+            <div class="snapshot-text">
+              <span class="snapshot-label">Facing &amp; Zoning</span>
+              <strong class="snapshot-val">{{ prop.facingOrView || prop.masterDetails?.facing || 'East Facing'
+                }}</strong>
+              <span class="snapshot-sub">{{ prop.masterDetails?.landUse || 'Residential Zone' }}</span>
+            </div>
+          </div>
+
+          <div class="snapshot-tile theme-tile-utilities">
+            <div class="snapshot-icon-wrap theme-cyan">
+              <span class="material-symbols-outlined">bolt</span>
+            </div>
+            <div class="snapshot-text">
+              <span class="snapshot-label">Utilities Status</span>
+              <strong class="snapshot-val text-cyan">{{ prop.masterDetails?.electricity || '3-Phase EB Line' }}</strong>
+              <span class="snapshot-sub">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Water' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================== -->
+        <!-- CONNECTED WORKSPACE SHELL (CONNECTED TAB + INTEGRATED CONTENT WINDOW)  -->
+        <!-- ====================================================================== -->
+          <div class="connected-workspace-shell" id="details-context-workspace">
+            <nav class="context-tabs-ribbon" role="tablist" aria-label="Property Details Tabs">
+              <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'infrastructure'"
+                (click)="setDetailTab('infrastructure')" role="tab"
+                [attr.aria-selected]="activeDetailTab() === 'infrastructure'">
+                <span class="material-symbols-outlined ctx-tab-icon">engineering</span>
+                <span class="ctx-tab-text">Infrastructure</span>
+                <span class="ctx-tab-badge">8 Systems</span>
+              </button>
+
+              <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'legal_specs'"
+                (click)="setDetailTab('legal_specs')" role="tab"
+                [attr.aria-selected]="activeDetailTab() === 'legal_specs'">
+                <span class="material-symbols-outlined ctx-tab-icon">gavel</span>
+                <span class="ctx-tab-text">Legal Specs</span>
+                <span class="ctx-tab-badge">Verified</span>
+              </button>
+
+              <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'location_transit'"
+                (click)="setDetailTab('location_transit')" role="tab"
+                [attr.aria-selected]="activeDetailTab() === 'location_transit'">
+                <span class="material-symbols-outlined ctx-tab-icon">near_me</span>
+                <span class="ctx-tab-text">Location</span>
+                <span class="ctx-tab-badge">GPS + Map</span>
+              </button>
+
+            <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'overview'"
+              (click)="setDetailTab('overview')" role="tab" [attr.aria-selected]="activeDetailTab() === 'overview'">
+              <span class="material-symbols-outlined ctx-tab-icon">description</span>
+              <span class="ctx-tab-text">Overview</span>
+            </button>
+        </nav>
+
+        <!-- Connected Content Window -->
+        <div class="connected-workspace-window">
+
+
+
+
+          <!-- ============================================================== -->
+          <!-- CONCISE CONTEXT WORKSPACE (4 IMPACTFUL TABS)                   -->
+          <!-- ============================================================== -->
+
+          <!-- TAB 1: ON-SITE INFRASTRUCTURE & SITE UTILITIES (DEFAULT) -->
+          @if (activeDetailTab() === 'infrastructure') {
+          <div class="tab-pane-content" id="site-infrastructure">
+            <section class="hanu-card site-utilities-card">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-amber">engineering</span>
+                <div class="infra-header-title-wrap">
+                  <span class="infra-header-eyebrow">ON-GROUND CIVIL DEVELOPMENT</span>
+                  <h2>On-Site Infrastructure &amp; Site Utilities</h2>
+                  <p class="hanu-card-subtitle">Comprehensive civil developments, verified road dimensions, and
+                    on-ground
+                    utility infrastructure</p>
+                </div>
+                <div class="infra-readiness-badge">
+                  <span class="readiness-beacon"></span>
+                  <span class="readiness-text">Ready for Construction</span>
+                </div>
+              </div>
+
+              <!-- Iconic 8-Card Utility Grid -->
+              <div class="infrastructure-iconic-grid">
+                <!-- 1. Approach & Internal Roads -->
+                <div class="infra-card theme-road">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">add_road</span>
+                    </div>
+                    <div class="infra-pill green">
+                      <span class="pill-dot"></span>
+                      <span>{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft Wide') :
+                        (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">ROAD NETWORK</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.roadType || 'Blacktop Bitumen Heavy-Duty Tar
+                      Road'
+                      }}</h4>
+                    <p class="infra-summary-text">
+                      Approach frontage of {{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + '
+                      feet') : '30-40 feet' }} with constructed stormwater shoulders ensuring heavy vehicle and car
+                      access.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 2. Power / EB Grid -->
+                <div class="infra-card theme-power">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">bolt</span>
+                    </div>
+                    <div class="infra-pill amber">
+                      <span class="pill-dot"></span>
+                      <span>Active EB Line</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">POWER GRID</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.electricity || '3-Phase EB Line Active with
+                      Transformer' }}</h4>
+                    <p class="infra-summary-text">
+                      Dedicated local distribution transformer with 3-phase high/low-tension power lines active for
+                      immediate domestic meter commissioning.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 3. Water Facility -->
+                <div class="infra-card theme-water">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">water_drop</span>
+                    </div>
+                    <div class="infra-pill cyan">
+                      <span class="pill-dot"></span>
+                      <span>Sweet Water</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">WATER RESOURCE</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Ground Water
+                      Connection' }}</h4>
+                    <p class="infra-summary-text">
+                      Natural groundwater table accessible at shallow depths, yielding pure sweet potable water with
+                      overhead reservoir piping access.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 4. Drainage Network -->
+                <div class="infra-card theme-drainage">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">waves</span>
+                    </div>
+                    <div class="infra-pill blue">
+                      <span class="pill-dot"></span>
+                      <span>Constructed</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">CIVIL DRAINAGE</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.drainageFacility || 'Constructed Storm Water
+                      Drainage' }}</h4>
+                    <p class="infra-summary-text">
+                      Engineered masonry stormwater channels along road flanks preventing surface water accumulation and
+                      soil waterlogging.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 5. Street Lighting -->
+                <div class="infra-card theme-light">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">light_mode</span>
+                    </div>
+                    <div class="infra-pill amber">
+                      <span class="pill-dot"></span>
+                      <span>LED Avenue</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">AVENUE ILLUMINATION</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.streetLights === 'Yes' ? 'LED Avenue Street
+                      Lights
+                      Installed' : 'Avenue Street Lighting Active' }}</h4>
+                    <p class="infra-summary-text">
+                      Evenly spaced illumination poles with energy-efficient LED luminaires along layout spine roads for
+                      night-time visibility and safety.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 6. Gated Security & Compound Wall -->
+                <div class="infra-card theme-security">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">fence</span>
+                    </div>
+                    <div class="infra-pill green">
+                      <span class="pill-dot"></span>
+                      <span>{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Gated & Guarded' : 'Demarcated'
+                        }}</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">PERIMETER &amp; SECURITY</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Fully Gated
+                      Community with Security Entrance Arch' : 'Demarcated Boundary Stones with Perimeter Fence' }}</h4>
+                    <p class="infra-summary-text">
+                      Clear corner survey stones planted with Cadastral markings and robust perimeter security fencing
+                      enclosing the layout development.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 7. Park & Open Space Reservation (OSR) -->
+                <div class="infra-card theme-park">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">park</span>
+                    </div>
+                    <div class="infra-pill green">
+                      <span class="pill-dot"></span>
+                      <span>OSR Approved</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">OSR GREENERY &amp; PARKS</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.park === 'Yes' ? 'Children Park & OSR Landscaped
+                      Greenery' : 'Dedicated Greenery & Park Zone' }}</h4>
+                    <p class="infra-summary-text">
+                      Statutory 10% Open Space Reservation (OSR) handed over and developed with children play zones,
+                      native shade trees, and walking trails.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 8. Developer Maintenance Guarantee -->
+                <div class="infra-card theme-maintenance">
+                  <div class="infra-card-header-row">
+                    <div class="infra-icon-emblem">
+                      <span class="material-symbols-outlined">verified_user</span>
+                    </div>
+                    <div class="infra-pill purple">
+                      <span class="pill-dot"></span>
+                      <span>Free Support</span>
+                    </div>
+                  </div>
+                  <div class="infra-card-details">
+                    <span class="infra-category-tag">MAINTENANCE GUARANTEE</span>
+                    <h4 class="infra-main-title">{{ prop.masterDetails?.developerMaintenanceYears ?
+                      (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : '2 Years Free
+                      Maintenance Support' }}</h4>
+                    <p class="infra-summary-text">
+                      Comprehensive developer caretaker support including road maintenance, avenue tree trimming, street
+                      light upkeep, and security supervision.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Banner: Additional Amenities / Community Features -->
+              @if (prop.masterDetails?.otherAmenities) {
+              <div class="infra-additional-bar">
+                <div class="additional-icon-box">
+                  <span class="material-symbols-outlined">local_florist</span>
+                </div>
+                <div class="additional-content">
+                  <span class="additional-label">COMMUNITY &amp; TOWNSHIP HIGHLIGHTS</span>
+                  <p class="additional-text">{{ prop.masterDetails?.otherAmenities }}</p>
+                </div>
+              </div>
               }
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Property Category</span>
-              <span class="spec-value">{{ prop.propertyType }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Total Extent / Area</span>
-              <span class="spec-value font-bold text-slate-900">{{ prop.sqft }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Valuation Rate</span>
-              <span class="spec-value font-bold text-red">{{ prop.pricePerSqFt }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Facing Direction</span>
-              <span class="spec-value">{{ prop.facingOrView }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Configuration</span>
-              <span class="spec-value">{{ prop.bhkBadge }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">RERA Registration</span>
-              <span class="spec-value">{{ prop.cadastralAudit?.reraRegNo || prop.badges.rera }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Possession Status</span>
-              <span class="spec-value text-emerald font-semibold">{{ prop.projectStatus || prop.possessionDate || 'Ready
-                for Possession' }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Title Deed &amp; Encumbrance</span>
-              <span class="spec-value">Clear 30-Yr Nil Encumbrance (Direct Freehold)</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Frontage Road Width</span>
-              <span class="spec-value">{{ prop.plotDetails?.frontageRoadWidth || '60 Feet Wide Bitumen Road' }}</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Water &amp; Power</span>
-              <span class="spec-value">3-Phase Commercial EB + Borewell &amp; Metro Water</span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Encumbrance Status</span>
-              <span class="spec-value text-emerald font-bold">Nil Encumbrance (30-Year Audit)</span>
-            </div>
+            </section>
           </div>
-        </section>
+          }
 
-        <!-- CADASTRAL GPS & LOCATION AUDIT SECTION (Highlighted in Red if Invalid) -->
-        <section class="hanu-card gps-audit-card" [class.gps-card-red-alert]="!gpsAudit().isValid">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined" [class.text-red-alert]="!gpsAudit().isValid" [class.text-emerald]="gpsAudit().isValid">
-              {{ gpsAudit().isValid ? 'gps_fixed' : 'location_disabled' }}
-            </span>
-            <div class="header-text-group">
-              <h2 [class.text-red-heading]="!gpsAudit().isValid">Cadastral GPS &amp; Location Audit</h2>
-              <p class="hanu-card-subtitle">Verified on-ground coordinates for precision boundary survey</p>
-            </div>
-            <span class="gps-badge-status" [class.badge-red]="!gpsAudit().isValid" [class.badge-green]="gpsAudit().isValid">
-              {{ gpsAudit().isValid ? 'GPS Verified' : 'GPS Inaccurate / Error' }}
-            </span>
-          </div>
-
-          @if (!gpsAudit().isValid) {
-            <div class="gps-error-dossier-box">
-              <div class="error-banner-top">
-                <span class="material-symbols-outlined error-pulse-icon">warning</span>
+          <!-- TAB 2: CADASTRAL & LEGAL SPECS -->
+          @if (activeDetailTab() === 'legal_specs') {
+          <div class="tab-pane-content" id="cadastral-specs">
+            <!-- 1. Cadastral Land & Plot Dimensions -->
+            <section class="hanu-card">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">grid_view</span>
                 <div>
-                  <h4 class="error-title">GPS Data Incorrect or Incomplete</h4>
-                  <p class="error-desc">{{ gpsAudit().reason || 'Coordinates unverified or missing for this property listing' }}</p>
+                  <h2>Cadastral Plot &amp; Layout Specifications</h2>
+                  <p class="hanu-card-subtitle">Official land dimensions, facing orientation, survey demarcation, and
+                    approved layout parameters</p>
                 </div>
               </div>
-              <div class="error-details-grid">
-                <div class="error-detail-col">
-                  <span class="detail-label">Reported Location:</span>
-                  <span class="detail-val">{{ prop.locality }}, {{ prop.city }}</span>
+
+              <div class="hanu-specs-grid">
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Plot Number</span>
+                  <span class="spec-value font-mono font-bold text-slate-900">
+                    {{ prop.masterDetails?.plotNo ? ('Plot #' + prop.masterDetails?.plotNo) : (prop.id.replace('PRJ-',
+                    'Plot #')) }}
+                  </span>
                 </div>
-                <div class="error-detail-col">
-                  <span class="detail-label">Audit Status:</span>
-                  <span class="detail-val-red">Rectification Required</span>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Project / Layout Name</span>
+                  <span class="spec-value font-bold text-slate-900">
+                    {{ prop.masterDetails?.projectName || prop.title }}
+                  </span>
                 </div>
-                <div class="error-detail-col">
-                  <span class="detail-label">Cadastral Risk:</span>
-                  <span class="detail-val-red">High - Inaccurate GPS Mapping</span>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Plot Extent (Sq.Ft)</span>
+                  <span class="spec-value font-bold text-slate-900">
+                    {{ prop.masterDetails?.plotSizeSqft ? (prop.masterDetails?.plotSizeSqft + ' sq.ft') : prop.sqft }}
+                  </span>
                 </div>
-              </div>
-              <p class="error-footer-note">
-                <span class="material-symbols-outlined">info</span>
-                Our field surveyors have flagged this property GPS data. Please verify boundaries directly with the survey officer before site visit.
-              </p>
-            </div>
-          } @else {
-            <div class="gps-verified-dossier-box">
-              <div class="verified-coords-row">
-                <div class="coords-display">
-                  <span class="coords-label">Cadastral Coordinates:</span>
-                  <code class="coords-code">{{ gpsAudit().formattedText }}</code>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Plot Extent (Cents)</span>
+                  <span class="spec-value font-bold text-emerald">
+                    {{ prop.masterDetails?.plotSizeCents ? (prop.masterDetails?.plotSizeCents + ' Cents') :
+                    (prop.bhkBadge
+                    || 'Approved Plot') }}
+                  </span>
                 </div>
-                @if (gpsAudit().mapsUrl) {
-                  <a [href]="gpsAudit().mapsUrl" target="_blank" rel="noopener" class="btn-open-gmaps">
-                    <span class="material-symbols-outlined">map</span>
-                    <span>View in Google Maps</span>
-                  </a>
-                }
-              </div>
-            </div>
-          }
-        </section>
 
-        <!-- PROPERTY OVERVIEW & HIGHLIGHTS -->
-        <section class="hanu-card">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">description</span>
-            <h2>Overview &amp; Highlights</h2>
-          </div>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Plot Dimensions (W × L)</span>
+                  <span class="spec-value font-mono">
+                    {{ prop.masterDetails?.dimension || 'Standard Sanctioned Layout Dimensions' }}
+                  </span>
+                </div>
 
-          <div class="hanu-overview-text">
-            <p>
-              {{ prop.developer?.aboutText || (prop.title + ' is a verified property situated in the highly coveted
-              corridor of ' + prop.locality + ', ' + prop.city + '. Featuring excellent frontage, direct road access,
-              and clear legal title documents, this asset represents a prime opportunity for investors, home buyers, and
-              commercial operators seeking high-growth real estate.') }}
-            </p>
-          </div>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Facing Orientation</span>
+                  <span class="spec-value font-semibold">
+                    {{ prop.masterDetails?.facing ? (prop.masterDetails?.facing + ' Facing') : prop.facingOrView }}
+                  </span>
+                </div>
 
-          @if (prop.highlights && prop.highlights.length > 0) {
-          <div class="hanu-highlights-block">
-            <h3 class="highlights-heading">Key Advantages:</h3>
-            <div class="highlights-grid">
-              @for (hl of prop.highlights; track $index) {
-              <div class="highlight-chip">
-                <span class="material-symbols-outlined text-emerald">check_circle</span>
-                <span>{{ hl }}</span>
-              </div>
-              }
-            </div>
-          </div>
-          }
-        </section>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Corner Plot</span>
+                  <span class="spec-value" [class.text-emerald]="prop.masterDetails?.cornerPlot === 'Yes'">
+                    {{ prop.masterDetails?.cornerPlot === 'Yes' ? 'Yes (Corner Unit with Dual Road Access)' : 'Standard
+                    Plot (Single Road Frontage)' }}
+                  </span>
+                </div>
 
-        <!-- AMENITIES (Simple & Clean Grid) -->
-        @if (prop.amenitiesList && prop.amenitiesList.length > 0) {
-        <section class="hanu-card">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">stars</span>
-            <h2>Amenities &amp; Infrastructure</h2>
-          </div>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Land Classification / Land Use</span>
+                  <span class="spec-value font-semibold">
+                    {{ prop.masterDetails?.landUse || 'Residential (Sanctioned Gated Layout)' }}
+                  </span>
+                </div>
 
-          <div class="hanu-amenities-grid">
-            @for (amenity of prop.amenitiesList; track amenity.name) {
-            <div class="amenity-item-card">
-              <span class="material-symbols-outlined amenity-icon">{{ amenity.icon || 'verified' }}</span>
-              <span class="amenity-name">{{ amenity.name }}</span>
-            </div>
-            }
-          </div>
-        </section>
-        }
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Rate per Sq.Ft</span>
+                  <span class="spec-value font-bold text-red">
+                    {{ prop.masterDetails?.pricePerSqft ? ('₹ ' +
+                    prop.masterDetails?.pricePerSqft?.toLocaleString('en-IN') + '/sq.ft') : prop.pricePerSqFt }}
+                  </span>
+                </div>
 
-        <!-- FLOOR PLAN / LAYOUT SCHEMATIC (Simple preview & download) -->
-        @if (prop.floorPlans && prop.floorPlans.length > 0) {
-        <section class="hanu-card">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">architecture</span>
-            <h2>Floor Plan &amp; Layout</h2>
-          </div>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Total Outlay Price</span>
+                  <span class="spec-value font-bold text-red">
+                    {{ prop.masterDetails?.totalPrice ? ('₹ ' + prop.masterDetails?.totalPrice?.toLocaleString('en-IN'))
+                    :
+                    prop.price }}
+                  </span>
+                </div>
 
-          @if (prop.floorPlans[selectedFloorPlanIndex()]; as plan) {
-          <div class="hanu-fp-box">
-            <div class="hanu-fp-img-wrap" (click)="openFloorPlanModal(plan)">
-              <img [src]="plan.imageUrl" [alt]="plan.name" (error)="onImgError($event)" loading="lazy" decoding="async">
-              <div class="fp-hover-overlay">
-                <span class="material-symbols-outlined">zoom_in</span>
-                <span>Click to Enlarge</span>
-              </div>
-            </div>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Possession Timeline</span>
+                  <span class="spec-value text-emerald font-semibold">
+                    {{ prop.masterDetails?.possessionTimeline || prop.possessionDate || 'Immediate (Ready to Register)'
+                    }}
+                  </span>
+                </div>
 
-            <div class="hanu-fp-info">
-              <div>
-                <h4 class="fp-title">{{ plan.name }}</h4>
-                <p class="fp-meta">{{ plan.superArea }} Super Area • {{ plan.carpetArea }} Carpet Area • {{
-                  plan.priceEstimate }}</p>
-              </div>
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Availability Status</span>
+                  <span class="spec-value font-bold text-emerald">
+                    {{ prop.masterDetails?.availability || 'Available for Immediate Registration' }}
+                  </span>
+                </div>
 
-              <div class="fp-actions">
-                <button type="button" class="btn-download-fp" (click)="downloadFloorPlan(plan)">
-                  <span class="material-symbols-outlined">download</span>
-                  <span>Download Blueprint PDF</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          }
-        </section>
-        }
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Recommended Suitability</span>
+                  <span class="spec-value">
+                    {{ prop.masterDetails?.suitedFor || 'Immediate Villa Construction & Capital Investment' }}
+                  </span>
+                </div>
 
-        
-
-        
-        <!-- ============================================================== -->
-        <!-- NEWLY ADDED DATABASE DETAILS: COMPREHENSIVE PROPERTY MASTER    -->
-        <!-- ============================================================== -->
-
-        <!-- 1. CADASTRAL PLOT & LAYOUT SPECIFICATIONS -->
-        <section class="hanu-card" id="cadastral-specs">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">grid_view</span>
-            <div>
-              <h2>Cadastral Plot &amp; Layout Specifications</h2>
-              <p class="hanu-card-subtitle">Official land dimensions, facing orientation, survey demarcation, and approved layout parameters</p>
-            </div>
-          </div>
-
-          <div class="hanu-specs-grid">
-            <div class="hanu-spec-item">
-              <span class="spec-label">Plot Number</span>
-              <span class="spec-value font-mono font-bold text-slate-900">
-                {{ prop.masterDetails?.plotNo ? ('Plot #' + prop.masterDetails?.plotNo) : (prop.id.replace('PRJ-', 'Plot #')) }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Project / Layout Name</span>
-              <span class="spec-value font-bold text-slate-900">
-                {{ prop.masterDetails?.projectName || prop.title }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Plot Extent (Sq.Ft)</span>
-              <span class="spec-value font-bold text-slate-900">
-                {{ prop.masterDetails?.plotSizeSqft ? (prop.masterDetails?.plotSizeSqft + ' sq.ft') : prop.sqft }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Plot Extent (Cents)</span>
-              <span class="spec-value font-bold text-emerald">
-                {{ prop.masterDetails?.plotSizeCents ? (prop.masterDetails?.plotSizeCents + ' Cents') : (prop.bhkBadge || 'Approved Plot') }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Plot Dimensions (W × L)</span>
-              <span class="spec-value font-mono">
-                {{ prop.masterDetails?.dimension || 'Standard Sanctioned Layout Dimensions' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Facing Orientation</span>
-              <span class="spec-value font-semibold">
-                {{ prop.masterDetails?.facing ? (prop.masterDetails?.facing + ' Facing') : prop.facingOrView }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Corner Plot</span>
-              <span class="spec-value" [class.text-emerald]="prop.masterDetails?.cornerPlot === 'Yes'">
-                {{ prop.masterDetails?.cornerPlot === 'Yes' ? 'Yes (Corner Unit with Dual Road Access)' : 'Standard Plot (Single Road Frontage)' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Land Classification / Land Use</span>
-              <span class="spec-value font-semibold">
-                {{ prop.masterDetails?.landUse || 'Residential (Sanctioned Gated Layout)' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Rate per Sq.Ft</span>
-              <span class="spec-value font-bold text-red">
-                {{ prop.masterDetails?.pricePerSqft ? ('₹ ' + prop.masterDetails?.pricePerSqft?.toLocaleString('en-IN') + '/sq.ft') : prop.pricePerSqFt }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Total Outlay Price</span>
-              <span class="spec-value font-bold text-red">
-                {{ prop.masterDetails?.totalPrice ? ('₹ ' + prop.masterDetails?.totalPrice?.toLocaleString('en-IN')) : prop.price }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Possession Timeline</span>
-              <span class="spec-value text-emerald font-semibold">
-                {{ prop.masterDetails?.possessionTimeline || prop.possessionDate || 'Immediate (Ready to Register)' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Availability Status</span>
-              <span class="spec-value font-bold text-emerald">
-                {{ prop.masterDetails?.availability || 'Available for Immediate Registration' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Recommended Suitability</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.suitedFor || 'Immediate Villa Construction & Capital Investment' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Layout Developer / Promoter</span>
-              @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
-                @if ((prop.developerProjectsCount || 0) > 1) {
-                  <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]" class="spec-value-link">
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Layout Developer / Promoter</span>
+                  @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
+                  @if ((prop.developerProjectsCount || 0) > 1) {
+                  <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
+                    class="spec-value-link">
                     <span>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</span>
                     <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
                   </a>
-                } @else {
-                  <span class="spec-value font-semibold text-slate-900">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</span>
-                }
-              } @else {
-                <span class="spec-value font-semibold text-slate-900">Verified Cadastral Promoter</span>
-              }
-            </div>
-          </div>
-        </section>
-
-        <!-- 2. LEGAL APPROVALS & TITLE VERIFICATION -->
-        <section class="hanu-card" id="legal-approvals">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">gavel</span>
-            <div>
-              <h2>Legal Clearances &amp; Sanctions Dossier</h2>
-              <p class="hanu-card-subtitle">State statutory approvals, revenue patta classification, and banking partners</p>
-            </div>
-          </div>
-
-          <div class="hanu-specs-grid">
-            <div class="hanu-spec-item">
-              <span class="spec-label">DTCP / CMDA Approval</span>
-              <span class="spec-value font-bold text-emerald">
-                {{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'Sanctioned & Approved Layout' : (prop.plotDetails?.layoutSanctionNo ? 'CMDA / DTCP Sanctioned' : 'Fully Approved Layout') }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">DTCP / CMDA Sanction Order No.</span>
-              <span class="spec-value font-mono font-bold text-slate-900">
-                {{ prop.masterDetails?.dtcpApprovalNo || prop.plotDetails?.layoutSanctionNo || 'DTCP/CMDA/REG/2026/V1' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">TNRERA Registration Number</span>
-              <span class="spec-value font-mono font-semibold">
-                {{ prop.masterDetails?.reraNumber || prop.badges.rera || 'TNRERA Approved Layout' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Revenue Patta Classification</span>
-              <span class="spec-value font-semibold text-emerald">
-                {{ prop.masterDetails?.pattaType || 'Individual Patta Guaranteed' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Clear Title &amp; Legal History</span>
-              <span class="spec-value text-emerald font-bold">
-                {{ prop.masterDetails?.clearTitleAvailable === 'Yes' ? '30-Year Nil Encumbrance Title (Direct Freehold)' : 'Verified Nil Title Deed' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Bank Loan Facility</span>
-              <span class="spec-value text-emerald font-semibold">
-                {{ prop.masterDetails?.bankLoanApproved === 'Yes' ? 'Approved by SBI, HDFC, ICICI, LIC HFL & Axis Bank' : 'Eligible for Leading Nationalized Bank Loans' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Revenue Jurisdiction</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.taluk ? (prop.masterDetails?.taluk + ' Taluk, ' + prop.masterDetails?.district + ' District') : (prop.city + ' Cadastral Jurisdiction') }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Locality &amp; Postal Zone</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.villageLocality || prop.locality }} {{ prop.masterDetails?.pincode ? ('- ' + prop.masterDetails?.pincode) : '' }}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <!-- 3. ON-SITE INFRASTRUCTURE & UTILITIES (ICONIC PRESENTATION STYLE) -->
-        <section class="hanu-card site-utilities-card" id="site-infrastructure">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-amber">engineering</span>
-            <div>
-              <span class="infra-header-eyebrow">ON-GROUND CIVIL DEVELOPMENT</span>
-              <h2>On-Site Infrastructure &amp; Site Utilities</h2>
-              <p class="hanu-card-subtitle">Comprehensive civil developments, verified road dimensions, and utility infrastructure</p>
-            </div>
-          </div>
-
-          <!-- Iconic Presentation Grid -->
-          <div class="infrastructure-iconic-grid">
-
-            <!-- 1. Approach & Internal Roads -->
-            <div class="infra-card theme-road">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">add_road</span>
-                </div>
-                <div class="infra-pill green">
-                  <span class="pill-dot"></span>
-                  <span>{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft Wide') : (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</span>
+                  } @else {
+                  <span class="spec-value font-semibold text-slate-900">{{ prop.developerName ||
+                    prop.masterDetails?.developer || prop.developer?.name }}</span>
+                  }
+                  } @else {
+                  <span class="spec-value font-semibold text-slate-900">Verified Cadastral Promoter</span>
+                  }
                 </div>
               </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">ROAD NETWORK</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.roadType || 'Blacktop Bitumen Heavy-Duty Tar Road' }}</h4>
-                <p class="infra-summary-text">
-                  Approach frontage of {{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' feet') : '30-40 feet' }} with constructed stormwater shoulders ensuring heavy vehicle and car access.
-                </p>
-              </div>
-            </div>
+            </section>
 
-            <!-- 2. Power / EB Grid -->
-            <div class="infra-card theme-power">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">bolt</span>
+            <!-- 2. Legal Clearances & Title Sanction -->
+            <section class="hanu-card" id="legal-approvals">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">gavel</span>
+                <div class="legal-header-title-wrap">
+                  <h2>Legal Clearances &amp; Sanctions Dossier</h2>
+                  <p class="hanu-card-subtitle">State statutory approvals, revenue patta classification, and banking
+                    partners</p>
                 </div>
-                <div class="infra-pill amber">
-                  <span class="pill-dot"></span>
-                  <span>Active EB Line</span>
-                </div>
-              </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">POWER GRID</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.electricity || '3-Phase EB Line Active with Transformer' }}</h4>
-                <p class="infra-summary-text">
-                  Dedicated local distribution transformer with 3-phase high/low-tension power lines active for immediate domestic meter commissioning.
-                </p>
-              </div>
-            </div>
-
-            <!-- 3. Water Facility -->
-            <div class="infra-card theme-water">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">water_drop</span>
-                </div>
-                <div class="infra-pill cyan">
-                  <span class="pill-dot"></span>
-                  <span>Sweet Water</span>
-                </div>
-              </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">WATER RESOURCE</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Ground Water Connection' }}</h4>
-                <p class="infra-summary-text">
-                  Natural groundwater table accessible at shallow depths, yielding pure sweet potable water with overhead reservoir piping access.
-                </p>
-              </div>
-            </div>
-
-            <!-- 4. Drainage Network -->
-            <div class="infra-card theme-drainage">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">waves</span>
-                </div>
-                <div class="infra-pill blue">
-                  <span class="pill-dot"></span>
-                  <span>Constructed</span>
-                </div>
-              </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">CIVIL DRAINAGE</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.drainageFacility || 'Constructed Storm Water Drainage' }}</h4>
-                <p class="infra-summary-text">
-                  Engineered masonry stormwater channels along road flanks preventing surface water accumulation and soil waterlogging.
-                </p>
-              </div>
-            </div>
-
-            <!-- 5. Street Lighting -->
-            <div class="infra-card theme-light">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">light_mode</span>
-                </div>
-                <div class="infra-pill amber">
-                  <span class="pill-dot"></span>
-                  <span>LED Avenue</span>
-                </div>
-              </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">AVENUE ILLUMINATION</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.streetLights === 'Yes' ? 'LED Avenue Street Lights Installed' : 'Avenue Street Lighting Active' }}</h4>
-                <p class="infra-summary-text">
-                  Evenly spaced illumination poles with energy-efficient LED luminaires along layout spine roads for night-time visibility and safety.
-                </p>
-              </div>
-            </div>
-
-            <!-- 6. Gated Security & Compound Wall -->
-            <div class="infra-card theme-security">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">fence</span>
-                </div>
-                <div class="infra-pill green">
-                  <span class="pill-dot"></span>
-                  <span>{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Gated & Guarded' : 'Demarcated' }}</span>
-                </div>
-              </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">PERIMETER &amp; SECURITY</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Fully Gated Community with Security Entrance Arch' : 'Demarcated Boundary Stones with Perimeter Fence' }}</h4>
-                <p class="infra-summary-text">
-                  Clear corner survey stones planted with Cadastral markings and robust perimeter security fencing enclosing the layout development.
-                </p>
-              </div>
-            </div>
-
-            <!-- 7. Park & Open Space Reservation (OSR) -->
-            <div class="infra-card theme-park">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
-                  <span class="material-symbols-outlined">park</span>
-                </div>
-                <div class="infra-pill green">
-                  <span class="pill-dot"></span>
-                  <span>OSR Approved</span>
-                </div>
-              </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">OSR GREENERY &amp; PARKS</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.park === 'Yes' ? 'Children Park & OSR Landscaped Greenery' : 'Dedicated Greenery & Park Zone' }}</h4>
-                <p class="infra-summary-text">
-                  Statutory 10% Open Space Reservation (OSR) handed over and developed with children play zones, native shade trees, and walking trails.
-                </p>
-              </div>
-            </div>
-
-            <!-- 8. Developer Maintenance Guarantee -->
-            <div class="infra-card theme-maintenance">
-              <div class="infra-card-header-row">
-                <div class="infra-icon-emblem">
+                <div class="legal-clearance-badge">
                   <span class="material-symbols-outlined">verified_user</span>
-                </div>
-                <div class="infra-pill purple">
-                  <span class="pill-dot"></span>
-                  <span>Free Support</span>
+                  <span>Statutory Clearances Verified</span>
                 </div>
               </div>
-              <div class="infra-card-details">
-                <span class="infra-category-tag">MAINTENANCE GUARANTEE</span>
-                <h4 class="infra-main-title">{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : '2 Years Free Maintenance Support' }}</h4>
-                <p class="infra-summary-text">
-                  Comprehensive developer caretaker support including road maintenance, avenue tree trimming, street light upkeep, and security supervision.
+
+              <div class="hanu-specs-grid">
+                <div class="hanu-spec-item">
+                  <span class="spec-label">DTCP / CMDA Approval</span>
+                  <span class="spec-value font-bold text-emerald">
+                    {{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'Sanctioned & Approved Layout' :
+                    (prop.plotDetails?.layoutSanctionNo ? 'CMDA / DTCP Sanctioned' : 'Fully Approved Layout') }}
+                  </span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">DTCP / CMDA Sanction Order No.</span>
+                  <span class="spec-value font-mono font-bold text-slate-900">
+                    {{ prop.masterDetails?.dtcpApprovalNo || prop.plotDetails?.layoutSanctionNo ||
+                    'DTCP/CMDA/REG/2026/V1'
+                    }}
+                  </span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">TNRERA Registration Number</span>
+                  <span class="spec-value font-mono font-semibold">
+                    {{ prop.masterDetails?.reraNumber || prop.badges.rera || 'TNRERA Approved Layout' }}
+                  </span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Revenue Patta Classification</span>
+                  <span class="spec-value font-semibold text-emerald">
+                    {{ prop.masterDetails?.pattaType || 'Individual Patta Guaranteed' }}
+                  </span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Clear Title &amp; Legal History</span>
+                  <span class="spec-value text-emerald font-bold">
+                    {{ prop.masterDetails?.clearTitleAvailable === 'Yes' ? '30-Year Nil Encumbrance Title (Direct
+                    Freehold)' : 'Verified Nil Title Deed' }}
+                  </span>
+                </div>
+
+                <div class="hanu-spec-item bank-loans-item">
+                  <span class="spec-label">Pre-Approved Bank Loans</span>
+                  <span class="spec-value text-emerald font-semibold">
+                    {{ prop.masterDetails?.bankLoanApproved === 'Yes' ? 'Pre-Approved by Leading Nationalized Banks' :
+                    'Eligible for Leading Bank Loans' }}
+                  </span>
+                  <div class="bank-pill-row">
+                    <span class="bank-chip">SBI</span>
+                    <span class="bank-chip">HDFC</span>
+                    <span class="bank-chip">ICICI</span>
+                    <span class="bank-chip">LIC HFL</span>
+                    <span class="bank-chip">Axis Bank</span>
+                  </div>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Revenue Jurisdiction</span>
+                  <span class="spec-value">
+                    {{ prop.masterDetails?.taluk ? (prop.masterDetails?.taluk + ' Taluk, ' +
+                    prop.masterDetails?.district
+                    + ' District') : (prop.city + ' Cadastral Jurisdiction') }}
+                  </span>
+                </div>
+
+                <div class="hanu-spec-item">
+                  <span class="spec-label">Locality &amp; Postal Zone</span>
+                  <span class="spec-value">
+                    {{ prop.masterDetails?.villageLocality || prop.locality }} {{ prop.masterDetails?.pincode ? ('- ' +
+                    prop.masterDetails?.pincode) : '' }}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. Physical Survey & Field Audit Remarks -->
+            <section class="hanu-card survey-audit-card" id="survey-remarks">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">fact_check</span>
+                <div>
+                  <h2>Field Audit &amp; Cadastral Remarks</h2>
+                  <p class="hanu-card-subtitle">Direct observations and ground verification notes from field surveyors
+                  </p>
+                </div>
+                <div class="cadastral-seal-badge">
+                  <span class="material-symbols-outlined">verified</span>
+                  <span>Ground Demarcated</span>
+                </div>
+              </div>
+
+              <div class="survey-audit-body">
+                <div class="surveyor-stamp-box">
+                  <span class="material-symbols-outlined stamp-icon">gavel</span>
+                  <span class="stamp-text">FIELD AUDITED</span>
+                </div>
+                <div class="survey-audit-text">
+                  <p>
+                    {{ prop.masterDetails?.remarks || 'Physical boundary stones in place with Cadastral demarcation.
+                    Clear
+                    30-year nil encumbrance title deed verified through SRO archives. Ready for immediate registration,
+                    handover, and villa construction.' }}
+                  </p>
+                  <div class="audit-checkpoints">
+                    <span class="audit-point"><span class="material-symbols-outlined">check_circle</span> Boundary
+                      Stones
+                      Planted</span>
+                    <span class="audit-point"><span class="material-symbols-outlined">check_circle</span> 30-Year Title
+                      Search Clean</span>
+                    <span class="audit-point"><span class="material-symbols-outlined">check_circle</span> Revenue Patta
+                      Verifiable</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          }
+
+          <!-- TAB 3: LOCATION, GPS & TRANSIT -->
+          @if (activeDetailTab() === 'location_transit') {
+          <div class="tab-pane-content" id="transit-connectivity">
+            <section class="hanu-card">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">near_me</span>
+                <div>
+                  <h2>Civic Transit &amp; Key Distance Benchmarks</h2>
+                  <p class="hanu-card-subtitle">Exact distance measurements to major highways, public transit hubs, and
+                    civic infrastructure</p>
+                </div>
+              </div>
+
+              <div class="transit-matrix-grid">
+                <!-- Corridor -->
+                <div class="transit-card highlight-corridor-card">
+                  <div class="transit-icon-box corridor">
+                    <span class="material-symbols-outlined">trending_up</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">STRATEGIC CORRIDOR</span>
+                    <h4 class="transit-name">{{ prop.masterDetails?.corridor || 'Prime High-Growth Suburban Corridor' }}
+                    </h4>
+                    <span class="transit-badge-sub">High Capital Appreciation Potential</span>
+                  </div>
+                </div>
+
+                <!-- Highway -->
+                <div class="transit-card">
+                  <div class="transit-icon-box highway">
+                    <span class="material-symbols-outlined">directions_car</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">MAJOR HIGHWAY ACCESS</span>
+                    <h4 class="transit-name">{{ prop.masterDetails?.highwayName || 'Direct National / State Highway' }}
+                    </h4>
+                    <span class="transit-distance-pill blue">
+                      {{ prop.masterDetails?.highwayDistance !== null && prop.masterDetails?.highwayDistance !==
+                      undefined
+                      ? (prop.masterDetails?.highwayDistance + ' km away') : '< 2 km away' }} </span>
+                  </div>
+                </div>
+
+                <!-- Railway -->
+                <div class="transit-card">
+                  <div class="transit-icon-box train">
+                    <span class="material-symbols-outlined">train</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">RAILWAY CONNECTIVITY</span>
+                    <h4 class="transit-name">{{ prop.masterDetails?.railwayStationNearby || 'Nearby Railway Station' }}
+                    </h4>
+                    <span class="transit-distance-pill purple">&lt; 15 mins drive</span>
+                  </div>
+                </div>
+
+                <!-- Bus Stop -->
+                <div class="transit-card">
+                  <div class="transit-icon-box bus">
+                    <span class="material-symbols-outlined">directions_bus</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">BUS TERMINUS / STOP</span>
+                    <h4 class="transit-name">Local Town &amp; MTC Bus Stop</h4>
+                    <span class="transit-distance-pill green">
+                      {{ prop.masterDetails?.busStopDistance !== null && prop.masterDetails?.busStopDistance !==
+                      undefined
+                      ? (prop.masterDetails?.busStopDistance + ' km away') : 'Within 500m Walk' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Airport -->
+                <div class="transit-card">
+                  <div class="transit-icon-box airport">
+                    <span class="material-symbols-outlined">flight</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">AIRPORT CONNECTIVITY</span>
+                    <h4 class="transit-name">Domestic &amp; International Airport</h4>
+                    <span class="transit-distance-pill cyan">
+                      {{ prop.masterDetails?.airportDistance !== null && prop.masterDetails?.airportDistance !==
+                      undefined
+                      ? (prop.masterDetails?.airportDistance + ' km away') : 'Direct Expressway' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Fuel Station -->
+                <div class="transit-card">
+                  <div class="transit-icon-box fuel">
+                    <span class="material-symbols-outlined">local_gas_station</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">FUEL / EV CHARGING</span>
+                    <h4 class="transit-name">24/7 Fuel &amp; EV Charging Point</h4>
+                    <span class="transit-distance-pill amber">
+                      {{ prop.masterDetails?.petrolBunkDistance !== null && prop.masterDetails?.petrolBunkDistance !==
+                      undefined ? (prop.masterDetails?.petrolBunkDistance + ' km away') : '&lt; 1.5 km' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Schools -->
+                <div class="transit-card">
+                  <div class="transit-icon-box school">
+                    <span class="material-symbols-outlined">school</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">EDUCATION REPUTATION</span>
+                    <h4 class="transit-name">{{ prop.masterDetails?.schoolsNearby || 'CBSE & Matriculation Schools' }}
+                    </h4>
+                    <span class="transit-distance-pill green">Within 3 km</span>
+                  </div>
+                </div>
+
+                <!-- Hospitals -->
+                <div class="transit-card">
+                  <div class="transit-icon-box hospital">
+                    <span class="material-symbols-outlined">local_hospital</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">HEALTHCARE &amp; EMERGENCY</span>
+                    <h4 class="transit-name">{{ prop.masterDetails?.hospitalNearby || 'Multispecialty Hospital' }}</h4>
+                    <span class="transit-distance-pill red">&lt; 10 mins</span>
+                  </div>
+                </div>
+
+                <!-- Flood Safety -->
+                <div class="transit-card safety-card">
+                  <div class="transit-icon-box safety">
+                    <span class="material-symbols-outlined">shield</span>
+                  </div>
+                  <div class="transit-info">
+                    <span class="transit-type">ELEVATION &amp; FLOOD SAFETY</span>
+                    <h4 class="transit-name">{{ prop.masterDetails?.floodZone ? (prop.masterDetails?.floodZone + ' Risk
+                      (High Dry Land)') : 'Zero Flood Risk (Elevated Natural Gradient)' }}</h4>
+                    <span class="transit-distance-pill emerald">100% Safe Dry Gradient</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          }
+
+          <!-- TAB 4: OVERVIEW & AMENITIES & EMI -->
+          @if (activeDetailTab() === 'overview') {
+          <div class="tab-pane-content" id="overview-content">
+            <!-- Property Description & Highlights -->
+            <section class="hanu-card">
+              <div class="hanu-card-header">
+                <span class="material-symbols-outlined text-red">article</span>
+                <div>
+                  <h2>Property Overview &amp; Highlights</h2>
+                  <p class="hanu-card-subtitle">Verified property narrative and layout orientation summary</p>
+                </div>
+              </div>
+
+              <div class="hanu-overview-text">
+                <p>
+                  {{ prop.developer?.aboutText || prop.description || (prop.title + ' is a verified property situated in
+                  the highly coveted corridor of ' + prop.locality + ', ' + prop.city + '. Featuring excellent frontage,
+                  direct road access, and clear legal title documents, this asset represents a prime opportunity for
+                  investors, home buyers, and commercial operators seeking high-growth real estate.') }}
                 </p>
               </div>
-            </div>
 
-          </div>
-
-          <!-- Bottom Banner: Additional Amenities / Community Features -->
-          @if (prop.masterDetails?.otherAmenities) {
-          <div class="infra-additional-bar">
-            <div class="additional-icon-box">
-              <span class="material-symbols-outlined">local_florist</span>
-            </div>
-            <div class="additional-content">
-              <span class="additional-label">COMMUNITY &amp; TOWNSHIP HIGHLIGHTS</span>
-              <p class="additional-text">{{ prop.masterDetails?.otherAmenities }}</p>
-            </div>
-          </div>
-          }
-        </section>
-
-        <!-- 4. TRANSIT & CIVIC CONNECTIVITY BENCHMARKS -->
-        <section class="hanu-card" id="transit-connectivity">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">near_me</span>
-            <div>
-              <h2>Civic Transit &amp; Key Distance Benchmarks</h2>
-              <p class="hanu-card-subtitle">Exact distance measurements to major highways, public transit hubs, and civic infrastructure</p>
-            </div>
-          </div>
-
-          <div class="hanu-specs-grid">
-            <div class="hanu-spec-item">
-              <span class="spec-label">Strategic Growth Corridor</span>
-              <span class="spec-value font-bold text-emerald">
-                {{ prop.masterDetails?.corridor || 'Prime High-Growth Suburban Corridor' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Major Highway Connectivity</span>
-              <span class="spec-value font-semibold">
-                {{ prop.masterDetails?.highwayName ? (prop.masterDetails?.highwayName + (prop.masterDetails?.highwayDistance !== null ? (' (' + prop.masterDetails?.highwayDistance + ' km)') : '')) : 'Direct Highway Access (< 2 km)' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Nearest Railway Station</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.railwayStationNearby || 'Nearby Railway Station (< 15 mins)' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Bus Stop / Terminus</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.busStopDistance !== null && prop.masterDetails?.busStopDistance !== undefined ? (prop.masterDetails?.busStopDistance + ' km away') : 'Within 500m Walk' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">International / Domestic Airport</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.airportDistance !== null && prop.masterDetails?.airportDistance !== undefined ? (prop.masterDetails?.airportDistance + ' km away') : 'Direct Expressway Access' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Fuel Station / Petrol Bunk</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.petrolBunkDistance !== null && prop.masterDetails?.petrolBunkDistance !== undefined ? (prop.masterDetails?.petrolBunkDistance + ' km away') : 'Nearby 24/7 Fuel Station (< 1.5 km)' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Nearby Reputed Schools</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.schoolsNearby || 'CBSE & Matriculation Schools within 3 km' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Nearby Colleges &amp; Universities</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.collegesNearby || 'Engineering, Arts & Science Colleges within 5 km' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Nearby Multispecialty Hospitals</span>
-              <span class="spec-value">
-                {{ prop.masterDetails?.hospitalNearby || '24/7 Multispecialty Hospital within 10 mins' }}
-              </span>
-            </div>
-
-            <div class="hanu-spec-item">
-              <span class="spec-label">Flood Safety &amp; Elevation Gradient</span>
-              <span class="spec-value font-semibold text-emerald">
-                {{ prop.masterDetails?.floodZone ? (prop.masterDetails?.floodZone + ' Risk (High Dry Land)') : 'Zero Flood Risk (Elevated Natural Gradient)' }}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <!-- 4B. NEARBY LOCALITY AREAS & SURROUNDING PROPERTIES -->
-        @if (nearbyLocalities().length > 0 || nearbyProperties().length > 0) {
-        <section class="hanu-card" id="nearby-localities-section">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-emerald">explore</span>
-            <div>
-              <span class="infra-header-eyebrow">NEIGHBORING SUB-MARKETS &amp; CORRIDORS</span>
-              <h2>Nearby Locality Areas</h2>
-              <p class="hanu-card-subtitle">
-                Explore surrounding verified layouts and adjacent localities in {{ prop.masterDetails?.taluk ? (prop.masterDetails?.taluk + ' Taluk') : (prop.district || prop.city) }}
-              </p>
-            </div>
-          </div>
-
-          @if (nearbyLocalities().length > 0) {
-          <div class="nearby-details-grid">
-            @for (nearLoc of nearbyLocalities(); track nearLoc.name) {
-            <a [routerLink]="['/search']" [queryParams]="{ localities: nearLoc.name }" class="nearby-detail-card">
-              <div class="nearby-detail-header">
-                <div class="nearby-loc-icon-wrap">
-                  <span class="material-symbols-outlined">location_on</span>
+              @if (prop.highlights && prop.highlights.length > 0) {
+              <div class="overview-amenities-wrap">
+                <h4 class="overview-amenities-title">Key Property Advantages</h4>
+                <div class="overview-amenities-tags">
+                  @for (hl of prop.highlights; track $index) {
+                  <div class="amenity-chip">
+                    <span class="material-symbols-outlined amenity-chip-icon">check_circle</span>
+                    <span>{{ hl }}</span>
+                  </div>
+                  }
                 </div>
-                <span class="nearby-loc-tag">{{ nearLoc.distanceTag }}</span>
               </div>
-              <h4 class="nearby-loc-title">{{ nearLoc.name }}</h4>
-              <div class="nearby-loc-footer">
-                <span class="nearby-loc-props">{{ nearLoc.propertyCount }} Verified Plots</span>
-                <span class="nearby-loc-view">
-                  <span>Explore</span>
-                  <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
-                </span>
-              </div>
-            </a>
-            }
-          </div>
-          }
-
-          @if (nearbyProperties().length > 0) {
-          <div class="nearby-props-in-details">
-            <div class="nearby-props-subtitle-row">
-              <h3 class="nearby-props-subtitle">Verified Properties in Nearby Localities</h3>
-              <span class="nearby-props-badge">{{ nearbyProperties().length }} Nearby Plots</span>
-            </div>
-            <div class="nearby-details-prop-grid">
-              @for (nearProp of nearbyProperties(); track nearProp.id) {
-                <app-property-card [property]="nearProp" />
               }
-            </div>
+
+              @if (prop.amenitiesList && prop.amenitiesList.length > 0) {
+              <div class="overview-amenities-wrap">
+                <h4 class="overview-amenities-title">Layout Features &amp; Amenities</h4>
+                <div class="overview-amenities-tags">
+                  @for (amenity of prop.amenitiesList; track amenity.name) {
+                  <div class="amenity-chip">
+                    <span class="material-symbols-outlined amenity-chip-icon">{{ amenity.icon || 'verified' }}</span>
+                    <span>{{ amenity.name }}</span>
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+            </section>
           </div>
           }
-        </section>
-        }
-
-        <!-- 5. PHYSICAL SURVEY & FIELD AUDIT REMARKS -->
-        <section class="hanu-card" id="survey-remarks">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">fact_check</span>
-            <div>
-              <h2>Field Audit &amp; Cadastral Remarks</h2>
-              <p class="hanu-card-subtitle">Direct observations and ground verification notes from field surveyors</p>
-            </div>
-          </div>
-
-          <div class="hanu-overview-text">
-            <p>
-              {{ prop.masterDetails?.remarks || 'Physical boundary stones in place. Clear 30-year nil encumbrance title deed verified through SRO archives. Ready for immediate registration, handover, and villa construction.' }}
-            </p>
-          </div>
-        </section>
-
-        <!-- INTERACTIVE EMI CALCULATOR (KEPT AS REQUESTED) -->
-        <section class="hanu-card" id="emi-calculator">
-          <div class="hanu-card-header">
-            <span class="material-symbols-outlined text-red">calculate</span>
-            <div>
-              <h2>Home Loan &amp; EMI Calculator</h2>
-              <p class="hanu-card-subtitle">Estimate monthly mortgage commitments based on current bank interest rates.
-              </p>
-            </div>
-          </div>
-
-          <div class="hanu-emi-calculator">
-            <div class="emi-sliders-col">
-              <!-- Loan Amount Slider -->
-              <div class="slider-group">
-                <div class="slider-header-row">
-                  <label for="emi-loan-amount">Loan Amount (₹)</label>
-                  <span class="slider-val text-red">₹{{ (loanAmount() / 100000).toFixed(1) }} Lakhs</span>
-                </div>
-                <input id="emi-loan-amount" type="range" min="500000" max="100000000" step="500000"
-                  [value]="loanAmount()" (input)="onLoanAmountChange($event)" class="custom-slider">
-                <div class="slider-scale">
-                  <span>₹5 Lakhs</span>
-                  <span>₹5 Cr</span>
-                  <span>₹10 Cr</span>
-                </div>
-              </div>
-
-              <!-- Tenure Slider -->
-              <div class="slider-group">
-                <div class="slider-header-row">
-                  <label for="emi-tenure">Loan Tenure</label>
-                  <span class="slider-val">{{ loanTenureYears() }} Years</span>
-                </div>
-                <input id="emi-tenure" type="range" min="5" max="30" step="1" [value]="loanTenureYears()"
-                  (input)="onTenureChange($event)" class="custom-slider">
-                <div class="slider-scale">
-                  <span>5 Years</span>
-                  <span>15 Years</span>
-                  <span>30 Years</span>
-                </div>
-              </div>
-
-              <!-- Interest Rate Slider -->
-              <div class="slider-group">
-                <div class="slider-header-row">
-                  <label for="emi-interest">Interest Rate (% p.a.)</label>
-                  <span class="slider-val">{{ interestRate() }}%</span>
-                </div>
-                <input id="emi-interest" type="range" min="7.0" max="14.0" step="0.1" [value]="interestRate()"
-                  (input)="onInterestRateChange($event)" class="custom-slider">
-                <div class="slider-scale">
-                  <span>7.0%</span>
-                  <span>9.5%</span>
-                  <span>14.0%</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- EMI Result Card -->
-            <div class="emi-result-col">
-              <div class="emi-result-box">
-                <span class="emi-box-title">Estimated Monthly EMI</span>
-                <div class="emi-number-display">₹{{ computedMonthlyEmi().toLocaleString('en-IN') }}<span
-                    class="per-mo">/mo</span></div>
-
-                <div class="emi-breakdown-list">
-                  <div class="breakdown-item">
-                    <span>Principal Amount:</span>
-                    <strong>₹{{ loanAmount().toLocaleString('en-IN') }}</strong>
-                  </div>
-                  <div class="breakdown-item">
-                    <span>Total Interest Payable:</span>
-                    <strong class="text-amber">₹{{ computedTotalInterest().toLocaleString('en-IN') }}</strong>
-                  </div>
-                  <div class="breakdown-item total-item">
-                    <span>Total Amount Payable:</span>
-                    <strong>₹{{ computedTotalPayment().toLocaleString('en-IN') }}</strong>
-                  </div>
-                </div>
-
-                <button type="button" class="btn-emi-prequalify" (click)="scrollToSection('inquiry-box')">
-                  <span class="material-symbols-outlined">verified</span>
-                  <span>Apply with Pre-Approved Bank Partners</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
+        </div>
       </div>
 
-      <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
-      <aside class="hanu-sidebar-column" id="inquiry-box">
+    </div>
 
-        <!-- BUILDER / DEVELOPER HIGHLIGHT CARD -->
-        @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
-        <div class="hanu-developer-sidebar-card">
-          <div class="developer-sidebar-top">
-            <div class="developer-avatar-circle">
-              <span class="material-symbols-outlined">corporate_fare</span>
-            </div>
-            <div class="developer-meta">
-              <span class="developer-type-pill">BUILDER / DEVELOPER</span>
-              <h3 class="developer-title">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</h3>
-              <div class="developer-verification">
-                <span class="material-symbols-outlined">verified</span>
-                <span>TNRERA &amp; Cadastral Verified</span>
-              </div>
+    <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
+    <aside class="hanu-sidebar-column" id="inquiry-box">
+
+      <!-- BUILDER / DEVELOPER HIGHLIGHT CARD -->
+      @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
+      <div class="hanu-developer-sidebar-card">
+        <div class="developer-sidebar-top">
+          <div class="developer-avatar-circle">
+            <span class="material-symbols-outlined">corporate_fare</span>
+          </div>
+          <div class="developer-meta">
+            <span class="developer-type-pill">BUILDER / DEVELOPER</span>
+            <h3 class="developer-title">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name
+              }}</h3>
+            <div class="developer-verification">
+              <span class="material-symbols-outlined">verified</span>
+              <span>TNRERA &amp; Cadastral Verified</span>
             </div>
           </div>
-          @if ((prop.developerProjectsCount || 0) > 1) {
-          <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
-             class="btn-sidebar-view-builder">
-            <span>Explore Developer Showcase &amp; Projects</span>
-            <span class="material-symbols-outlined">arrow_forward</span>
+        </div>
+        @if ((prop.developerProjectsCount || 0) > 1) {
+        <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
+          class="btn-sidebar-view-builder">
+          <span>Explore Developer Showcase &amp; Projects</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+        }
+      </div>
+      }
+
+      <!-- REALTOR / CONCIERGE CARD -->
+      <div class="hanu-realtor-card">
+        <!-- Quick Communication Action Buttons -->
+        <div class="realtor-contact-actions">
+          <a class="btn-contact-wa"
+            [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Find%20a%20Plot,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'"
+            target="_blank" rel="noopener" title="Chat with Verified Cadastral Concierge">
+            <div class="wa-icon-badge">
+              <svg viewBox="0 0 24 24" class="wa-svg-icon" fill="currentColor">
+                <path
+                  d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29z" />
+              </svg>
+            </div>
+            <div class="wa-content">
+              <span class="wa-heading">Chat on WhatsApp</span>
+              <span class="wa-subtext">
+                <span class="wa-pulse-dot"></span>
+                Online • Verified Concierge
+              </span>
+            </div>
+            <span class="material-symbols-outlined wa-chevron">chevron_right</span>
+          </a>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- SCHEDULE SITE VISIT FORM -->
+        <form class="hanu-visit-form" (submit)="scheduleVisit($event)">
+          <h4 class="form-title">Schedule a Site Inspection</h4>
+          <p class="form-sub">Pick your preferred date to visit the property in person.</p>
+
+          <div class="form-group">
+            <label for="visit-name">Your Full Name</label>
+            <input id="visit-name" type="text" class="hanu-form-input" [value]="buyerName()"
+              (input)="buyerName.set($any($event.target).value)" placeholder="e.g. Anand Sundaram" required>
+          </div>
+
+          <div class="form-group">
+            <label for="visit-phone">Mobile Number</label>
+            <input id="visit-phone" type="tel" class="hanu-form-input" [value]="buyerPhone()"
+              (input)="buyerPhone.set($any($event.target).value)" placeholder="+91 94441 00000" required>
+          </div>
+
+          <div class="form-row-half">
+            <div class="form-group">
+              <label for="visit-date">Date</label>
+              <input id="visit-date" type="date" class="hanu-form-input" [value]="visitDate()"
+                (input)="visitDate.set($any($event.target).value)" required>
+            </div>
+
+            <div class="form-group">
+              <label for="visit-slot">Slot</label>
+              <select id="visit-slot" class="hanu-form-input" [value]="visitTimeSlot()"
+                (change)="visitTimeSlot.set($any($event.target).value)">
+                <option value="morning">Morning (10 AM - 1 PM)</option>
+                <option value="afternoon">Afternoon (1 PM - 4 PM)</option>
+                <option value="evening">Evening (4 PM - 7 PM)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit-visit" [disabled]="isSubmittingVisit()">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span>{{ isSubmittingVisit() ? 'Confirming Visit...' : 'Request Site Visit' }}</span>
+          </button>
+        </form>
+
+        <!-- Download Brochure Action -->
+        <button type="button" class="btn-sidebar-brochure" (click)="downloadBrochure()">
+          <span class="material-symbols-outlined">download</span>
+          <span>Download Property Dossier (PDF)</span>
+        </button>
+      </div>
+
+      <!-- SIMILAR PROPERTIES IN SAME CORRIDOR -->
+      @if (similarProperties().length > 0) {
+      <div class="hanu-similar-card">
+        <h4 class="similar-heading">Similar Verified Properties</h4>
+        <div class="similar-list">
+          @for (sim of similarProperties(); track sim.id) {
+          <a [routerLink]="['/property', sim.id]" class="similar-item-link">
+            <img [src]="sim.imageUrl" [alt]="sim.title" (error)="onImgError($event)" loading="lazy" decoding="async">
+            <div class="similar-info">
+              <span class="sim-type">{{ sim.propertyType }}</span>
+              <h5 class="sim-title">{{ sim.title }}</h5>
+              <div class="sim-price-row">
+                <span class="sim-price">{{ sim.price }}</span>
+                <span class="sim-sqft">{{ sim.sqft }}</span>
+              </div>
+            </div>
           </a>
           }
         </div>
-        }
+      </div>
+      }
 
-        <!-- REALTOR / CONCIERGE CARD -->
-        <div class="hanu-realtor-card">
-          <div class="realtor-profile-top">
-            <div class="realtor-avatar-circle">
-              <span class="material-symbols-outlined">person_pin</span>
-            </div>
-            <div>
-              <h3 class="realtor-name">Find a Plot Property Concierge</h3>
-              <p class="realtor-title">Verified Cadastral Real Estate Desk</p>
-              <span class="realtor-badge">
-                <span class="material-symbols-outlined">verified</span>
-                Verified Title Assured
-              </span>
-            </div>
-          </div>
+    </aside>
+  </div>
 
-          <!-- Quick Communication Action Buttons -->
-          <div class="realtor-contact-actions">
-            <a class="btn-contact-wa"
-              [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Find%20a%20Plot,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'"
-              target="_blank" rel="noopener"
-              title="Chat with Verified Cadastral Concierge">
-              <div class="wa-icon-badge">
-                <svg viewBox="0 0 24 24" class="wa-svg-icon" fill="currentColor">
-                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29z"/>
-                </svg>
-              </div>
-              <div class="wa-content">
-                <span class="wa-heading">Chat on WhatsApp</span>
-                <span class="wa-subtext">
-                  <span class="wa-pulse-dot"></span>
-                  Online • Verified Concierge
-                </span>
-              </div>
-              <span class="material-symbols-outlined wa-chevron">chevron_right</span>
-            </a>
-          </div>
+</div>
+} @else {
+<!-- PROPERTY NOT FOUND STATE -->
+<div class="max-w-content not-found-box">
+  <span class="material-symbols-outlined not-found-icon">search_off</span>
+  <h2>Property Not Found</h2>
+  <p>The requested property could not be found in our verified registry.</p>
+  <a routerLink="/search" class="btn-back-state">
+    <span class="material-symbols-outlined">arrow_back</span>
+    <span>Return to Search Registry</span>
+  </a>
+</div>
+}
 
-          <div class="sidebar-divider"></div>
+<!-- FULLSCREEN PHOTO LIGHTBOX MODAL -->
+@if (isFullscreenOpen() && property(); as prop) {
+<div class="fullscreen-lightbox-modal" (click)="closeFullscreen()">
+  <button type="button" class="btn-close-lightbox" (click)="closeFullscreen()">
+    <span class="material-symbols-outlined">close</span>
+  </button>
 
-          <!-- SCHEDULE SITE VISIT FORM -->
-          <form class="hanu-visit-form" (submit)="scheduleVisit($event)">
-            <h4 class="form-title">Schedule a Site Inspection</h4>
-            <p class="form-sub">Pick your preferred date to visit the property in person.</p>
+  <div class="lightbox-content" (click)="$event.stopPropagation()">
+    <img [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" [alt]="prop.title" loading="lazy" decoding="async">
+  </div>
+</div>
+}
 
-            <div class="form-group">
-              <label for="visit-name">Your Full Name</label>
-              <input id="visit-name" type="text" class="hanu-form-input" [value]="buyerName()"
-                (input)="buyerName.set($any($event.target).value)" placeholder="e.g. Anand Sundaram" required>
-            </div>
+<!-- FLOOR PLAN MODAL -->
+@if (isFloorPlanModalOpen() && activeModalFloorPlan(); as modalPlan) {
+<div class="fullscreen-lightbox-modal" (click)="closeFloorPlanModal()">
+  <button type="button" class="btn-close-lightbox" (click)="closeFloorPlanModal()">
+    <span class="material-symbols-outlined">close</span>
+  </button>
 
-            <div class="form-group">
-              <label for="visit-phone">Mobile Number</label>
-              <input id="visit-phone" type="tel" class="hanu-form-input" [value]="buyerPhone()"
-                (input)="buyerPhone.set($any($event.target).value)" placeholder="+91 94441 00000" required>
-            </div>
-
-            <div class="form-row-half">
-              <div class="form-group">
-                <label for="visit-date">Date</label>
-                <input id="visit-date" type="date" class="hanu-form-input" [value]="visitDate()"
-                  (input)="visitDate.set($any($event.target).value)" required>
-              </div>
-
-              <div class="form-group">
-                <label for="visit-slot">Slot</label>
-                <select id="visit-slot" class="hanu-form-input" [value]="visitTimeSlot()"
-                  (change)="visitTimeSlot.set($any($event.target).value)">
-                  <option value="morning">Morning (10 AM - 1 PM)</option>
-                  <option value="afternoon">Afternoon (1 PM - 4 PM)</option>
-                  <option value="evening">Evening (4 PM - 7 PM)</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-submit-visit" [disabled]="isSubmittingVisit()">
-              <span class="material-symbols-outlined">calendar_month</span>
-              <span>{{ isSubmittingVisit() ? 'Confirming Visit...' : 'Request Site Visit' }}</span>
-            </button>
-          </form>
-
-          <!-- Download Brochure Action -->
-          <button type="button" class="btn-sidebar-brochure" (click)="downloadBrochure()">
-            <span class="material-symbols-outlined">download</span>
-            <span>Download Property Dossier (PDF)</span>
-          </button>
-        </div>
-
-        <!-- SIMILAR PROPERTIES IN SAME CORRIDOR -->
-        @if (similarProperties().length > 0) {
-        <div class="hanu-similar-card">
-          <h4 class="similar-heading">Similar Verified Properties</h4>
-          <div class="similar-list">
-            @for (sim of similarProperties(); track sim.id) {
-            <a [routerLink]="['/property', sim.id]" class="similar-item-link">
-              <img [src]="sim.imageUrl" [alt]="sim.title" (error)="onImgError($event)" loading="lazy" decoding="async">
-              <div class="similar-info">
-                <span class="sim-type">{{ sim.propertyType }}</span>
-                <h5 class="sim-title">{{ sim.title }}</h5>
-                <div class="sim-price-row">
-                  <span class="sim-price">{{ sim.price }}</span>
-                  <span class="sim-sqft">{{ sim.sqft }}</span>
-                </div>
-              </div>
-            </a>
-            }
-          </div>
-        </div>
-        }
-
-      </aside>
+  <div class="lightbox-content floorplan-modal-box" (click)="$event.stopPropagation()">
+    <div class="fp-modal-header">
+      <div>
+        <h3 class="fp-modal-title">{{ modalPlan.name }}</h3>
+        <p class="fp-modal-sub">{{ modalPlan.superArea }} • {{ modalPlan.carpetArea }} • {{ modalPlan.priceEstimate }}
+        </p>
+      </div>
+      <button type="button" class="btn-fp-download" (click)="downloadFloorPlan(modalPlan)">
+        <span class="material-symbols-outlined">download</span>
+        <span>Download Blueprint</span>
+      </button>
     </div>
-
+    <div class="fp-modal-img-container">
+      <img [src]="modalPlan.imageUrl" [alt]="modalPlan.name" loading="lazy" decoding="async">
+    </div>
   </div>
-  } @else {
-  <!-- PROPERTY NOT FOUND STATE -->
-  <div class="max-w-content not-found-box">
-    <span class="material-symbols-outlined not-found-icon">search_off</span>
-    <h2>Property Not Found</h2>
-    <p>The requested property could not be found in our verified registry.</p>
-    <a routerLink="/search" class="btn-back-state">
-      <span class="material-symbols-outlined">arrow_back</span>
-      <span>Return to Search Registry</span>
-    </a>
-  </div>
-  }
+</div>
+}
 
-  <!-- FULLSCREEN PHOTO LIGHTBOX MODAL -->
-  @if (isFullscreenOpen() && property(); as prop) {
-  <div class="fullscreen-lightbox-modal" (click)="closeFullscreen()">
-    <button type="button" class="btn-close-lightbox" (click)="closeFullscreen()">
+<!-- 50-SECOND HIGH-INTENT SITE VISIT INVITATION MODAL -->
+@if (isSiteVisitPromptOpen() && property(); as prop) {
+<div class="site-visit-backdrop" (click)="closeSiteVisitPrompt()">
+  <div class="site-visit-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+    aria-labelledby="sv-modal-title">
+
+    <!-- Top Close Button -->
+    <button type="button" class="sv-close-btn" (click)="closeSiteVisitPrompt()" aria-label="Close dialog">
       <span class="material-symbols-outlined">close</span>
     </button>
 
-    <div class="lightbox-content" (click)="$event.stopPropagation()">
-      <img [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" [alt]="prop.title" loading="lazy" decoding="async">
+    <!-- Modal Header -->
+    <div class="sv-header">
+      <div class="sv-eyebrow">
+        <span class="sv-pulse-dot"></span>
+        <span class="material-symbols-outlined sv-eyebrow-icon">tour</span>
+        <span>HIGH-INTENT VISITOR PRIVILEGE</span>
+      </div>
+      <h3 id="sv-modal-title" class="sv-title">Interested in exploring this plot in person?</h3>
+      <p class="sv-subtitle">
+        You've spent quality time reviewing this dossier. Schedule a <strong>Free Guided Site Inspection</strong> with
+        our cadastral field representative to verify road frontage, survey stones, and neighborhood ambience
+        firsthand.
+      </p>
     </div>
-  </div>
-  }
 
-  <!-- FLOOR PLAN MODAL -->
-  @if (isFloorPlanModalOpen() && activeModalFloorPlan(); as modalPlan) {
-  <div class="fullscreen-lightbox-modal" (click)="closeFloorPlanModal()">
-    <button type="button" class="btn-close-lightbox" (click)="closeFloorPlanModal()">
-      <span class="material-symbols-outlined">close</span>
-    </button>
-
-    <div class="lightbox-content floorplan-modal-box" (click)="$event.stopPropagation()">
-      <div class="fp-modal-header">
-        <div>
-          <h3 class="fp-modal-title">{{ modalPlan.name }}</h3>
-          <p class="fp-modal-sub">{{ modalPlan.superArea }} • {{ modalPlan.carpetArea }} • {{ modalPlan.priceEstimate }}
-          </p>
+    <!-- Quick Property Highlight Strip -->
+    <div class="sv-property-strip">
+      <img [src]="prop.freePhotos[0] || prop.imageUrl" [alt]="prop.title" class="sv-prop-thumb" loading="lazy">
+      <div class="sv-prop-info">
+        <h4 class="sv-prop-title">{{ prop.title }}</h4>
+        <div class="sv-prop-loc">
+          <span class="material-symbols-outlined">location_on</span>
+          <span>{{ prop.villageLocality || prop.locality }}, {{ prop.city }}</span>
         </div>
-        <button type="button" class="btn-fp-download" (click)="downloadFloorPlan(modalPlan)">
-          <span class="material-symbols-outlined">download</span>
-          <span>Download Blueprint</span>
+        <div class="sv-prop-price-row">
+          <span class="sv-price">{{ prop.price }}</span>
+          <span class="sv-rate">({{ prop.pricePerSqFt }})</span>
+          <span class="sv-pill-free">
+            <span class="material-symbols-outlined" style="font-size: 13px;">directions_car</span>
+            <span>Free Site Cab Included</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Booking Form -->
+    <form class="sv-form" (submit)="submitPromptSiteVisit($event)">
+      <div class="sv-form-grid">
+
+        <!-- Date -->
+        <div class="sv-field">
+          <label for="sv-date">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span>Preferred Date</span>
+          </label>
+          <input id="sv-date" type="date" class="sv-input" [min]="minVisitDate()" [value]="promptVisitDate()"
+            (input)="promptVisitDate.set($any($event.target).value)" required>
+        </div>
+
+        <!-- Time Slot -->
+        <div class="sv-field">
+          <label for="sv-slot">
+            <span class="material-symbols-outlined">schedule</span>
+            <span>Time Slot</span>
+          </label>
+          <select id="sv-slot" class="sv-input sv-select" [value]="promptVisitSlot()"
+            (change)="promptVisitSlot.set($any($event.target).value)">
+            <option value="morning">Morning (9:00 AM – 12:00 PM)</option>
+            <option value="afternoon">Afternoon (12:00 PM – 3:00 PM)</option>
+            <option value="evening">Evening (3:00 PM – 6:00 PM)</option>
+          </select>
+        </div>
+
+        <!-- Buyer Name -->
+        <div class="sv-field">
+          <label for="sv-name">
+            <span class="material-symbols-outlined">person</span>
+            <span>Your Name</span>
+          </label>
+          <input id="sv-name" type="text" class="sv-input" placeholder="e.g. S. Ramanathan" [value]="promptBuyerName()"
+            (input)="promptBuyerName.set($any($event.target).value)" required>
+        </div>
+
+        <!-- Mobile Number -->
+        <div class="sv-field">
+          <label for="sv-phone">
+            <span class="material-symbols-outlined">call</span>
+            <span>Mobile / WhatsApp</span>
+          </label>
+          <input id="sv-phone" type="tel" class="sv-input" placeholder="+91 94441 00000" [value]="promptBuyerPhone()"
+            (input)="promptBuyerPhone.set($any($event.target).value)" required>
+        </div>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="sv-actions-row">
+        <button type="submit" class="sv-btn-primary" [disabled]="isSubmittingPromptVisit()">
+          @if (isSubmittingPromptVisit()) {
+          <span class="sv-spinner"></span>
+          <span>Scheduling...</span>
+          } @else {
+          <span class="material-symbols-outlined">event_available</span>
+          <span>Schedule Free Site Visit</span>
+          }
+        </button>
+
+        <a [href]="getPromptWhatsAppUrl()" target="_blank" rel="noopener" class="sv-btn-wa"
+          (click)="closeSiteVisitPrompt()" title="Coordinate on WhatsApp">
+          <span class="material-symbols-outlined">chat</span>
+          <span>WhatsApp Field Desk</span>
+        </a>
+
+        <button type="button" class="sv-btn-secondary" (click)="closeSiteVisitPrompt()">
+          Maybe Later
         </button>
       </div>
-      <div class="fp-modal-img-container">
-        <img [src]="modalPlan.imageUrl" [alt]="modalPlan.name" loading="lazy" decoding="async">
+
+      <!-- Security / Guarantee Note -->
+      <div class="sv-guarantee-note">
+        <span class="material-symbols-outlined">verified_user</span>
+        <span>Zero pressure, no brokerage commitment. Field representative escorts you directly to GPS boundary
+          markers.</span>
       </div>
-    </div>
+    </form>
+
   </div>
-  }
+</div>
+}
 
-  <!-- Footer -->
-  <app-footer />
+<!-- Footer -->
+<app-footer />
 
-  <!-- Global Modals & Notifications -->
-  <app-property-media-modal />
-  <app-topup-dialog />
-  <app-toast />
+<!-- Global Modals & Notifications -->
+<app-property-media-modal />
+<app-topup-dialog />
+<app-toast />
 </div>
