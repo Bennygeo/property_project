@@ -1944,27 +1944,20 @@
   color: #64748b;
 }
 
-.transit-distance-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #2c4938;
-  background: #eef6f1;
-  border: 1px solid #c1dccb;
-  padding: 2px 8px;
-  border-radius: 0;
-  white-space: nowrap;
-  width: fit-content;
-  margin-top: 3px;
-}
-
+.transit-distance-pill,
 .transit-badge-sub {
-  font-size: 11px;
+  display: block;
+  font-size: 11.5px;
   font-weight: 600;
   color: #5e8f72;
-  margin-top: 3px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  padding: 0 !important;
+  margin-top: 2px;
+  white-space: nowrap;
+  width: fit-content;
 }
 
 /* ==========================================================================
