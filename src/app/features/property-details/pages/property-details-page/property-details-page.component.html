@@ -1470,6 +1470,11 @@
   <app-footer />
 
   <!-- Global Modals & Notifications -->
+  <!-- 30-SECOND 3D-SHADED 2D VIRTUAL PROPERTY PRESENTER (ELEVENLABS VOICE + LIP-SYNC) -->
+  @if (!isBlockedForGuest() && property(); as prop) {
+  <app-virtual-property-presenter [property]="prop" [triggerDelaySeconds]="30" (scheduleVisitClicked)="openSiteVisitModal()" />
+  }
+
   <app-property-media-modal />
   <app-topup-dialog />
   <app-toast />

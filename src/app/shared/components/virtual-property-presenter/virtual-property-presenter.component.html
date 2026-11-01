@@ -1,0 +1,721 @@
+<!-- Minimized Floating Launcher Button (Available anytime or after closing) -->
+@if (!isExpanded()) {
+<button
+  type="button"
+  class="vpp-launcher-btn"
+  (click)="openAndSpeak()"
+  title="Listen to AI Property Guide (10-30s Voice Summary)"
+>
+  <div class="vpp-launcher-avatar">
+    <span class="vpp-live-dot"></span>
+    <span class="material-symbols-outlined">record_voice_over</span>
+  </div>
+  <div class="vpp-launcher-meta">
+    <span class="vpp-launcher-eyebrow">ELEVENLABS VOICE GUIDE</span>
+    <span class="vpp-launcher-label">Hear 20s Property Summary</span>
+  </div>
+</button>
+}
+
+<!-- Expanded 3D-Shaded 2D Talking Presenter Panel (Auto-opens after 30s on Property Details Page) -->
+@if (isExpanded()) {
+<aside class="vpp-panel" role="dialog" aria-label="Virtual Property Voice Presenter">
+  <!-- Top Architectural Header Bar -->
+  <div class="vpp-header">
+    <div class="vpp-header-left">
+      <span class="vpp-status-dot" [class.speaking]="isSpeaking()"></span>
+      <span class="vpp-header-title">AI PROPERTY CONCIERGE</span>
+      <span class="vpp-engine-tag" [class.eleven]="voiceSourceBadge() === 'elevenlabs'">
+        {{ voiceSourceBadge() === 'elevenlabs' ? 'ElevenLabs HD' : 'Neural TTS' }}
+      </span>
+    </div>
+    <div class="vpp-header-actions">
+      <button
+        type="button"
+        class="vpp-icon-btn"
+        [class.active]="isSettingsOpen()"
+        (click)="toggleSettings()"
+        title="ElevenLabs Voice & Script Settings"
+      >
+        <span class="material-symbols-outlined">tune</span>
+      </button>
+      <button
+        type="button"
+        class="vpp-icon-btn"
+        (click)="toggleMute()"
+        [title]="isMuted() ? 'Unmute Voice' : 'Mute Voice'"
+      >
+        <span class="material-symbols-outlined">
+          {{ isMuted() ? 'volume_off' : 'volume_up' }}
+        </span>
+      </button>
+      <button
+        type="button"
+        class="vpp-icon-btn"
+        (click)="minimizePresenter()"
+        title="Minimize Guide"
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stage: 3D-Shaded 2.5D Animated Character Rig + Equalizer -->
+  <div class="vpp-character-stage" [class.is-speaking]="isSpeaking()">
+    <!-- Speaking Equalizer Pill -->
+    <div class="vpp-eq-badge" [class.active]="isSpeaking()">
+      @for (bar of eqBars(); track $index) {
+      <span class="vpp-eq-bar" [style.height.%]="isSpeaking() ? bar : 18"></span>
+      }
+      <span class="vpp-timer-readout">{{ elapsedSeconds() }}s / {{ totalDurationSeconds() }}s</span>
+    </div>
+
+    <!-- 3D-Like 2.5D Layered SVG Character Rig -->
+    <svg
+      class="vpp-avatar-svg"
+      viewBox="0 0 240 250"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <!-- 3D Subsurface Skin Lighting Gradient -->
+        <radialGradient id="vppSkin3D" cx="44%" cy="36%" r="62%">
+          <stop offset="0%" stop-color="#ffe4d0" />
+          <stop offset="55%" stop-color="#f3c3a4" />
+          <stop offset="88%" stop-color="#dc9e79" />
+          <stop offset="100%" stop-color="#c3805b" />
+        </radialGradient>
+
+        <!-- 3D Neck Shadow Gradient -->
+        <linearGradient id="vppNeck3D" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#bc7955" />
+          <stop offset="35%" stop-color="#df9f7a" />
+          <stop offset="100%" stop-color="#f0be9e" />
+        </linearGradient>
+
+        <!-- 3D Cheek Specular Subsurface Glow -->
+        <radialGradient id="vppCheekGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f28472" stop-opacity="0.32" />
+          <stop offset="100%" stop-color="#f28472" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- 3D Volumetric Hair Shader -->
+        <radialGradient id="vppHair3D" cx="38%" cy="25%" r="70%">
+          <stop offset="0%" stop-color="#3b4254" />
+          <stop offset="45%" stop-color="#1e2433" />
+          <stop offset="100%" stop-color="#0f131c" />
+        </radialGradient>
+
+        <!-- 3D Executive Blazer Shader -->
+        <linearGradient id="vppBlazer3D" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e293b" />
+          <stop offset="55%" stop-color="#0f172a" />
+          <stop offset="100%" stop-color="#090d16" />
+        </linearGradient>
+
+        <!-- 3D Emerald Tie / Lapel Accent -->
+        <linearGradient id="vppTie3D" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#10b981" />
+          <stop offset="100%" stop-color="#047857" />
+        </linearGradient>
+
+        <!-- 3D Glossy Iris Shader -->
+        <radialGradient id="vppIris3D" cx="45%" cy="40%" r="55%">
+          <stop offset="0%" stop-color="#5b3a29" />
+          <stop offset="65%" stop-color="#2c1b12" />
+          <stop offset="100%" stop-color="#140b07" />
+        </radialGradient>
+
+        <!-- 3D Lip Shaders -->
+        <linearGradient id="vppUpperLip" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#b85d56" />
+          <stop offset="100%" stop-color="#96423c" />
+        </linearGradient>
+        <linearGradient id="vppLowerLip" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#d47972" />
+          <stop offset="60%" stop-color="#b85b54" />
+          <stop offset="100%" stop-color="#8f3d37" />
+        </linearGradient>
+
+        <!-- Inner Oral Cavity & Tongue 3D Gradients -->
+        <radialGradient id="vppOralCavity" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#3b0d11" />
+          <stop offset="100%" stop-color="#1f0507" />
+        </radialGradient>
+        <linearGradient id="vppTongue" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#e0636b" />
+          <stop offset="100%" stop-color="#b53d46" />
+        </linearGradient>
+
+        <!-- Soft 3D Studio Drop Filter -->
+        <filter id="vppSoftShadow" x="-15%" y="-15%" width="130%" height="135%">
+          <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.22" />
+        </filter>
+      </defs>
+
+      <!-- Subtle Studio Halo Behind Presenter -->
+      <circle cx="120" cy="115" r="88" fill="#e2f2ea" opacity="0.55" />
+
+      <!-- =================================================================
+           TORSO / SHOULDERS GROUP (Subtle Breathing Animation)
+           ================================================================= -->
+      <g class="vpp-torso-group" [class.speaking-breath]="isSpeaking()">
+        <!-- Neck Column with 3D Jaw Cast Shadow -->
+        <path
+          d="M 101 142 L 101 178 C 101 188, 139 188, 139 178 L 139 142 Z"
+          fill="url(#vppNeck3D)"
+        />
+        <ellipse cx="120" cy="150" rx="20" ry="7" fill="#8f5336" opacity="0.32" />
+
+        <!-- Executive Blazer Shoulders & Chest -->
+        <path
+          d="M 38 250 C 40 194, 72 174, 101 172 L 139 172 C 168 174, 200 194, 202 250 Z"
+          fill="url(#vppBlazer3D)"
+          filter="url(#vppSoftShadow)"
+        />
+
+        <!-- Crisp White Dress Shirt V-Collar -->
+        <polygon points="101,172 120,218 139,172" fill="#f8fafc" />
+        <polygon points="97,168 120,192 106,204 88,175" fill="#ffffff" />
+        <polygon points="143,168 120,192 134,204 152,175" fill="#e2e8f0" />
+
+        <!-- 3D Emerald Tie -->
+        <polygon points="116,188 124,188 126,200 120,206 114,200" fill="url(#vppTie3D)" />
+        <polygon points="116,203 124,203 128,248 112,248" fill="url(#vppTie3D)" />
+
+        <!-- 3D Blazer Lapels -->
+        <polygon points="88,174 120,224 103,250 75,195" fill="#1e293b" stroke="#334155" stroke-width="0.8" />
+        <polygon points="152,174 120,224 137,250 165,195" fill="#1e293b" stroke="#334155" stroke-width="0.8" />
+
+        <!-- Verified Advisor Lapel Pin -->
+        <circle cx="148" cy="212" r="4" fill="#10b981" />
+        <circle cx="148" cy="212" r="1.8" fill="#ffffff" />
+
+        <!-- Animated Speaking Hand Gesture (Subtle 2.5D Hand when speaking) -->
+        @if (isSpeaking()) {
+        <g
+          class="vpp-hand-group"
+          [style.transform]="'translateY(' + (handGesturePhase() * -6) + 'px)'"
+        >
+          <ellipse
+            cx="178"
+            cy="228"
+            rx="14"
+            ry="10"
+            transform="rotate(-18 178 228)"
+            fill="url(#vppSkin3D)"
+            filter="url(#vppSoftShadow)"
+          />
+          <rect x="164" y="234" width="24" height="16" fill="#0f172a" />
+        </g>
+        }
+      </g>
+
+      <!-- =================================================================
+           2.5D ARTICULATED HEAD GROUP (Nods & Tilts in Sync with Speech)
+           ================================================================= -->
+      <g
+        class="vpp-head-group"
+        [style.transform]="
+          'translateY(' + headNodY() + 'px) rotate(' + headTiltDeg() + 'deg)'
+        "
+        style="transform-origin: 120px 145px"
+      >
+        <!-- Back Hair Volume -->
+        <path
+          d="M 72 95 C 68 50, 95 34, 122 34 C 152 34, 172 52, 168 95 Z"
+          fill="url(#vppHair3D)"
+        />
+
+        <!-- 3D Ears with Inner Concha Shading -->
+        <g>
+          <ellipse cx="73" cy="106" rx="8" ry="13" fill="url(#vppSkin3D)" />
+          <ellipse cx="74" cy="106" rx="4" ry="7.5" fill="#c98560" opacity="0.55" />
+          <ellipse cx="167" cy="106" rx="8" ry="13" fill="url(#vppSkin3D)" />
+          <ellipse cx="166" cy="106" rx="4" ry="7.5" fill="#c98560" opacity="0.55" />
+        </g>
+
+        <!-- Primary 3D Sculpted Head Mesh -->
+        <path
+          d="M 76 86
+             C 76 54, 96 44, 120 44
+             C 144 44, 164 54, 164 86
+             C 164 114, 158 138, 142 150
+             C 132 158, 126 161, 120 161
+             C 114 161, 108 158, 98 150
+             C 82 138, 76 114, 76 86 Z"
+          fill="url(#vppSkin3D)"
+          filter="url(#vppSoftShadow)"
+        />
+
+        <!-- 3D Cheek Subsurface Scattering Blushes -->
+        <circle cx="93" cy="116" r="14" fill="url(#vppCheekGlow)" />
+        <circle cx="147" cy="116" r="14" fill="url(#vppCheekGlow)" />
+
+        <!-- 3D Nose Bridge, Tip & Nostril Shadows -->
+        <g>
+          <path
+            d="M 118 88 L 115 112 C 115 116, 125 116, 125 112 L 122 88"
+            fill="#e4a987"
+            opacity="0.45"
+          />
+          <!-- 3D Nose Highlight -->
+          <path
+            d="M 120 86 L 120 110"
+            stroke="#fff3e8"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            opacity="0.65"
+          />
+          <ellipse cx="120" cy="113" rx="6.5" ry="4.2" fill="#dfa07c" />
+          <circle cx="116.5" cy="114.2" r="1.6" fill="#8f5336" opacity="0.65" />
+          <circle cx="123.5" cy="114.2" r="1.6" fill="#8f5336" opacity="0.65" />
+        </g>
+
+        <!-- ===============================================================
+             3D EYES WITH IRIS DEPTH, SPECULAR CATCHLIGHTS & BLINKING LIDS
+             =============================================================== -->
+        <g class="vpp-eyes-layer">
+          <!-- Left Eye -->
+          <g transform="translate(99, 94)">
+            <!-- Eye Socket Shadow -->
+            <ellipse cx="0" cy="-1" rx="11.5" ry="7.8" fill="#c98865" opacity="0.38" />
+            <!-- Sclera (White) -->
+            <ellipse cx="0" cy="0" rx="10" ry="6.2" fill="#ffffff" />
+
+            <!-- Moving Iris & Pupil -->
+            <g [style.transform]="'translateX(' + eyeLookX() + 'px)'">
+              <circle cx="0" cy="0" r="5.2" fill="url(#vppIris3D)" />
+              <circle cx="0" cy="0" r="2.5" fill="#090605" />
+              <!-- 3D Dual Specular Catchlights -->
+              <circle cx="-1.8" cy="-1.8" r="1.4" fill="#ffffff" />
+              <circle cx="1.6" cy="1.5" r="0.7" fill="#ffffff" opacity="0.85" />
+            </g>
+
+            <!-- Upper Eyelash Crease -->
+            <path
+              d="M -10.5 -0.5 Q 0 -7.5 10.5 -0.5"
+              fill="none"
+              stroke="#2b1912"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+
+            <!-- Blinking Eyelid Shutter -->
+            @if (isBlinking()) {
+            <ellipse cx="0" cy="0" rx="10.5" ry="6.6" fill="url(#vppSkin3D)" />
+            <path
+              d="M -10 1 Q 0 5 10 1"
+              fill="none"
+              stroke="#2b1912"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            }
+          </g>
+
+          <!-- Right Eye -->
+          <g transform="translate(141, 94)">
+            <!-- Eye Socket Shadow -->
+            <ellipse cx="0" cy="-1" rx="11.5" ry="7.8" fill="#c98865" opacity="0.38" />
+            <!-- Sclera (White) -->
+            <ellipse cx="0" cy="0" rx="10" ry="6.2" fill="#ffffff" />
+
+            <!-- Moving Iris & Pupil -->
+            <g [style.transform]="'translateX(' + eyeLookX() + 'px)'">
+              <circle cx="0" cy="0" r="5.2" fill="url(#vppIris3D)" />
+              <circle cx="0" cy="0" r="2.5" fill="#090605" />
+              <!-- 3D Dual Specular Catchlights -->
+              <circle cx="-1.8" cy="-1.8" r="1.4" fill="#ffffff" />
+              <circle cx="1.6" cy="1.5" r="0.7" fill="#ffffff" opacity="0.85" />
+            </g>
+
+            <!-- Upper Eyelash Crease -->
+            <path
+              d="M -10.5 -0.5 Q 0 -7.5 10.5 -0.5"
+              fill="none"
+              stroke="#2b1912"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+
+            <!-- Blinking Eyelid Shutter -->
+            @if (isBlinking()) {
+            <ellipse cx="0" cy="0" rx="10.5" ry="6.6" fill="url(#vppSkin3D)" />
+            <path
+              d="M -10 1 Q 0 5 10 1"
+              fill="none"
+              stroke="#2b1912"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            }
+          </g>
+        </g>
+
+        <!-- Expressive 3D Eyebrows (Lift dynamically with vocal emphasis) -->
+        <g
+          class="vpp-brows-layer"
+          [style.transform]="'translateY(' + browLiftY() + 'px)'"
+        >
+          <path
+            d="M 86 83 Q 99 77 110 82"
+            fill="none"
+            stroke="#1e2433"
+            stroke-width="3.6"
+            stroke-linecap="round"
+          />
+          <path
+            d="M 130 82 Q 141 77 154 83"
+            fill="none"
+            stroke="#1e2433"
+            stroke-width="3.6"
+            stroke-linecap="round"
+          />
+        </g>
+
+        <!-- ===============================================================
+             10 ANATOMICAL 3D MOUTH VISEMES (REAL-TIME LIP SYNC)
+             =============================================================== -->
+        <g class="vpp-mouth-layer" transform="translate(120, 134)">
+          @switch (currentViseme()) {
+
+            <!-- 1. REST: Relaxed closed 3D lips with gentle confident smile -->
+            @case ('rest') {
+              <path
+                d="M -14 -1 Q -7 -3.5 0 -2 Q 7 -3.5 14 -1 Q 0 1.5 -14 -1 Z"
+                fill="url(#vppUpperLip)"
+              />
+              <path
+                d="M -13 -0.5 Q 0 5.5 13 -0.5 Q 0 1.5 -13 -0.5 Z"
+                fill="url(#vppLowerLip)"
+              />
+              <path
+                d="M -14.5 -1 Q 0 1.8 14.5 -1"
+                fill="none"
+                stroke="#6e2823"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              />
+            }
+
+            <!-- 2. MBP: Pressed bilabial closure for M, B, P consonants -->
+            @case ('mbp') {
+              <path
+                d="M -13 0 Q 0 -1.5 13 0 Q 0 1.8 -13 0 Z"
+                fill="url(#vppUpperLip)"
+              />
+              <path
+                d="M -12 0.2 Q 0 3.2 12 0.2 Z"
+                fill="url(#vppLowerLip)"
+              />
+              <line
+                x1="-13.5"
+                y1="0.2"
+                x2="13.5"
+                y2="0.2"
+                stroke="#5c1f1b"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+            }
+
+            <!-- 3. AA: Wide open jaw vowel (A, AH) with teeth & tongue -->
+            @case ('aa') {
+              <!-- Oral Cavity Background -->
+              <path
+                d="M -14 -3 C -14 -7, 14 -7, 14 -3 C 15 8, 9 13, 0 13 C -9 13, -15 8, -14 -3 Z"
+                fill="url(#vppOralCavity)"
+              />
+              <!-- Upper Teeth Bar -->
+              <path
+                d="M -11 -4.5 L 11 -4.5 L 10 -1 L -10 -1 Z"
+                fill="#ffffff"
+              />
+              <!-- 3D Tongue -->
+              <ellipse cx="0" cy="8.5" rx="8.5" ry="4.2" fill="url(#vppTongue)" />
+              <!-- Lower Teeth Hint -->
+              <path d="M -7 10.5 L 7 10.5 L 6 12 L -6 12 Z" fill="#f1f5f9" opacity="0.85" />
+              <!-- 3D Lip Rim -->
+              <path
+                d="M -15 -2.5 C -8 -7.5, 8 -7.5, 15 -2.5 C 14 9.5, 8 14.5, 0 14.5 C -8 14.5, -14 9.5, -15 -2.5 Z"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="2.8"
+              />
+            }
+
+            <!-- 4. OH: Rounded vertical oval mouth (O, AW, OR) -->
+            @case ('oh') {
+              <ellipse cx="0" cy="3.5" rx="9.5" ry="9" fill="url(#vppOralCavity)" />
+              <!-- Upper Teeth -->
+              <path d="M -6.5 -3.5 L 6.5 -3.5 L 5.5 -0.8 L -5.5 -0.8 Z" fill="#ffffff" />
+              <!-- Tongue -->
+              <ellipse cx="0" cy="8" rx="6" ry="3.5" fill="url(#vppTongue)" />
+              <!-- Rounded 3D Lips -->
+              <ellipse
+                cx="0"
+                cy="3.5"
+                rx="10.2"
+                ry="9.6"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="3"
+              />
+            }
+
+            <!-- 5. OO: Tight pursed circle for U, OO, W -->
+            @case ('oo') {
+              <ellipse cx="0" cy="2" rx="5.8" ry="5.5" fill="url(#vppOralCavity)" />
+              <ellipse cx="0" cy="4.2" rx="3.5" ry="2" fill="url(#vppTongue)" />
+              <ellipse
+                cx="0"
+                cy="2"
+                rx="6.8"
+                ry="6.4"
+                fill="none"
+                stroke="url(#vppUpperLip)"
+                stroke-width="3.2"
+              />
+            }
+
+            <!-- 6. EE: Wide horizontal smile aperture for E, EE, Y -->
+            @case ('ee') {
+              <path
+                d="M -15 -2 Q 0 -4.5 15 -2 Q 13 6.5 0 6.5 Q -13 6.5 -15 -2 Z"
+                fill="url(#vppOralCavity)"
+              />
+              <!-- Upper Teeth Row -->
+              <path d="M -12.5 -2.2 L 12.5 -2.2 L 11.5 1.2 L -11.5 1.2 Z" fill="#ffffff" />
+              <!-- Lower Teeth Row -->
+              <path d="M -10 3.6 L 10 3.6 L 9 5.5 L -9 5.5 Z" fill="#f8fafc" />
+              <!-- Lip Outline -->
+              <path
+                d="M -15.5 -2 Q 0 -4.8 15.5 -2 Q 13.5 7.2 0 7.2 Q -13.5 7.2 -15.5 -2 Z"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="2.4"
+              />
+            }
+
+            <!-- 7. IH: Medium relaxed opening for I, EH, UH -->
+            @case ('ih') {
+              <path
+                d="M -12.5 -2 Q 0 -4.5 12.5 -2 Q 11 7.5 0 7.5 Q -11 7.5 -12.5 -2 Z"
+                fill="url(#vppOralCavity)"
+              />
+              <path d="M -9.5 -2.5 L 9.5 -2.5 L 8.5 0.5 L -8.5 0.5 Z" fill="#ffffff" />
+              <ellipse cx="0" cy="5.2" rx="6.8" ry="2.6" fill="url(#vppTongue)" />
+              <path
+                d="M -13 -2 Q 0 -4.8 13 -2 Q 11.5 8 0 8 Q -11.5 8 -13 -2 Z"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="2.5"
+              />
+            }
+
+            <!-- 8. FV: Lower lip tucked beneath upper teeth for F, V -->
+            @case ('fv') {
+              <path
+                d="M -12.5 -1.5 Q 0 -3.5 12.5 -1.5 Q 10 3 0 3 Q -10 3 -12.5 -1.5 Z"
+                fill="url(#vppOralCavity)"
+              />
+              <!-- Prominent Upper Incisors touching lower lip -->
+              <path d="M -9 -2 L 9 -2 L 8 1.2 L -8 1.2 Z" fill="#ffffff" />
+              <path
+                d="M -12 1 Q 0 5.2 12 1"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+            }
+
+            <!-- 9. SZ: Narrow clenched teeth for S, Z, SH, CH -->
+            @case ('sz') {
+              <path
+                d="M -13.5 -1.5 Q 0 -3 13.5 -1.5 Q 12 3.8 0 3.8 Q -12 3.8 -13.5 -1.5 Z"
+                fill="#ffffff"
+              />
+              <!-- Teeth parting line -->
+              <line x1="-11" y1="1" x2="11" y2="1" stroke="#cbd5e1" stroke-width="1" />
+              <path
+                d="M -14 -1.5 Q 0 -3.4 14 -1.5 Q 12.5 4.4 0 4.4 Q -12.5 4.4 -14 -1.5 Z"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="2.3"
+              />
+            }
+
+            <!-- 10. L_TH: Raised tongue tip behind upper teeth for L, T, D, N, TH -->
+            @default {
+              <path
+                d="M -12.5 -2 Q 0 -4.5 12.5 -2 Q 11 7 0 7 Q -11 7 -12.5 -2 Z"
+                fill="url(#vppOralCavity)"
+              />
+              <!-- Elevated Tongue Tip -->
+              <ellipse cx="0" cy="2.2" rx="6.2" ry="4" fill="url(#vppTongue)" />
+              <!-- Upper Teeth -->
+              <path d="M -9.5 -2.5 L 9.5 -2.5 L 8.5 0.4 L -8.5 0.4 Z" fill="#ffffff" />
+              <path
+                d="M -13 -2 Q 0 -4.8 13 -2 Q 11.5 7.5 0 7.5 Q -11.5 7.5 -13 -2 Z"
+                fill="none"
+                stroke="url(#vppLowerLip)"
+                stroke-width="2.4"
+              />
+            }
+          }
+        </g>
+
+        <!-- 3D Front Hair Sweep & Sideburns -->
+        <path
+          d="M 74 88
+             C 73 62, 88 42, 118 40
+             C 145 38, 166 52, 166 86
+             C 162 68, 148 56, 125 58
+             C 102 60, 84 66, 76 88 Z"
+          fill="url(#vppHair3D)"
+        />
+        <!-- Hair Specular 3D Sheen -->
+        <path
+          d="M 92 52 Q 118 44 144 53"
+          fill="none"
+          stroke="#64748b"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          opacity="0.45"
+        />
+      </g>
+    </svg>
+
+    <!-- If Browser Blocked Unmuted Autoplay, Show 1-Click Unmute Overlay -->
+    @if (autoplayBlockedPrompt()) {
+    <button
+      type="button"
+      class="vpp-autoplay-unlock-btn"
+      (click)="resumeAfterAutoplayBlock()"
+    >
+      <span class="material-symbols-outlined">volume_up</span>
+      <span>Tap to Hear Voice Summary</span>
+    </button>
+    }
+
+    <!-- Loading Spinner Overlay when ElevenLabs is synthesizing -->
+    @if (isLoadingAudio()) {
+    <div class="vpp-loading-overlay">
+      <span class="material-symbols-outlined vpp-spin">sync</span>
+      <span>Generating ElevenLabs Human Voice...</span>
+    </div>
+    }
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="vpp-progress-track">
+    <div class="vpp-progress-fill" [style.width.%]="progressPercent()"></div>
+  </div>
+
+  <!-- Live Word-by-Word Synchronized Subtitle Box -->
+  <div class="vpp-caption-box">
+    <p class="vpp-caption-text">
+      @for (word of scriptWords(); track $index) {
+      <span
+        class="vpp-word"
+        [class.spoken]="$index <= activeWordIndex()"
+        [class.current]="$index === activeWordIndex()"
+      >{{ word }} </span>
+      }
+    </p>
+    @if (statusMessage()) {
+    <span class="vpp-status-note">{{ statusMessage() }}</span>
+    }
+  </div>
+
+  <!-- ElevenLabs Voice Cloning & Custom Script Drawer -->
+  @if (isSettingsOpen()) {
+  <div class="vpp-settings-drawer">
+    <div class="vpp-settings-title">
+      <span class="material-symbols-outlined">graphic_eq</span>
+      <span>ElevenLabs Voice &amp; Script Studio</span>
+    </div>
+
+    <label class="vpp-field-label">
+      ElevenLabs API Key
+      <input
+        type="password"
+        class="vpp-input"
+        placeholder="xi-api-key (paste your ElevenLabs key)"
+        [ngModel]="inputApiKey()"
+        (ngModelChange)="inputApiKey.set($event)"
+      />
+    </label>
+
+    <label class="vpp-field-label">
+      Select Preset Voice
+      <select
+        class="vpp-select"
+        [ngModel]="inputVoiceId()"
+        (ngModelChange)="inputVoiceId.set($event)"
+      >
+        @for (preset of ttsService.presets; track preset.id) {
+        <option [value]="preset.id">{{ preset.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="vpp-field-label">
+      Or Trained / Cloned Voice ID (from ElevenLabs VoiceLab)
+      <input
+        type="text"
+        class="vpp-input"
+        placeholder="e.g. 21m00Tcm4TlvDq8ikWAM (optional)"
+        [ngModel]="customVoiceIdInput()"
+        (ngModelChange)="customVoiceIdInput.set($event)"
+      />
+    </label>
+
+    <label class="vpp-field-label">
+      Narration Script (10 to 30 seconds)
+      <textarea
+        class="vpp-textarea"
+        rows="3"
+        [ngModel]="scriptText()"
+        (ngModelChange)="scriptText.set($event)"
+      ></textarea>
+    </label>
+
+    <button
+      type="button"
+      class="vpp-save-speak-btn"
+      (click)="saveVoiceSettingsAndSpeak()"
+    >
+      <span class="material-symbols-outlined">play_circle</span>
+      <span>Save &amp; Speak with ElevenLabs</span>
+    </button>
+  </div>
+  }
+
+  <!-- Playback & Conversion Footer Bar -->
+  <div class="vpp-footer">
+    <button
+      type="button"
+      class="vpp-ctrl-btn"
+      (click)="togglePlayPause()"
+    >
+      <span class="material-symbols-outlined">
+        {{ isSpeaking() && !isPaused() ? 'pause' : 'play_arrow' }}
+      </span>
+      <span>{{ isSpeaking() && !isPaused() ? 'Pause' : (isPaused() ? 'Resume' : 'Replay') }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="vpp-cta-btn"
+      (click)="onScheduleVisit()"
+    >
+      <span class="material-symbols-outlined">calendar_month</span>
+      <span>Book Free Site Visit</span>
+    </button>
+  </div>
+</aside>
+}
+

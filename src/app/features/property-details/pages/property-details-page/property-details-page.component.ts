@@ -25,6 +25,7 @@ import { TopupDialogComponent } from '../../../home/components/topup-dialog/topu
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
 import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
+import { VirtualPropertyPresenterComponent } from '../../../../shared/components/virtual-property-presenter/virtual-property-presenter.component';
 
 export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
@@ -43,7 +44,8 @@ export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_tran
     TopupDialogComponent,
     ToastComponent,
     PropertyMediaModalComponent,
-    SecureVideoPlayerComponent
+    SecureVideoPlayerComponent,
+    VirtualPropertyPresenterComponent
   ],
   templateUrl: './property-details-page.component.html',
   styleUrls: ['./property-details-page.component.css']
