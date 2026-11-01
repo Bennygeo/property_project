@@ -400,7 +400,7 @@
   align-items: center;
   gap: 6px;
   border-radius: 0;
-  padding: 0.4rem 0.85rem;
+  /* padding: 0.4rem 0.85rem; */
   margin-bottom: 0.85rem;
   font-size: 13px;
   color: #334155;
@@ -1418,6 +1418,7 @@
 }
 
 @media (min-width: 769px) {
+
   .infra-card:nth-last-child(1),
   .infra-card:nth-last-child(2) {
     border-bottom: none;
@@ -1819,6 +1820,7 @@
 }
 
 @media (min-width: 641px) {
+
   .transit-card:nth-last-child(1),
   .transit-card:nth-last-child(2) {
     border-bottom: none;
@@ -1831,7 +1833,6 @@
   min-width: 52px;
   border-radius: 0;
   background: transparent !important;
-  color: #5e8f72 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1840,9 +1841,46 @@
 
 .transit-icon-box span {
   font-size: 44px;
-  color: #5e8f72;
   line-height: 1;
 }
+
+/* Distinct Semantic Icon Colors */
+.transit-icon-box.corridor span {
+  color: #0d9488; /* Strategic Teal */
+}
+
+.transit-icon-box.highway span {
+  color: #2563eb; /* Highway Cobalt Blue */
+}
+
+.transit-icon-box.train span {
+  color: #7c3aed; /* Railway Violet */
+}
+
+.transit-icon-box.bus span {
+  color: #16a34a; /* Transit Green */
+}
+
+.transit-icon-box.airport span {
+  color: #0284c7; /* Aviation Sky Blue */
+}
+
+.transit-icon-box.fuel span {
+  color: #d97706; /* Energy Amber */
+}
+
+.transit-icon-box.school span {
+  color: #4f46e5; /* Education Indigo */
+}
+
+.transit-icon-box.hospital span {
+  color: #e11d48; /* Healthcare Rose */
+}
+
+.transit-icon-box.safety span {
+  color: #0891b2; /* Shield Cyan */
+}
+
 
 .transit-meta,
 .transit-info {
@@ -2186,7 +2224,6 @@
   padding: 10px 14px;
   background: #ffffff;
   color: #0f172a;
-  border: 1px solid #e2e8f0;
   border-radius: 0;
   text-decoration: none;
   box-shadow: none !important;
