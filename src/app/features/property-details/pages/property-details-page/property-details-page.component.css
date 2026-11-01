@@ -1325,12 +1325,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  background: #e5f7ec;
-  border: 1px solid #a7f3d0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
   border-radius: 0;
   color: #2c4938;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.02em;
   box-shadow: none !important;
@@ -1483,32 +1483,33 @@
 .infra-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 0 !important;
   border-radius: 0;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #5e8f72;
 }
 
 .pill-dot {
   width: 5px;
   height: 5px;
   border-radius: 0;
-  background: #64748b;
+  background: #5e8f72;
 }
 
 .infra-pill.green,
 .infra-pill.cyan,
 .infra-pill.emerald,
 .infra-pill.blue {
-  background: #eef6f1;
-  color: #2c4938;
-  border-color: #c1dccb;
+  background: transparent !important;
+  color: #5e8f72;
+  border: none !important;
 }
 
 .infra-pill.green .pill-dot,
@@ -1519,9 +1520,9 @@
 }
 
 .infra-pill.amber {
-  background: #fffbeb;
-  color: #92400e;
-  border-color: #fde68a;
+  background: transparent !important;
+  color: #d97706;
+  border: none !important;
 }
 
 .infra-pill.amber .pill-dot {
