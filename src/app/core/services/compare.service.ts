@@ -259,20 +259,7 @@ export class CompareService {
       }
     }
 
-    // 7. Distance Proximity (if GPS is active)
-    if (p1.distanceKm !== undefined && p2.distanceKm !== undefined && p1.distanceKm !== p2.distanceKm) {
-      const closerIndex = p1.distanceKm < p2.distanceKm ? 0 : 1;
-      const closerDistance = closerIndex === 0 ? p1.distanceKm : p2.distanceKm;
-      const fartherDistance = closerIndex === 0 ? p2.distanceKm : p1.distanceKm;
-      diffs.push({
-        type: 'location',
-        title: 'Closer Proximity to You',
-        summary: `Property ${closerIndex + 1} (${closerIndex === 0 ? 'Left' : 'Right'}) is closer at ${closerDistance} km away (vs ${fartherDistance} km).`,
-        winnerIndex: closerIndex,
-        badgeText: `${closerDistance} km away`,
-        badgeType: 'advantage'
-      });
-    }
+
 
     // 8. Facing Orientation
     const facing1 = p1.facing || p1.facingOrView || '';
@@ -383,17 +370,7 @@ export class CompareService {
     addRow('Location & Accessibility', 'City / Taluk', 'apartment', `${p1?.city || ''} ${p1?.taluk ? '(' + p1.taluk + ')' : ''}`, `${p2?.city || ''} ${p2?.taluk ? '(' + p2.taluk + ')' : ''}`);
     addRow('Location & Accessibility', 'District & Corridor', 'domain', `${p1?.district || ''} ${p1?.corridor ? '· ' + p1.corridor : ''}`, `${p2?.district || ''} ${p2?.corridor ? '· ' + p2.corridor : ''}`);
     
-    if (p1?.distanceKm !== undefined || p2?.distanceKm !== undefined) {
-      let distAdv: 0 | 1 | null = null;
-      if (p1?.distanceKm !== undefined && p2?.distanceKm !== undefined && p1.distanceKm !== p2.distanceKm) {
-        distAdv = p1.distanceKm < p2.distanceKm ? 0 : 1;
-      }
-      addRow('Location & Accessibility', 'GPS Proximity', 'near_me', p1?.distanceKm !== undefined ? `${p1.distanceKm} km away` : '—', p2?.distanceKm !== undefined ? `${p2.distanceKm} km away` : '—', distAdv, 'Closer');
-    }
-
     // Media & Verifications
-    addRow('Media & Verifications', '4K Cinematic Video', 'smart_display', (p1?.premiumMedia && p1.premiumMedia.some(m => m.type === 'video')) || p1?.highlights?.includes('4K Video') ? 'Available' : 'On Request', (p2?.premiumMedia && p2.premiumMedia.some(m => m.type === 'video')) || p2?.highlights?.includes('4K Video') ? 'Available' : 'On Request');
-    addRow('Media & Verifications', 'Drone Survey Aerials', 'flight', p1?.highlights?.includes('Drone Survey') ? 'Verified Aerial' : 'Standard View', p2?.highlights?.includes('Drone Survey') ? 'Verified Aerial' : 'Standard View');
     addRow('Media & Verifications', 'Photos & Blueprints', 'photo_library', `${p1?.freePhotos?.length || 4} Photos Available`, `${p2?.freePhotos?.length || 4} Photos Available`);
     addRow('Media & Verifications', 'Promoter / Developer', 'corporate_fare', p1?.developerName || p1?.masterDetails?.developer || p1?.developer?.name || 'Verified Promoter', p2?.developerName || p2?.masterDetails?.developer || p2?.developer?.name || 'Verified Promoter');
 
