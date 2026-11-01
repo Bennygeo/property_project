@@ -91,7 +91,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                       <p class="hero-locality">
                         <span class="material-symbols-outlined loc-ic">location_on</span>
                         <span>{{ p1.locality }}, {{ p1.city }}</span>
-                        @if (p1.distanceKm !== undefined && p1.distanceKm !== null) {
+                        @if (isValidDistance(p1.distanceKm)) {
                           <span class="hero-dist-chip">{{ p1.distanceKm }} km away</span>
                         }
                       </p>
@@ -159,7 +159,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                       <p class="hero-locality">
                         <span class="material-symbols-outlined loc-ic">location_on</span>
                         <span>{{ p2.locality }}, {{ p2.city }}</span>
-                        @if (p2.distanceKm !== undefined && p2.distanceKm !== null) {
+                        @if (isValidDistance(p2.distanceKm)) {
                           <span class="hero-dist-chip">{{ p2.distanceKm }} km away</span>
                         }
                       </p>
@@ -379,7 +379,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .compare-modal-card {
       background: #ffffff;
-      border-radius: 20px;
+      border-radius: 0;
       box-shadow: none !important;
       width: 100%;
       max-width: 1160px;
@@ -464,15 +464,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: #ffffff;
       border: 1px solid #cbd5e1;
       padding: 6px 12px;
-      border-radius: 9999px;
+      border-radius: 0;
       cursor: pointer;
       user-select: none;
-      transition: all 0.2s ease;
     }
 
     .diff-toggle-wrap:hover {
       border-color: #5e8f72;
-      background: #eef6f1;
     }
 
     .diff-toggle-wrap input {
@@ -483,7 +481,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       width: 32px;
       height: 18px;
       background: #cbd5e1;
-      border-radius: 9999px;
+      border-radius: 0;
       position: relative;
       transition: background 0.2s ease;
     }
@@ -496,7 +494,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       width: 14px;
       height: 14px;
       background: #ffffff;
-      border-radius: 50%;
+      border-radius: 0;
       transition: transform 0.2s ease;
       box-shadow: none;
     }
@@ -526,17 +524,15 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       border: 1px solid #cbd5e1;
       color: #475569;
       padding: 6px 12px;
-      border-radius: 10px;
+      border-radius: 0;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
 
     .btn-swap:hover {
       border-color: #5e8f72;
       color: #5e8f72;
-      background: #eef6f1;
     }
 
     .btn-swap .material-symbols-outlined {
@@ -545,20 +541,19 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .btn-modal-close {
       background: transparent;
-      border: none;
+      border: 1px solid #e2e8f0;
       color: #64748b;
       cursor: pointer;
       width: 34px;
       height: 34px;
-      border-radius: 50%;
+      border-radius: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s ease;
     }
 
     .btn-modal-close:hover {
-      background: #e2e8f0;
+      background: #f1f5f9;
       color: #0f172a;
     }
 
@@ -583,20 +578,19 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .hero-col {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
+      border-radius: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       box-shadow: none !important;
-      transition: border-color 0.2s ease;
     }
 
     .hero-left {
-      /* Clean flat border */
+      border: 1px solid #e2e8f0;
     }
 
     .hero-right {
-      /* Clean flat border */
+      border: 1px solid #e2e8f0;
     }
 
     .hero-col-header {
@@ -605,7 +599,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       justify-content: space-between;
       padding: 10px 14px;
       background: #f8fafc;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
     }
 
     .col-indicator-badge {
@@ -616,18 +610,20 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-weight: 800;
       text-transform: uppercase;
       padding: 3px 8px;
-      border-radius: 6px;
+      border-radius: 0;
       letter-spacing: 0.5px;
     }
 
     .left-indicator {
       background: #f1f5f9;
       color: #334155;
+      border: 1px solid #cbd5e1;
     }
 
     .right-indicator {
-      background: #e5f7ec;
+      background: #eef6f1;
       color: #2c4938;
+      border: 1px solid #c1dccb;
     }
 
     .badge-ic {
@@ -639,19 +635,18 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
       gap: 4px;
       background: transparent;
-      border: none;
+      border: 1px solid #e2e8f0;
       color: #94a3b8;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       padding: 2px 6px;
-      border-radius: 4px;
-      transition: all 0.15s ease;
+      border-radius: 0;
     }
 
     .btn-remove-prop:hover {
-      background: #fee2e2;
       color: #dc2626;
+      border-color: #fca5a5;
     }
 
     .btn-remove-prop .material-symbols-outlined {
@@ -669,7 +664,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .hero-img-wrap {
       width: 100%;
       height: 160px;
-      border-radius: 10px;
+      border-radius: 0;
       overflow: hidden;
       position: relative;
       cursor: default;
@@ -680,7 +675,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
     }
 
     .hero-img-wrap:hover .hero-img {
@@ -696,10 +690,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 11px;
       font-weight: 700;
       color: #ffffff;
-      background: rgba(15, 23, 42, 0.82);
+      background: rgba(15, 23, 42, 0.88);
       padding: 3px 8px;
-      border-radius: 6px;
-      backdrop-filter: blur(4px);
+      border-radius: 0;
     }
 
     .rera-pill {
@@ -762,10 +755,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .hero-dist-chip {
-      background: #e5f7ec;
+      background: #eef6f1;
       color: #2c4938;
       padding: 1px 6px;
-      border-radius: 4px;
+      border: 1px solid #c1dccb;
+      border-radius: 0;
       font-weight: 600;
       font-size: 11px;
     }
@@ -799,11 +793,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: #5e8f72;
       color: #ffffff;
       padding: 8px 12px;
-      border-radius: 8px;
+      border-radius: 0;
       font-size: 12px;
       font-weight: 700;
       text-decoration: none;
-      transition: background 0.15s ease;
     }
 
     .btn-hero-primary:hover {
@@ -827,18 +820,18 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .vs-circle-large {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      border-radius: 0;
       background: #0f172a;
       color: #72a987;
       font-weight: 900;
-      font-size: 14px;
+      font-size: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: none !important;
-      border: 3px solid #ffffff;
+      border: 1px solid #334155;
       z-index: 2;
     }
 
@@ -854,7 +847,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     /* EMPTY SLOT (RIGHT) */
     .hero-empty-col {
       background: #f8fafc;
-      border: 2px dashed #cbd5e1;
+      border: 1px dashed #cbd5e1;
+      border-radius: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -871,9 +865,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .empty-slot-icon-wrap {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      border-radius: 0;
       background: #e2e8f0;
       display: flex;
       align-items: center;
@@ -882,12 +876,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .empty-slot-icon {
-      font-size: 32px;
+      font-size: 28px;
     }
 
     .empty-slot-title {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: #1e293b;
     }
@@ -907,11 +901,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       color: #ffffff;
       border: none;
       padding: 9px 16px;
-      border-radius: 10px;
+      border-radius: 0;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.15s ease;
     }
 
     .btn-browse-more:hover {
@@ -924,9 +917,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     /* CORE DIFFERENCES SUMMARY BOX */
     .differences-summary-section {
-      background: linear-gradient(135deg, #f2f8f4 0%, #e5f7ec 100%);
-      border: 1px solid #c1dccb;
-      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0;
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
@@ -953,19 +946,19 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .diff-header-title h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #0f172a;
     }
 
     .diff-count-badge {
       background: #ffffff;
-      border: 1px solid #c1dccb;
+      border: 1px solid #cbd5e1;
       color: #2c4938;
       font-size: 11px;
       font-weight: 800;
       padding: 3px 10px;
-      border-radius: 9999px;
+      border-radius: 0;
     }
 
     .differences-cards-grid {
@@ -976,26 +969,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .diff-card {
       background: #ffffff;
-      border-radius: 12px;
+      border-radius: 0;
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
       gap: 6px;
       border: 1px solid #e2e8f0;
       box-shadow: none !important;
-      transition: transform 0.15s ease;
-    }
-
-    .diff-card:hover {
-      transform: none;
-    }
-
-    .diff-card.winner-left {
-      /* border removed */
-    }
-
-    .diff-card.winner-right {
-      /* border removed */
     }
 
     .diff-card-top {
@@ -1015,7 +995,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10px;
       font-weight: 800;
       padding: 2px 6px;
-      border-radius: 4px;
+      border-radius: 0;
       display: inline-flex;
       align-items: center;
       gap: 3px;
@@ -1029,11 +1009,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .badge-left {
       background: #f1f5f9;
       color: #334155;
+      border: 1px solid #cbd5e1;
     }
 
     .badge-right {
-      background: #e5f7ec;
+      background: #eef6f1;
       color: #2c4938;
+      border: 1px solid #c1dccb;
     }
 
     .diff-card-summary {
@@ -1051,8 +1033,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       color: #2c4938;
       font-weight: 600;
       padding: 8px 12px;
-      background: #e5f7ec;
-      border-radius: 8px;
+      background: #eef6f1;
+      border: 1px solid #c1dccb;
+      border-radius: 0;
     }
 
     /* SPECS MATRIX SECTION */
@@ -1070,7 +1053,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .specs-section-title {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #0f172a;
       display: flex;
@@ -1090,9 +1073,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 11px;
       font-weight: 700;
       color: #2c4938;
-      background: #e5f7ec;
+      background: #eef6f1;
+      border: 1px solid #c1dccb;
       padding: 3px 8px;
-      border-radius: 6px;
+      border-radius: 0;
     }
 
     .active-filter-alert .material-symbols-outlined {
@@ -1102,7 +1086,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .table-responsive-wrapper {
       overflow-x: auto;
       border: 1px solid #e2e8f0;
-      border-radius: 14px;
+      border-radius: 0;
     }
 
     .compare-table {
@@ -1143,7 +1127,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .pos-dot {
       width: 8px;
       height: 8px;
-      border-radius: 50%;
+      border-radius: 0;
       flex-shrink: 0;
     }
 
@@ -1210,7 +1194,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: #fef3c7;
       color: #d97706;
       padding: 1px 5px;
-      border-radius: 4px;
+      border-radius: 0;
     }
 
     .td-value {
@@ -1232,19 +1216,20 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .has-advantage {
-      background: rgba(34, 197, 94, 0.06);
+      background: rgba(94, 143, 114, 0.08);
     }
 
     .adv-badge {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      background: #e5f7ec;
+      background: #eef6f1;
       color: #2c4938;
       font-size: 10px;
       font-weight: 800;
       padding: 2px 6px;
-      border-radius: 4px;
+      border: 1px solid #c1dccb;
+      border-radius: 0;
       white-space: nowrap;
     }
 
@@ -1284,13 +1269,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       color: #ffffff;
       border: none;
       padding: 9px 20px;
-      border-radius: 10px;
+      border-radius: 0;
       font-size: 13px;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
       box-shadow: none !important;
-      transition: background 0.15s ease;
     }
 
     .btn-footer-whatsapp:hover {
@@ -1324,6 +1308,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 export class PropertyCompareModalComponent {
   readonly formatPriceIndian = formatPriceIndian;
   readonly compareService = inject(CompareService);
+
+  isValidDistance(val: any): boolean {
+    return typeof val === 'number' && !isNaN(val) && isFinite(val) && val > 0;
+  }
 
   get comparisonWhatsAppUrl(): string {
     const p1 = this.compareService.propertyLeft();
