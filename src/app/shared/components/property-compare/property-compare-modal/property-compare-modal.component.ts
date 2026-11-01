@@ -16,14 +16,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           <!-- MODAL HEADER -->
           <div class="modal-header">
             <div class="header-left">
-              <div class="header-badge">
-                <span class="material-symbols-outlined header-icon">compare_arrows</span>
-                <span>PROPERTY COMPARISON</span>
-              </div>
-              <h2 id="compare-modal-title" class="modal-title">
-                Side-by-Side Comparison
-                <span class="title-sub">(Max 2 Properties)</span>
-              </h2>
             </div>
 
             <div class="header-right-controls">
@@ -347,9 +339,15 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
               <span>Need help deciding? Contact our real estate advisors for title deed verification and site inspections.</span>
             </div>
             <div class="footer-actions">
-              <button type="button" class="btn-footer-close" (click)="compareService.closeCompare()">
-                Close Comparison
-              </button>
+              <a 
+                [href]="comparisonWhatsAppUrl" 
+                target="_blank" 
+                rel="noopener" 
+                class="btn-footer-whatsapp" 
+                title="Chat on WhatsApp">
+                <span class="material-symbols-outlined">chat</span>
+                <span>WhatsApp</span>
+              </a>
             </div>
           </div>
 
@@ -1278,20 +1276,30 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       color: #5e8f72;
     }
 
-    .btn-footer-close {
-      background: #5e8f72;
+    .btn-footer-whatsapp {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #25d366;
       color: #ffffff;
       border: none;
       padding: 9px 20px;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 700;
+      text-decoration: none;
       cursor: pointer;
+      box-shadow: none !important;
       transition: background 0.15s ease;
     }
 
-    .btn-footer-close:hover {
-      background: #497259;
+    .btn-footer-whatsapp:hover {
+      background: #1eb857;
+      box-shadow: none !important;
+    }
+
+    .btn-footer-whatsapp .material-symbols-outlined {
+      font-size: 18px;
     }
 
     @media (max-width: 900px) {
@@ -1316,6 +1324,20 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 export class PropertyCompareModalComponent {
   readonly formatPriceIndian = formatPriceIndian;
   readonly compareService = inject(CompareService);
+
+  get comparisonWhatsAppUrl(): string {
+    const p1 = this.compareService.propertyLeft();
+    const p2 = this.compareService.propertyRight();
+    let text = 'Hi Find a Plot, I am comparing properties: ';
+    if (p1 && p2) {
+      text += `${p1.title} (${p1.id}) vs ${p2.title} (${p2.id}). Please assist with site visit and cadastral details.`;
+    } else if (p1) {
+      text += `${p1.title} (${p1.id}). Please share more details.`;
+    } else {
+      text += 'properties on Find a Plot. Please assist.';
+    }
+    return `https://wa.me/919444100000?text=${encodeURIComponent(text)}`;
+  }
 
   onBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('compare-backdrop')) {
