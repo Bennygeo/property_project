@@ -116,9 +116,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                           <span class="material-symbols-outlined">visibility</span>
                           <span>View</span>
                         </a>
-                        <a [href]="p1.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener" class="btn-hero-wa" title="Chat on WhatsApp">
-                          <span class="material-symbols-outlined">chat</span>
-                        </a>
+
                       </div>
                     </div>
                   </div>
@@ -186,9 +184,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                           <span class="material-symbols-outlined">visibility</span>
                           <span>View</span>
                         </a>
-                        <a [href]="p2.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener" class="btn-hero-wa" title="Chat on WhatsApp">
-                          <span class="material-symbols-outlined">chat</span>
-                        </a>
+
                       </div>
                     </div>
                   </div>
@@ -386,7 +382,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .compare-modal-card {
       background: #ffffff;
       border-radius: 20px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      box-shadow: none !important;
       width: 100%;
       max-width: 1160px;
       max-height: 92vh;
@@ -504,7 +500,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: #ffffff;
       border-radius: 50%;
       transition: transform 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      box-shadow: none;
     }
 
     .diff-toggle-wrap input:checked + .toggle-slider {
@@ -593,7 +589,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      box-shadow: none !important;
       transition: border-color 0.2s ease;
     }
 
@@ -820,26 +816,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 15px;
     }
 
-    .btn-hero-wa {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #25d366;
-      color: #ffffff;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: opacity 0.15s ease;
-    }
 
-    .btn-hero-wa:hover {
-      opacity: 0.9;
-    }
-
-    .btn-hero-wa .material-symbols-outlined {
-      font-size: 18px;
-    }
 
     /* CENTRAL VS DIVIDER */
     .central-vs-column {
@@ -862,7 +839,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+      box-shadow: none !important;
       border: 3px solid #ffffff;
       z-index: 2;
     }
@@ -1007,7 +984,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       flex-direction: column;
       gap: 6px;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      box-shadow: none !important;
       transition: transform 0.15s ease;
     }
 
