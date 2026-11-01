@@ -1632,9 +1632,6 @@
   background: #f8fafc;
 }
 
-.btn-ad-primary span {
-  font-size: 16px;
-}
 
 .btn-ad-whatsapp {
   height: 34px;
@@ -1744,6 +1741,7 @@
 .btn-seller-ad span.material-symbols-outlined {
   font-size: 15px;
 }
+
 /* ==========================================
    PROPERTY MASTER EXCEL SCHEMA STYLES (USER)
    ========================================== */
