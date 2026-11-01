@@ -145,7 +145,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       gap: 6px;
       font-size: 13px;
       font-weight: 700;
-      color: #34d399;
+      color: #72a987;
       white-space: nowrap;
       padding-right: 6px;
       border-right: 1px solid rgba(255, 255, 255, 0.12);
@@ -212,12 +212,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .left-tag {
-      background: #059669;
+      background: #5e8f72;
       color: #ffffff;
     }
 
     .right-tag {
-      background: #059669;
+      background: #497259;
       color: #ffffff;
     }
 
@@ -240,7 +240,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .slot-price {
       font-size: 12px;
       font-weight: 700;
-      color: #34d399;
+      color: #72a987;
     }
 
     .btn-slot-remove {
@@ -321,7 +321,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      background: linear-gradient(135deg, #5e8f72 0%, #497259 100%);
       color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.2);
       padding: 9px 16px;
@@ -329,19 +329,19 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+      box-shadow: 0 4px 14px rgba(94, 143, 114, 0.35);
       transition: all 0.2s ease;
       white-space: nowrap;
     }
 
     .btn-dock-compare:hover {
-      background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+      background: linear-gradient(135deg, #497259 0%, #2c4938 100%);
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(5, 150, 105, 0.55);
+      box-shadow: 0 6px 18px rgba(94, 143, 114, 0.45);
     }
 
     .btn-dock-compare.pulse-active {
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 4px 14px rgba(5, 150, 105, 0.4);
+      box-shadow: 0 0 0 3px rgba(94, 143, 114, 0.35), 0 4px 14px rgba(94, 143, 114, 0.35);
     }
 
     .btn-dock-compare .material-symbols-outlined {
