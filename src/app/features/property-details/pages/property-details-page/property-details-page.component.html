@@ -113,6 +113,18 @@
             </span>
           </a>
           } @else {
+          <div class="hanu-builder-strip non-clickable"
+            title="Promoted by {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}">
+            <span class="material-symbols-outlined builder-icon">corporate_fare</span>
+            <span class="builder-by-label">By</span>
+            <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer ||
+              prop.developer?.name
+              }}</strong>
+            <span class="builder-badge-verified">
+              <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
+              Verified Developer
+            </span>
+          </div>
           }
           }
 
@@ -474,238 +486,208 @@
                   </div>
                 </div>
 
-                <!-- Architectural Civil Infrastructure Matrix (Table-Like Box) -->
-                <div class="infra-table-container">
-                  <table class="infra-spec-table">
-                    <thead>
-                      <tr>
-                        <th class="th-infra-utility">Civil Infrastructure</th>
-                        <th class="th-infra-spec">Specification / Type</th>
-                        <th class="th-infra-status">On-Ground Status</th>
-                        <th class="th-infra-desc">Verified Civil Scope &amp; Demarcation</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <!-- 1. Approach & Internal Roads -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">add_road</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">ROAD NETWORK</span>
-                              <strong class="infra-tbl-heading">Approach &amp; Layout Roads</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.roadType || 'Blacktop Bitumen Heavy-Duty Tar Road' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft Wide') : (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Approach frontage of {{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' feet') : '30-40 feet' }} with constructed stormwater shoulders ensuring heavy vehicle and car access.
-                        </td>
-                      </tr>
+                <!-- Iconic 8-Card Utility Grid -->
+                <div class="infrastructure-iconic-grid">
+                  <!-- 1. Approach & Internal Roads -->
+                  <div class="infra-card theme-road">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">add_road</span>
+                      </div>
+                      <div class="infra-pill green">
+                        <span class="pill-dot"></span>
+                        <span>{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft Wide') :
+                          (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">ROAD NETWORK</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.roadType || 'Blacktop Bitumen Heavy-Duty Tar
+                        Road'
+                        }}</h4>
+                      <p class="infra-summary-text">
+                        Approach frontage of {{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + '
+                        feet') : '30-40 feet' }} with constructed stormwater shoulders ensuring heavy vehicle and car
+                        access.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 2. Power Grid -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">bolt</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">POWER GRID</span>
-                              <strong class="infra-tbl-heading">EB Electricity Line</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.electricity || '3-Phase EB Line Active with Transformer' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>Active EB Line</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Dedicated local distribution transformer with 3-phase high/low-tension power lines active for immediate domestic meter commissioning.
-                        </td>
-                      </tr>
+                  <!-- 2. Power / EB Grid -->
+                  <div class="infra-card theme-power">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">bolt</span>
+                      </div>
+                      <div class="infra-pill amber">
+                        <span class="pill-dot"></span>
+                        <span>Active EB Line</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">POWER GRID</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.electricity || '3-Phase EB Line Active with
+                        Transformer' }}</h4>
+                      <p class="infra-summary-text">
+                        Dedicated local distribution transformer with 3-phase high/low-tension power lines active for
+                        immediate domestic meter commissioning.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 3. Water Resource -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">water_drop</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">WATER RESOURCE</span>
-                              <strong class="infra-tbl-heading">Ground Water &amp; Supply</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Ground Water Connection' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>Sweet Water</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Natural groundwater table accessible at shallow depths, yielding pure sweet potable water with overhead reservoir piping access.
-                        </td>
-                      </tr>
+                  <!-- 3. Water Facility -->
+                  <div class="infra-card theme-water">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">water_drop</span>
+                      </div>
+                      <div class="infra-pill cyan">
+                        <span class="pill-dot"></span>
+                        <span>Sweet Water</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">WATER RESOURCE</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Ground Water
+                        Connection' }}</h4>
+                      <p class="infra-summary-text">
+                        Natural groundwater table accessible at shallow depths, yielding pure sweet potable water with
+                        overhead reservoir piping access.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 4. Civil Drainage -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">waves</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">CIVIL DRAINAGE</span>
-                              <strong class="infra-tbl-heading">Stormwater Channels</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.drainageFacility || 'Constructed Storm Water Drainage' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>Constructed</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Engineered masonry stormwater channels along road flanks preventing surface water accumulation and soil waterlogging.
-                        </td>
-                      </tr>
+                  <!-- 4. Drainage Network -->
+                  <div class="infra-card theme-drainage">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">waves</span>
+                      </div>
+                      <div class="infra-pill blue">
+                        <span class="pill-dot"></span>
+                        <span>Constructed</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">CIVIL DRAINAGE</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.drainageFacility || 'Constructed Storm Water
+                        Drainage' }}</h4>
+                      <p class="infra-summary-text">
+                        Engineered masonry stormwater channels along road flanks preventing surface water accumulation
+                        and
+                        soil waterlogging.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 5. Street Lighting -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">light_mode</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">AVENUE ILLUMINATION</span>
-                              <strong class="infra-tbl-heading">Street Lighting</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.streetLights === 'Yes' ? 'LED Avenue Street Lights Installed' : 'Avenue Street Lighting Active' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>LED Avenue</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Evenly spaced illumination poles with energy-efficient LED luminaires along layout spine roads for night-time visibility and safety.
-                        </td>
-                      </tr>
+                  <!-- 5. Street Lighting -->
+                  <div class="infra-card theme-light">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">light_mode</span>
+                      </div>
+                      <div class="infra-pill amber">
+                        <span class="pill-dot"></span>
+                        <span>LED Avenue</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">AVENUE ILLUMINATION</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.streetLights === 'Yes' ? 'LED Avenue Street
+                        Lights
+                        Installed' : 'Avenue Street Lighting Active' }}</h4>
+                      <p class="infra-summary-text">
+                        Evenly spaced illumination poles with energy-efficient LED luminaires along layout spine roads
+                        for
+                        night-time visibility and safety.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 6. Gated Security & Perimeter -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">fence</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">PERIMETER &amp; SECURITY</span>
-                              <strong class="infra-tbl-heading">Boundary &amp; Security Gate</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Fully Gated Community with Security Entrance Arch' : 'Demarcated Boundary Stones with Perimeter Fence' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Gated & Guarded' : 'Demarcated' }}</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Clear corner survey stones planted with Cadastral markings and robust perimeter security fencing enclosing the layout development.
-                        </td>
-                      </tr>
+                  <!-- 6. Gated Security & Compound Wall -->
+                  <div class="infra-card theme-security">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">fence</span>
+                      </div>
+                      <div class="infra-pill green">
+                        <span class="pill-dot"></span>
+                        <span>{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Gated & Guarded' : 'Demarcated'
+                          }}</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">PERIMETER &amp; SECURITY</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Fully Gated
+                        Community with Security Entrance Arch' : 'Demarcated Boundary Stones with Perimeter Fence' }}
+                      </h4>
+                      <p class="infra-summary-text">
+                        Clear corner survey stones planted with Cadastral markings and robust perimeter security fencing
+                        enclosing the layout development.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 7. Park & OSR Greenery -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">park</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">OSR GREENERY &amp; PARKS</span>
-                              <strong class="infra-tbl-heading">Community Park &amp; Open Space</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.park === 'Yes' ? 'Children Park & OSR Landscaped Greenery' : 'Dedicated Greenery & Park Zone' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>OSR Approved</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Statutory 10% Open Space Reservation (OSR) handed over and developed with children play zones, native shade trees, and walking trails.
-                        </td>
-                      </tr>
+                  <!-- 7. Park & Open Space Reservation (OSR) -->
+                  <div class="infra-card theme-park">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">park</span>
+                      </div>
+                      <div class="infra-pill green">
+                        <span class="pill-dot"></span>
+                        <span>OSR Approved</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">OSR GREENERY &amp; PARKS</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.park === 'Yes' ? 'Children Park & OSR
+                        Landscaped
+                        Greenery' : 'Dedicated Greenery & Park Zone' }}</h4>
+                      <p class="infra-summary-text">
+                        Statutory 10% Open Space Reservation (OSR) handed over and developed with children play zones,
+                        native shade trees, and walking trails.
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- 8. Developer Maintenance Guarantee -->
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">home_repair_service</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">FREE MAINTENANCE</span>
-                              <strong class="infra-tbl-heading">Developer Guarantee</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : '2 Years Free Maintenance Support' }}</span>
-                        </td>
-                        <td class="td-infra-status">
-                          <span class="infra-tbl-badge green">
-                            <span class="pill-dot"></span>
-                            <span>100% Free Service</span>
-                          </span>
-                        </td>
-                        <td class="td-infra-desc">
-                          Comprehensive developer caretaker support including road maintenance, avenue tree trimming, street light upkeep, and perimeter drainage clearing at zero extra cost.
-                        </td>
-                      </tr>
-
-                      <!-- 9. Optional Township Highlights -->
-                      @if (prop.masterDetails?.otherAmenities) {
-                      <tr>
-                        <td class="td-infra-utility">
-                          <div class="infra-cell-utility">
-                            <span class="material-symbols-outlined infra-tbl-ic">local_florist</span>
-                            <div class="infra-tbl-title-box">
-                              <span class="infra-tbl-category">AMENITIES &amp; HIGHLIGHTS</span>
-                              <strong class="infra-tbl-heading">Township Features</strong>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="td-infra-spec" colspan="3">
-                          <span class="infra-spec-main">{{ prop.masterDetails?.otherAmenities }}</span>
-                        </td>
-                      </tr>
-                      }
-                    </tbody>
-                  </table>
+                  <!-- 8. Developer Maintenance Guarantee -->
+                  <div class="infra-card theme-maintenance highlighted-maintenance-card">
+                    <div class="infra-card-header-row">
+                      <div class="infra-icon-emblem">
+                        <span class="material-symbols-outlined">home_repair_service</span>
+                      </div>
+                      <div class="infra-pill emerald">
+                        <span class="pill-dot"></span>
+                        <span>100% Free Service</span>
+                      </div>
+                    </div>
+                    <div class="infra-card-details">
+                      <span class="infra-category-tag">FREE MAINTENANCE SERVICE</span>
+                      <h4 class="infra-main-title">{{ prop.masterDetails?.developerMaintenanceYears ?
+                        (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : '2 Years Free
+                        Maintenance Support' }}</h4>
+                      <p class="infra-summary-text">
+                        Comprehensive developer caretaker support including road maintenance, avenue tree trimming,
+                        street
+                        light upkeep, and perimeter drainage clearing at zero extra cost.
+                      </p>
+                    </div>
+                  </div>
                 </div>
+
+                <!-- Bottom Banner: Additional Amenities / Community Features -->
+                @if (prop.masterDetails?.otherAmenities) {
+                <div class="infra-additional-bar">
+                  <div class="additional-icon-box">
+                    <span class="material-symbols-outlined">local_florist</span>
+                  </div>
+                  <div class="additional-content">
+                    <span class="additional-label">COMMUNITY &amp; TOWNSHIP HIGHLIGHTS</span>
+                    <p class="additional-text">{{ prop.masterDetails?.otherAmenities }}</p>
+                  </div>
+                </div>
+                }
               </section>
             </div>
             }
