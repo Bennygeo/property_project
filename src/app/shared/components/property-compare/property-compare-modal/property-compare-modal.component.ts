@@ -432,7 +432,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.8px;
-      color: #0284c7;
+      color: #059669;
       text-transform: uppercase;
     }
 
@@ -477,8 +477,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .diff-toggle-wrap:hover {
-      border-color: #0284c7;
-      background: #f0f9ff;
+      border-color: #059669;
+      background: #f0fdf4;
     }
 
     .diff-toggle-wrap input {
@@ -508,7 +508,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .diff-toggle-wrap input:checked + .toggle-slider {
-      background: #0284c7;
+      background: #059669;
     }
 
     .diff-toggle-wrap input:checked + .toggle-slider::after {
@@ -540,9 +540,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .btn-swap:hover {
-      border-color: #0284c7;
-      color: #0284c7;
-      background: #f0f9ff;
+      border-color: #059669;
+      color: #059669;
+      background: #f0fdf4;
     }
 
     .btn-swap .material-symbols-outlined {
@@ -627,8 +627,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .left-indicator {
-      background: #e0f2fe;
-      color: #0369a1;
+      background: #f1f5f9;
+      color: #334155;
     }
 
     .right-indicator {
@@ -709,7 +709,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .rera-pill {
-      color: #38bdf8;
+      color: #34d399;
     }
 
     .hero-details {
@@ -750,7 +750,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .hero-title a:hover {
-      color: #0284c7;
+      color: #059669;
     }
 
     .hero-locality {
@@ -764,7 +764,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .loc-ic {
       font-size: 14px;
-      color: #0284c7;
+      color: #059669;
     }
 
     .hero-dist-chip {
@@ -782,7 +782,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       gap: 4px;
       font-size: 11px;
       font-weight: 600;
-      color: #0284c7;
+      color: #047857;
     }
 
     .hero-builder .material-symbols-outlined {
@@ -802,7 +802,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
       justify-content: center;
       gap: 6px;
-      background: #0f172a;
+      background: #059669;
       color: #ffffff;
       padding: 8px 12px;
       border-radius: 8px;
@@ -813,7 +813,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .btn-hero-primary:hover {
-      background: #0284c7;
+      background: #047857;
     }
 
     .btn-hero-primary .material-symbols-outlined {
@@ -856,7 +856,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       height: 42px;
       border-radius: 50%;
       background: #0f172a;
-      color: #38bdf8;
+      color: #34d399;
       font-weight: 900;
       font-size: 14px;
       display: flex;
@@ -928,7 +928,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #0284c7;
+      background: #059669;
       color: #ffffff;
       border: none;
       padding: 9px 16px;
@@ -940,7 +940,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .btn-browse-more:hover {
-      background: #0369a1;
+      background: #047857;
     }
 
     .btn-browse-more .material-symbols-outlined {
@@ -949,8 +949,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     /* CORE DIFFERENCES SUMMARY BOX */
     .differences-summary-section {
-      background: linear-gradient(135deg, #f0fdf4 0%, #f0f9ff 100%);
-      border: 1px solid #bae6fd;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border: 1px solid #a7f3d0;
       border-radius: 16px;
       padding: 16px 20px;
       display: flex;
@@ -973,7 +973,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .diff-title-icon {
       font-size: 20px;
-      color: #0284c7;
+      color: #059669;
     }
 
     .diff-header-title h3 {
@@ -985,8 +985,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .diff-count-badge {
       background: #ffffff;
-      border: 1px solid #7dd3fc;
-      color: #0369a1;
+      border: 1px solid #a7f3d0;
+      color: #047857;
       font-size: 11px;
       font-weight: 800;
       padding: 3px 10px;
@@ -1052,8 +1052,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .badge-left {
-      background: #e0f2fe;
-      color: #0369a1;
+      background: #f1f5f9;
+      color: #334155;
     }
 
     .badge-right {
@@ -1104,7 +1104,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .specs-section-title .material-symbols-outlined {
-      color: #0284c7;
+      color: #059669;
       font-size: 20px;
     }
 
@@ -1114,8 +1114,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       gap: 4px;
       font-size: 11px;
       font-weight: 700;
-      color: #0284c7;
-      background: #e0f2fe;
+      color: #047857;
+      background: #ecfdf5;
       padding: 3px 8px;
       border-radius: 6px;
     }
@@ -1173,7 +1173,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .left-dot {
-      background: #0284c7;
+      background: #64748b;
     }
 
     .right-dot {
@@ -1298,11 +1298,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .footer-left-info .material-symbols-outlined {
       font-size: 16px;
-      color: #0284c7;
+      color: #059669;
     }
 
     .btn-footer-close {
-      background: #0f172a;
+      background: #059669;
       color: #ffffff;
       border: none;
       padding: 9px 20px;
@@ -1314,7 +1314,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .btn-footer-close:hover {
-      background: #1e293b;
+      background: #047857;
     }
 
     @media (max-width: 900px) {

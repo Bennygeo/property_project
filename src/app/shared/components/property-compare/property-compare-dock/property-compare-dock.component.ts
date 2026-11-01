@@ -145,7 +145,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       gap: 6px;
       font-size: 13px;
       font-weight: 700;
-      color: #38bdf8;
+      color: #34d399;
       white-space: nowrap;
       padding-right: 6px;
       border-right: 1px solid rgba(255, 255, 255, 0.12);
@@ -212,7 +212,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .left-tag {
-      background: #0284c7;
+      background: #059669;
       color: #ffffff;
     }
 
@@ -240,7 +240,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .slot-price {
       font-size: 12px;
       font-weight: 700;
-      color: #38bdf8;
+      color: #34d399;
     }
 
     .btn-slot-remove {
@@ -321,7 +321,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
       color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.2);
       padding: 9px 16px;
@@ -329,19 +329,19 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
       transition: all 0.2s ease;
       white-space: nowrap;
     }
 
     .btn-dock-compare:hover {
-      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.55);
+      box-shadow: 0 6px 18px rgba(5, 150, 105, 0.55);
     }
 
     .btn-dock-compare.pulse-active {
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35), 0 4px 14px rgba(2, 132, 199, 0.4);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 4px 14px rgba(5, 150, 105, 0.4);
     }
 
     .btn-dock-compare .material-symbols-outlined {
