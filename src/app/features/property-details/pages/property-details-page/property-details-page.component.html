@@ -6,42 +6,6 @@
   <app-header />
 
   @if (property(); as prop) {
-  <!-- Sticky Navigation Sub-Bar (State-Preserving Back Button + Breadcrumbs + Share) -->
-  <nav class="details-nav-subbar">
-    <div class="max-w-content nav-subbar-inner">
-      <!-- Back Button with Dynamic Label -->
-      <button type="button" class="btn-back-state" (click)="goBack()">
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span>Back</span>
-      </button>
-
-      <!-- Breadcrumbs -->
-      <div class="details-breadcrumbs">
-        <a routerLink="/" class="crumb-link">Home</a>
-        <span class="crumb-sep">/</span>
-        <a [routerLink]="propertyService.lastSearchUrl()" class="crumb-link">Search Registry</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">{{ prop.title }}</span>
-      </div>
-
-      <!-- Right Quick Actions -->
-      <div class="subbar-actions">
-        <button type="button" class="btn-subbar-action" (click)="shareProperty()" title="Share Property Dossier">
-          <span class="material-symbols-outlined">share</span>
-          <span class="action-btn-text">Share</span>
-        </button>
-
-        <button type="button" class="btn-action-round" [class.shortlisted]="prop.isShortlisted"
-          (click)="propertyService.toggleShortlist(prop.id)"
-          [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
-          <span class="material-symbols-outlined">
-            {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
-          </span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
   <!-- 1. GUEST PREVIEW BANNER (Shown for 1 allowed free guest view) -->
   @if (isFirstGuestPreview()) {
   <div class="guest-preview-banner">
@@ -159,6 +123,22 @@
               <span class="material-symbols-outlined">event_available</span>
               <span>Schedule Site Visit</span>
             </button>
+
+            <div class="hdr-utility-actions">
+              <button type="button" class="btn-hdr-utility" (click)="shareProperty()" title="Share Property Dossier">
+                <span class="material-symbols-outlined">share</span>
+                <span>Share</span>
+              </button>
+
+              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted"
+                (click)="propertyService.toggleShortlist(prop.id)"
+                [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                <span class="material-symbols-outlined">
+                  {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                </span>
+                <span>{{ prop.isShortlisted ? 'Shortlisted' : 'Shortlist' }}</span>
+              </button>
+            </div>
           </div>
         </div>
 

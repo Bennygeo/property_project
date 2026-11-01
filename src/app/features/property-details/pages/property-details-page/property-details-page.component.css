@@ -567,6 +567,52 @@
   color: #ffffff;
 }
 
+.hdr-utility-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-hdr-utility {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.btn-hdr-utility:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.btn-hdr-utility.shortlisted {
+  color: #e11d48;
+  border-color: #fca5a5;
+  background: #fff1f2;
+}
+
+.btn-hdr-utility.shortlisted span.material-symbols-outlined {
+  color: #e11d48;
+  font-variation-settings: 'FILL' 1;
+}
+
+.btn-hdr-utility span.material-symbols-outlined {
+  font-size: 17px;
+  color: inherit;
+}
+
 /* ==========================================================================
    4. TWO-COLUMN WORKSPACE LAYOUT
    ========================================================================== */
