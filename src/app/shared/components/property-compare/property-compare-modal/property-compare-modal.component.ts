@@ -114,7 +114,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                       <div class="hero-actions">
                         <a [routerLink]="['/property', p1.id]" (click)="compareService.closeCompare()" class="btn-hero-primary">
                           <span class="material-symbols-outlined">visibility</span>
-                          <span>View Full Dossier</span>
+                          <span>View</span>
                         </a>
                         <a [href]="p1.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener" class="btn-hero-wa" title="Chat on WhatsApp">
                           <span class="material-symbols-outlined">chat</span>
@@ -184,7 +184,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                       <div class="hero-actions">
                         <a [routerLink]="['/property', p2.id]" (click)="compareService.closeCompare()" class="btn-hero-primary">
                           <span class="material-symbols-outlined">visibility</span>
-                          <span>View Full Dossier</span>
+                          <span>View</span>
                         </a>
                         <a [href]="p2.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener" class="btn-hero-wa" title="Chat on WhatsApp">
                           <span class="material-symbols-outlined">chat</span>
@@ -598,11 +598,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .hero-left {
-      border-top: 4px solid #0284c7;
+      /* Clean flat border */
     }
 
     .hero-right {
-      border-top: 4px solid #059669;
+      /* Clean flat border */
     }
 
     .hero-col-header {
@@ -678,7 +678,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       border-radius: 10px;
       overflow: hidden;
       position: relative;
-      cursor: pointer;
+      cursor: default;
       background: #f1f5f9;
     }
 
@@ -690,7 +690,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .hero-img-wrap:hover .hero-img {
-      transform: scale(1.03);
+      transform: none;
     }
 
     .hero-overlay-tag {
@@ -1012,15 +1012,15 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .diff-card:hover {
-      transform: translateY(-2px);
+      transform: none;
     }
 
     .diff-card.winner-left {
-      border-left: 4px solid #0284c7;
+      /* border removed */
     }
 
     .diff-card.winner-right {
-      border-right: 4px solid #059669;
+      /* border removed */
     }
 
     .diff-card-top {
@@ -1186,13 +1186,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .compare-table tbody tr:hover {
-      background: #f8fafc;
+      /* Hover effect removed */
     }
 
     /* Highlight differing rows */
     .row-diff {
       background: #fafcfe;
-      border-left: 3px solid #0284c7;
     }
 
     .td-label {
