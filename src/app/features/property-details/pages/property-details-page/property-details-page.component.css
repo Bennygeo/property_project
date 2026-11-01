@@ -1126,27 +1126,28 @@
 
 .maint-perk-chips {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem 0.85rem;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.65rem 1.75rem;
 }
 
 .maint-perk-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 600;
-  color: #2c4938;
-  background: #ffffff;
-  padding: 4px 8px;
+  color: #1e293b;
+  background: transparent;
+  padding: 0;
+  border: none;
   border-radius: 0;
-  border: 1px solid #cce7d6;
   white-space: nowrap;
 }
 
 .maint-perk-chip .material-symbols-outlined {
-  font-size: 15px;
+  font-size: 18px;
   color: #5e8f72;
+  flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
@@ -1783,10 +1784,10 @@
   border: none;
   border-bottom: 1px solid #e2e8f0;
   border-radius: 0;
-  padding: 12px 18px;
+  padding: 16px 22px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
   box-shadow: none !important;
   box-sizing: border-box;
 }
@@ -1803,6 +1804,11 @@
 }
 
 @media (max-width: 640px) {
+  .transit-card {
+    padding: 14px 16px;
+    gap: 16px;
+  }
+
   .transit-card:nth-child(odd) {
     border-right: none;
   }
@@ -1820,8 +1826,9 @@
 }
 
 .transit-icon-box {
-  width: auto;
-  height: auto;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
   border-radius: 0;
   background: transparent !important;
   color: #5e8f72 !important;
@@ -1832,28 +1839,34 @@
 }
 
 .transit-icon-box span {
-  font-size: 22px;
+  font-size: 44px;
+  color: #5e8f72;
+  line-height: 1;
 }
 
-.transit-meta {
+.transit-meta,
+.transit-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 
-.transit-label {
+.transit-type {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: #64748b;
 }
 
 .transit-name {
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #0f172a;
+  margin: 0;
+  line-height: 1.35;
 }
 
 .transit-sub {
@@ -1862,14 +1875,26 @@
 }
 
 .transit-distance-pill {
-  font-size: 12px;
-  font-weight: 800;
-  color: #0f172a;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2c4938;
+  background: #eef6f1;
+  border: 1px solid #c1dccb;
+  padding: 2px 8px;
   border-radius: 0;
   white-space: nowrap;
+  width: fit-content;
+  margin-top: 3px;
+}
+
+.transit-badge-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #5e8f72;
+  margin-top: 3px;
 }
 
 /* ==========================================================================
