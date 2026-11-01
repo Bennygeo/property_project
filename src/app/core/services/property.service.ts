@@ -307,8 +307,8 @@ export class PropertyService {
     ) as Observable<{ success: boolean; data: any } | null>).subscribe((res: any) => {
       this.isFetchingApi.set(false);
       if (res && res.success) {
-        const rawList = Array.isArray(res.data) 
-          ? res.data 
+        const rawList = Array.isArray(res.data)
+          ? res.data
           : (Array.isArray(res.data?.properties) ? res.data.properties : []);
         const total = typeof res.data?.total === 'number' ? res.data.total : rawList.length;
         this.totalApiProperties.set(total);
@@ -340,8 +340,8 @@ export class PropertyService {
               p.city
             );
             const fallbackMain = mockImages[globalIdx % mockImages.length];
-            const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http')) 
-              ? p.imageUrl 
+            const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http'))
+              ? p.imageUrl
               : fallbackMain;
             const resolvedPhotos = (Array.isArray(p.freePhotos) && p.freePhotos.length > 0 && p.freePhotos[0]?.startsWith('http'))
               ? p.freePhotos
@@ -413,8 +413,8 @@ export class PropertyService {
               p.city
             );
             const fallbackMain = mockImages[idx % mockImages.length];
-            const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http')) 
-              ? p.imageUrl 
+            const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http'))
+              ? p.imageUrl
               : fallbackMain;
             const resolvedPhotos = (Array.isArray(p.freePhotos) && p.freePhotos.length > 0 && p.freePhotos[0]?.startsWith('http'))
               ? p.freePhotos
