@@ -1,12 +1,12 @@
 /* ==========================================================================
-   FULL-BODY 3D-SHADED 2D CHARACTER STANDING ON BOTTOM EDGE (OVER TASKBAR)
-   No boxes, no background, no text — just the transparent cutout character
+   PHOTOREALISTIC REAL ESTATE ADVISOR STANDING OVER WINDOWS TASKBAR (RIGHT SIDE)
    ========================================================================== */
 
 :host {
   position: fixed;
   bottom: 0;
-  left: 28px;
+  right: 36px;
+  left: auto;
   z-index: 1080;
   pointer-events: none;
   line-height: 0;
@@ -14,14 +14,16 @@
 
 @media (max-width: 768px) {
   :host {
-    left: 8px;
+    right: 14px;
     bottom: 0;
   }
 }
 
 .vpp-standing-stage {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -30,13 +32,14 @@
   pointer-events: auto;
   cursor: pointer;
   transform-origin: bottom center;
-  animation: vppStepUp 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: vppStepIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  user-select: none;
 }
 
-@keyframes vppStepUp {
+@keyframes vppStepIn {
   from {
     opacity: 0;
-    transform: translateY(60px);
+    transform: translateY(45px);
   }
   to {
     opacity: 1;
@@ -44,67 +47,129 @@
   }
 }
 
-.vpp-fullbody-svg {
-  width: 175px;
-  height: 335px;
-  display: block;
-  overflow: visible;
-  user-select: none;
+/* Floating Audio Waveform Pill */
+.vpp-speech-indicator {
+  position: absolute;
+  top: -26px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  animation: vppFadeIn 0.2s ease-out;
+  pointer-events: none;
 }
 
-@media (max-width: 768px) {
-  .vpp-fullbody-svg {
-    width: 138px;
-    height: 264px;
+@keyframes vppFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Subtle Idle & Speaking Breathing on Torso */
-.vpp-torso-group {
-  transform-origin: 110px 265px;
-  animation: vppIdleBreath 3.4s ease-in-out infinite;
+.vpp-wave-bar {
+  display: inline-block;
+  width: 2.5px;
+  height: 10px;
+  background: #10b981;
+  border-radius: 0;
+  animation: vppWave 0.8s ease-in-out infinite alternate;
 }
 
-.vpp-torso-group.speaking-breath {
-  animation: vppSpeakBreath 1.6s ease-in-out infinite;
+.bar-1 { animation-delay: 0s; height: 7px; }
+.bar-2 { animation-delay: 0.2s; height: 12px; }
+.bar-3 { animation-delay: 0.4s; height: 9px; }
+.bar-4 { animation-delay: 0.15s; height: 11px; }
+
+@keyframes vppWave {
+  0% { transform: scaleY(0.4); }
+  100% { transform: scaleY(1.3); }
 }
 
-@keyframes vppIdleBreath {
-  0%, 100% {
-    transform: scaleY(1);
-  }
-  50% {
-    transform: scaleY(1.012);
-  }
+.vpp-advisor-name {
+  margin-left: 4px;
+  color: #f1f5f9;
 }
 
-@keyframes vppSpeakBreath {
+/* Photorealistic Figure & Subtle Natural Breathing Animation */
+.vpp-figure-wrapper {
+  position: relative;
+  transform-origin: bottom center;
+  transition: transform 0.06s linear;
+  animation: vppIdleSway 4.2s ease-in-out infinite;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.25));
+}
+
+.vpp-standing-stage.is-speaking .vpp-figure-wrapper {
+  animation: vppSpeakBreathing 2.2s ease-in-out infinite;
+}
+
+@keyframes vppIdleSway {
   0%, 100% {
     transform: scaleY(1) translateY(0);
   }
   50% {
-    transform: scaleY(1.02) translateY(-1.2px);
+    transform: scaleY(1.008) translateY(-1.5px);
   }
 }
 
-.vpp-head-group {
-  transition: transform 0.055s linear;
+@keyframes vppSpeakBreathing {
+  0%, 100% {
+    transform: scaleY(1) translateY(0);
+  }
+  50% {
+    transform: scaleY(1.015) translateY(-2.2px);
+  }
 }
 
-.vpp-brows-layer {
-  transition: transform 0.08s ease-out;
+/* Reduced Compact Size as requested */
+.vpp-advisor-photo {
+  display: block;
+  width: 130px;
+  height: 233px;
+  object-fit: contain;
+  vertical-align: bottom;
+  pointer-events: auto;
 }
 
-.vpp-left-arm,
-.vpp-right-arm {
-  transition: transform 0.09s ease-out;
+@media (max-width: 768px) {
+  .vpp-advisor-photo {
+    width: 105px;
+    height: 188px;
+  }
 }
 
-/* Right-Click Hidden Voice Setup Modal (Only shown if user right-clicks character to paste ElevenLabs Key) */
+/* Contact Shadow on Windows Taskbar Edge */
+.vpp-ground-shadow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 8px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.12) 65%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Right-Click Configuration Modal */
 .vpp-config-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,6 +186,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .vpp-config-head {
