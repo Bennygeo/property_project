@@ -1363,31 +1363,32 @@
 }
 
 /* ==========================================================================
-   TAB 1: ON-SITE INFRASTRUCTURE & SITE UTILITIES (BORDERLESS CLEAN GRID)
+   TAB 1: ON-SITE INFRASTRUCTURE & SITE UTILITIES (TABLE-LIKE BOX LIKE CONNECTIVITY)
    ========================================================================== */
 .infrastructure-iconic-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.75rem 2.5rem;
-  margin-top: 1.25rem;
-  background: transparent;
-  border: none;
+  gap: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #ffffff;
+  margin-top: 1rem;
   box-shadow: none !important;
 }
 
 @media (max-width: 768px) {
   .infrastructure-iconic-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
 }
 
 .infra-card {
   position: relative;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
+  background: #ffffff;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0;
+  padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -1396,9 +1397,30 @@
 }
 
 .infra-card:hover {
-  background: transparent !important;
+  background: #ffffff !important;
   transform: none !important;
   box-shadow: none !important;
+}
+
+.infra-card:nth-child(odd) {
+  border-right: 1px solid #e2e8f0;
+}
+
+@media (max-width: 768px) {
+  .infra-card:nth-child(odd) {
+    border-right: none;
+  }
+
+  .infra-card:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .infra-card:nth-last-child(1),
+  .infra-card:nth-last-child(2) {
+    border-bottom: none;
+  }
 }
 
 .infra-card-header-row {
@@ -1742,7 +1764,6 @@
 .transit-matrix-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
   gap: 0;
   border: 1px solid #e2e8f0;
   border-radius: 0;
@@ -1759,26 +1780,22 @@
 
 .transit-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
   border: none;
   border-bottom: 1px solid #e2e8f0;
   border-radius: 0;
-  padding: 12px 16px;
   padding: 12px 18px;
   display: flex;
   align-items: center;
   gap: 12px;
   box-shadow: none !important;
-  transition: border-color 0.15s ease;
   box-sizing: border-box;
-  transition: background-color 0.15s ease;
 }
 
 .transit-card:hover {
-  border-color: #5e8f72;
-  transform: none;
+  background: #ffffff !important;
+  transform: none !important;
   box-shadow: none !important;
-  background-color: #fafbf9;
+  border-color: #e2e8f0 !important;
 }
 
 .transit-card:nth-child(odd) {
@@ -1791,6 +1808,13 @@
   }
 
   .transit-card:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (min-width: 641px) {
+  .transit-card:nth-last-child(1),
+  .transit-card:nth-last-child(2) {
     border-bottom: none;
   }
 }
