@@ -1437,15 +1437,47 @@
   background: transparent !important;
   border: none !important;
   border-radius: 0;
-  color: #5e8f72 !important;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .infra-icon-emblem span {
-  font-size: 26px;
-  color: #5e8f72;
+  font-size: 44px;
+  line-height: 1;
+}
+
+/* Distinct Semantic Colors for Infrastructure */
+.theme-road .infra-icon-emblem span {
+  color: #2563eb; /* Roadway Cobalt Blue */
+}
+
+.theme-power .infra-icon-emblem span {
+  color: #d97706; /* Power Grid Amber */
+}
+
+.theme-water .infra-icon-emblem span {
+  color: #0284c7; /* Water Resource Sky Blue */
+}
+
+.theme-drainage .infra-icon-emblem span {
+  color: #0891b2; /* Drainage Cyan */
+}
+
+.theme-light .infra-icon-emblem span {
+  color: #ca8a04; /* Avenue Illumination Sun Gold */
+}
+
+.theme-security .infra-icon-emblem span {
+  color: #4f46e5; /* Perimeter Security Indigo */
+}
+
+.theme-park .infra-icon-emblem span {
+  color: #16a34a; /* Parks & Greenery Emerald */
+}
+
+.theme-maintenance .infra-icon-emblem span {
+  color: #0d9488; /* Free Maintenance Teal */
 }
 
 .infra-pill {
