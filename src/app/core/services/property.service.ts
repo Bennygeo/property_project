@@ -685,6 +685,27 @@ export class PropertyService {
   }
 
   /**
+   * Fetch trending high-growth corridors dynamically from database
+   */
+  public fetchTrendingCorridors(): Observable<any[]> {
+    const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: { corridors: any[] } }>(baseUrl);
+    return (tryGet(environment.apiUrl + '/geo/corridors.php').pipe(
+      catchError(() => tryGet('/P_demo_4/backend/api/geo/corridors.php')),
+      catchError(() => tryGet('/p_demo_4/backend/api/geo/corridors.php')),
+      catchError(() => tryGet('/api/geo/corridors.php')),
+      catchError(() => tryGet(environment.apacheApiUrl + '/geo/corridors.php')),
+      catchError(() => of({ success: false, data: { corridors: [] } }))
+    ) as Observable<{ success: boolean; data: { corridors: any[] } }>).pipe(
+      map(res => {
+        if (res && res.success && res.data && Array.isArray(res.data.corridors)) {
+          return res.data.corridors;
+        }
+        return [];
+      })
+    );
+  }
+
+  /**
    * Fetch list of all builders/developers from database
    */
   public fetchBuilders(): Observable<DeveloperSummary[]> {

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
@@ -11,6 +11,8 @@ export interface LocationSuggestion {
   city: string;
   tag: string;
   sub: string;
+  query?: string;
+  propertyCount?: number;
 }
 
 export interface PropertyTypeOption {
@@ -1476,7 +1478,7 @@ export interface PropertyTypeOption {
     }
   `]
 })
-export class HeroSearchComponent {
+export class HeroSearchComponent implements OnInit {
   private readonly router = inject(Router);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
@@ -1522,25 +1524,41 @@ export class HeroSearchComponent {
   // 5. Trending & Auto-Suggest
   readonly isLocationSuggestOpen = signal<boolean>(false);
   readonly googlePlacesList = signal<any[]>([]);
-  readonly trendingLocations: LocationSuggestion[] = [
-    { name: 'OMR IT Corridor', city: 'Chennai', tag: 'High Rental Yield', sub: 'Thoraipakkam to Siruseri' },
-    { name: 'Whitefield & ITPL', city: 'Bengaluru', tag: 'Tech Hub', sub: 'Hope Farm to Kadugodi' },
-    { name: 'Gachibowli Financial District', city: 'Hyderabad', tag: 'High Growth', sub: 'Nanakramguda Ring' },
-    { name: 'Powai Lakefront', city: 'Mumbai', tag: 'Lake Facing', sub: 'Hiranandani Gardens' },
-    { name: 'Golf Course Extension Road', city: 'Delhi NCR', tag: 'Ultra Luxury', sub: 'Sector 58 to 67' },
-    { name: 'ECR Beach Corridor', city: 'Chennai', tag: 'Coastal Villas & Plots', sub: 'Palavakkam to Kovalam' },
-    { name: 'Sarjapur Road Corridor', city: 'Bengaluru', tag: 'Gated Townships', sub: 'Carmelaram' }
-  ];
+  readonly trendingLocations = signal<LocationSuggestion[]>([
+    { name: 'GST Road (NH45)', city: 'Chengalpattu', tag: '300+ Verified Plots', sub: 'Vandalur, Tambaram & Madurantakam', query: 'GST Road', propertyCount: 302 },
+    { name: 'Chennai–Bengaluru Highway (NH48)', city: 'Kancheepuram', tag: 'Industrial & Electronics Hub', sub: 'Sriperumbudur, Walajabad & Ranipet', query: 'NH48', propertyCount: 217 },
+    { name: 'Salem–Kochi Highway (NH544)', city: 'Coimbatore', tag: 'High Capital Appreciation', sub: 'Avinashi Road, Sulur & Erode Belt', query: 'NH544', propertyCount: 200 },
+    { name: 'Madurai–Kanyakumari Highway (NH44)', city: 'Madurai', tag: 'Southern Transit Corridor', sub: 'Madurai South, Virudhunagar & Tirunelveli', query: 'NH44', propertyCount: 159 },
+    { name: 'Tiruvannamalai–Villupuram Road (NH77)', city: 'Tiruvannamalai', tag: 'High Demand Layouts', sub: 'Tindivanam, Gingee & Tiruvannamalai', query: 'NH77', propertyCount: 128 },
+    { name: 'Salem–Chennai Highway (NH79)', city: 'Salem', tag: 'Rapid Infrastructure Belt', sub: 'Salem, Attur & Kallakurichi Hub', query: 'NH79', propertyCount: 110 },
+    { name: 'Trichy–Chennai Highway (NH38)', city: 'Tiruchirappalli', tag: 'Central Transit Hub', sub: 'Tiruchirappalli East, Srirangam & Perambalur', query: 'NH38', propertyCount: 102 },
+    { name: 'Salem–Karur Highway (NH44)', city: 'Namakkal', tag: 'High Rental Yield', sub: 'Namakkal, Rasipuram & Paramathi Velur', query: 'Salem Karur', propertyCount: 86 },
+    { name: 'Thoothukudi–Madurai Highway (NH138)', city: 'Thoothukudi', tag: 'Port & Logistics Corridor', sub: 'Thoothukudi Port, Kovilpatti & Ottapidaram', query: 'Thoothukudi', propertyCount: 68 },
+    { name: 'OMR IT Corridor', city: 'Chengalpattu', tag: 'IT & Gated Townships', sub: 'Thiruporur, Kelambakkam & Siruseri IT Belt', query: 'OMR', propertyCount: 54 },
+    { name: 'East Coast Road (ECR)', city: 'Chengalpattu', tag: 'Coastal Villas & Plots', sub: 'Kovalam, Mahabalipuram & Cuddalore Coast', query: 'East Coast Road', propertyCount: 59 },
+    { name: 'Avinashi Road Industrial Belt (NH381)', city: 'Tiruppur', tag: 'Textile & Commercial Hub', sub: 'Avinashi, Palladam & Tiruppur Hub', query: 'Avinashi Road', propertyCount: 57 },
+    { name: 'Chennai–Kolkata Highway (NH16)', city: 'Tiruvallur', tag: 'Port & Smart City Belt', sub: 'Ponneri Smart City & Gummidipoondi', query: 'NH16', propertyCount: 35 }
+  ]);
 
   readonly filteredTrendingLocations = computed(() => {
     const q = this.propertyService.searchQuery().toLowerCase().trim();
-    if (!q) return this.trendingLocations;
-    return this.trendingLocations.filter(loc =>
+    const list = this.trendingLocations();
+    if (!q) return list;
+    return list.filter(loc =>
       loc.name.toLowerCase().includes(q) ||
       loc.city.toLowerCase().includes(q) ||
-      loc.sub.toLowerCase().includes(q)
+      loc.sub.toLowerCase().includes(q) ||
+      (loc.query && loc.query.toLowerCase().includes(q))
     );
   });
+
+  ngOnInit(): void {
+    this.propertyService.fetchTrendingCorridors().subscribe(corridors => {
+      if (corridors && corridors.length > 0) {
+        this.trendingLocations.set(corridors);
+      }
+    });
+  }
 
   // Matched Properties Signal (real-time from MySQL/PropertyService)
   readonly matchedProperties = computed(() => {
@@ -1619,7 +1637,8 @@ export class HeroSearchComponent {
   }
 
   selectLocation(loc: LocationSuggestion): void {
-    this.propertyService.searchQuery.set(loc.name);
+    const q = loc.query || loc.name;
+    this.propertyService.searchQuery.set(q);
     this.isLocationSuggestOpen.set(false);
     this.executeSearch();
   }
