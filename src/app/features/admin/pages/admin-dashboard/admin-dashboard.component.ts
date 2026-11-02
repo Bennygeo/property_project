@@ -86,6 +86,7 @@ import { SubdividedPlot } from '../../../../core/models/subdivided-plot.model';
 import { PlotDetails } from '../../../../core/models/property.model';
 import { PlotexViewerComponent } from '../../../../shared/components/plotex-viewer/plotex-viewer.component';
 import { InteractivePlotLayoutComponent } from '../../../../shared/components/interactive-plot-layout/interactive-plot-layout.component';
+import { UserMindsetBarComponent } from '../../../../shared/components/user-mindset-bar/user-mindset-bar.component';
 
 import { ActivatedRoute } from '@angular/router';
 import * as XLSX from 'xlsx';
@@ -119,7 +120,8 @@ export interface UploadedImageItem {
     FormsModule,
     ToastComponent,
     PlotexViewerComponent,
-    InteractivePlotLayoutComponent
+    InteractivePlotLayoutComponent,
+    UserMindsetBarComponent
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
