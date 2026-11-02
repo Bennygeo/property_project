@@ -741,17 +741,7 @@
             
             <div class="list-thumb-badges">
 
-              @if (prop.isClosestProximity) {
-              <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
-                <span class="material-symbols-outlined">near_me</span>
-                <span>Closest Proximity ({{ prop.closestNeighborDistanceKm }} km)</span>
-              </span>
-              } @else if (prop.distanceKm !== undefined && prop.distanceKm !== null && prop.distanceKm <= 5.0) {
-              <span class="list-closest-proximity-badge" title="Closest Proximity (< 5 km)">
-                <span class="material-symbols-outlined">near_me</span>
-                <span>Closest Proximity ({{ prop.distanceKm }} km)</span>
-              </span>
-              }
+
 
               @if (prop.isMediaUnlocked) {
               <span class="list-unlocked-badge">
@@ -804,17 +794,7 @@
             <div class="list-locality">
               <span class="material-symbols-outlined loc-icon">location_on</span>
               <span>{{ prop.locality }}, {{ prop.city }}</span>
-              @if (prop.isClosestProximity) {
-              <span class="pill-closest-proximity-sm" [title]="'Within ' + prop.closestNeighborDistanceKm + ' km of neighboring property'">
-                <span class="material-symbols-outlined">near_me</span>
-                Closest Proximity ({{ prop.closestNeighborDistanceKm }} km)
-              </span>
-              } @else if (prop.distanceKm !== undefined && prop.distanceKm !== null && prop.distanceKm <= 5.0) {
-              <span class="pill-closest-proximity-sm" title="Closest Proximity (< 5 km)">
-                <span class="material-symbols-outlined">near_me</span>
-                Closest Proximity ({{ prop.distanceKm }} km)
-              </span>
-              }
+
             </div>
 
             <div class="list-highlights-row">
@@ -984,12 +964,7 @@
               
               <div class="list-thumb-badges">
                 <span class="badge-tag-sm" style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:700;">Suggested For You</span>
-                @if (prop.isClosestProximity) {
-                <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
-                  <span class="material-symbols-outlined">near_me</span>
-                  <span>Closest Proximity ({{ prop.closestNeighborDistanceKm }} km)</span>
-                </span>
-                }
+
               </div>
 
             </div>

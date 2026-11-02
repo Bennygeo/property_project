@@ -33,17 +33,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             </span>
           }
 
-          @if (property.isClosestProximity) {
-            <span class="badge-closest-proximity" [title]="'Closest neighboring property: ' + (property.closestNeighborLocality ? property.closestNeighborLocality + ' (' + property.closestNeighborDistanceKm + ' km)' : property.closestNeighborDistanceKm + ' km away')">
-              <span class="material-symbols-outlined badge-icon">near_me</span>
-              <span>Closest Proximity ({{ property.closestNeighborDistanceKm }} km)</span>
-            </span>
-          } @else if (property.distanceKm !== undefined && property.distanceKm !== null && property.distanceKm <= 5.0) {
-            <span class="badge-closest-proximity" title="Closest Proximity (< 5 km)">
-              <span class="material-symbols-outlined badge-icon">near_me</span>
-              <span>Closest Proximity ({{ property.distanceKm }} km)</span>
-            </span>
-          }
+
 
           @if (property.badges.specialTag && !property.badges.specialTag.toLowerCase().includes('cadastral')) {
             <span class="badge-verified">
@@ -130,17 +120,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           @if (property.isGpsValid === false && property.gpsErrorReason) {
             <span class="pill-gps-error" title="GPS data is inaccurate or missing">GPS Inaccurate</span>
           }
-          @if (property.isClosestProximity) {
-            <span class="pill-closest-proximity" [title]="'Within ' + property.closestNeighborDistanceKm + ' km of neighboring property'">
-              <span class="material-symbols-outlined" style="font-size:11px;margin-right:2px;">near_me</span>
-              Closest Proximity ({{ property.closestNeighborDistanceKm }} km)
-            </span>
-          } @else if (property.distanceKm !== undefined && property.distanceKm !== null && property.distanceKm <= 5.0) {
-            <span class="pill-closest-proximity" title="Closest Proximity (< 5 km)">
-              <span class="material-symbols-outlined" style="font-size:11px;margin-right:2px;">near_me</span>
-              Closest Proximity ({{ property.distanceKm }} km)
-            </span>
-          } @else if (property.distanceKm !== undefined && property.distanceKm !== null) {
+          @if (property.distanceKm !== undefined && property.distanceKm !== null) {
             <span class="pill-distance">{{ property.distanceKm }} km away</span>
           }
         </p>
