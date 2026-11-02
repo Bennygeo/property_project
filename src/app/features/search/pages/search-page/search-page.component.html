@@ -68,14 +68,6 @@
             </span>
             }
 
-            @if (isNearbyGpsActive()) {
-            <span class="locality-tag-badge gps-active-tag">
-              <span class="material-symbols-outlined tag-loc-icon">my_location</span>
-              <span class="tag-loc-text">Near Me (&le; 5 km)</span>
-              <button type="button" class="tag-loc-remove" (click)="clearNearbyGps()" title="Exit Near Me Search">&times;</button>
-            </span>
-            }
-
             <input #omniboxInput type="text" class="omnibox-input" [value]="rawSearchInput()"
               (input)="onSearchInput($any($event.target).value)"
               (focus)="onSearchFocus()"
@@ -84,36 +76,10 @@
               (keydown)="onSearchKeydown($event)"
               autocomplete="off" autocorrect="off" autocapitalize="off"
               spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
-              [placeholder]="isNearbyGpsActive() ? 'Searching within 5 km of your location...' : (selectedDistrict() ? ('Search localities in ' + selectedDistrict() + ' (e.g. ' + getDistrictLocalityHint(selectedDistrict()) + ')...') : (selectedLocalities().length > 0 ? 'Add more localities (e.g. Ramapuram, Guindy)...' : 'Add locality (e.g. Porur, Ramapuram, Coimbatore), builder, or project...'))">
+              [placeholder]="selectedDistrict() ? ('Search localities in ' + selectedDistrict() + ' (e.g. ' + getDistrictLocalityHint(selectedDistrict()) + ')...') : (selectedLocalities().length > 0 ? 'Add more localities (e.g. Ramapuram, Guindy)...' : 'Add locality (e.g. Porur, Ramapuram, Coimbatore), builder, or project...')">
           </div>
 
-          <!-- GPS Locate Button (Inside Omnibox Input Field) -->
-          @if (isGeolocationAvailable()) {
-          <button type="button"
-                  class="omnibox-gps-btn"
-                  [class.is-active]="isNearbyGpsActive()"
-                  [class.is-loading]="isNearbyLoading()"
-                  (click)="triggerNearbySearch()"
-                  [title]="isNearbyGpsActive() ? 'Nearby Search Active (< 5 km) - Click to exit' : 'Find Properties Near Me (< 5 km)'"
-                  aria-label="Find Properties Near Me (< 5 km)">
-            @if (isNearbyLoading()) {
-              <span class="material-symbols-outlined gps-spin">progress_activity</span>
-            } @else {
-              <span class="material-symbols-outlined">{{ isNearbyGpsActive() ? 'my_location' : 'near_me' }}</span>
-            }
-            <span class="gps-btn-text">
-              @if (isNearbyLoading()) {
-                Locating...
-              } @else if (isNearbyGpsActive()) {
-                < 5km Active
-              } @else {
-                Near Me
-              }
-            </span>
-          </button>
-          }
-
-          @if (selectedLocalities().length > 0 || rawSearchInput() || isNearbyGpsActive()) {
+          @if (selectedLocalities().length > 0 || rawSearchInput()) {
           <button type="button" class="omnibox-clear-btn" (click)="clearSearchQuery()"
             aria-label="Clear all locality searches">
             <span class="material-symbols-outlined">close</span>
@@ -607,25 +573,12 @@
         <!-- Results Counter & Active Pills -->
         <div class="controls-left">
           <h1 class="results-heading">
-            <span class="results-count">{{ isNearbyGpsActive() ? filteredProperties().length : (propertyService.totalApiProperties() || filteredProperties().length) }}</span>
-            <span class="results-label">
-              @if (isNearbyGpsActive()) {
-                {{ isGpsAutoExpanded() ? 'Nearest Properties with GPS (Beyond 5 km)' : 'Properties Found Within 5 km' }}
-              } @else {
-                Properties &amp; Land Found
-              }
-            </span>
+            <span class="results-count">{{ propertyService.totalApiProperties() || filteredProperties().length }}</span>
+            <span class="results-label">Properties &amp; Land Found</span>
           </h1>
 
           <!-- Active Filter Tags -->
           <div class="active-tags-row">
-            @if (isNearbyGpsActive()) {
-            <div class="active-tag-pill active-tag-gps">
-              <span class="material-symbols-outlined" style="font-size: 14px;">my_location</span>
-              <span>Nearby: &le; 5 km Radius</span>
-              <button type="button" (click)="clearNearbyGps()" title="Exit Nearby Search">&times;</button>
-            </div>
-            }
             @if (selectedDistrict()) {
             <div class="active-tag-pill active-tag-district">
               <span class="material-symbols-outlined" style="font-size: 14px;">domain</span>
@@ -748,72 +701,6 @@
       </div>
       }
 
-      <!-- NEARBY GPS SCANNING LOADER -->
-      @if (isNearbyLoading()) {
-      <div class="nearby-scanner-loader">
-        <div class="radar-scan-circle">
-          <div class="radar-pulse"></div>
-          <div class="radar-pulse radar-pulse-delayed"></div>
-          <span class="material-symbols-outlined radar-center-icon">my_location</span>
-        </div>
-        <div class="scanner-text-block">
-          <h3 class="scanner-title">
-            {{ isLocatingUser() ? 'Acquiring Your Exact GPS Location...' : 'Scanning Properties Within 5 km Radius...' }}
-          </h3>
-          <p class="scanner-desc">
-            {{ isLocatingUser() 
-               ? 'Requesting high-accuracy device coordinates to pinpoint nearby properties...' 
-               : 'Calculating real-time Haversine distances against survey-verified cadastral deeds...' }}
-          </p>
-          <div class="scanner-progress-bar">
-            <div class="scanner-progress-fill"></div>
-          </div>
-        </div>
-      </div>
-      }
-
-      <!-- LIVE GEOLOCATION 5KM RADIUS BANNER -->
-      @if (isNearbyGpsActive() && !isNearbyLoading()) {
-      <div class="nearby-gps-banner" [class.is-fallback]="isGpsAutoExpanded()">
-        <div class="nearby-gps-icon-circle">
-          <span class="material-symbols-outlined nearby-gps-icon">
-            {{ isGpsAutoExpanded() ? 'explore' : 'my_location' }}
-          </span>
-        </div>
-        <div class="nearby-gps-content">
-          <div class="nearby-gps-title-row">
-            <h3 class="nearby-gps-heading">
-              {{ isGpsAutoExpanded() ? 'Nearest Verified Properties' : 'Live GPS: Properties Within 5 km' }}
-            </h3>
-            <span class="nearby-gps-badge" [class.is-warn]="isGpsAutoExpanded()">
-              {{ isGpsAutoExpanded() ? 'Beyond 5 km' : 'Within 5 km Radius' }}
-            </span>
-          </div>
-          @if (detectedAddress()) {
-            <div class="nearby-confirmed-addr">
-              <span class="material-symbols-outlined addr-pin">pin_drop</span>
-              <span class="addr-text">{{ detectedAddress()?.compactTitle || detectedAddress()?.displayName }}</span>
-              <button type="button" class="btn-adjust-loc" (click)="isLocationConfirmModalOpen.set(true)" title="Change or adjust location">
-                <span class="material-symbols-outlined">edit</span>
-                <span>Adjust</span>
-              </button>
-            </div>
-          }
-          <p class="nearby-gps-desc">
-            @if (isGpsAutoExpanded()) {
-              No verified properties were found within a 5 km radius of your location. We've automatically found the <strong>nearest verified properties with valid GPS coordinates</strong>, sorted from closest to farthest.
-            } @else {
-              Displaying <strong>{{ filteredProperties().length }} verified properties</strong> located within 5 km of your current device position, sorted by closest distance. Properties without valid cadastral GPS data are excluded.
-            }
-          </p>
-        </div>
-        <button type="button" class="btn-clear-gps-action" (click)="clearNearbyGps()" title="Exit Nearby Search">
-          <span class="material-symbols-outlined">close</span>
-          <span>Exit Near Me</span>
-        </button>
-      </div>
-      }
-
       <!-- 5KM GPS RADIUS EXTENSION BANNER -->
       @if (isRadiusExtendedSearch()) {
       <div class="radius-search-banner">
@@ -832,7 +719,6 @@
       </div>
       }
 
-      @if (!isNearbyLoading()) {
       <!-- RESULTS CONTAINER -->
       @if (filteredProperties().length > 0) {
       <!-- 1. GRID VIEW -->
@@ -1223,7 +1109,6 @@
         </div>
       </div>
       }
-      }
     </section>
 
     <!-- RIGHT SIDE: Sponsored Ad Rail -->
@@ -1327,110 +1212,6 @@
 
   <!-- Comprehensive Footer -->
   <app-footer />
-
-  <!-- Live Address Confirmation Modal (Option 3 Reverse Geocoding) -->
-  @if (isLocationConfirmModalOpen()) {
-    <div class="loc-modal-overlay" (click)="cancelLocationConfirm()">
-      <div class="loc-modal-card" (click)="$event.stopPropagation()">
-        <!-- Header -->
-        <div class="loc-modal-header">
-          <div class="loc-modal-title-wrap">
-            <div class="loc-modal-icon-badge">
-              <span class="material-symbols-outlined">my_location</span>
-            </div>
-            <div>
-              <h3 class="loc-modal-title">Confirm Your Location</h3>
-              <p class="loc-modal-sub">Review or adjust your address before searching properties within 5 km.</p>
-            </div>
-          </div>
-          <button type="button" class="loc-modal-close" (click)="cancelLocationConfirm()" title="Close">&times;</button>
-        </div>
-
-        <!-- Accuracy Advisory Banner -->
-        <div class="loc-advisory-banner">
-          <span class="material-symbols-outlined advisory-icon">info</span>
-          <div class="advisory-text">
-            <strong>Desktop / Wi-Fi Precision Notice:</strong>
-            Wired ethernet and desktop Wi-Fi connections can detect approximate ISP routing centroids. If the detected location is slightly off, search and pick your exact neighborhood below.
-          </div>
-        </div>
-
-        <!-- Detected Address Card -->
-        @if (detectedAddress(); as addr) {
-          <div class="loc-detected-box">
-            <div class="loc-detected-label">
-              <span class="material-symbols-outlined label-icon">place</span>
-              <span>Detected Address</span>
-            </div>
-            <div class="loc-detected-main">
-              <div class="loc-detected-heading">
-                {{ addr.compactTitle || addr.displayName }}
-              </div>
-              @if (addr.locality || addr.city || addr.postcode) {
-                <div class="loc-detected-meta">
-                  @if (addr.locality) { <span class="loc-tag">{{ addr.locality }}</span> }
-                  @if (addr.city) { <span class="loc-tag">{{ addr.city }}</span> }
-                  @if (addr.postcode) { <span class="loc-tag">PIN: {{ addr.postcode }}</span> }
-                  <span class="loc-tag coord-tag">GPS: {{ pendingCoords()?.latitude | number:'1.4-4' }}, {{ pendingCoords()?.longitude | number:'1.4-4' }}</span>
-                </div>
-              }
-            </div>
-          </div>
-        }
-
-        <!-- Search / Fine-Tune Input Field with Autocomplete -->
-        <div class="loc-search-section">
-          <label class="loc-search-label" for="locAddressInput">
-            <span class="material-symbols-outlined label-search-icon">edit_location</span>
-            <span>Wrong locality? Search &amp; select your exact area or street:</span>
-          </label>
-          <div class="loc-input-wrapper">
-            <span class="material-symbols-outlined input-icon">search</span>
-            <input
-              id="locAddressInput"
-              type="text"
-              class="loc-text-input"
-              [value]="manualAddressInput()"
-              (input)="onManualAddressInput($any($event.target).value)"
-              placeholder="e.g. Porur, Anna Nagar, Velachery, T Nagar, Coimbatore..."
-              autocomplete="off"
-            />
-            @if (isAddressSearching()) {
-              <span class="material-symbols-outlined input-spinner">progress_activity</span>
-            }
-          </div>
-
-          <!-- Autocomplete Dropdown List -->
-          @if (addressSearchSuggestions().length > 0) {
-            <div class="loc-suggestions-list">
-              <div class="suggestions-header">Search Results (Tap to select)</div>
-              @for (item of addressSearchSuggestions(); track item.displayName) {
-                <div class="suggestion-item" (click)="selectAddressSuggestion(item)">
-                  <span class="material-symbols-outlined sug-icon">location_on</span>
-                  <div class="sug-info">
-                    <span class="sug-title">{{ item.compactTitle || item.name || item.locality }}</span>
-                    <span class="sug-full">{{ item.displayName }}</span>
-                  </div>
-                  <span class="material-symbols-outlined sug-select-icon">check</span>
-                </div>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Footer Actions -->
-        <div class="loc-modal-actions">
-          <button type="button" class="btn-loc-cancel" (click)="cancelLocationConfirm()">
-            Cancel
-          </button>
-          <button type="button" class="btn-loc-confirm" (click)="confirmLocationAndProceed()">
-            <span class="material-symbols-outlined">radar</span>
-            <span>Confirm &amp; Find Properties (&le; 5 km)</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  }
 
   <!-- Global Modals & Notifications -->
   <app-property-media-modal />

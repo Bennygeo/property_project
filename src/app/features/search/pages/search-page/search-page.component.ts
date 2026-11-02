@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Property, PropertyType } from '../../../../core/models/property.model';
-import { PropertyService, DistrictItem, DistrictHubItem, RegionalGroupItem, ReverseGeocodeResult } from '../../../../core/services/property.service';
+import { PropertyService, DistrictItem, DistrictHubItem, RegionalGroupItem } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MetroService } from '../../../../core/services/metro.service';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -295,259 +295,6 @@ export class SearchPageComponent implements OnInit {
   readonly radiusSearchLocationName = signal<string>('');
   readonly radiusFoundCount = signal<number>(0);
 
-  // Live User GPS / Nearby < 5km Signals
-  readonly isGeolocationAvailable = signal<boolean>(false);
-  readonly isLocatingUser = signal<boolean>(false);
-  readonly isNearbyGpsActive = signal<boolean>(false);
-  readonly userCoordinates = signal<GpsCoordinates | null>(null);
-  readonly isNearbyProcessing = signal<boolean>(false);
-
-  // Address Confirmation Modal State (Option 3 - Reverse Geocoding)
-  readonly isLocationConfirmModalOpen = signal<boolean>(false);
-  readonly detectedAddress = signal<ReverseGeocodeResult | null>(null);
-  readonly pendingCoords = signal<GpsCoordinates | null>(null);
-  readonly manualAddressInput = signal<string>('');
-  readonly addressSearchSuggestions = signal<ReverseGeocodeResult[]>([]);
-  readonly isAddressSearching = signal<boolean>(false);
-  private addressSearchDebounceTimer: any = null;
-
-  readonly isNearbyLoading = computed<boolean>(() => {
-    return this.isLocatingUser() || this.isNearbyProcessing() || (this.isNearbyGpsActive() && this.propertyService.isFetchingApi());
-  });
-
-  checkGeolocationSupport(): void {
-    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
-      if ('permissions' in navigator && (navigator as any).permissions && (navigator as any).permissions.query) {
-        (navigator as any).permissions.query({ name: 'geolocation' }).then((status: any) => {
-          if (status.state === 'denied') {
-            this.isGeolocationAvailable.set(false);
-          } else {
-            this.isGeolocationAvailable.set(true);
-          }
-          status.onchange = () => {
-            const allowed = status.state !== 'denied';
-            this.isGeolocationAvailable.set(allowed);
-            if (!allowed && this.isNearbyGpsActive()) {
-              this.clearNearbyGps();
-            }
-          };
-        }).catch(() => {
-          this.isGeolocationAvailable.set(true);
-        });
-      } else {
-        this.isGeolocationAvailable.set(true);
-      }
-    } else {
-      this.isGeolocationAvailable.set(false);
-    }
-  }
-
-  triggerNearbySearch(): void {
-    if (this.isNearbyGpsActive()) {
-      this.clearNearbyGps();
-      return;
-    }
-
-    if (typeof window === 'undefined' || !('geolocation' in navigator)) {
-      this.notificationService.show({
-        type: 'error',
-        title: 'GPS Unavailable',
-        message: 'Geolocation is not supported by your browser or machine.',
-        icon: 'location_off'
-      });
-      return;
-    }
-
-    // 1. Immediately clear other search boxes, target area dropdown, and filters
-    this.rawSearchInput.set('');
-    this.searchQuery.set('');
-    this.selectedLocalities.set([]);
-    this.selectedDistrict.set('');
-    this.selectedCity.set('all');
-    this.selectedType.set('all');
-    this.selectedDeveloper.set('all');
-    this.selectedBudget.set('all');
-    this.selectedBhk.set('all');
-    this.cmdaOnly.set(false);
-    this.directOwnerOnly.set(false);
-    this.videoOnly.set(false);
-    this.droneOnly.set(false);
-    this.readyToMoveOnly.set(false);
-    this.sortBy.set('featured');
-    this.isDistrictDropdownOpen.set(false);
-    this.isSuggestionsOpen.set(false);
-    this.liveDbSuggestions.set([]);
-    this.googlePlacesSuggestions.set([]);
-    this.builderSearchQuery.set('');
-
-    // Clear URL parameters
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {},
-      replaceUrl: true
-    });
-
-    // 2. Start locating user
-    this.isLocatingUser.set(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords: GpsCoordinates = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
-        };
-        this.pendingCoords.set(coords);
-
-        // Reverse geocode via OpenStreetMap Nominatim proxy API
-        this.propertyService.reverseGeocode(coords.latitude, coords.longitude).subscribe({
-          next: (res) => {
-            this.isLocatingUser.set(false);
-            const addressData: ReverseGeocodeResult = res || {
-              displayName: `Detected coordinates: ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`,
-              compactTitle: `Coordinates (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`,
-              locality: 'Current Coordinates',
-              city: 'Tamil Nadu',
-              latitude: coords.latitude,
-              longitude: coords.longitude
-            };
-            this.detectedAddress.set(addressData);
-            this.manualAddressInput.set(addressData.compactTitle || addressData.displayName || '');
-            this.addressSearchSuggestions.set([]);
-            this.isLocationConfirmModalOpen.set(true);
-          },
-          error: () => {
-            this.isLocatingUser.set(false);
-            const fallback: ReverseGeocodeResult = {
-              displayName: `Detected Location (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`,
-              compactTitle: `Coordinates (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`,
-              locality: 'Current Location',
-              city: 'Tamil Nadu',
-              latitude: coords.latitude,
-              longitude: coords.longitude
-            };
-            this.detectedAddress.set(fallback);
-            this.manualAddressInput.set(fallback.compactTitle);
-            this.addressSearchSuggestions.set([]);
-            this.isLocationConfirmModalOpen.set(true);
-          }
-        });
-      },
-      (err) => {
-        this.isLocatingUser.set(false);
-        this.isNearbyProcessing.set(false);
-        let errorMsg = 'Unable to retrieve your current location.';
-        if (err.code === err.PERMISSION_DENIED) {
-          errorMsg = 'Location permission was denied. Please allow location permissions in your browser.';
-          this.isGeolocationAvailable.set(false);
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          errorMsg = 'Location position is unavailable on this device.';
-        } else if (err.code === err.TIMEOUT) {
-          errorMsg = 'Location detection timed out. Please try again.';
-        }
-        this.notificationService.show({
-          type: 'warning',
-          title: 'Location Request Failed',
-          message: errorMsg,
-          icon: 'location_disabled'
-        });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
-      }
-    );
-  }
-
-  onManualAddressInput(val: string): void {
-    this.manualAddressInput.set(val);
-    if (this.addressSearchDebounceTimer) {
-      clearTimeout(this.addressSearchDebounceTimer);
-    }
-    if (!val || val.trim().length < 2) {
-      this.addressSearchSuggestions.set([]);
-      this.isAddressSearching.set(false);
-      return;
-    }
-    this.isAddressSearching.set(true);
-    this.addressSearchDebounceTimer = setTimeout(() => {
-      this.propertyService.searchGeocode(val.trim()).subscribe({
-        next: (results) => {
-          this.addressSearchSuggestions.set(results);
-          this.isAddressSearching.set(false);
-        },
-        error: () => {
-          this.addressSearchSuggestions.set([]);
-          this.isAddressSearching.set(false);
-        }
-      });
-    }, 350);
-  }
-
-  selectAddressSuggestion(suggestion: ReverseGeocodeResult): void {
-    this.detectedAddress.set(suggestion);
-    this.manualAddressInput.set(suggestion.compactTitle || suggestion.displayName);
-    this.pendingCoords.set({
-      latitude: suggestion.latitude,
-      longitude: suggestion.longitude
-    });
-    this.addressSearchSuggestions.set([]);
-  }
-
-  confirmLocationAndProceed(): void {
-    const coords = this.pendingCoords();
-    if (!coords) return;
-    this.isLocationConfirmModalOpen.set(false);
-    this.userCoordinates.set(coords);
-    this.isNearbyGpsActive.set(true);
-    this.isNearbyProcessing.set(true);
-    this.displayedCount.set(20);
-
-    // Load actual nearby properties within 5km from MySQL backend
-    this.propertyService.loadPropertiesFromApi({
-      offset: 0,
-      limit: 50,
-      append: false,
-      lat: coords.latitude,
-      lng: coords.longitude,
-      radius: 5
-    });
-
-    setTimeout(() => {
-      this.isNearbyProcessing.set(false);
-    }, 500);
-
-    const loc = this.detectedAddress()?.locality || this.detectedAddress()?.city || 'selected coordinates';
-    this.notificationService.show({
-      type: 'success',
-      title: 'Location Confirmed',
-      message: `Verified your address at ${loc}. Showing properties near you.`,
-      icon: 'near_me'
-    });
-  }
-
-  cancelLocationConfirm(): void {
-    this.isLocationConfirmModalOpen.set(false);
-    this.pendingCoords.set(null);
-    this.detectedAddress.set(null);
-    this.addressSearchSuggestions.set([]);
-  }
-
-  clearNearbyGps(): void {
-    this.isNearbyGpsActive.set(false);
-    this.userCoordinates.set(null);
-    this.pendingCoords.set(null);
-    this.detectedAddress.set(null);
-    this.displayedCount.set(20);
-    this.fetchFilteredFromApi();
-    this.notificationService.show({
-      type: 'info',
-      title: 'Nearby Search Exited',
-      message: 'Restored standard regional catalog view.',
-      icon: 'explore'
-    });
-  }
-
   // Toggle Signals
   readonly cmdaOnly = signal<boolean>(false);
   readonly directOwnerOnly = signal<boolean>(false);
@@ -744,58 +491,7 @@ export class SearchPageComponent implements OnInit {
       return true;
     };
 
-    // --- CASE 1: Nearby GPS 5km Radius Mode Active ---
-    if (this.isNearbyGpsActive() && this.userCoordinates()) {
-      const userCoords = this.userCoordinates()!;
-      const validGpsList: Property[] = [];
-
-      for (const p of all) {
-        // Strictly exclude properties without valid GPS coordinates
-        let coords: GpsCoordinates | null = (p.latitude && p.longitude)
-          ? { latitude: p.latitude, longitude: p.longitude }
-          : null;
-
-        if (!coords) {
-          const rawLink = p.googleMapsLink || (p.masterDetails && p.masterDetails.googleMapsLink) || p.interactiveMapUrl;
-          const validation = validateGpsData(rawLink, p.latitude, p.longitude, p.locality, p.city);
-          if (validation.isValid && validation.coordinates) {
-            coords = validation.coordinates;
-          }
-        }
-
-        if (!coords) {
-          continue; // EXCLUDE invalid GPS
-        }
-
-        const distance = (p.distanceKm !== undefined && p.distanceKm !== null)
-          ? p.distanceKm
-          : haversineDistanceKm(userCoords, coords);
-
-        if (matchesFacets(p)) {
-          validGpsList.push({
-            ...p,
-            isGpsValid: true,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            distanceKm: distance,
-            isClosestProximity: distance <= 5.0
-          });
-        }
-      }
-
-      // Sort by closest distance first
-      validGpsList.sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
-
-      const within5km = validGpsList.filter(p => (p.distanceKm || 0) <= 5.0);
-      if (within5km.length > 0) {
-        return within5km;
-      } else {
-        // Fallback: automatically show the nearest available properties with distance labels
-        return validGpsList;
-      }
-    }
-
-    // --- CASE 2: Standard Search / Filter Mode ---
+    // Apply Filters
     const results = all.filter(p => matchesFacets(p));
 
     // Apply Sorting
@@ -817,18 +513,6 @@ export class SearchPageComponent implements OnInit {
     }
 
     return [];
-  });
-
-  readonly isGpsAutoExpanded = computed<boolean>(() => {
-    if (!this.isNearbyGpsActive() || !this.userCoordinates()) return false;
-    const props = this.filteredProperties();
-    if (props.length === 0) return false;
-    return (props[0].distanceKm ?? 0) > 5.0;
-  });
-
-  readonly nearby5kmCount = computed<number>(() => {
-    if (!this.isNearbyGpsActive() || !this.userCoordinates()) return 0;
-    return this.filteredProperties().filter(p => (p.distanceKm ?? 0) <= 5.0).length;
   });
 
   // Suggested Properties when exact search returns 0 matching results
@@ -894,16 +578,6 @@ export class SearchPageComponent implements OnInit {
 
   loadMore(): void {
     if (this.propertyService.hasMoreApiProperties() && !this.propertyService.isFetchingApi()) {
-      if (this.isNearbyGpsActive() && this.userCoordinates()) {
-        const coords = this.userCoordinates()!;
-        this.propertyService.loadNextBatch(20, {
-          lat: coords.latitude,
-          lng: coords.longitude,
-          radius: 5
-        });
-        return;
-      }
-
       const locs = this.selectedLocalities();
       const q = this.searchQuery().trim();
       const city = (q && this.selectedCity() === 'all') ? undefined : (this.selectedCity() !== 'all' ? this.selectedCity() : undefined);
@@ -937,9 +611,6 @@ export class SearchPageComponent implements OnInit {
   ngOnInit(): void {
     // Record current URL for seamless back-navigation from property details
     this.propertyService.setLastSearchUrl(this.router.url);
-
-    // Detect browser/device geolocation capabilities
-    this.checkGeolocationSupport();
 
     // Load available districts from MySQL database
     this.propertyService.fetchDistricts().subscribe(res => {
@@ -1013,19 +684,6 @@ export class SearchPageComponent implements OnInit {
   }
 
   fetchFilteredFromApi(): void {
-    if (this.isNearbyGpsActive() && this.userCoordinates()) {
-      const coords = this.userCoordinates()!;
-      this.propertyService.loadPropertiesFromApi({
-        offset: 0,
-        limit: 50,
-        append: false,
-        lat: coords.latitude,
-        lng: coords.longitude,
-        radius: 5
-      });
-      return;
-    }
-
     const q = this.searchQuery().trim();
     // When text search is active, query across all cities in DB unless a city chip was explicitly clicked
     const city = (q && this.selectedCity() === 'all') ? undefined : (this.selectedCity() !== 'all' ? this.selectedCity() : undefined);
@@ -1189,8 +847,6 @@ export class SearchPageComponent implements OnInit {
     this.isSuggestionsOpen.set(false);
     this.googlePlacesSuggestions.set([]);
     this.liveDbSuggestions.set([]);
-    this.isNearbyGpsActive.set(false);
-    this.userCoordinates.set(null);
     this.displayedCount.set(20);
     this.syncUrlParams();
     this.fetchFilteredFromApi();
