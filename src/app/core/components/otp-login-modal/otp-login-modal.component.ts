@@ -16,27 +16,13 @@ import { NotificationService } from '../../services/notification.service';
           <!-- Modal Header -->
           <div class="modal-header">
             <div>
-              <div class="header-badge-row">
-                <span class="wa-live-badge">
-                  <svg class="wa-badge-icon" viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.16 6.99C8.97 6.99 8.79 7 8.63 7.29C8.44 7.6 7.9 8.1 7.9 9.13C7.9 10.15 8.65 11.14 8.75 11.28C8.86 11.41 10.22 13.5 12.29 14.4C14 15.13 14.35 14.97 14.71 14.94C15.06 14.9 15.86 14.46 16.03 13.99C16.19 13.52 16.19 13.12 16.14 13.04C16.09 12.95 15.96 12.9 15.74 12.79C15.52 12.68 14.44 12.15 14.24 12.08C14.04 12 13.89 11.97 13.74 12.19C13.6 12.41 13.16 12.92 13.03 13.07C12.9 13.22 12.77 13.24 12.55 13.13C12.33 13.02 11.62 12.79 10.77 12.03C10.11 11.44 9.67 10.71 9.54 10.49C9.41 10.27 9.53 10.15 9.64 10.04C9.74 9.94 9.86 9.78 9.97 9.65C10.08 9.52 10.12 9.42 10.19 9.27C10.26 9.13 10.23 9 10.17 8.89C10.12 8.78 9.67 7.67 9.48 7.22C9.3 6.78 9.12 6.84 8.98 6.83C8.85 6.83 8.7 6.83 8.55 6.83" />
-                  </svg>
-                  <span>Official WhatsApp Cloud Delivery</span>
-                </span>
-              </div>
-              <h2 class="modal-title">
-                @if (step() === 'phone') {
-                  Sign In with WhatsApp
-                } @else {
-                  Enter Verification Code
-                }
-              </h2>
+              <h2 class="modal-title">Sign In</h2>
               <p class="modal-subtitle">
                 @if (step() === 'phone') {
-                  We will send a 4-digit code directly to your WhatsApp inbox
+                  Enter your mobile number to continue
                 } @else {
-                  Code sent to WhatsApp number <strong>+91 {{ phone() }}</strong>
-                  <button type="button" class="btn-link-edit" (click)="step.set('phone')">Change</button>
+                  Code sent to <strong>+91 {{ phone() }}</strong>
+                  <button type="button" class="btn-link-edit" (click)="step.set('phone')">Edit</button>
                 }
               </p>
             </div>
@@ -46,8 +32,7 @@ import { NotificationService } from '../../services/notification.service';
           <!-- Minimal Notice if Guest View Limit Reached -->
           @if (authService.otpModalReason() === 'guest_limit' && step() === 'phone') {
             <div class="minimal-notice">
-              <span class="material-symbols-outlined notice-icon">lock_open</span>
-              <span>Sign in via WhatsApp to unlock unlimited verified property dossiers &amp; drone surveys</span>
+              <span>Sign in to unlock full verified property details</span>
             </div>
           }
 
@@ -62,7 +47,7 @@ import { NotificationService } from '../../services/notification.service';
                   inputmode="numeric"
                   maxlength="10"
                   class="phone-input"
-                  placeholder="Enter 10-digit WhatsApp number"
+                  placeholder="Enter 10-digit number"
                   [value]="phone()"
                   (input)="onPhoneInput($event)"
                   autocomplete="tel-national"
@@ -72,144 +57,86 @@ import { NotificationService } from '../../services/notification.service';
 
               <button 
                 type="submit" 
-                class="btn-whatsapp-primary" 
+                class="btn-primary" 
                 [disabled]="phone().length < 10 || authService.isSubmitting()">
                 @if (authService.isSubmitting()) {
                   <span class="spinner"></span>
-                  <span>Sending Code to WhatsApp...</span>
+                  <span>Sending code...</span>
                 } @else {
-                  <svg class="wa-btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.16 6.99C8.97 6.99 8.79 7 8.63 7.29C8.44 7.6 7.9 8.1 7.9 9.13C7.9 10.15 8.65 11.14 8.75 11.28C8.86 11.41 10.22 13.5 12.29 14.4C14 15.13 14.35 14.97 14.71 14.94C15.06 14.9 15.86 14.46 16.03 13.99C16.19 13.52 16.19 13.12 16.14 13.04C16.09 12.95 15.96 12.9 15.74 12.79C15.52 12.68 14.44 12.15 14.24 12.08C14.04 12 13.89 11.97 13.74 12.19C13.6 12.41 13.16 12.92 13.03 13.07C12.9 13.22 12.77 13.24 12.55 13.13C12.33 13.02 11.62 12.79 10.77 12.03C10.11 11.44 9.67 10.71 9.54 10.49C9.41 10.27 9.53 10.15 9.64 10.04C9.74 9.94 9.86 9.78 9.97 9.65C10.08 9.52 10.12 9.42 10.19 9.27C10.26 9.13 10.23 9 10.17 8.89C10.12 8.78 9.67 7.67 9.48 7.22C9.3 6.78 9.12 6.84 8.98 6.83C8.85 6.83 8.7 6.83 8.55 6.83" />
-                  </svg>
-                  <span>Send Code via WhatsApp</span>
+                  <span>Continue</span>
                 }
               </button>
-
-              <!-- Instant Demo Bypass for Reviewers -->
-              <div class="demo-login-wrap">
-                <button type="button" class="btn-demo-quick" (click)="authService.quickDemoLogin()">
-                  <span class="material-symbols-outlined demo-bolt">bolt</span>
-                  <span>Reviewer Demo Login (Arun Kumar)</span>
-                </button>
-              </div>
             </form>
           }
 
-          <!-- STEP 2: WhatsApp OTP Entry -->
+          <!-- STEP 2: 4-Digit OTP Entry -->
           @if (step() === 'otp') {
-            <div class="wa-step2-container">
-              
-              <!-- WhatsApp Delivery Notification Card -->
-              <div class="wa-sent-card">
-                <div class="wa-sent-avatar">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="#25D366">
-                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.16 6.99C8.97 6.99 8.79 7 8.63 7.29C8.44 7.6 7.9 8.1 7.9 9.13C7.9 10.15 8.65 11.14 8.75 11.28C8.86 11.41 10.22 13.5 12.29 14.4C14 15.13 14.35 14.97 14.71 14.94C15.06 14.9 15.86 14.46 16.03 13.99C16.19 13.52 16.19 13.12 16.14 13.04C16.09 12.95 15.96 12.9 15.74 12.79C15.52 12.68 14.44 12.15 14.24 12.08C14.04 12 13.89 11.97 13.74 12.19C13.6 12.41 13.16 12.92 13.03 13.07C12.9 13.22 12.77 13.24 12.55 13.13C12.33 13.02 11.62 12.79 10.77 12.03C10.11 11.44 9.67 10.71 9.54 10.49C9.41 10.27 9.53 10.15 9.64 10.04C9.74 9.94 9.86 9.78 9.97 9.65C10.08 9.52 10.12 9.42 10.19 9.27C10.26 9.13 10.23 9 10.17 8.89C10.12 8.78 9.67 7.67 9.48 7.22C9.3 6.78 9.12 6.84 8.98 6.83C8.85 6.83 8.7 6.83 8.55 6.83" />
-                  </svg>
-                </div>
-                <div class="wa-sent-text">
-                  <div class="wa-sent-title">Check Your WhatsApp</div>
-                  <div class="wa-sent-desc">A 4-digit code was dispatched to <strong>+91 {{ phone() }}</strong>. Enter it below to unlock.</div>
-                </div>
+            <form (submit)="onVerifyOtp($event)" class="modal-form">
+              <div class="otp-boxes-grid">
+                <input 
+                  #otpBox0 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[0]" 
+                  (input)="onDigitInput(0, $event)"
+                  (keydown)="onDigitKeydown(0, $event)"
+                  autocomplete="one-time-code">
+                <input 
+                  #otpBox1 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[1]" 
+                  (input)="onDigitInput(1, $event)"
+                  (keydown)="onDigitKeydown(1, $event)">
+                <input 
+                  #otpBox2 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[2]" 
+                  (input)="onDigitInput(2, $event)"
+                  (keydown)="onDigitKeydown(2, $event)">
+                <input 
+                  #otpBox3 
+                  type="text" 
+                  inputmode="numeric" 
+                  maxlength="1" 
+                  class="otp-box"
+                  [value]="otpDigits()[3]" 
+                  (input)="onDigitInput(3, $event)"
+                  (keydown)="onDigitKeydown(3, $event)">
               </div>
 
-              <!-- Fallback Token Badge & 1-Click WhatsApp Link (shown if credentials are being configured or as backup) -->
-              <div class="fallback-support-box">
-                <div class="support-label-row">
-                  <span class="support-title">Instant Verification Code:</span>
-                  <div class="code-token-badge">
-                    <span class="code-prefix">AUTH-</span>
-                    <strong class="code-num">{{ authService.lastSentOtp() }}</strong>
-                  </div>
-                  <button type="button" class="btn-copy-code" (click)="copyCode()" [title]="isCopied() ? 'Copied to clipboard' : 'Copy code'">
-                    <span class="material-symbols-outlined">{{ isCopied() ? 'check' : 'content_copy' }}</span>
-                    <span>{{ isCopied() ? 'Copied' : 'Copy' }}</span>
-                  </button>
-                </div>
-
-                <a 
-                  [href]="authService.pendingWhatsAppUrl()" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="btn-open-wa-fallback" 
-                  (click)="onOpenWhatsAppFallback()">
-                  <svg class="wa-btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.16 6.99C8.97 6.99 8.79 7 8.63 7.29C8.44 7.6 7.9 8.1 7.9 9.13C7.9 10.15 8.65 11.14 8.75 11.28C8.86 11.41 10.22 13.5 12.29 14.4C14 15.13 14.35 14.97 14.71 14.94C15.06 14.9 15.86 14.46 16.03 13.99C16.19 13.52 16.19 13.12 16.14 13.04C16.09 12.95 15.96 12.9 15.74 12.79C15.52 12.68 14.44 12.15 14.24 12.08C14.04 12 13.89 11.97 13.74 12.19C13.6 12.41 13.16 12.92 13.03 13.07C12.9 13.22 12.77 13.24 12.55 13.13C12.33 13.02 11.62 12.79 10.77 12.03C10.11 11.44 9.67 10.71 9.54 10.49C9.41 10.27 9.53 10.15 9.64 10.04C9.74 9.94 9.86 9.78 9.97 9.65C10.08 9.52 10.12 9.42 10.19 9.27C10.26 9.13 10.23 9 10.17 8.89C10.12 8.78 9.67 7.67 9.48 7.22C9.3 6.78 9.12 6.84 8.98 6.83C8.85 6.83 8.7 6.83 8.55 6.83" />
-                  </svg>
-                  <span>Didn't receive? 1-Click Send on WhatsApp</span>
-                  <span class="material-symbols-outlined open-icon">open_in_new</span>
-                </a>
+              <div class="resend-row">
+                @if (countdown() > 0) {
+                  <span class="countdown-text">Resend code in {{ countdown() }}s</span>
+                } @else {
+                  <button type="button" class="btn-resend" (click)="resendOtp()">Resend Code</button>
+                }
               </div>
 
-              <!-- Segmented OTP Input Form -->
-              <form (submit)="onVerifyOtp($event)" class="modal-form">
-                <div class="otp-boxes-grid">
-                  <input 
-                    #otpBox0 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-box"
-                    [value]="otpDigits()[0]" 
-                    (input)="onDigitInput(0, $event)"
-                    (keydown)="onDigitKeydown(0, $event)"
-                    autocomplete="one-time-code">
-                  <input 
-                    #otpBox1 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-box"
-                    [value]="otpDigits()[1]" 
-                    (input)="onDigitInput(1, $event)"
-                    (keydown)="onDigitKeydown(1, $event)">
-                  <input 
-                    #otpBox2 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-box"
-                    [value]="otpDigits()[2]" 
-                    (input)="onDigitInput(2, $event)"
-                    (keydown)="onDigitKeydown(2, $event)">
-                  <input 
-                    #otpBox3 
-                    type="text" 
-                    inputmode="numeric" 
-                    maxlength="1" 
-                    class="otp-box"
-                    [value]="otpDigits()[3]" 
-                    (input)="onDigitInput(3, $event)"
-                    (keydown)="onDigitKeydown(3, $event)">
-                </div>
-
-                <div class="resend-row">
-                  @if (countdown() > 0) {
-                    <span class="countdown-text">Resend code via WhatsApp in {{ countdown() }}s</span>
-                  } @else {
-                    <button type="button" class="btn-resend" (click)="resendOtp()">Resend Code to WhatsApp</button>
-                  }
-                </div>
-
-                <button 
-                  type="submit" 
-                  class="btn-primary" 
-                  [disabled]="getCombinedOtp().length < 4 || authService.isSubmitting()">
-                  @if (authService.isSubmitting()) {
-                    <span class="spinner"></span>
-                    <span>Verifying Code...</span>
-                  } @else {
-                    <span class="material-symbols-outlined btn-lock-icon">verified_user</span>
-                    <span>Verify &amp; Continue</span>
-                  }
-                </button>
-              </form>
-            </div>
+              <button 
+                type="submit" 
+                class="btn-primary" 
+                [disabled]="getCombinedOtp().length < 4 || authService.isSubmitting()">
+                @if (authService.isSubmitting()) {
+                  <span class="spinner"></span>
+                  <span>Verifying...</span>
+                } @else {
+                  <span>Verify &amp; Continue</span>
+                }
+              </button>
+            </form>
           }
 
           <!-- Minimal Trust Footer -->
           <div class="modal-footer">
-            <span class="material-symbols-outlined footer-icon">lock</span>
-            <span>Official Meta Cloud API • 256-Bit Encrypted • Instant Sign In</span>
+            <span>256-Bit Encrypted • Secure Access</span>
           </div>
 
         </div>
@@ -220,7 +147,7 @@ import { NotificationService } from '../../services/notification.service';
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.45);
+      background: rgba(15, 23, 42, 0.4);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       z-index: 99999;
@@ -239,13 +166,13 @@ import { NotificationService } from '../../services/notification.service';
       background: #ffffff;
       border-radius: 1rem;
       width: 100%;
-      max-width: 410px;
+      max-width: 390px;
       box-sizing: border-box;
-      box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.15rem;
+      gap: 1.25rem;
       animation: scaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .modal-card * {
@@ -263,32 +190,12 @@ import { NotificationService } from '../../services/notification.service';
       justify-content: space-between;
       gap: 0.75rem;
     }
-    .header-badge-row {
-      margin-bottom: 0.35rem;
-    }
-    .wa-live-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 8px;
-      background: #E7F8EE;
-      color: #0E8345;
-      border: 1px solid #A7F3D0;
-      border-radius: 999px;
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-    }
-    .wa-badge-icon {
-      color: #25D366;
-    }
     .modal-title {
       font-size: 1.25rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #0f172a;
       margin: 0;
-      letter-spacing: -0.015em;
+      letter-spacing: -0.01em;
     }
     .modal-subtitle {
       font-size: 0.8125rem;
@@ -300,7 +207,7 @@ import { NotificationService } from '../../services/notification.service';
     .btn-link-edit {
       background: none;
       border: none;
-      color: #0E8345;
+      color: var(--brand-green, #5e8f72);
       font-weight: 600;
       font-size: 0.8125rem;
       cursor: pointer;
@@ -315,45 +222,45 @@ import { NotificationService } from '../../services/notification.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: transparent;
+      border: none;
       color: #94a3b8;
       cursor: pointer;
       transition: all 0.15s;
       flex-shrink: 0;
-      font-size: 14px;
     }
     .btn-close:hover {
       background: #f1f5f9;
       color: #0f172a;
     }
+    .btn-close span {
+      font-size: 20px;
+    }
 
-    /* Minimal Notice */
+    /* Minimalist Alert */
     .minimal-notice {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 0.5rem;
       padding: 0.625rem 0.75rem;
       border-radius: 8px;
-      background: #F0FDF4;
-      border: 1px solid #BBF7D0;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       font-size: 0.75rem;
-      color: #166534;
+      color: #475569;
       font-weight: 500;
-      line-height: 1.4;
     }
     .notice-icon {
       font-size: 16px;
-      color: #16a34a;
+      color: #f59e0b;
       flex-shrink: 0;
-      margin-top: 1px;
     }
 
     /* Form & Input */
     .modal-form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.125rem;
     }
     .phone-input-wrap {
       display: flex;
@@ -366,14 +273,14 @@ import { NotificationService } from '../../services/notification.service';
       transition: border-color 0.15s, box-shadow 0.15s;
     }
     .phone-input-wrap:focus-within {
-      border-color: #25D366;
-      box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.16);
+      border-color: var(--brand-green, #5e8f72);
+      box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.12);
     }
     .country-code {
       padding: 0 0.875rem;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 0.9375rem;
-      color: #334155;
+      color: #475569;
       background: #f8fafc;
       height: 100%;
       display: flex;
@@ -386,9 +293,9 @@ import { NotificationService } from '../../services/notification.service';
       border: none;
       outline: none;
       padding: 0 0.875rem;
-      font-size: 1.0625rem;
+      font-size: 1rem;
       font-weight: 600;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       color: #0f172a;
     }
     .phone-input::placeholder {
@@ -398,186 +305,29 @@ import { NotificationService } from '../../services/notification.service';
       letter-spacing: normal;
     }
 
-    /* Buttons */
-    .btn-whatsapp-primary {
-      height: 48px;
+    /* Primary Button */
+    .btn-primary {
+      height: 46px;
       border-radius: 0.625rem;
-      background: #25D366;
+      background: var(--brand-green, #5e8f72);
       color: #ffffff;
-      font-size: 0.9375rem;
-      font-weight: 700;
+      font-size: 0.875rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.28);
       transition: all 0.15s ease-in-out;
     }
-    .btn-whatsapp-primary:hover:not(:disabled) {
-      background: #1EBE5D;
+    .btn-primary:hover:not(:disabled) {
+      background: #5e8f72;
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
     }
-    .btn-whatsapp-primary:disabled {
+    .btn-primary:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      box-shadow: none;
-    }
-    .wa-btn-icon {
-      flex-shrink: 0;
-    }
-
-    .demo-login-wrap {
-      text-align: center;
-      margin-top: -0.25rem;
-    }
-    .btn-demo-quick {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: #F1F5F9;
-      color: #475569;
-      border: 1px solid #E2E8F0;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-demo-quick:hover {
-      background: #E2E8F0;
-      color: #0F172A;
-    }
-    .demo-bolt {
-      font-size: 14px;
-      color: #EAB308;
-    }
-
-    /* STEP 2 - WHATSAPP SENT CARD */
-    .wa-step2-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .wa-sent-card {
-      background: #F0FDF4;
-      border: 1.5px solid #BBF7D0;
-      border-radius: 0.75rem;
-      padding: 0.875rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .wa-sent-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #DCFCE7;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .wa-sent-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .wa-sent-title {
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: #166534;
-    }
-    .wa-sent-desc {
-      font-size: 0.75rem;
-      color: #15803D;
-      line-height: 1.35;
-    }
-
-    /* Fallback token & 1-click box */
-    .fallback-support-box {
-      background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      border-radius: 0.625rem;
-      padding: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .support-label-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .support-title {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: #64748B;
-    }
-    .code-token-badge {
-      display: inline-flex;
-      align-items: baseline;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.9375rem;
-      color: #0F172A;
-    }
-    .code-prefix {
-      color: #94A3B8;
-      font-weight: 600;
-      font-size: 0.75rem;
-    }
-    .code-num {
-      color: #0E8345;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-    }
-    .btn-copy-code {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      background: #FFFFFF;
-      border: 1px solid #CBD5E1;
-      border-radius: 4px;
-      padding: 3px 6px;
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-copy-code:hover {
-      background: #F1F5F9;
-      color: #0F172A;
-    }
-    .btn-copy-code span.material-symbols-outlined {
-      font-size: 13px;
-    }
-
-    .btn-open-wa-fallback {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      background: #FFFFFF;
-      border: 1px solid #86EFAC;
-      color: #0E8345;
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      transition: all 0.15s;
-    }
-    .btn-open-wa-fallback:hover {
-      background: #E7F8EE;
-      color: #096836;
-    }
-    .open-icon {
-      font-size: 14px;
     }
 
     /* Segmented OTP Boxes */
@@ -590,62 +340,32 @@ import { NotificationService } from '../../services/notification.service';
     }
     .otp-box {
       width: 54px;
-      height: 54px;
+      height: 56px;
       flex-shrink: 0;
       box-sizing: border-box;
-      border-radius: 0.5rem;
+      border-radius: 0.625rem;
       border: 1.5px solid #cbd5e1;
       text-align: center;
       font-size: 1.5rem;
-      font-weight: 700;
+      font-weight: 600;
       color: #0f172a;
       background: #ffffff;
       outline: none;
       transition: all 0.15s ease;
     }
     .otp-box:focus {
-      border-color: #25D366;
-      box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.18);
+      border-color: var(--brand-green, #5e8f72);
+      box-shadow: 0 0 0 3px rgba(199, 52, 52, 0.12);
     }
     @media (max-width: 400px) {
       .otp-box {
-        width: 46px;
-        height: 48px;
+        width: 48px;
+        height: 50px;
         font-size: 1.25rem;
       }
       .otp-boxes-grid {
         gap: 0.5rem;
       }
-    }
-
-    /* Primary Submit Button */
-    .btn-primary {
-      height: 46px;
-      border-radius: 0.5rem;
-      background: #0E8345;
-      color: #ffffff;
-      font-size: 0.875rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(14, 131, 69, 0.25);
-      transition: all 0.15s ease-in-out;
-    }
-    .btn-primary:hover:not(:disabled) {
-      background: #096836;
-      transform: translateY(-1px);
-    }
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-    .btn-lock-icon {
-      font-size: 18px;
     }
 
     /* Resend text */
@@ -659,7 +379,7 @@ import { NotificationService } from '../../services/notification.service';
     .btn-resend {
       background: none;
       border: none;
-      color: #0E8345;
+      color: var(--brand-green, #5e8f72);
       font-weight: 600;
       font-size: 0.75rem;
       cursor: pointer;
@@ -677,7 +397,6 @@ import { NotificationService } from '../../services/notification.service';
       color: #94a3b8;
       padding-top: 0.5rem;
       border-top: 1px solid #f1f5f9;
-      text-align: center;
     }
     .footer-icon {
       font-size: 13px;
@@ -707,7 +426,6 @@ export class OtpLoginModalComponent {
   readonly phone = signal<string>('');
   readonly otpDigits = signal<string[]>(['', '', '', '']);
   readonly countdown = signal<number>(30);
-  readonly isCopied = signal<boolean>(false);
 
   private timerInterval: any = null;
 
@@ -732,10 +450,10 @@ export class OtpLoginModalComponent {
         this.otpDigits.set(['', '', '', '']);
         this.startCountdown();
         this.notificationService.show({
-          type: 'success',
-          title: 'WhatsApp Code Dispatched',
-          message: res.message || `Verification code sent to WhatsApp at +91 ${this.phone()}`,
-          icon: 'chat'
+          type: 'info',
+          title: 'Verification Code Sent',
+          message: `Verification code sent to +91 ${this.phone()}`,
+          icon: 'sms'
         });
         setTimeout(() => {
           const firstBox = this.otpInputs?.first?.nativeElement;
@@ -743,39 +461,6 @@ export class OtpLoginModalComponent {
         }, 150);
       }
     });
-  }
-
-  copyCode(): void {
-    const code = this.authService.lastSentOtp();
-    const fullText = code;
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(fullText).then(() => {
-        this.isCopied.set(true);
-        setTimeout(() => this.isCopied.set(false), 2000);
-      }).catch(() => {
-        this.fallbackCopy(fullText);
-      });
-    } else {
-      this.fallbackCopy(fullText);
-    }
-  }
-
-  private fallbackCopy(text: string): void {
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    this.isCopied.set(true);
-    setTimeout(() => this.isCopied.set(false), 2000);
-  }
-
-  onOpenWhatsAppFallback(): void {
-    const code = this.authService.lastSentOtp();
-    if (code && code.length === 4) {
-      this.otpDigits.set(code.split(''));
-    }
   }
 
   onDigitInput(index: number, event: Event): void {
@@ -822,7 +507,7 @@ export class OtpLoginModalComponent {
       } else {
         this.notificationService.show({
           type: 'error',
-          title: 'Incorrect Code',
+          title: 'Incorrect OTP Code',
           message: res.message,
           icon: 'lock_reset'
         });
@@ -836,8 +521,8 @@ export class OtpLoginModalComponent {
       this.startCountdown();
       this.notificationService.show({
         type: 'info',
-        title: 'New WhatsApp Code Sent',
-        message: `New code sent to WhatsApp for +91 ${this.phone()}`,
+        title: 'New Code Sent',
+        message: `A new verification code has been sent to +91 ${this.phone()}`,
         icon: 'autorenew'
       });
     });
@@ -860,7 +545,6 @@ export class OtpLoginModalComponent {
   private resetOtpForm(): void {
     this.step.set('phone');
     this.otpDigits.set(['', '', '', '']);
-    this.isCopied.set(false);
     if (this.timerInterval) clearInterval(this.timerInterval);
   }
 }

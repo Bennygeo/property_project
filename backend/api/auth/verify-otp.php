@@ -1,7 +1,7 @@
 <?php
 /**
  * POST /api/auth/verify-otp.php
- * Verifies Reverse WhatsApp OTP and logs in / registers user in MySQL database.
+ * Verifies OTP and logs in / registers the user in MySQL database.
  */
 
 declare(strict_types=1);
@@ -28,52 +28,18 @@ if (empty($phone)) {
 }
 
 if (empty($otp)) {
-    Response::error('Verification code is required', 422);
+    Response::error('OTP verification code is required', 422);
 }
 
-$cleanPhone = preg_replace('/[^\d]/', '', $phone);
-$last10 = substr($cleanPhone, -10);
-
-if (strlen($last10) < 10) {
-    Response::error('Invalid phone number format', 422);
+// Verification code kept as 1111 until production
+if ($otp !== '1111') {
+    Response::error('Invalid verification code. Please enter 1111', 400);
 }
+
+$cleanPhone = preg_replace('/[^\d+]/', '', $phone);
+$last10 = substr(preg_replace('/[^\d]/', '', $cleanPhone), -10);
 
 $db = (new Database())->getConnection();
-
-// Verification check:
-// 1. Allow '1111' for quick reviewer / testing bypass
-// 2. OR match generated code from `otp_verifications`
-$isCodeValid = false;
-
-if ($otp === '1111') {
-    $isCodeValid = true;
-} else {
-    try {
-        $checkStmt = $db->prepare("
-            SELECT id FROM otp_verifications
-            WHERE (phone = ? OR phone LIKE ?)
-              AND otp = ?
-              AND is_verified = 0
-              AND expires_at >= NOW()
-            ORDER BY id DESC LIMIT 1
-        ");
-        $checkStmt->execute([$last10, "%{$last10}%", $otp]);
-        $otpRow = $checkStmt->fetch();
-        if ($otpRow) {
-            $isCodeValid = true;
-            // Mark as verified so code cannot be reused
-            $updateStmt = $db->prepare("UPDATE otp_verifications SET is_verified = 1 WHERE id = ?");
-            $updateStmt->execute([$otpRow['id']]);
-        }
-    } catch (\Throwable $e) {
-        // If DB table not yet migrated, fall back gracefully
-        $isCodeValid = true;
-    }
-}
-
-if (!$isCodeValid) {
-    Response::error('Invalid or expired verification code. Please check your WhatsApp message or request a new code.', 400);
-}
 
 // Check if user already exists
 $stmt = $db->prepare("SELECT * FROM users WHERE phone LIKE ? OR phone LIKE ? LIMIT 1");
@@ -82,34 +48,29 @@ $user = $stmt->fetch();
 
 if (!$user) {
     // Register new user with 40 starter points
-    $defaultName = !empty($name) ? $name : 'Investor ' . substr($last10, -4);
+    $defaultName = !empty($name) ? $name : 'Verified Investor ' . substr($last10, -4);
     $defaultEmail = 'investor_' . $last10 . '@mannidam.com';
-    $formattedPhone = '+91 ' . $last10;
     
     $insertStmt = $db->prepare("
         INSERT INTO users (name, email, phone, role, points_balance)
         VALUES (?, ?, ?, 'buyer', 40)
     ");
-    $insertStmt->execute([$defaultName, $defaultEmail, $formattedPhone]);
+    $insertStmt->execute([$defaultName, $defaultEmail, $cleanPhone]);
     $userId = (int)$db->lastInsertId();
 
     // Log welcome bonus points
-    try {
-        $txnStmt = $db->prepare("
-            INSERT INTO wallet_transactions (user_id, transaction_type, points, amount_rupees, description, status)
-            VALUES (?, 'bonus_credit', 40, 0, 'Welcome Bonus: 40 Complimentary Media Points', 'success')
-        ");
-        $txnStmt->execute([$userId]);
-    } catch (\Throwable $e) {
-        // Continue if wallet_transactions isn't present
-    }
+    $txnStmt = $db->prepare("
+        INSERT INTO wallet_transactions (user_id, transaction_type, points, amount_rupees, description, status)
+        VALUES (?, 'bonus_credit', 40, 0, 'Welcome Bonus: 40 Complimentary Media Points', 'success')
+    ");
+    $txnStmt->execute([$userId]);
 
     $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
 }
 
-// Generate auth token
+// Mock auth token
 $token = 'mannidam_token_' . bin2hex(random_bytes(16));
 
 Response::success([
@@ -123,4 +84,4 @@ Response::success([
         'createdAt'     => $user['created_at'],
     ],
     'token' => $token,
-], "Welcome, {$user['name']}! WhatsApp verification successful.");
+], "Welcome back, {$user['name']}! OTP verified successfully.");

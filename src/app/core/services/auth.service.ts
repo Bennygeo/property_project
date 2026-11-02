@@ -33,10 +33,6 @@ export class AuthService {
   // Verification code holder (kept as 1111 until production)
   public readonly lastSentOtp = signal<string>('1111');
   public readonly pendingPhone = signal<string>('');
-  public readonly pendingWhatsAppUrl = signal<string>('');
-  public readonly businessWhatsApp = signal<string>('+91 94441 00000');
-  public readonly isAutomatedWhatsApp = signal<boolean>(false);
-  public readonly metaApiNotice = signal<string>('');
 
   private getInitialGuestViews(): string[] {
     try {
@@ -237,65 +233,46 @@ export class AuthService {
   }
 
   /**
-   * 1-Click Reverse WhatsApp OTP Verification (No External Paid API Required)
+   * Request Dummy OTP from MySQL Backend
    */
-  public sendOtp(phone: string): Observable<{ success: boolean; dummyOtp: string; whatsappUrl: string; isAutomated: boolean; message: string }> {
+  public sendOtp(phone: string): Observable<{ success: boolean; dummyOtp: string; message: string }> {
     this.isSubmitting.set(true);
-    const cleanDigits = phone.replace(/\D/g, '').slice(-10);
     const url = `${environment.apiUrl}/auth/send-otp.php`;
 
-    // Local fallback code & WhatsApp URL
-    const fallbackOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    const fallbackText = encodeURIComponent(`Please verify my account on Find a Plot.\nMobile: +91 ${cleanDigits}\nVerification Code: AUTH-${fallbackOtp}`);
-    const fallbackWaUrl = `https://wa.me/919444100000?text=${fallbackText}`;
-
-    return this.http.post<{ success: boolean; message: string; data?: { phone: string; dummyOtp: string; otp?: string; whatsappUrl?: string; isAutomated?: boolean; apiNotice?: string } }>(url, { phone: cleanDigits }).pipe(
+    return this.http.post<{ success: boolean; message: string; data?: { phone: string; dummyOtp: string } }>(url, { phone }).pipe(
       map(res => {
         this.isSubmitting.set(false);
-        const otpCode = res.data?.otp || res.data?.dummyOtp || fallbackOtp;
-        const waUrl = res.data?.whatsappUrl || fallbackWaUrl;
-        const isAuto = !!res.data?.isAutomated;
-        const notice = res.data?.apiNotice || '';
-        this.lastSentOtp.set(otpCode);
-        this.pendingPhone.set(cleanDigits);
-        this.pendingWhatsAppUrl.set(waUrl);
-        this.isAutomatedWhatsApp.set(isAuto);
-        this.metaApiNotice.set(notice);
+        const dummyOtp = res.data?.dummyOtp || '1111';
+        this.lastSentOtp.set(dummyOtp);
+        this.pendingPhone.set(phone);
         return {
           success: true,
-          dummyOtp: otpCode,
-          whatsappUrl: waUrl,
-          isAutomated: isAuto,
-          message: res.message || `WhatsApp verification code sent`
+          dummyOtp,
+          message: res.message || `OTP sent to ${phone}`
         };
       }),
       catchError(err => {
         this.isSubmitting.set(false);
-        this.lastSentOtp.set(fallbackOtp);
-        this.pendingPhone.set(cleanDigits);
-        this.pendingWhatsAppUrl.set(fallbackWaUrl);
-        this.isAutomatedWhatsApp.set(false);
-        this.metaApiNotice.set('Offline / Local fallback');
+        const dummyOtp = '1111';
+        this.lastSentOtp.set(dummyOtp);
+        this.pendingPhone.set(phone);
         return of({
           success: true,
-          dummyOtp: fallbackOtp,
-          whatsappUrl: fallbackWaUrl,
-          isAutomated: false,
-          message: `WhatsApp verification link generated for +91 ${cleanDigits}`
+          dummyOtp,
+          message: `Verification code sent to ${phone}`
         });
       })
     );
   }
 
   /**
-   * Verify Reverse WhatsApp OTP and authenticate user
+   * Verify OTP and Login
    */
   public verifyOtp(phone: string, otp: string, name?: string): Observable<{ success: boolean; user?: User; message: string }> {
     this.isSubmitting.set(true);
-    const cleanDigits = phone.replace(/\D/g, '').slice(-10);
     const url = `${environment.apiUrl}/auth/verify-otp.php`;
 
-    return this.http.post<{ success: boolean; message: string; data?: { user: User; token: string } }>(url, { phone: cleanDigits, otp, name }).pipe(
+    return this.http.post<{ success: boolean; message: string; data?: { user: User; token: string } }>(url, { phone, otp, name }).pipe(
       map(res => {
         this.isSubmitting.set(false);
         if (res && res.success && res.data?.user) {
@@ -304,7 +281,7 @@ export class AuthService {
           this.closeOtpModal();
           this.notificationService.show({
             type: 'success',
-            title: 'WhatsApp Verified',
+            title: 'Login Successful',
             message: `Welcome, ${user.name}! Your account is now verified.`,
             icon: 'verified_user'
           });
@@ -314,13 +291,13 @@ export class AuthService {
       }),
       catchError(err => {
         this.isSubmitting.set(false);
-        // Fallback for offline experience or if code matches the generated code
-        if (otp === this.lastSentOtp() || otp === '1111') {
+        // Fallback for offline experience
+        if (otp === '1111') {
           const fallbackUser: User = {
             id: 1,
-            name: name || 'Investor ' + cleanDigits.slice(-4),
-            email: 'investor_' + cleanDigits.slice(-4) + '@mannidam.com',
-            phone: '+91 ' + cleanDigits,
+            name: name || 'Arun Kumar',
+            email: 'user@mannidam.com',
+            phone: phone || '+91 94441 00000',
             role: 'buyer',
             pointsBalance: 40,
             createdAt: new Date().toISOString()
@@ -329,13 +306,13 @@ export class AuthService {
           this.closeOtpModal();
           this.notificationService.show({
             type: 'success',
-            title: 'WhatsApp Verified',
-            message: `Welcome, ${fallbackUser.name}! Account verified successfully.`,
+            title: 'Login Successful',
+            message: `Welcome, ${fallbackUser.name}! Logged in successfully.`,
             icon: 'verified_user'
           });
           return of({ success: true, user: fallbackUser, message: 'Logged in successfully' });
         }
-        return of({ success: false, message: 'Invalid verification code. Please check your WhatsApp code and try again.' });
+        return of({ success: false, message: 'Invalid verification code. Please enter 1111.' });
       })
     );
   }
