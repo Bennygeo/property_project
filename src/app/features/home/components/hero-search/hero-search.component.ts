@@ -479,16 +479,14 @@ export interface PropertyTypeOption {
       margin-top: 3.5rem;
     }
 
-    /* Buy / Sell Mode Tabs */
+    /* Buy / Sell Mode Tabs (Isolated Independent Buttons) */
     .hero-buy-sell-tabs {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
-      padding: 0.35rem 0.5rem;
-      border-radius: 0;
-      border: 1px solid #e2e8f0;
+      gap: 0.75rem;
+      background: transparent;
+      padding: 0;
+      border: none;
       box-shadow: none;
       margin-top: 1.25rem;
       margin-bottom: 0.25rem;
@@ -497,18 +495,19 @@ export interface PropertyTypeOption {
     .buy-sell-tab-btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
-      padding: 0.45rem 1.15rem;
+      gap: 0.5rem;
+      padding: 0.55rem 1.25rem;
       border-radius: 0;
       font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
       font-weight: 500;
-      color: #64748b;
+      color: #475569;
       text-decoration: none;
-      border: none;
-      background: transparent;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
       cursor: pointer;
       transition: all 0.15s ease;
+      box-shadow: none;
     }
 
     .buy-sell-tab-btn .tab-icon {
@@ -516,13 +515,29 @@ export interface PropertyTypeOption {
     }
 
     .buy-sell-tab-btn.active {
-      background: var(--brand-red, #b91c1c);
+      background: #548268;
+      border-color: #548268;
       color: #ffffff;
       box-shadow: none;
     }
 
+    .buy-sell-tab-btn.active .tab-icon {
+      color: #ffffff;
+    }
+
+    .buy-sell-tab-btn.btn-sell-link {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+    }
+
+    .buy-sell-tab-btn.btn-sell-link .tab-icon {
+      color: #475569;
+    }
+
     .buy-sell-tab-btn.btn-sell-link:hover {
-      background: #f1f5f9;
+      background: #f8fafc;
+      border-color: #94a3b8;
       color: #0f172a;
     }
 
