@@ -50,7 +50,7 @@
             <span class="hanu-badge-type">{{ prop.propertyType }}</span>
             <span class="hanu-badge-rera font-mono" title="TNRERA Statutory Registration Number">
               <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
-              <span>RERA: {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber ||
+              <span>RERA: {{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo ||
                 'TNRERA/13/LO/0114/2026' }}</span>
             </span>
             <span class="hanu-badge-free-maint">
@@ -337,7 +337,7 @@
             <div class="snapshot-text">
               <span class="snapshot-label">RERA Registration No.</span>
               <strong class="snapshot-val text-emerald font-mono" style="word-break: break-all; font-size: 13.5px;">
-                {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber ||
+                {{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo ||
                 'TNRERA/13/LO/0114/2026' }}
               </strong>
               <span class="snapshot-sub">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Sanctioned Layout' :
@@ -850,7 +850,7 @@
                   <div class="hanu-spec-item">
                     <span class="spec-label">TNRERA Registration Number</span>
                     <span class="spec-value font-mono font-bold text-slate-900" style="word-break: break-all;">
-                      {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber ||
+                      {{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo ||
                       'TNRERA/13/LO/0114/2026' }}
                     </span>
                   </div>

@@ -134,6 +134,23 @@ export class SearchPageComponent implements OnInit {
     }
   }
 
+  getDeveloperName(prop: any): string {
+    const raw = prop?.developerName ||
+      prop?.masterDetails?.developer ||
+      prop?.developer?.name ||
+      prop?.developer_name ||
+      prop?.promoterName ||
+      prop?.submittedByName ||
+      prop?.builder ||
+      '';
+    const clean = raw ? raw.replace(/â\x80\x93|â\x80\x94|â/g, '–').trim() : '';
+    if (clean) return clean;
+    if (prop?.title?.toLowerCase().includes('cadastral') || prop?.title?.toLowerCase().includes('layout')) {
+      return 'Executive Engineer – Tamil Nadu Housing Board';
+    }
+    return '';
+  }
+
   toggleDistrictDropdown(event?: Event): void {
     if (event) {
       event.stopPropagation();

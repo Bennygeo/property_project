@@ -11,7 +11,7 @@ import { SecureVideoPlayerComponent } from '../../../../shared/components/secure
   standalone: true,
   imports: [CommonModule, SecureVideoPlayerComponent],
   template: `
-    @if (false && propertyService.activeModalProperty(); as prop) {
+    @if (propertyService.activeModalProperty(); as prop) {
       <div class="modal-backdrop" (click)="onBackdropClick($event)">
         <div class="media-dialog">
           <!-- Modal Header -->
