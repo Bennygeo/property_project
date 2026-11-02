@@ -1232,27 +1232,28 @@
 }
 
 /* ==========================================================================
-   8. CONNECTED CONTEXT WORKSPACE (CONNECTED TABS & INTEGRATED WINDOW)
+   8. CONNECTED CONTEXT WORKSPACE (DARK DOCKED RIBBON & FLUID CONNECTED TABS)
    ========================================================================== */
 .connected-workspace-shell {
   background: #ffffff;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #0f3b4a;
   border-radius: 20px;
   overflow: hidden;
-  margin: 1.75rem 0 2rem 0;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  margin: 2rem 0;
+  box-shadow: 0 8px 30px -4px rgba(15, 23, 42, 0.08);
 }
 
 .context-tabs-ribbon {
   display: flex;
   align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px 16px 0 16px;
-  background: #f1f5f9;
-  border-bottom: 1.5px solid #e2e8f0;
+  gap: 10px;
+  padding: 14px 20px 0 20px;
+  background: #0f3b4a;
+  border-bottom: none;
   overflow-x: auto;
   scrollbar-width: none;
+  position: relative;
+  z-index: 1;
 }
 
 .context-tabs-ribbon::-webkit-scrollbar {
@@ -1264,65 +1265,91 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
+  padding: 9px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 9999px;
   font-size: 13.5px;
   font-weight: 600;
-  color: #475569;
+  color: #f1f5f9;
   cursor: pointer;
   white-space: nowrap;
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   box-sizing: border-box;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  margin-bottom: 9px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .ctx-tab-btn:hover:not(.active) {
-  background: #ffffff;
-  border-color: #0f3b4a;
-  color: #0f3b4a;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
 }
 
 .ctx-tab-btn:active {
   transform: translateY(0);
 }
 
+/* Active Fluid Connected Tab (Seamlessly joins content canvas below) */
 .ctx-tab-btn.active {
   background: #ffffff !important;
-  border: 1.5px solid #e2e8f0 !important;
-  border-bottom: 2.5px solid #ffffff !important;
-  border-radius: 14px 14px 0 0 !important;
+  border: none !important;
+  border-radius: 16px 16px 0 0 !important;
   color: #0f3b4a !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
-  margin-bottom: -1.5px !important;
-  padding: 11px 22px 12px 22px !important;
-  box-shadow: 0 -3px 10px rgba(15, 23, 42, 0.04) !important;
-  z-index: 2;
+  padding: 12px 24px 14px 24px !important;
+  margin-bottom: 0 !important;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08) !important;
+  z-index: 10;
 }
 
-.ctx-tab-btn.active::before,
+/* Concave Fluid Curved Fillets */
+.ctx-tab-btn.active::before {
+  content: "";
+  display: block !important;
+  position: absolute;
+  bottom: 0;
+  left: -14px;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border-bottom-right-radius: 14px;
+  box-shadow: 4px 4px 0 4px #ffffff;
+  pointer-events: none;
+}
+
 .ctx-tab-btn.active::after {
-  display: none;
+  content: "";
+  display: block !important;
+  position: absolute;
+  bottom: 0;
+  right: -14px;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border-bottom-left-radius: 14px;
+  box-shadow: -4px 4px 0 4px #ffffff;
+  pointer-events: none;
 }
 
 .ctx-tab-icon {
   font-size: 18px;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.8);
   transition: color 0.15s ease;
 }
 
 .ctx-tab-btn:hover:not(.active) .ctx-tab-icon {
-  color: #0f3b4a;
+  color: #ffffff;
 }
 
 .ctx-tab-btn.active .ctx-tab-icon {
   color: #0f3b4a !important;
+  font-size: 19px;
 }
 
 .ctx-tab-badge {
@@ -1330,16 +1357,16 @@
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 9999px;
-  background: #e2e8f0;
-  color: #475569;
-  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   letter-spacing: 0.02em;
   transition: all 0.15s ease;
 }
 
 .ctx-tab-btn:hover:not(.active) .ctx-tab-badge {
-  background: #cbd5e1;
-  color: #0f172a;
+  background: rgba(255, 255, 255, 0.26);
+  color: #ffffff;
 }
 
 .ctx-tab-btn.active .ctx-tab-badge {
@@ -1348,13 +1375,15 @@
   border: 1px solid #a8dab5 !important;
 }
 
-/* Connected Workspace Window (Open Canvas) */
+/* Connected Workspace Window (Seamless white sheet) */
 .connected-workspace-window {
   background: #ffffff;
   border: none;
   border-radius: 0 0 20px 20px;
   box-shadow: none !important;
-  padding: 1.75rem 1.5rem 1rem 1.5rem;
+  padding: 2rem 1.75rem 1rem 1.75rem;
+  position: relative;
+  z-index: 5;
 }
 
 .connected-workspace-window .hanu-card {
