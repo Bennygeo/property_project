@@ -199,7 +199,7 @@
   display: inline-flex;
   align-items: center;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.05em;
   padding: 3px 8px;
   background: #0f172a;
@@ -261,7 +261,7 @@
 
 .blur-prompt-title {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin: 0 0 8px;
 }
@@ -362,7 +362,7 @@
 
 .hanu-badge-type {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   background: #f1f5f9;
@@ -402,7 +402,7 @@
 
 .hanu-title {
   font-size: clamp(22px, 2.5vw, 28px);
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   line-height: 1.25;
   margin: 0 0 0.65rem 0;
@@ -456,7 +456,7 @@
 
 .hanu-builder-strip .builder-name-text {
   color: #0f172a;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .hanu-builder-strip .builder-badge-verified {
@@ -537,7 +537,7 @@
 
 .hanu-main-price {
   font-size: clamp(24px, 3.2vw, 30px);
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   letter-spacing: -0.02em;
 }
@@ -715,7 +715,7 @@
   background: #0f3b4a !important;
   border-color: #0f3b4a !important;
   color: #ffffff !important;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .hanu-tab-btn.active .material-symbols-outlined {
@@ -1067,7 +1067,7 @@
 
 .snapshot-val {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   line-height: 1.25;
   white-space: nowrap;
@@ -1156,7 +1156,7 @@
 
 .maint-tag {
   font-size: 10.5px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.05em;
   color: #2c4938;
   text-transform: uppercase;
@@ -1174,7 +1174,7 @@
 
 .maint-title {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin: 0;
   letter-spacing: -0.01em;
@@ -1282,7 +1282,7 @@
   background: #0f3b4a !important;
   border: 1px solid #0f3b4a !important;
   color: #ffffff !important;
-  font-weight: 800;
+  font-weight: 600;
   box-shadow: none !important;
 }
 
@@ -1348,7 +1348,7 @@
 
 .hanu-card-header h2 {
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin: 0;
   letter-spacing: -0.01em;
@@ -1368,7 +1368,7 @@
 .infra-header-eyebrow {
   display: block;
   font-size: 10.5px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #5e8f72;
@@ -2027,7 +2027,7 @@
 
 .highlights-heading {
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin-bottom: 0.75rem;
   text-transform: uppercase;
@@ -2220,7 +2220,7 @@
 
 .developer-type-pill {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #64748b;
@@ -2229,7 +2229,7 @@
 
 .developer-title {
   font-size: 14.5px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   line-height: 1.35;
   margin: 0;
@@ -2389,7 +2389,7 @@
 
 .form-title {
   font-size: 14.5px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin: 0;
   letter-spacing: -0.01em;
@@ -2518,7 +2518,7 @@
 
 .similar-heading {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin: 0 0 0.85rem;
   text-transform: uppercase;
@@ -2721,7 +2721,7 @@
 
 .sv-title {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   line-height: 1.3;
   margin: 0 0 0.5rem 0;
@@ -2794,7 +2794,7 @@
 
 .sv-price {
   font-size: 13.5px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
 }
 
@@ -2960,4 +2960,97 @@
   object-fit: contain;
   border-radius: 0;
   box-shadow: none !important;
+}
+
+/* ==========================================================================
+   PERSISTENT FLOATING WHATSAPP CTA (ALWAYS VISIBLE ON SCROLL)
+   ========================================================================== */
+.sticky-wa-floating-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+}
+
+.floating-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25d366 !important;
+  color: #ffffff !important;
+  border: 1px solid #1ebe57 !important;
+  padding: 10px 18px;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.floating-wa-btn:hover {
+  background: #20ba59 !important;
+  transform: translateY(-2px);
+}
+
+.floating-wa-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floating-wa-svg {
+  width: 22px;
+  height: 22px;
+  fill: #ffffff;
+}
+
+.floating-wa-texts {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.floating-wa-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.floating-wa-sub {
+  font-size: 10.5px;
+  color: #f0fdf4;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.floating-wa-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-block;
+  animation: pulse-dot 1.5s infinite;
+}
+
+.floating-wa-arrow {
+  font-size: 16px;
+  color: #ffffff;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@media (max-width: 640px) {
+  .sticky-wa-floating-bar {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .floating-wa-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
