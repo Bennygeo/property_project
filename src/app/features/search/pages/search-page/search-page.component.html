@@ -829,25 +829,19 @@
               <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
             </div>
 
-            <div class="list-actions-stack">
-              <a class="btn-list-primary" [routerLink]="['/property', prop.id]">
-                View Details
+            <div class="list-actions-row">
+              <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
+                rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+                <span class="material-symbols-outlined">chat</span>
               </a>
 
-              <div class="list-secondary-actions">
-                <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
-                  rel="noopener">
-                  <span class="material-symbols-outlined">chat</span>
-                </a>
-
-                <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
-                  (click)="propertyService.toggleShortlist(prop.id)"
-                  [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
-                  <span class="material-symbols-outlined">
-                    {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
-                  </span>
-                </button>
-              </div>
+              <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
+                (click)="propertyService.toggleShortlist(prop.id)"
+                [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                <span class="material-symbols-outlined">
+                  {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                </span>
+              </button>
             </div>
           </div>
         </article>
@@ -1032,23 +1026,19 @@
                 <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
               </div>
 
-              <div class="list-actions-stack">
-                <a class="btn-list-primary" [routerLink]="['/property', prop.id]">
-                  View Details
+              <div class="list-actions-row">
+                <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
+                  rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+                  <span class="material-symbols-outlined">chat</span>
                 </a>
 
-                <div class="list-secondary-actions">
-                  <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
-                    <span class="material-symbols-outlined">chat</span>
-                  </a>
-
-                  <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
-                    (click)="propertyService.toggleShortlist(prop.id)">
-                    <span class="material-symbols-outlined">
-                      {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
-                    </span>
-                  </button>
-                </div>
+                <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
+                  (click)="propertyService.toggleShortlist(prop.id)"
+                  [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                  <span class="material-symbols-outlined">
+                    {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                  </span>
+                </button>
               </div>
             </div>
           </article>
