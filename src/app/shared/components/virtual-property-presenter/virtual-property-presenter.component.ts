@@ -40,13 +40,22 @@ export type MouthViseme =
 })
 export class VirtualPropertyPresenterComponent implements OnInit, OnDestroy, OnChanges {
   @Input() property: Property | null = null;
-  @Input() triggerDelaySeconds = 30;
+  @Input() triggerDelaySeconds = 3;
   @Output() scheduleVisitClicked = new EventEmitter<void>();
 
   readonly ttsService = inject(ElevenLabsTtsService);
   private readonly ngZone = inject(NgZone);
 
-  // Character visibility (Appears after 30s on the Property Details page)
+  // Character image asset path (relative so it obeys <base href>) with fallback
+  readonly characterImgSrc = signal<string>('assets/presenter_advisor.png');
+
+  onCharacterImgError(): void {
+    if (this.characterImgSrc() !== 'assets/presenter_advisor.jpg') {
+      this.characterImgSrc.set('assets/presenter_advisor.jpg');
+    }
+  }
+
+  // Character visibility (Appears politely after brief dwell)
   readonly isVisible = signal<boolean>(false);
   readonly isSettingsOpen = signal<boolean>(false);
   readonly isSpeaking = signal<boolean>(false);

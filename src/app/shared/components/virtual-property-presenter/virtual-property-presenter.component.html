@@ -28,11 +28,12 @@
     "
   >
     <img
-      src="/assets/presenter_advisor.png"
+      [src]="characterImgSrc()"
       alt="Property Advisor"
       class="vpp-advisor-photo"
       loading="eager"
       decoding="async"
+      (error)="onCharacterImgError()"
     />
   </div>
 </div>
