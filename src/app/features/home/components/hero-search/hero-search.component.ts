@@ -55,13 +55,34 @@ export interface PropertyTypeOption {
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
         <div class="hero-text-center">
-          <h1 class="hero-headline">
-            See Every Detail. 
-            <span class="highlight-red">Choose with Confidence.</span>
-          </h1>
+          <div class="rera-badge-pill">
+            <span class="material-symbols-outlined rera-shield-icon">verified_user</span>
+            <span>100% RERA REGISTERED</span>
+          </div>
+
+          <h1 class="hero-headline">Every Plot We Post is RERA Registered</h1>
           <p class="hero-subline">
-            Explore 100% RERA-registered plots and properties with authenticated cadastral deeds and clear titles.
+            We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds. We do not undertake unapproved sites, guaranteeing complete legal title clearance and zero encroachment risks.
           </p>
+
+          <div class="rera-badges-row">
+            <div class="rera-badge-chip">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>TNRERA Registered</span>
+            </div>
+            <div class="rera-badge-chip">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>CMDA &amp; DTCP Sanctioned</span>
+            </div>
+            <div class="rera-badge-chip">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>Clear Patta &amp; Title</span>
+            </div>
+            <div class="rera-badge-chip rera-highlight-chip">
+              <span class="material-symbols-outlined">shield</span>
+              <span>Zero Unapproved Sites</span>
+            </div>
+          </div>
 
           <!-- Buy / Sell Mode Tabs -->
           <div class="hero-buy-sell-tabs">
@@ -503,8 +524,9 @@ export interface PropertyTypeOption {
       gap: 0.45rem;
       padding: 0.45rem 1.15rem;
       border-radius: 9999px;
+      font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
-      font-weight: 600;
+      font-weight: 500;
       color: #64748b;
       text-decoration: none;
       border: none;
@@ -609,38 +631,97 @@ export interface PropertyTypeOption {
         display: none;
       }
     }
+    .rera-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.95rem;
+      border-radius: 9999px;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1.5px solid #a7f3d0;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.85rem;
+      box-shadow: none;
+    }
+
+    .rera-shield-icon {
+      font-size: 16px;
+      color: #059669;
+    }
+
     .hero-headline {
-      font-size: clamp(1.4rem, 5.5vw, 1.65rem);
-      font-weight: 600;
-      color: var(--text-slate-950);
-      letter-spacing: -0.025em;
-      line-height: 1.22;
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      font-weight: 500;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.65rem 0;
+      line-height: 1.25;
       word-break: break-word;
     }
     @media (min-width: 640px) {
       .hero-headline {
         font-size: 2rem;
-        line-height: 1.15;
+        line-height: 1.2;
       }
     }
     @media (min-width: 1024px) {
       .hero-headline {
-        font-size: 2rem;
+        font-size: 2.25rem;
       }
     }
-    .highlight-red {
-      color: var(--brand-red);
-    }
     .hero-subline {
-      color: var(--text-slate-600);
+      font-family: 'Montserrat', sans-serif;
+      color: #475569;
       font-size: 0.95rem;
       margin-top: 0.65rem;
+      margin-bottom: 1.25rem;
       font-weight: 400;
-      /* max-width: 46rem; */
+      max-width: 52rem;
       margin-left: auto;
       margin-right: auto;
       line-height: 1.65;
       letter-spacing: -0.01em;
+    }
+
+    .rera-badges-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .rera-badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #334155;
+      box-shadow: none;
+    }
+
+    .rera-badge-chip .material-symbols-outlined {
+      font-size: 16px;
+      color: #059669;
+    }
+
+    .rera-highlight-chip {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #166534;
+      font-weight: 500;
     }
     @media (min-width: 640px) {
       .hero-subline {

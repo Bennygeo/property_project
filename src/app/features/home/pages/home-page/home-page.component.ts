@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { TopConciergeBarComponent } from '../../components/top-concierge-bar/top-concierge-bar.component';
 import { HeaderComponent } from '../../components/header/header.component';
 import { HeroSearchComponent } from '../../components/hero-search/hero-search.component';
-import { EconomyBannerComponent } from '../../components/economy-banner/economy-banner.component';
 import { ValuePropsComponent } from '../../components/value-props/value-props.component';
 import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
 import { FeaturedPropertiesComponent } from '../../components/featured-properties/featured-properties.component';
@@ -22,7 +21,6 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
     TopConciergeBarComponent,
     HeaderComponent,
     HeroSearchComponent,
-    EconomyBannerComponent,
     FeaturedPropertiesComponent,
     WhyChooseUsComponent,
     FooterComponent,
@@ -42,9 +40,6 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       <main class="page-main">
         <!-- Hero Search Console (Search-Section Background starts flush below header, containing header banner, intent strip & search console) -->
         <app-hero-search />
-
-        <!-- Buyer Assurance & Verification Banner Strip -->
-        <app-economy-banner />
 
         <!-- Featured Verified Properties Grid -->
         <app-featured-properties />
@@ -82,11 +77,6 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       display: block;
       position: relative;
       z-index: 10;
-    }
-    app-economy-banner {
-      display: block;
-      position: relative;
-      z-index: 1;
     }
     app-featured-properties {
       display: block;
