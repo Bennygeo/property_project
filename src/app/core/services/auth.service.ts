@@ -35,6 +35,8 @@ export class AuthService {
   public readonly pendingPhone = signal<string>('');
   public readonly pendingWhatsAppUrl = signal<string>('');
   public readonly businessWhatsApp = signal<string>('+91 94441 00000');
+  public readonly isAutomatedWhatsApp = signal<boolean>(false);
+  public readonly metaApiNotice = signal<string>('');
 
   private getInitialGuestViews(): string[] {
     try {
@@ -237,7 +239,7 @@ export class AuthService {
   /**
    * 1-Click Reverse WhatsApp OTP Verification (No External Paid API Required)
    */
-  public sendOtp(phone: string): Observable<{ success: boolean; dummyOtp: string; whatsappUrl: string; message: string }> {
+  public sendOtp(phone: string): Observable<{ success: boolean; dummyOtp: string; whatsappUrl: string; isAutomated: boolean; message: string }> {
     this.isSubmitting.set(true);
     const cleanDigits = phone.replace(/\D/g, '').slice(-10);
     const url = `${environment.apiUrl}/auth/send-otp.php`;
@@ -247,19 +249,24 @@ export class AuthService {
     const fallbackText = encodeURIComponent(`Please verify my account on Find a Plot.\nMobile: +91 ${cleanDigits}\nVerification Code: AUTH-${fallbackOtp}`);
     const fallbackWaUrl = `https://wa.me/919444100000?text=${fallbackText}`;
 
-    return this.http.post<{ success: boolean; message: string; data?: { phone: string; dummyOtp: string; otp?: string; whatsappUrl?: string } }>(url, { phone: cleanDigits }).pipe(
+    return this.http.post<{ success: boolean; message: string; data?: { phone: string; dummyOtp: string; otp?: string; whatsappUrl?: string; isAutomated?: boolean; apiNotice?: string } }>(url, { phone: cleanDigits }).pipe(
       map(res => {
         this.isSubmitting.set(false);
         const otpCode = res.data?.otp || res.data?.dummyOtp || fallbackOtp;
         const waUrl = res.data?.whatsappUrl || fallbackWaUrl;
+        const isAuto = !!res.data?.isAutomated;
+        const notice = res.data?.apiNotice || '';
         this.lastSentOtp.set(otpCode);
         this.pendingPhone.set(cleanDigits);
         this.pendingWhatsAppUrl.set(waUrl);
+        this.isAutomatedWhatsApp.set(isAuto);
+        this.metaApiNotice.set(notice);
         return {
           success: true,
           dummyOtp: otpCode,
           whatsappUrl: waUrl,
-          message: res.message || `WhatsApp verification link generated`
+          isAutomated: isAuto,
+          message: res.message || `WhatsApp verification code sent`
         };
       }),
       catchError(err => {
@@ -267,10 +274,13 @@ export class AuthService {
         this.lastSentOtp.set(fallbackOtp);
         this.pendingPhone.set(cleanDigits);
         this.pendingWhatsAppUrl.set(fallbackWaUrl);
+        this.isAutomatedWhatsApp.set(false);
+        this.metaApiNotice.set('Offline / Local fallback');
         return of({
           success: true,
           dummyOtp: fallbackOtp,
           whatsappUrl: fallbackWaUrl,
+          isAutomated: false,
           message: `WhatsApp verification link generated for +91 ${cleanDigits}`
         });
       })

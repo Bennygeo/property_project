@@ -1,16 +1,18 @@
 <?php
 /**
  * POST /api/auth/send-otp.php
- * Generates 1-Click WhatsApp Reverse Verification Code without external paid APIs.
+ * Automated Outbound WhatsApp OTP dispatch via Meta WhatsApp Business Cloud API.
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../helpers/whatsapp_service.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
+use Mannidam\Helpers\WhatsAppService;
 
 Response::initCors();
 
@@ -35,9 +37,6 @@ if (strlen($last10) < 10) {
 
 // Generate secure 4-digit numeric verification code
 $otp = (string)random_int(1000, 9999);
-
-$businessPhoneRaw = '919444100000';
-$formattedBusinessPhone = '+91 94441 00000';
 
 // Store in database for verification check
 try {
@@ -67,17 +66,37 @@ try {
     // Graceful fallback for offline environments without blocking user
 }
 
-// Reverse WhatsApp Verification: User sends pre-filled code to business desk
+// Dispatch automated outbound WhatsApp message via Meta Cloud API
+$sendResult = WhatsAppService::sendOtp($last10, $otp);
+
+// Build fallback WhatsApp click-to-chat URL if user prefers 1-click fallback
+$businessPhoneRaw = '919444100000';
 $waMessage = "Please verify my account on Find a Plot.\nMobile: +91 {$last10}\nVerification Code: AUTH-{$otp}";
 $whatsappUrl = "https://wa.me/{$businessPhoneRaw}?text=" . rawurlencode($waMessage);
 
-Response::success([
-    'phone'         => $last10,
-    'fullPhone'     => '+91 ' . $last10,
-    'otp'           => $otp,
-    'dummyOtp'      => $otp, // Backwards compatibility
-    'whatsappUrl'   => $whatsappUrl,
-    'businessPhone' => $formattedBusinessPhone,
-    'expiresIn'     => 900,
-    'method'        => 'reverse_whatsapp',
-], "WhatsApp verification link created successfully for +91 {$last10}.");
+if ($sendResult['success']) {
+    Response::success([
+        'phone'         => $last10,
+        'fullPhone'     => '+91 ' . $last10,
+        'otp'           => $otp,
+        'dummyOtp'      => $otp,
+        'isAutomated'   => true,
+        'isConfigured'  => true,
+        'whatsappUrl'   => $whatsappUrl,
+        'expiresIn'     => 600,
+    ], "Verification code sent to your WhatsApp number (+91 {$last10}). Please check your WhatsApp inbox.");
+} else {
+    // If Meta API credentials are not yet saved or returned an error,
+    // we return success with dummyOtp and instructions so the user is never stuck
+    Response::success([
+        'phone'         => $last10,
+        'fullPhone'     => '+91 ' . $last10,
+        'otp'           => $otp,
+        'dummyOtp'      => $otp,
+        'isAutomated'   => false,
+        'isConfigured'  => $sendResult['isConfigured'] ?? false,
+        'whatsappUrl'   => $whatsappUrl,
+        'apiNotice'     => $sendResult['message'] ?? 'Meta API pending configuration',
+        'expiresIn'     => 600,
+    ], "Code AUTH-{$otp} prepared for +91 {$last10}.");
+}
