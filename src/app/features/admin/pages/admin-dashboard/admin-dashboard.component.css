@@ -5731,3 +5731,216 @@
   background: #15803d;
   box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
 }
+
+
+/* ==========================================
+   EDIT PROPERTY MODAL & ACTIONS CELL (PLANAR)
+   ========================================== */
+.table-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-table-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #0f3b4a !important;
+  color: #ffffff !important;
+  border: 1px solid #0f3b4a !important;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.btn-table-edit:hover {
+  background: #0a2732 !important;
+  border-color: #0a2732 !important;
+}
+
+.btn-modal-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f3b4a !important;
+  color: #ffffff !important;
+  border: 1px solid #0f3b4a !important;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-modal-edit:hover {
+  background: #0a2732 !important;
+}
+
+.edit-property-modal-dialog {
+  background: #ffffff;
+  width: 100%;
+  max-width: 780px;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: 1px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.edit-property-modal-dialog .modal-header {
+  background: #0f3b4a;
+  color: #ffffff;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #5e8f72;
+}
+
+.edit-property-modal-dialog .modal-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-property-modal-dialog .modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.edit-property-modal-dialog .admin-persona-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #e2e8f0;
+}
+
+.edit-property-modal-dialog .persona-indicator {
+  width: 8px;
+  height: 8px;
+  background: #5e8f72;
+  display: inline-block;
+}
+
+.edit-property-modal-dialog .btn-modal-close {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.edit-property-modal-dialog .modal-body-scrollable {
+  padding: 1.25rem;
+  overflow-y: auto;
+  max-height: calc(90vh - 130px);
+}
+
+.edit-property-modal-dialog .edit-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.edit-property-modal-dialog .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-property-modal-dialog .form-group.col-span-2 {
+  grid-column: span 2 / span 2;
+}
+
+.edit-property-modal-dialog .form-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #334155;
+}
+
+.edit-property-modal-dialog .form-input {
+  border: 1px solid #cbd5e1;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.edit-property-modal-dialog .form-input:focus {
+  border-color: #0f3b4a;
+}
+
+.edit-property-modal-dialog .notes-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.edit-property-modal-dialog .modal-footer {
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: #f8fafc;
+}
+
+.edit-property-modal-dialog .btn-cancel {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.edit-property-modal-dialog .btn-save {
+  background: #0f3b4a;
+  border: 1px solid #0f3b4a;
+  color: #ffffff;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.edit-property-modal-dialog .btn-save:hover:not(:disabled) {
+  background: #0a2732;
+}
+
+.edit-property-modal-dialog .btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

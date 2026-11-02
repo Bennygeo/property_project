@@ -268,6 +268,100 @@ if ($method === 'POST') {
         ], 'Plot masterplan factsheet and subdivided parcels saved successfully');
     }
 
+    if ($action === 'update_property') {
+        $propId = trim($input['propertyId'] ?? '');
+        if (empty($propId)) {
+            Response::error('Property ID is required', 400);
+        }
+
+        $checkStmt = $db->prepare("SELECT * FROM properties WHERE id = ?");
+        $checkStmt->execute([$propId]);
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$existing) {
+            Response::error('Property not found', 404);
+        }
+
+        $adminId    = (int)($input['adminId'] ?? 101);
+        $adminName  = trim($input['adminName'] ?? 'Admin');
+        $auditNotes = trim($input['auditNotes'] ?? 'Updated property details');
+
+        $title        = trim($input['title'] ?? $existing['title']);
+        $propertyType = trim($input['propertyType'] ?? $existing['property_type']);
+        $listingMode  = trim($input['listingMode'] ?? $existing['listing_mode']);
+        $cityName     = trim($input['cityName'] ?? $existing['city_name']);
+        $localityName = trim($input['localityName'] ?? $existing['locality_name']);
+        $price        = trim($input['price'] ?? $existing['price']);
+        $pricePerSqft = trim($input['pricePerSqft'] ?? $existing['price_per_sqft']);
+        $sqft         = trim($input['sqft'] ?? $existing['sqft']);
+        $bhkBadge     = trim($input['bhkBadge'] ?? $existing['bhk_badge']);
+        $facingOrView = trim($input['facingOrView'] ?? $existing['facing_or_view']);
+        $mainImageUrl = trim($input['mainImageUrl'] ?? $existing['main_image_url']);
+        $reraNumber   = trim($input['reraNumber'] ?? $existing['rera_number']);
+        $status       = trim($input['status'] ?? $existing['status']);
+
+        $updateSql = "
+            UPDATE properties SET
+                title = :title,
+                property_type = :property_type,
+                listing_mode = :listing_mode,
+                city_name = :city_name,
+                locality_name = :locality_name,
+                price = :price,
+                price_per_sqft = :price_per_sqft,
+                sqft = :sqft,
+                bhk_badge = :bhk_badge,
+                facing_or_view = :facing_or_view,
+                main_image_url = :main_image_url,
+                rera_number = :rera_number,
+                status = :status,
+                updated_at = NOW()
+            WHERE id = :id
+        ";
+        $stmt = $db->prepare($updateSql);
+        $stmt->execute([
+            ':title'          => $title,
+            ':property_type'  => $propertyType,
+            ':listing_mode'   => $listingMode,
+            ':city_name'      => $cityName,
+            ':locality_name'  => $localityName,
+            ':price'          => $price,
+            ':price_per_sqft' => $pricePerSqft,
+            ':sqft'           => $sqft,
+            ':bhk_badge'      => $bhkBadge,
+            ':facing_or_view' => $facingOrView,
+            ':main_image_url' => $mainImageUrl,
+            ':rera_number'    => $reraNumber,
+            ':status'         => $status,
+            ':id'             => $propId
+        ]);
+
+        // Insert into admin_activity_logs (Audit Trail)
+        try {
+            $logStmt = $db->prepare("
+                INSERT INTO admin_activity_logs 
+                    (admin_id, admin_name, action_type, property_id, property_title, notes)
+                VALUES 
+                    (:aid, :aname, 'post_property', :pid, :ptitle, :notes)
+            ");
+            $logStmt->execute([
+                ':aid'    => $adminId,
+                ':aname'  => $adminName,
+                ':pid'    => $propId,
+                ':ptitle' => $title,
+                ':notes'  => "Edited & updated by {$adminName}: {$auditNotes}"
+            ]);
+        } catch (\Throwable $e) {
+            // Continue
+        }
+
+        Response::success([
+            'propertyId' => $propId,
+            'title'      => $title,
+            'status'     => $status,
+            'updatedBy'  => $adminName
+        ], "Property updated successfully by {$adminName}");
+    }
+
     $title        = trim($input['title'] ?? '');
     $propertyType = trim($input['propertyType'] ?? 'Apartments & Flats');
     $listingMode  = trim($input['listingMode'] ?? 'buy');

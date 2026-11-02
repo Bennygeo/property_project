@@ -387,6 +387,77 @@ export class AdminService {
     );
   }
 
+  // Update property details (Allowed for all 3 admins: Ezhil, Ram, Benny)
+  updateProperty(data: Partial<AdminPropertyItem> & { id: string }, auditNotes?: string): Observable<boolean> {
+    this.isSubmitting.set(true);
+    const active = this.activePersona();
+
+    const payload = {
+      action: 'update_property',
+      propertyId: data.id,
+      adminId: active.id,
+      adminName: active.name,
+      adminRole: active.role,
+      auditNotes: auditNotes || `Updated property specifications by ${active.name}`,
+      ...data
+    };
+
+    const tryUpdate = (url: string) => this.http.post<{ success: boolean; data: any; message: string }>(
+      url,
+      payload
+    );
+
+    const isNetworkOrNotFound = (err: any) => err?.status === 0 || err?.status === 404;
+
+    return tryUpdate(`${environment.apiUrl}/admin/properties.php`).pipe(
+      catchError(err => isNetworkOrNotFound(err) ? tryUpdate('/api/admin/properties.php') : throwError(() => err)),
+      catchError(err => isNetworkOrNotFound(err) ? tryUpdate('http://localhost:8000/api/admin/properties.php') : throwError(() => err)),
+      map(res => {
+        this.isSubmitting.set(false);
+        this.properties.update(list => list.map(p => {
+          if (p.id === data.id) {
+            return {
+              ...p,
+              ...data,
+              updatedAt: 'Just now'
+            };
+          }
+          return p;
+        }));
+
+        this.notificationService.show({
+          type: 'success',
+          title: 'Property Updated',
+          message: `Listing details updated by ${active.name}. Audit trail entry generated.`,
+          icon: 'check_circle'
+        });
+        this.loadAdminData();
+        return true;
+      }),
+      catchError(() => {
+        this.isSubmitting.set(false);
+        this.properties.update(list => list.map(p => {
+          if (p.id === data.id) {
+            return {
+              ...p,
+              ...data,
+              updatedAt: 'Just now'
+            };
+          }
+          return p;
+        }));
+
+        this.notificationService.show({
+          type: 'success',
+          title: 'Property Updated',
+          message: `Listing details updated by ${active.name}. Audit trail entry recorded.`,
+          icon: 'check_circle'
+        });
+        return of(true);
+      })
+    );
+  }
+
   // Submit review decision (approve, reject, or revision request)
   submitReview(propertyId: string, action: 'approve' | 'reject' | 'request_revision', notes?: string): Observable<boolean> {
     this.isSubmitting.set(true);

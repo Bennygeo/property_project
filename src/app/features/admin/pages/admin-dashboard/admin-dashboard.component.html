@@ -2162,12 +2162,22 @@
                     }
                   </td>
                   <td>
-                    <button 
-                      type="button" 
-                      class="btn-table-action" 
-                      (click)="openReviewModal(prop)">
-                      <span>Review / Audit</span>
-                    </button>
+                    <div class="table-actions-cell">
+                      <button 
+                        type="button" 
+                        class="btn-table-edit" 
+                        (click)="openEditModal(prop)"
+                        title="Edit property details">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span>Edit</span>
+                      </button>
+                      <button 
+                        type="button" 
+                        class="btn-table-action" 
+                        (click)="openReviewModal(prop)">
+                        <span>Review / Audit</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -3127,6 +3137,14 @@
 
                 <button 
                   type="button" 
+                  class="btn-modal-edit"
+                  (click)="openEditModal(inspectingProperty()!)">
+                  <span class="material-symbols-outlined">edit</span>
+                  <span>Edit Details</span>
+                </button>
+
+                <button 
+                  type="button" 
                   class="btn-modal-revision"
                   [disabled]="adminService.isSubmitting()"
                   (click)="onRequestRevision(inspectingProperty()!)">
@@ -3147,6 +3165,226 @@
             </div>
 
           </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: EDIT PROPERTY DETAILS (ALL 3 ADMINS) -->
+  <!-- ========================================== -->
+  @if (isEditModalOpen() && editingProperty()) {
+    <div class="modal-backdrop" (click)="closeEditModal()">
+      <div class="edit-property-modal-dialog" (click)="$event.stopPropagation()">
+        
+        <!-- Header -->
+        <div class="modal-header">
+          <div class="modal-header-meta">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-xl">edit_note</span>
+              <h2 class="modal-title">Edit Property Specifications</h2>
+            </div>
+            <div class="admin-persona-pill">
+              <span class="persona-indicator"></span>
+              <span>Active Admin: <strong>{{ adminService.activePersona().name }}</strong> ({{ adminService.activePersona().title }})</span>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closeEditModal()" aria-label="Close edit modal">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Form Body -->
+        <div class="modal-body-scrollable">
+          <div class="edit-form-grid">
+
+            <!-- Title -->
+            <div class="form-group col-span-2">
+              <label class="form-label">Property Title *</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().title" 
+                (input)="updateEditField('title', $any($event.target).value)" 
+                placeholder="e.g. Verified Cadastral Layout - Plot 2" />
+            </div>
+
+            <!-- Property Type & Listing Mode -->
+            <div class="form-group">
+              <label class="form-label">Property Type</label>
+              <select 
+                class="form-input" 
+                [value]="editForm().propertyType" 
+                (change)="updateEditField('propertyType', $any($event.target).value)">
+                <option value="Plot / Land">Plot / Land</option>
+                <option value="Apartments & Flats">Apartments & Flats</option>
+                <option value="Independent Villas">Independent Villas</option>
+                <option value="Luxury Penthouse">Luxury Penthouse</option>
+                <option value="Commercial Plots">Commercial Plots</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Listing Mode</label>
+              <select 
+                class="form-input" 
+                [value]="editForm().listingMode" 
+                (change)="updateEditField('listingMode', $any($event.target).value)">
+                <option value="buy">Buy / Sale</option>
+                <option value="rent">Rent / Lease</option>
+              </select>
+            </div>
+
+            <!-- City & Locality -->
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().cityName" 
+                (input)="updateEditField('cityName', $any($event.target).value)" 
+                placeholder="e.g. Chennai, Thanjavur" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Locality / Micro-Market</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().localityName" 
+                (input)="updateEditField('localityName', $any($event.target).value)" 
+                placeholder="e.g. Pillayarpatti Extension" />
+            </div>
+
+            <!-- Price & Price Per Sqft -->
+            <div class="form-group">
+              <label class="form-label">Display Price</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().price" 
+                (input)="updateEditField('price', $any($event.target).value)" 
+                placeholder="e.g. ₹ 1.02 Cr" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Rate / Sq.Ft</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().pricePerSqft" 
+                (input)="updateEditField('pricePerSqft', $any($event.target).value)" 
+                placeholder="e.g. ₹ 8,459/sq.ft" />
+            </div>
+
+            <!-- Sqft Area & BHK Badge -->
+            <div class="form-group">
+              <label class="form-label">Area (Sq.Ft / Extent)</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().sqft" 
+                (input)="updateEditField('sqft', $any($event.target).value)" 
+                placeholder="e.g. 800 sq.ft (1.84 Cents)" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">BHK / Sub-badge</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().bhkBadge" 
+                (input)="updateEditField('bhkBadge', $any($event.target).value)" 
+                placeholder="e.g. 1.84 Cents Plot or 3 BHK" />
+            </div>
+
+            <!-- Facing & RERA -->
+            <div class="form-group">
+              <label class="form-label">Facing / Direction</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().facingOrView" 
+                (input)="updateEditField('facingOrView', $any($event.target).value)" 
+                placeholder="e.g. South-West Facing" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">RERA Registration No.</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [value]="editForm().reraNumber" 
+                (input)="updateEditField('reraNumber', $any($event.target).value)" 
+                placeholder="e.g. TNRERA/13/LO/0114/2026" />
+            </div>
+
+            <!-- Main Image URL -->
+            <div class="form-group col-span-2">
+              <label class="form-label">Main Image URL</label>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  class="form-input flex-1" 
+                  [value]="editForm().mainImageUrl" 
+                  (input)="updateEditField('mainImageUrl', $any($event.target).value)" 
+                  placeholder="https://images.unsplash.com/..." />
+                @if (editForm().mainImageUrl) {
+                  <img [src]="editForm().mainImageUrl" alt="Preview" class="h-10 w-16 object-cover border border-slate-300" />
+                }
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group col-span-2">
+              <label class="form-label">Listing Status</label>
+              <select 
+                class="form-input" 
+                [value]="editForm().status" 
+                (change)="updateEditField('status', $any($event.target).value)">
+                <option value="published">Published (Active Live Listing)</option>
+                <option value="pending_review">Pending Review</option>
+                <option value="pending_peer_review">Pending Peer Review (Maker-Checker)</option>
+                <option value="revision_requested">Revision Requested</option>
+                <option value="rejected">Rejected</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+
+            <!-- Audit Trail Notes -->
+            <div class="form-group col-span-2">
+              <label class="form-label text-primary font-bold">
+                Admin Audit Trail Justification / Reason *
+              </label>
+              <textarea 
+                class="form-input notes-textarea" 
+                rows="2" 
+                [value]="editAuditNotes()" 
+                (input)="editAuditNotes.set($any($event.target).value)" 
+                placeholder="Provide notes on why this listing was updated (e.g. Corrected cadastral survey extent, updated rate per sq.ft as per deed)..."></textarea>
+              <p class="text-xs text-slate-500 mt-1">
+                This modification will be permanently logged in the audit trail under {{ adminService.activePersona().name }}.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeEditModal()">
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            class="btn-save" 
+            [disabled]="adminService.isSubmitting()" 
+            (click)="onSaveEditedProperty()">
+            <span class="material-symbols-outlined">save</span>
+            <span>{{ adminService.isSubmitting() ? 'Saving Changes...' : 'Save & Record Audit Trail' }}</span>
+          </button>
         </div>
 
       </div>

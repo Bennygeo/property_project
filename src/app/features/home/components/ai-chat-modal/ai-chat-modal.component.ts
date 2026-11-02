@@ -12,7 +12,7 @@ import { Property } from '../../../../core/models/property.model';
   template: `
     <!-- Floating Bottom-Right Persistent AI Concierge Launcher Badge (shown only when full chat is closed) -->
     @if (!aiService.isChatOpen()) {
-      <button 
+      <!-- <button 
         type="button" 
         class="ai-floating-trigger" 
         (click)="openFullScreenChat()" 
@@ -25,7 +25,7 @@ import { Property } from '../../../../core/models/property.model';
           <span class="ai-label">AI Concierge</span>
         </div>
         <span class="online-indicator"></span>
-      </button>
+      </button> -->
     }
 
     <!-- Full-Screen ChatGPT Experience -->

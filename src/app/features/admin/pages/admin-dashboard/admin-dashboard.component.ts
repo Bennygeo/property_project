@@ -80,7 +80,7 @@ import { UserBehaviorService } from '../../../../core/services/user-behavior.ser
 import { AdminService, ADMIN_PERSONAS } from '../../../../core/services/admin.service';
 import { PropertyService } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { AdminPropertyItem } from '../../../../core/models/admin.model';
+import { AdminPropertyItem, PropertyReviewStatus } from '../../../../core/models/admin.model';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { SubdividedPlot } from '../../../../core/models/subdivided-plot.model';
 import { PlotDetails } from '../../../../core/models/property.model';
@@ -267,6 +267,41 @@ export class AdminDashboardComponent {
   readonly inspectingProperty = signal<AdminPropertyItem | null>(null);
   readonly isReviewModalOpen = signal<boolean>(false);
   readonly reviewNotes = signal<string>('');
+
+  // Edit Property Modal State (All 3 admins allowed)
+  readonly isEditModalOpen = signal<boolean>(false);
+  readonly editingProperty = signal<AdminPropertyItem | null>(null);
+  readonly editForm = signal<{
+    title: string;
+    propertyType: string;
+    listingMode: string;
+    localityName: string;
+    cityName: string;
+    price: string;
+    pricePerSqft: string;
+    sqft: string;
+    bhkBadge: string;
+    facingOrView: string;
+    mainImageUrl: string;
+    reraNumber: string;
+    status: PropertyReviewStatus;
+  }>({
+    title: '',
+    propertyType: 'Plot / Land',
+    listingMode: 'buy',
+    localityName: '',
+    cityName: '',
+    price: '',
+    pricePerSqft: '',
+    sqft: '',
+    bhkBadge: '',
+    facingOrView: '',
+    mainImageUrl: '',
+    reraNumber: '',
+    status: 'published'
+  });
+  readonly editAuditNotes = signal<string>('');
+
 
   // Media Tab & Upload State for Admin Post Property
   readonly adminMediaTab = signal<'upload' | 'url' | 'presets'>('upload');
@@ -1118,6 +1153,58 @@ export class AdminDashboardComponent {
       }
     });
   }
+
+  // Edit Property Modal Controls (Permitted for all 3 admins)
+  openEditModal(prop: AdminPropertyItem): void {
+    this.editingProperty.set(prop);
+    this.editForm.set({
+      title: prop.title || '',
+      propertyType: prop.propertyType || 'Plot / Land',
+      listingMode: prop.listingMode || 'buy',
+      localityName: prop.localityName || '',
+      cityName: prop.cityName || '',
+      price: prop.price || '',
+      pricePerSqft: prop.pricePerSqft || '',
+      sqft: prop.sqft || '',
+      bhkBadge: prop.bhkBadge || '',
+      facingOrView: prop.facingOrView || '',
+      mainImageUrl: prop.mainImageUrl || '',
+      reraNumber: prop.reraNumber || '',
+      status: prop.status || 'published'
+    });
+    this.editAuditNotes.set('Updated specifications by ' + this.adminService.activePersona().name);
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen.set(false);
+    this.editingProperty.set(null);
+  }
+
+  updateEditField(field: string, value: any): void {
+    this.editForm.update(f => ({ ...f, [field]: value }));
+  }
+
+  onSaveEditedProperty(): void {
+    const prop = this.editingProperty();
+    if (!prop) return;
+
+    const form = this.editForm();
+    if (!form.title.trim()) {
+      alert('Property title is required');
+      return;
+    }
+
+    this.adminService.updateProperty({
+      id: prop.id,
+      ...form
+    }, this.editAuditNotes()).subscribe(success => {
+      if (success) {
+        this.closeEditModal();
+      }
+    });
+  }
+
 
   // Post property form submission
   onSubmitNewProperty(): void {
