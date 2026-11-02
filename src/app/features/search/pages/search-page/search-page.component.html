@@ -773,20 +773,20 @@
               <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
             </h3>
 
-            @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
+            @if (getDeveloperName(prop)) {
               @if ((prop.developerProjectsCount || 0) > 1) {
-              <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
+              <a [routerLink]="['/builder', getDeveloperName(prop)]"
                  class="list-builder-row"
                  title="View Developer Portfolio">
                 <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong></span>
+                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
                 <span class="material-symbols-outlined" style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
               </a>
               } @else {
               <div class="list-builder-row non-clickable"
                    title="Promoter / Developer">
                 <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong></span>
+                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
               </div>
               }
             }
@@ -797,9 +797,7 @@
 
             </div>
 
-            <div class="list-highlights-row">
-              <span class="dimension-tag">{{ prop.sqft }}</span>
-            </div>
+            
           </div>
 
           <!-- Price & Action Section -->
@@ -984,14 +982,19 @@
                 <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
               </h3>
 
+              @if (getDeveloperName(prop)) {
+                <div class="list-builder-row non-clickable" title="Promoter / Developer">
+                  <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                  <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+                </div>
+              }
+
               <div class="list-locality">
                 <span class="material-symbols-outlined loc-icon">location_on</span>
                 <span>{{ prop.locality }}, {{ prop.city }}</span>
               </div>
 
-              <div class="list-highlights-row">
-                <span class="dimension-tag">{{ prop.sqft }}</span>
-              </div>
+              
             </div>
 
             <!-- Price & Action Section -->

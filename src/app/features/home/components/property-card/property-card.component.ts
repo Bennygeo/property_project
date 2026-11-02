@@ -90,25 +90,25 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
       <!-- Card Content -->
       <div class="card-content">
-        <!-- Price Row -->
+        <!-- Title (Property Name First) -->
+        <h3 class="property-title" [title]="property.title">
+          <a [routerLink]="['/property', property.id]" class="title-link">{{ property.title }}</a>
+        </h3>
+
+        <!-- Price Row (Then Price) -->
         <div class="price-row">
           <span class="main-price">{{ formatPriceIndian(property.price) }}</span>
           <span class="unit-price">{{ property.pricePerSqFt }}</span>
         </div>
 
-        <!-- Title -->
-        <h3 class="property-title" [title]="property.title">
-          <a [routerLink]="['/property', property.id]" class="title-link">{{ property.title }}</a>
-        </h3>
-
-        <!-- Builder / Developer Name -->
-        @if (property.developerName || property.masterDetails?.developer || property.developer?.name) {
-          <a [routerLink]="['/builder', property.developerName || property.masterDetails?.developer || property.developer?.name]"
+        <!-- Builder / Developer Details -->
+        @if (developerDisplayName) {
+          <a [routerLink]="['/builder', developerDisplayName]"
              (click)="$event.stopPropagation()"
              class="card-builder-row" 
-             [title]="'Explore Builder: ' + (property.developerName || property.masterDetails?.developer || property.developer?.name)">
+             [title]="'Explore Builder: ' + developerDisplayName">
             <span class="material-symbols-outlined card-builder-icon">corporate_fare</span>
-            <span class="card-builder-text">By {{ property.developerName || property.masterDetails?.developer || property.developer?.name }}</span>
+            <span class="card-builder-text">By {{ developerDisplayName }}</span>
             <span class="material-symbols-outlined" style="font-size: 13px; margin-left: auto; color: var(--brand-teal, #0f3b4a);">chevron_right</span>
           </a>
         }
@@ -124,11 +124,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             <span class="pill-distance">{{ property.distanceKm }} km away</span>
           }
         </p>
-
-        <!-- Minimalist Inline Specifications Strip -->
-        <div class="specs-inline">
-          <span class="spec-item">{{ property.sqft }}</span>
-        </div>
 
         <!-- Minimalist Action Buttons -->
         <div class="actions-row">
@@ -734,6 +729,24 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
   `]
 })
 export class PropertyCardComponent {
+
+  get developerDisplayName(): string {
+    const raw = this.property?.developerName || 
+                this.property?.masterDetails?.developer || 
+                this.property?.developer?.name || 
+                (this.property as any)?.developer_name ||
+                (this.property as any)?.promoterName || 
+                (this.property as any)?.submittedByName ||
+                (this.property as any)?.builder ||
+                '';
+    const clean = raw ? raw.replace(/â\x80\x93|â\x80\x94|â/g, '–').trim() : '';
+    if (clean) return clean;
+    if (this.property?.title?.toLowerCase().includes('cadastral') || this.property?.title?.toLowerCase().includes('layout')) {
+      return 'Executive Engineer – Tamil Nadu Housing Board';
+    }
+    return 'Tamil Nadu Housing Board';
+  }
+
   @Input({ required: true }) property!: Property;
   @Input() showCompare: boolean = false;
   readonly formatPriceIndian = formatPriceIndian;
