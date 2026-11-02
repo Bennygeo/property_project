@@ -55,34 +55,10 @@ export interface PropertyTypeOption {
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
         <div class="hero-text-center">
-          <div class="rera-badge-pill">
-            <span class="material-symbols-outlined rera-shield-icon">verified_user</span>
-            <span>100% RERA REGISTERED</span>
-          </div>
-
           <h1 class="hero-headline">Every Plot We Post is RERA Registered</h1>
           <p class="hero-subline">
             We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds. We do not undertake unapproved sites, guaranteeing complete legal title clearance and zero encroachment risks.
           </p>
-
-          <div class="rera-badges-row">
-            <div class="rera-badge-chip">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>TNRERA Registered</span>
-            </div>
-            <div class="rera-badge-chip">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>CMDA &amp; DTCP Sanctioned</span>
-            </div>
-            <div class="rera-badge-chip">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>Clear Patta &amp; Title</span>
-            </div>
-            <div class="rera-badge-chip rera-highlight-chip">
-              <span class="material-symbols-outlined">shield</span>
-              <span>Zero Unapproved Sites</span>
-            </div>
-          </div>
 
           <!-- Buy / Sell Mode Tabs -->
           <div class="hero-buy-sell-tabs">
