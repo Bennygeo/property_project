@@ -121,6 +121,7 @@ function enrichInitialGps(props: Property[]): Property[] {
   providedIn: 'root'
 })
 export class PropertyService {
+  private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly notificationService = inject(NotificationService);
   private readonly walletService = inject(WalletService);
@@ -226,15 +227,11 @@ export class PropertyService {
   }
 
   openMediaModal(property: Property, initialTab: 'free' | 'premium' = 'free'): void {
-    const safeProp: Property = {
-      ...property,
-      freePhotos: Array.isArray(property.freePhotos) && property.freePhotos.length > 0
-        ? property.freePhotos
-        : [property.imageUrl || 'hero-bg.jpg'],
-      premiumMedia: Array.isArray(property.premiumMedia) ? property.premiumMedia : []
-    };
-    this.activeModalProperty.set(safeProp);
-    this.activeMediaTab.set(initialTab);
+    // Popup disabled per user command: navigate directly to property details page
+    if (property && property.id) {
+      this.router.navigate(['/property', property.id]);
+    }
+    this.activeModalProperty.set(null);
   }
 
   closeMediaModal(): void {

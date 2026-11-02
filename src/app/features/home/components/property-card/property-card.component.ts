@@ -90,6 +90,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
       <!-- Card Content -->
       <div class="card-content">
+        @if (reraDisplayName) {
+          <div class="card-rera-row">
+            <span class="material-symbols-outlined card-rera-icon">verified</span>
+            <span class="card-rera-text font-mono">{{ reraDisplayName }}</span>
+          </div>
+        }
+
         <!-- Title (Property Name First) -->
         <h3 class="property-title" [title]="property.title">
           <a [routerLink]="['/property', property.id]" class="title-link">{{ property.title }}</a>
@@ -127,15 +134,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
         <!-- Minimalist Action Buttons -->
         <div class="actions-row">
-          <button 
-            type="button" 
+          <a 
             class="btn-action-primary"
-            (click)="propertyService.openMediaModal(property, property.isMediaUnlocked ? 'premium' : 'free')">
-            @if (property.isMediaUnlocked) {
-              <span class="material-symbols-outlined btn-icon">smart_display</span>
-            }
-            <span>{{ property.isMediaUnlocked ? 'Watch 4K Tour' : 'View Details' }}</span>
-          </button>
+            [routerLink]="['/property', property.id]"
+            title="View property details dossier">
+            <span>View Details</span>
+          </a>
 
           @if (showCompare) {
           <button 
@@ -491,6 +495,29 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     /* Title */
+    .card-rera-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #0f3b4a;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      padding: 1px 6px;
+      width: fit-content;
+      letter-spacing: 0.03em;
+    }
+
+    .card-rera-icon {
+      font-size: 12px;
+      color: #5e8f72;
+    }
+
+    .card-rera-text {
+      letter-spacing: 0.03em;
+    }
+
     .property-title {
       font-size: 0.975rem;
       font-weight: 600;
@@ -729,6 +756,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
   `]
 })
 export class PropertyCardComponent {
+  get reraDisplayName(): string {
+    return this.property?.badges?.rera || 
+           this.property?.masterDetails?.reraNumber || 
+           (this.property as any)?.reraNumber || 
+           '';
+  }
+
 
   get developerDisplayName(): string {
     const raw = this.property?.developerName || 

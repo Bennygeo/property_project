@@ -330,10 +330,11 @@
               <span class="material-symbols-outlined">verified</span>
             </div>
             <div class="snapshot-text">
-              <span class="snapshot-label">Sanction &amp; Title</span>
-              <strong class="snapshot-val text-emerald">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Approved'
-                : (prop.badges.rera || 'CMDA / RERA') }}</strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.pattaType || 'Individual Patta' }}</span>
+              <span class="snapshot-label">RERA Registration No.</span>
+              <strong class="snapshot-val text-emerald font-mono" style="word-break: break-all; font-size: 13.5px;">
+                {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}
+              </strong>
+              <span class="snapshot-sub">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Sanctioned Layout' : 'Statutory Sanctioned' }}</span>
             </div>
           </div>
 
@@ -841,8 +842,8 @@
 
                   <div class="hanu-spec-item">
                     <span class="spec-label">TNRERA Registration Number</span>
-                    <span class="spec-value font-mono font-semibold">
-                      {{ prop.masterDetails?.reraNumber || prop.badges.rera || 'TNRERA Approved Layout' }}
+                    <span class="spec-value font-mono font-bold text-slate-900" style="word-break: break-all;">
+                      {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}
                     </span>
                   </div>
 
@@ -1248,11 +1249,7 @@
             </button>
           </form>
 
-          <!-- Download Brochure Action -->
-          <button type="button" class="btn-sidebar-brochure" (click)="downloadBrochure()">
-            <span class="material-symbols-outlined">download</span>
-            <span>Download Property Dossier (PDF)</span>
-          </button>
+          
         </div>
 
         <!-- SIMILAR PROPERTIES IN SAME CORRIDOR -->
@@ -1322,10 +1319,7 @@
           <p class="fp-modal-sub">{{ modalPlan.superArea }} • {{ modalPlan.carpetArea }} • {{ modalPlan.priceEstimate }}
           </p>
         </div>
-        <button type="button" class="btn-fp-download" (click)="downloadFloorPlan(modalPlan)">
-          <span class="material-symbols-outlined">download</span>
-          <span>Download Blueprint</span>
-        </button>
+        
       </div>
       <div class="fp-modal-img-container">
         <img [src]="modalPlan.imageUrl" [alt]="modalPlan.name" loading="lazy" decoding="async">

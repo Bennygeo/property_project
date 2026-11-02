@@ -1813,12 +1813,15 @@
 .badge-rera-sm {
   background: var(--brand-green, #5e8f72);
   color: #ffffff;
-  font-size: 9.5px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 0;
+  max-width: none !important;
+  white-space: normal !important;
+  word-break: break-all;
 }
 
 .badge-tag-sm {

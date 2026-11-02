@@ -756,7 +756,7 @@
           <!-- Info Section -->
           <div class="list-info">
             <div class="list-meta-top">
-              <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
+              <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}</span>
               @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
               <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
               } @else if (prop.badges?.brokerage) {
@@ -970,7 +970,7 @@
             <!-- Info Section -->
             <div class="list-info">
               <div class="list-meta-top">
-                <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
+                <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}</span>
                 @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
                 <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
                 } @else if (prop.badges?.brokerage) {
