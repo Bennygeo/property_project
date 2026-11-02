@@ -327,7 +327,7 @@
 .hanu-header-block {
   border: none;
   border-radius: 0;
-  padding: 0 0 1.75rem 0;
+  padding: 0 0 1rem 0;
   box-shadow: none !important;
 }
 
@@ -633,7 +633,7 @@
 .hanu-two-col-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 1rem;
   align-items: start;
 }
 
@@ -646,7 +646,7 @@
 .hanu-main-column {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
   min-width: 0;
 }
 
@@ -967,7 +967,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 0;
   background: #ffffff;
-  margin: 1rem 0;
+  /* margin: 1rem 0; */
   box-shadow: none !important;
   width: 100%;
   box-sizing: border-box;
@@ -1245,9 +1245,11 @@
 
 .context-tabs-ribbon {
   display: flex;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 2px solid #cbd5e1;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 0 16px 0;
+  border-bottom: 2px solid #e2e8f0;
   overflow-x: auto;
 }
 
@@ -1256,34 +1258,39 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 18px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 0;
+  padding: 10px 20px;
+  background: #ffffff !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 0 !important;
   font-size: 13.5px;
-  font-weight: 700;
-  color: #1e293b;
+  font-weight: 700 !important;
+  color: #1e293b !important;
   cursor: pointer;
   white-space: nowrap;
   position: relative;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   box-sizing: border-box;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .ctx-tab-btn:hover:not(.active) {
-  background: #e2e8f0;
-  border-color: #94a3b8;
-  color: #0f172a;
+  background: #f1f5f9 !important;
+  border-color: #0f3b4a !important;
+  color: #0f3b4a !important;
+  transform: translateY(-1px);
+}
+
+.ctx-tab-btn:active {
+  transform: translateY(0);
 }
 
 .ctx-tab-btn.active {
   background: #0f3b4a !important;
-  border: 1px solid #0f3b4a !important;
+  border: 2px solid #0f3b4a !important;
   color: #ffffff !important;
-  font-weight: 600;
-  box-shadow: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(15, 59, 74, 0.25) !important;
 }
 
 .ctx-tab-btn.active::before,
@@ -1292,9 +1299,13 @@
 }
 
 .ctx-tab-icon {
-  font-size: 18px;
+  font-size: 19px;
   color: #475569;
   transition: color 0.15s ease;
+}
+
+.ctx-tab-btn:hover:not(.active) .ctx-tab-icon {
+  color: #0f3b4a;
 }
 
 .ctx-tab-btn.active .ctx-tab-icon {
@@ -1303,20 +1314,26 @@
 }
 
 .ctx-tab-badge {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 0;
-  background: #ffffff;
+  background: #f1f5f9;
   color: #334155;
   border: 1px solid #cbd5e1;
   letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+}
+
+.ctx-tab-btn:hover:not(.active) .ctx-tab-badge {
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .ctx-tab-btn.active .ctx-tab-badge {
   background: #5e8f72 !important;
   color: #ffffff !important;
-  border-color: #5e8f72 !important;
+  border: 1px solid #5e8f72 !important;
 }
 
 /* Connected Workspace Window (Open Canvas) */
@@ -1503,35 +1520,43 @@
 
 /* Distinct Semantic Colors for Infrastructure */
 .theme-road .infra-icon-emblem span {
-  color: #2563eb; /* Roadway Cobalt Blue */
+  color: #2563eb;
+  /* Roadway Cobalt Blue */
 }
 
 .theme-power .infra-icon-emblem span {
-  color: #d97706; /* Power Grid Amber */
+  color: #d97706;
+  /* Power Grid Amber */
 }
 
 .theme-water .infra-icon-emblem span {
-  color: #0284c7; /* Water Resource Sky Blue */
+  color: #0284c7;
+  /* Water Resource Sky Blue */
 }
 
 .theme-drainage .infra-icon-emblem span {
-  color: #0891b2; /* Drainage Cyan */
+  color: #0891b2;
+  /* Drainage Cyan */
 }
 
 .theme-light .infra-icon-emblem span {
-  color: #ca8a04; /* Avenue Illumination Sun Gold */
+  color: #ca8a04;
+  /* Avenue Illumination Sun Gold */
 }
 
 .theme-security .infra-icon-emblem span {
-  color: #4f46e5; /* Perimeter Security Indigo */
+  color: #4f46e5;
+  /* Perimeter Security Indigo */
 }
 
 .theme-park .infra-icon-emblem span {
-  color: #16a34a; /* Parks & Greenery Emerald */
+  color: #16a34a;
+  /* Parks & Greenery Emerald */
 }
 
 .theme-maintenance .infra-icon-emblem span {
-  color: #0d9488; /* Free Maintenance Teal */
+  color: #0d9488;
+  /* Free Maintenance Teal */
 }
 
 .infra-pill {
@@ -1933,39 +1958,48 @@
 
 /* Distinct Semantic Icon Colors */
 .transit-icon-box.corridor span {
-  color: #0d9488; /* Strategic Teal */
+  color: #0d9488;
+  /* Strategic Teal */
 }
 
 .transit-icon-box.highway span {
-  color: #2563eb; /* Highway Cobalt Blue */
+  color: #2563eb;
+  /* Highway Cobalt Blue */
 }
 
 .transit-icon-box.train span {
-  color: #7c3aed; /* Railway Violet */
+  color: #7c3aed;
+  /* Railway Violet */
 }
 
 .transit-icon-box.bus span {
-  color: #16a34a; /* Transit Green */
+  color: #16a34a;
+  /* Transit Green */
 }
 
 .transit-icon-box.airport span {
-  color: #0284c7; /* Aviation Sky Blue */
+  color: #0284c7;
+  /* Aviation Sky Blue */
 }
 
 .transit-icon-box.fuel span {
-  color: #d97706; /* Energy Amber */
+  color: #d97706;
+  /* Energy Amber */
 }
 
 .transit-icon-box.school span {
-  color: #4f46e5; /* Education Indigo */
+  color: #4f46e5;
+  /* Education Indigo */
 }
 
 .transit-icon-box.hospital span {
-  color: #e11d48; /* Healthcare Rose */
+  color: #e11d48;
+  /* Healthcare Rose */
 }
 
 .transit-icon-box.safety span {
-  color: #0891b2; /* Shield Cyan */
+  color: #0891b2;
+  /* Shield Cyan */
 }
 
 
@@ -3039,8 +3073,17 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
 }
 
 @media (max-width: 640px) {
@@ -3049,6 +3092,7 @@
     right: 16px;
     left: 16px;
   }
+
   .floating-wa-btn {
     width: 100%;
     justify-content: center;
