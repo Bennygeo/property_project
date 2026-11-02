@@ -2,12 +2,16 @@
   RewriteEngine On
   RewriteBase /p_demo_4/
 
-  # If an existing asset or directory is requested, serve directly
+  # 1. If an existing asset or directory is requested, serve directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # All other routes go to index.html for Angular SPA client routing
+  # 2. Do not rewrite missing static assets (.js, .css, etc.) to index.html (return real 404)
+  RewriteCond %{REQUEST_URI} \.(js|css|svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot)$ [NC]
+  RewriteRule ^ - [R=404,L]
+
+  # 3. All other client-side routes go to index.html for Angular SPA routing
   RewriteRule ^ index.html [L]
 </IfModule>
 
@@ -21,18 +25,19 @@
   Header always unset Upgrade
   Header always unset Connection
 
-  # 2. Fix malformed Expires header (Expires: max-age=A10368000) that crashes HTTP/2 parser
+  # 2. Fix malformed Expires header that crashes HTTP/2 parser
   Header unset Expires
   Header always unset Expires
 
-  # 3. Proper cache headers for static bundles
+  # 3. Proper cache headers for static hashed bundles
   <FilesMatch "\.(js|css|svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot)$">
     Header set Cache-Control "max-age=31536000, public, immutable"
   </FilesMatch>
 
-  # 4. Do not cache index.html so updates load immediately
+  # 4. Never cache index.html so updates load immediately
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
+    Header set Expires 0
   </FilesMatch>
 </IfModule>
