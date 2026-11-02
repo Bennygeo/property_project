@@ -147,11 +147,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
         <!-- Minimalist Inline Specifications Strip -->
         <div class="specs-inline">
-          <span class="spec-item">{{ property.bhkBadge }}</span>
-          <span class="spec-dot">·</span>
           <span class="spec-item">{{ property.sqft }}</span>
-          <span class="spec-dot">·</span>
-          <span class="spec-item">{{ property.facingOrView }}</span>
         </div>
 
         <!-- Minimalist Action Buttons -->

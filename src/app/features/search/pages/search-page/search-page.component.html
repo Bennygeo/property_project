@@ -821,13 +821,6 @@
 
             <div class="list-highlights-row">
               <span class="dimension-tag">{{ prop.sqft }}</span>
-              <span class="dot-sep">•</span>
-              <span>{{ prop.facingOrView }}</span>
-              <span class="dot-sep">•</span>
-              @for (hl of prop.highlights; track $index; let last = $last) {
-              <span class="hl-item">{{ hl }}</span>
-              @if (!last) { <span class="dot-sep">•</span> }
-              }
             </div>
           </div>
 
@@ -1036,13 +1029,6 @@
 
               <div class="list-highlights-row">
                 <span class="dimension-tag">{{ prop.sqft }}</span>
-                <span class="dot-sep">•</span>
-                <span>{{ prop.facingOrView }}</span>
-                <span class="dot-sep">•</span>
-                @for (hl of prop.highlights; track $index; let last = $last) {
-                <span class="hl-item">{{ hl }}</span>
-                @if (!last) { <span class="dot-sep">•</span> }
-                }
               </div>
             </div>
 
