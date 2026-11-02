@@ -1675,7 +1675,7 @@
 .results-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 @media (min-width: 640px) {
@@ -2070,6 +2070,7 @@
 }
 
 @media (min-width: 768px) {
+
   .list-actions-row,
   .list-secondary-actions {
     justify-content: flex-end;
