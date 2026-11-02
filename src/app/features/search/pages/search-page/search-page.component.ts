@@ -302,7 +302,7 @@ export class SearchPageComponent implements OnInit {
   readonly droneOnly = signal<boolean>(false);
   readonly readyToMoveOnly = signal<boolean>(false);
   readonly isMobileFilterOpen = signal<boolean>(false);
-  readonly isAdVisible = signal<boolean>(true);
+  readonly isAdVisible = signal<boolean>(false);
   readonly adPosition = signal<'left' | 'right'>('right');
 
   // Filter Presets & Choices
