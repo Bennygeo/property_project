@@ -631,7 +631,7 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
             'rera'       => $row['reraNumber'] ?? 'CMDA / DTCP Sanctioned',
             'brokerage'  => $row['brokerageBadge'] ?? '0% Direct SRO Deed',
             'points'     => (int)($row['pointsBadge'] ?? 4),
-            'specialTag' => $row['specialTag'] ?? 'Cadastral Verified',
+            'specialTag' => $row['specialTag'] ?? '',
         ],
         'highlights'      => !empty($highlights) ? $highlights : ['DTCP Sanctioned Layout', 'Clear Patta Title', '30 Ft Wide Bitumen Road'],
         'mediaPoints'     => (int)($row['mediaPoints'] ?? 4),

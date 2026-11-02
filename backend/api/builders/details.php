@@ -270,7 +270,7 @@ try {
                 'rera'       => $r['masterReraNumber'] ?: ($r['reraBadge'] ?: 'TNRERA Verified'),
                 'brokerage'  => $r['brokerageBadge'] ?: '0% Direct SRO Deed',
                 'points'     => (int)($r['pointsBadge'] ?: 4),
-                'specialTag' => $r['specialTag'] ?: 'Cadastral Verified'
+                'specialTag' => $r['specialTag'] ?: ''
             ],
             'highlights'      => [
                 'DTCP Sanctioned Layout',

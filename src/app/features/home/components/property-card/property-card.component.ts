@@ -45,9 +45,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             </span>
           }
 
-          <span class="badge-verified">
-            <span>{{ property.badges.specialTag || property.badges.rera || 'Verified' }}</span>
-          </span>
+          @if (property.badges.specialTag && !property.badges.specialTag.toLowerCase().includes('cadastral')) {
+            <span class="badge-verified">
+              <span>{{ property.badges.specialTag }}</span>
+            </span>
+          }
 
           @if (property.isGpsValid === false && property.gpsErrorReason) {
             <span class="badge-gps-red" title="GPS coordinates unverified or inaccurate">
