@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
@@ -50,7 +50,9 @@ export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_tran
   templateUrl: './property-details-page.component.html',
   styleUrls: ['./property-details-page.component.css']
 })
-export class PropertyDetailsPageComponent implements OnInit, OnDestroy {
+export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly showFloatingWa = signal<boolean>(false);
+  private waObserver: IntersectionObserver | null = null;
   readonly formatPriceIndian = formatPriceIndian;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -225,6 +227,44 @@ export class PropertyDetailsPageComponent implements OnInit, OnDestroy {
     return views.includes(id) && views.length === 1;
   });
 
+  
+  ngAfterViewInit(): void {
+    this.setupWhatsAppObserver();
+  }
+
+  private setupWhatsAppObserver(): void {
+    if (typeof window === 'undefined') return;
+
+    if (this.waObserver) {
+      this.waObserver.disconnect();
+      this.waObserver = null;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      this.showFloatingWa.set(true);
+      return;
+    }
+
+    const checkAndObserve = (attempts = 0) => {
+      const target = document.querySelector('.hanu-realtor-card .btn-contact-wa') || document.querySelector('.btn-contact-wa');
+      if (target) {
+        this.waObserver = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            this.showFloatingWa.set(!entry.isIntersecting);
+          }
+        }, {
+          root: null,
+          threshold: 0
+        });
+        this.waObserver.observe(target);
+      } else if (attempts < 6) {
+        setTimeout(() => checkAndObserve(attempts + 1), 300);
+      }
+    };
+
+    checkAndObserve();
+  }
+
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -236,6 +276,7 @@ export class PropertyDetailsPageComponent implements OnInit, OnDestroy {
         this.isSiteVisitPromptOpen.set(false);
         this.startSiteVisitPromptTimer();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => this.setupWhatsAppObserver(), 400);
 
         if (this.authService.isLoggedIn()) {
           // Record browsing history in MySQL & localStorage for logged in user

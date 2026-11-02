@@ -1285,7 +1285,7 @@
     </div>
 
     <!-- PERSISTENT FLOATING WHATSAPP CTA (Visible while scrolling) -->
-    <aside class="sticky-wa-floating-bar" aria-label="Direct WhatsApp Inquiry">
+    <aside class="sticky-wa-floating-bar" [class.visible]="showFloatingWa()" aria-label="Direct WhatsApp Inquiry">
       <a class="floating-wa-btn"
         [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Find%20a%20Plot,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'"
         target="_blank" rel="noopener" title="Chat with Cadastral Concierge on WhatsApp">
