@@ -906,7 +906,7 @@
                  title="View Developer Portfolio">
                 <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
                 <span class="list-builder-text">By <strong>{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}</strong></span>
-                <span class="material-symbols-outlined" style="font-size: 13px; color: #0284c7; margin-left: 2px;">arrow_forward</span>
+                <span class="material-symbols-outlined" style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
               </a>
               } @else {
               <div class="list-builder-row non-clickable"
@@ -1116,7 +1116,7 @@
               <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
               
               <div class="list-thumb-badges">
-                <span class="badge-tag-sm" style="background:#2563eb;color:#ffffff;font-weight:700;">Suggested For You</span>
+                <span class="badge-tag-sm" style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:700;">Suggested For You</span>
                 @if (prop.isClosestProximity) {
                 <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
                   <span class="material-symbols-outlined">near_me</span>
