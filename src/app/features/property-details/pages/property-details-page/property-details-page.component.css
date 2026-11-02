@@ -1232,25 +1232,31 @@
 }
 
 /* ==========================================================================
-   8. CONNECTED CONTEXT WORKSPACE (TABS & UN-NESTED CONTENT)
+   8. CONNECTED CONTEXT WORKSPACE (CONNECTED TABS & INTEGRATED WINDOW)
    ========================================================================== */
 .connected-workspace-shell {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  overflow: visible;
-  margin: 1.5rem 0 2rem 0;
-  box-shadow: none !important;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 1.75rem 0 2rem 0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
 }
 
 .context-tabs-ribbon {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 12px 0 16px 0;
-  border-bottom: 2px solid #e2e8f0;
+  gap: 8px;
+  padding: 12px 16px 0 16px;
+  background: #f1f5f9;
+  border-bottom: 1.5px solid #e2e8f0;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.context-tabs-ribbon::-webkit-scrollbar {
+  display: none;
 }
 
 .ctx-tab-btn {
@@ -1259,26 +1265,28 @@
   justify-content: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #ffffff !important;
-  border: 2px solid #cbd5e1 !important;
-  border-radius: 0 !important;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 9999px;
   font-size: 13.5px;
-  font-weight: 700 !important;
-  color: #1e293b !important;
+  font-weight: 600;
+  color: #475569;
   cursor: pointer;
   white-space: nowrap;
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   box-sizing: border-box;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .ctx-tab-btn:hover:not(.active) {
-  background: #f1f5f9 !important;
-  border-color: #0f3b4a !important;
-  color: #0f3b4a !important;
+  background: #ffffff;
+  border-color: #0f3b4a;
+  color: #0f3b4a;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .ctx-tab-btn:active {
@@ -1286,11 +1294,16 @@
 }
 
 .ctx-tab-btn.active {
-  background: #0f3b4a !important;
-  border: 2px solid #0f3b4a !important;
-  color: #ffffff !important;
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-bottom: 2.5px solid #ffffff !important;
+  border-radius: 14px 14px 0 0 !important;
+  color: #0f3b4a !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 6px rgba(15, 59, 74, 0.25) !important;
+  margin-bottom: -1.5px !important;
+  padding: 11px 22px 12px 22px !important;
+  box-shadow: 0 -3px 10px rgba(15, 23, 42, 0.04) !important;
+  z-index: 2;
 }
 
 .ctx-tab-btn.active::before,
@@ -1299,8 +1312,8 @@
 }
 
 .ctx-tab-icon {
-  font-size: 19px;
-  color: #475569;
+  font-size: 18px;
+  color: #64748b;
   transition: color 0.15s ease;
 }
 
@@ -1309,40 +1322,39 @@
 }
 
 .ctx-tab-btn.active .ctx-tab-icon {
-  color: #ffffff !important;
-  transform: none;
+  color: #0f3b4a !important;
 }
 
 .ctx-tab-badge {
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 0;
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #475569;
+  border: none;
   letter-spacing: 0.02em;
   transition: all 0.15s ease;
 }
 
 .ctx-tab-btn:hover:not(.active) .ctx-tab-badge {
-  border-color: #94a3b8;
+  background: #cbd5e1;
   color: #0f172a;
 }
 
 .ctx-tab-btn.active .ctx-tab-badge {
-  background: #5e8f72 !important;
-  color: #ffffff !important;
-  border: 1px solid #5e8f72 !important;
+  background: #e6f4ea !important;
+  color: #137333 !important;
+  border: 1px solid #a8dab5 !important;
 }
 
 /* Connected Workspace Window (Open Canvas) */
 .connected-workspace-window {
   background: #ffffff;
   border: none;
-  border-radius: 0;
+  border-radius: 0 0 20px 20px;
   box-shadow: none !important;
-  padding: 1.5rem 0 0 0;
+  padding: 1.75rem 1.5rem 1rem 1.5rem;
 }
 
 .connected-workspace-window .hanu-card {
