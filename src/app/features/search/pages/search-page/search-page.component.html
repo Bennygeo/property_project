@@ -761,19 +761,17 @@
               }
             </div>
 
-            <span class="list-photo-count">
-              <span class="material-symbols-outlined">photo_camera</span>
-              {{ prop.freePhotos?.length || 0 }} Photos
-            </span>
           </div>
 
           <!-- Info Section -->
           <div class="list-info">
             <div class="list-meta-top">
               <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
-              <span class="badge-tag-sm">{{ prop.badges?.specialTag || prop.badges?.brokerage || 'Verified Deed'
-                }}</span>
-              <span class="badge-pts-sm">{{ prop.mediaPoints || 2 }} Pts 4K</span>
+              @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
+              <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
+              } @else if (prop.badges?.brokerage) {
+              <span class="badge-tag-sm">{{ prop.badges.brokerage }}</span>
+              }
               @if (!authService.canViewProperty(prop.id)) {
               <span class="badge-signin-lock">
                 🔒 Sign In to View
@@ -832,18 +830,14 @@
             </div>
 
             <div class="list-actions-stack">
-              <button type="button" class="btn-list-media" [class.unlocked]="prop.isMediaUnlocked"
-                (click)="propertyService.openMediaModal(prop, prop.isMediaUnlocked ? 'premium' : 'free')">
-                <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'photo_library'
-                  }}</span>
-                <span>{{ prop.isMediaUnlocked ? 'Watch 4K Tour' : 'Photos & 4K' }}</span>
-              </button>
+              <a class="btn-list-primary" [routerLink]="['/property', prop.id]">
+                View Details
+              </a>
 
               <div class="list-secondary-actions">
                 <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
                   rel="noopener">
                   <span class="material-symbols-outlined">chat</span>
-                  <span>Concierge</span>
                 </a>
 
                 <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
@@ -1004,18 +998,17 @@
                 }
               </div>
 
-              <span class="list-photo-count">
-                <span class="material-symbols-outlined">photo_camera</span>
-                {{ prop.freePhotos?.length || 0 }} Photos
-              </span>
             </div>
 
             <!-- Info Section -->
             <div class="list-info">
               <div class="list-meta-top">
                 <span class="badge-rera-sm">{{ prop.badges?.rera || 'Direct SRO Registered' }}</span>
-                <span class="badge-tag-sm">{{ prop.badges?.specialTag || 'Suggested For You' }}</span>
-                <span class="badge-pts-sm">{{ prop.mediaPoints || 2 }} Pts 4K</span>
+                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
+                <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
+                } @else if (prop.badges?.brokerage) {
+                <span class="badge-tag-sm">{{ prop.badges.brokerage }}</span>
+                }
               </div>
 
               <h3 class="list-title">
@@ -1040,16 +1033,13 @@
               </div>
 
               <div class="list-actions-stack">
-                <button type="button" class="btn-list-media" [class.unlocked]="prop.isMediaUnlocked"
-                  (click)="propertyService.openMediaModal(prop, prop.isMediaUnlocked ? 'premium' : 'free')">
-                  <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'photo_library' }}</span>
-                  <span>{{ prop.isMediaUnlocked ? 'Watch 4K Tour' : 'Photos & 4K' }}</span>
-                </button>
+                <a class="btn-list-primary" [routerLink]="['/property', prop.id]">
+                  View Details
+                </a>
 
                 <div class="list-secondary-actions">
-                  <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener">
+                  <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank" rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
                     <span class="material-symbols-outlined">chat</span>
-                    <span>Concierge</span>
                   </a>
 
                   <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
