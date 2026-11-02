@@ -1,13 +1,34 @@
 /* ==========================================================================
    FIND A PLOT - ARCHITECTURAL SEARCH DOSSIER UI
    Clean, Planar, High-Contrast Architectural Layout
-   - Zero Curved Borders (border-radius: 0;
+   - Zero Curved Borders (border-radius: 0)
+   - Zero Dropshadows (box-shadow: none)
+   - Open Planar Architecture (Hairline Borders & Planar Surfaces)
+   ========================================================================== */
+
+/* Universal Flat Constraint */
+:host {
+  display: block;
 }
 
 :host,
-:host * {
-  border-radius: 0;
-  box-shadow: none;
+:host *,
+:host ::ng-deep app-property-card,
+:host ::ng-deep app-property-card *,
+:host ::ng-deep .property-card,
+:host ::ng-deep .property-card *,
+:host ::ng-deep .card-media,
+:host ::ng-deep .card-img,
+:host ::ng-deep .card-badge,
+:host ::ng-deep .btn-action-primary,
+:host ::ng-deep .btn-action-wa,
+:host ::ng-deep .btn-action-fav,
+:host ::ng-deep .btn-action-compare,
+:host ::ng-deep .list-dossier-card,
+:host ::ng-deep .list-thumb-wrapper,
+:host ::ng-deep .list-thumb-img {
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 /* Search Page Wrapper */

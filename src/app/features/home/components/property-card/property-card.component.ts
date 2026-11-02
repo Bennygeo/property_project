@@ -200,21 +200,27 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       width: 100%;
     }
 
+    :host,
+    :host * {
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+
     .property-card {
       background: #ffffff;
-      border-radius: 14px;
+      border-radius: 0 !important;
       border: 1px solid #e2e8f0;
       display: flex;
       flex-direction: column;
       height: 100%;
       overflow: hidden;
-      box-shadow: none;
+      box-shadow: none !important;
       transition: border-color 0.2s ease;
     }
 
     .property-card:hover {
       border-color: rgba(15, 59, 74, 0.3);
-      box-shadow: none;
+      box-shadow: none !important;
     }
 
     /* Media Frame - Strictly Uniform Height Across All Properties */
@@ -252,11 +258,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10.5px;
       font-weight: 700;
       padding: 3px 7px;
-      border-radius: 4px;
+      border-radius: 0 !important;
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(199, 111, 86, 0.35);
+      box-shadow: none !important;
     }
     .badge-proximity {
       background: var(--brand-teal, #0f3b4a);
@@ -264,7 +270,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10.5px;
       font-weight: 700;
       padding: 3px 7px;
-      border-radius: 4px;
+      border-radius: 0 !important;
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
@@ -276,7 +282,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
-      border-radius: 4px;
+      border-radius: 0 !important;
       margin-left: 6px;
       display: inline-flex;
       align-items: center;
@@ -288,7 +294,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
-      border-radius: 4px;
+      border-radius: 0 !important;
       margin-left: 6px;
       display: inline-flex;
       align-items: center;
@@ -302,13 +308,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 11px;
       font-weight: 700;
       padding: 0.25rem 0.55rem;
-      border-radius: 6px;
+      border-radius: 0 !important;
       letter-spacing: 0.02em;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       border: 1px solid rgba(255, 255, 255, 0.45);
-      box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
+      box-shadow: none !important;
       animation: pulseRadiusGlow 2.5s infinite ease-in-out;
     }
     .badge-closest-proximity .badge-icon {
@@ -322,7 +328,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
-      border-radius: 4px;
+      border-radius: 0 !important;
       margin-left: 6px;
       display: inline-flex;
       align-items: center;
@@ -330,10 +336,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
     @keyframes pulseRadiusGlow {
       0%, 100% {
-        box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
+        box-shadow: none !important;
       }
       50% {
-        box-shadow: 0 2px 12px rgba(14, 165, 233, 0.75);
+        box-shadow: none !important;
       }
     }
     .badges-overlay {
@@ -353,7 +359,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
       gap: 4px;
       padding: 0.25rem 0.55rem;
-      border-radius: 6px;
+      border-radius: 0 !important;
       background: var(--brand-green);
       /* backdrop-filter: blur(6px); */
       color: #ffffff;
@@ -373,7 +379,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
       gap: 4px;
       padding: 0.25rem 0.55rem;
-      border-radius: 6px;
+      border-radius: 0 !important;
       background: var(--brand-green, #5e8f72);
       backdrop-filter: blur(6px);
       color: #ffffff;
@@ -393,16 +399,16 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 10.5px;
       font-weight: 700;
       padding: 3px 7px;
-      border-radius: 4px;
+      border-radius: 0 !important;
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
-      box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
+      box-shadow: none !important;
     }
 
     .property-card.is-in-compare {
       border-color: var(--brand-teal, #0f3b4a);
-      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.35);
+      box-shadow: none !important;
     }
 
     /* Top Action Buttons (Compare & Shortlist) */
@@ -419,7 +425,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .btn-card-compare {
       width: 2.125rem;
       height: 2.125rem;
-      border-radius: 50%;
+      border-radius: 0 !important;
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(4px);
       color: #64748b;
@@ -428,7 +434,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       justify-content: center;
       border: 1px solid rgba(0, 0, 0, 0.08);
       cursor: pointer;
-      box-shadow: none;
+      box-shadow: none !important;
       transition: all 0.15s ease;
     }
 
@@ -442,7 +448,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: var(--brand-teal, #0f3b4a);
       color: #ffffff;
       border-color: var(--brand-teal, #0f3b4a);
-      box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
+      box-shadow: none !important;
     }
 
     .btn-card-compare span {
@@ -454,7 +460,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       position: relative;
       width: 2.125rem;
       height: 2.125rem;
-      border-radius: 50%;
+      border-radius: 0 !important;
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(4px);
       color: #64748b;
@@ -463,7 +469,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       justify-content: center;
       border: 1px solid rgba(0, 0, 0, 0.06);
       cursor: pointer;
-      box-shadow: none;
+      box-shadow: none !important;
       transition: all 0.15s ease;
     }
 
@@ -534,7 +540,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       color: var(--brand-teal, #0f3b4a);
       background: #f8fafc;
       border: 1px solid #e0f2fe;
-      border-radius: 4px;
+      border-radius: 0 !important;
       padding: 2px 6px;
       margin-top: 4px;
       margin-bottom: 4px;
@@ -635,7 +641,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .btn-action-primary {
       flex: 1;
       height: 38px;
-      border-radius: 8px;
+      border-radius: 0 !important;
       background: white;
       color: var(--brand-teal, #0f3b4a);
       font-size: 12.5px;
@@ -661,7 +667,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .btn-action-wa {
       width: 38px;
       height: 38px;
-      border-radius: 8px;
+      border-radius: 0 !important;
       background: #ffffff;
       color: var(--brand-green, #5e8f72);
       border: 1px solid #e2e8f0;
@@ -670,7 +676,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       justify-content: center;
       text-decoration: none;
       cursor: pointer;
-      box-shadow: none;
+      box-shadow: none !important;
       flex-shrink: 0;
       transition: all 0.15s ease;
     }
@@ -691,7 +697,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       gap: 4px;
       padding: 0 10px;
       height: 38px;
-      border-radius: 8px;
+      border-radius: 0 !important;
       border: 1px solid #cbd5e1;
       background: #f8fafc;
       color: #475569;
