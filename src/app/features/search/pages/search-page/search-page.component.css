@@ -1320,34 +1320,36 @@
   color: var(--brand-green, #5e8f72);
 }
 
-/* Property Class Choice Chips: Clean 2x2 Simplistic Grid */
+/* Property Class Choice Chips: Full-Width Clean Simplistic Stack */
 .chips-stack {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .choice-chip {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 0.45rem 0.35rem;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0.45rem 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
   border-radius: 0 !important;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #edf2f7;
   background: #ffffff;
   color: #334155;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  text-align: center;
+  text-align: left;
   transition: all 0.15s ease;
   white-space: nowrap;
 }
 
 .choice-chip:hover {
   background: #f8fafc;
-  border-color: var(--brand-teal, #0f3b4a);
+  border-color: #cbd5e1;
   color: var(--brand-teal, #0f3b4a);
 }
 
@@ -1359,8 +1361,9 @@
 }
 
 .chip-icon {
-  font-size: 15px;
+  font-size: 16px;
   color: #64748b;
+  flex-shrink: 0;
 }
 
 .choice-chip.selected .chip-icon {
