@@ -94,28 +94,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly activeDetailTab = signal<DetailContextTab>('infrastructure');
 
   setDetailTab(tab: DetailContextTab): void {
-    if (this.activeDetailTab() === tab) return;
     this.activeDetailTab.set(tab);
-
-    const workspace = document.getElementById('details-context-workspace');
-    if (workspace) {
-      // Only gently scroll if workspace top is scrolled past above the viewport
-      const rect = workspace.getBoundingClientRect();
-      if (rect.top < 60) {
-        window.scrollTo({
-          top: window.scrollY + rect.top - 75,
-          behavior: 'smooth'
-        });
-      }
-
-      // Smooth horizontal center active tab on mobile/tablet ribbon
-      setTimeout(() => {
-        const activeBtn = workspace.querySelector('.ctx-tab-btn.active') as HTMLElement;
-        if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
-          activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
-      }, 50);
-    }
   }
 
   // Media-First Top Stage State

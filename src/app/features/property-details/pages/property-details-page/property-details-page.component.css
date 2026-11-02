@@ -1232,22 +1232,22 @@
 }
 
 /* ==========================================================================
-   8. CONNECTED CONTEXT WORKSPACE (DARK DOCKED RIBBON & FLUID CONNECTED TABS)
+   8. CONNECTED CONTEXT WORKSPACE (CLEAN DOCKED RIBBON & INSTANT QUICK SWITCH)
    ========================================================================== */
 .connected-workspace-shell {
   background: #ffffff;
   border: 1.5px solid #0f3b4a;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  margin: 2rem 0;
-  box-shadow: 0 8px 30px -4px rgba(15, 23, 42, 0.08);
+  margin: 1.75rem 0 2rem 0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
 }
 
 .context-tabs-ribbon {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
-  padding: 12px 18px 0 18px;
+  padding: 10px 16px;
   background: #0f3b4a;
   border-bottom: none;
   overflow-x: auto;
@@ -1265,7 +1265,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 9px 18px;
+  padding: 8px 18px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 9999px;
@@ -1275,79 +1275,46 @@
   cursor: pointer;
   white-space: nowrap;
   position: relative;
-  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: none !important;
   user-select: none;
   box-sizing: border-box;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  margin: 0;
 }
 
 .ctx-tab-btn:hover:not(.active) {
   background: rgba(255, 255, 255, 0.18);
   border-color: rgba(255, 255, 255, 0.45);
   color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+  transform: none !important;
 }
 
 .ctx-tab-btn:active {
-  transform: translateY(0);
+  transform: none !important;
 }
 
-/* Active Fluid Connected Tab (Seamlessly joins content canvas below) */
+/* Active Tab: Instant, clean, crisp contrast */
 .ctx-tab-btn.active {
   background: #ffffff !important;
-  border: none !important;
-  border-radius: 14px 14px 0 0 !important;
+  border: 1px solid #ffffff !important;
+  border-radius: 9999px !important;
   color: #0f3b4a !important;
   font-size: 13.5px !important;
   font-weight: 700 !important;
-  padding: 11px 22px 13px 22px !important;
-  margin-bottom: 0 !important;
-  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.06) !important;
-  z-index: 10;
+  padding: 8px 18px !important;
+  margin: 0 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  transform: none !important;
 }
 
-/* Smooth Fading Concave Fluid Fillets */
 .ctx-tab-btn::before,
 .ctx-tab-btn::after {
-  content: "";
-  display: block !important;
-  position: absolute;
-  bottom: 0;
-  width: 14px;
-  height: 14px;
-  background: transparent;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ctx-tab-btn::before {
-  left: -14px;
-  border-bottom-right-radius: 14px;
-  box-shadow: 4px 4px 0 4px #ffffff;
-}
-
-.ctx-tab-btn::after {
-  right: -14px;
-  border-bottom-left-radius: 14px;
-  box-shadow: -4px 4px 0 4px #ffffff;
-}
-
-.ctx-tab-btn.active::before,
-.ctx-tab-btn.active::after {
-  opacity: 1;
+  display: none !important;
 }
 
 .ctx-tab-icon {
   font-size: 18px;
   color: rgba(255, 255, 255, 0.8);
-  transition: color 0.2s ease;
+  transition: none !important;
 }
 
 .ctx-tab-btn:hover:not(.active) .ctx-tab-icon {
@@ -1356,7 +1323,7 @@
 
 .ctx-tab-btn.active .ctx-tab-icon {
   color: #0f3b4a !important;
-  font-size: 19px;
+  font-size: 18px;
 }
 
 .ctx-tab-badge {
@@ -1368,7 +1335,7 @@
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.2);
   letter-spacing: 0.02em;
-  transition: all 0.2s ease;
+  transition: none !important;
 }
 
 .ctx-tab-btn:hover:not(.active) .ctx-tab-badge {
@@ -1382,32 +1349,19 @@
   border: 1px solid #a8dab5 !important;
 }
 
-/* Connected Workspace Window (Seamless white sheet) */
+/* Connected Workspace Window (Immediate switch, no animation delay) */
 .connected-workspace-window {
   background: #ffffff;
   border: none;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 16px 16px;
   box-shadow: none !important;
-  padding: 2rem 1.75rem 1rem 1.75rem;
+  padding: 1.75rem 1.5rem 1rem 1.5rem;
   position: relative;
-  z-index: 5;
 }
 
-/* Smooth Professional Tab Switching Animation */
 .tab-pane-content {
-  animation: tabPaneFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
-}
-
-@keyframes tabPaneFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  animation: none !important;
+  transition: none !important;
 }
 
 .connected-workspace-window .hanu-card {
