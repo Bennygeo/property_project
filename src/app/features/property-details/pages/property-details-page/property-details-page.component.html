@@ -50,7 +50,8 @@
             <span class="hanu-badge-type">{{ prop.propertyType }}</span>
             <span class="hanu-badge-rera font-mono" title="TNRERA Statutory Registration Number">
               <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
-              <span>RERA: {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}</span>
+              <span>RERA: {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber ||
+                'TNRERA/13/LO/0114/2026' }}</span>
             </span>
             <span class="hanu-badge-free-maint">
               <span class="material-symbols-outlined" style="font-size: 14px;">home_repair_service</span>
@@ -336,9 +337,11 @@
             <div class="snapshot-text">
               <span class="snapshot-label">RERA Registration No.</span>
               <strong class="snapshot-val text-emerald font-mono" style="word-break: break-all; font-size: 13.5px;">
-                {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}
+                {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber ||
+                'TNRERA/13/LO/0114/2026' }}
               </strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Sanctioned Layout' : 'Statutory Sanctioned' }}</span>
+              <span class="snapshot-sub">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Sanctioned Layout' :
+                'Statutory Sanctioned' }}</span>
             </div>
           </div>
 
@@ -458,7 +461,6 @@
             <div class="tab-pane-content" id="site-infrastructure">
               <section class="hanu-card site-utilities-card">
                 <div class="hanu-card-header">
-                  <span class="material-symbols-outlined text-amber">engineering</span>
                   <div class="infra-header-title-wrap">
                     <span class="infra-header-eyebrow">ON-GROUND CIVIL DEVELOPMENT</span>
                     <h2>On-Site Infrastructure &amp; Site Utilities</h2>
@@ -848,7 +850,8 @@
                   <div class="hanu-spec-item">
                     <span class="spec-label">TNRERA Registration Number</span>
                     <span class="spec-value font-mono font-bold text-slate-900" style="word-break: break-all;">
-                      {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber || 'TNRERA/13/LO/0114/2026' }}
+                      {{ prop.badges?.rera || prop.masterDetails?.reraNumber || (prop as any).reraNumber ||
+                      'TNRERA/13/LO/0114/2026' }}
                     </span>
                   </div>
 
@@ -1049,8 +1052,7 @@
                       <h4 class="transit-name">24/7 Fuel &amp; EV Charging Point</h4>
                       <span class="transit-distance-pill amber">
                         {{ prop.masterDetails?.petrolBunkDistance !== null && prop.masterDetails?.petrolBunkDistance !==
-                        undefined ? (prop.masterDetails?.petrolBunkDistance + ' km away') : '< 1.5 km' }}
-                      </span>
+                        undefined ? (prop.masterDetails?.petrolBunkDistance + ' km away') : '< 1.5 km' }} </span>
                     </div>
                   </div>
 
@@ -1254,7 +1256,7 @@
             </button>
           </form>
 
-          
+
         </div>
 
         <!-- SIMILAR PROPERTIES IN SAME CORRIDOR -->
@@ -1279,20 +1281,18 @@
         </div>
         }
 
-            </aside>
+      </aside>
     </div>
 
     <!-- PERSISTENT FLOATING WHATSAPP CTA (Visible while scrolling) -->
     <aside class="sticky-wa-floating-bar" aria-label="Direct WhatsApp Inquiry">
-      <a 
-        class="floating-wa-btn"
+      <a class="floating-wa-btn"
         [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Find%20a%20Plot,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'"
-        target="_blank"
-        rel="noopener"
-        title="Chat with Cadastral Concierge on WhatsApp">
+        target="_blank" rel="noopener" title="Chat with Cadastral Concierge on WhatsApp">
         <div class="floating-wa-icon-box">
           <svg viewBox="0 0 24 24" class="floating-wa-svg" fill="currentColor">
-            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29z" />
+            <path
+              d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29z" />
           </svg>
         </div>
         <div class="floating-wa-texts">
@@ -1348,7 +1348,7 @@
           <p class="fp-modal-sub">{{ modalPlan.superArea }} • {{ modalPlan.carpetArea }} • {{ modalPlan.priceEstimate }}
           </p>
         </div>
-        
+
       </div>
       <div class="fp-modal-img-container">
         <img [src]="modalPlan.imageUrl" [alt]="modalPlan.name" loading="lazy" decoding="async">
@@ -1475,7 +1475,8 @@
   <!-- Global Modals & Notifications -->
   <!-- 30-SECOND 3D-SHADED 2D VIRTUAL PROPERTY PRESENTER (ELEVENLABS VOICE + LIP-SYNC) -->
   @if (!isBlockedForGuest() && property(); as prop) {
-  <app-virtual-property-presenter [property]="prop" [triggerDelaySeconds]="30" (scheduleVisitClicked)="openSiteVisitModal()" />
+  <app-virtual-property-presenter [property]="prop" [triggerDelaySeconds]="30"
+    (scheduleVisitClicked)="openSiteVisitModal()" />
   }
 
   <app-property-media-modal />
