@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "baseHref": "/P_demo_4/",
+            "baseHref": "/p_demo_4/",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
