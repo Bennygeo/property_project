@@ -64,7 +64,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
       width: 6px;
       height: 6px;
       border-radius: 9999px;
-      background-color: #34d399;
+      background-color: var(--brand-green, #5e8f72);
       animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
     @keyframes pulse {
@@ -93,7 +93,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
       display: flex;
       align-items: center;
       gap: 4px;
-      color: #34d399;
+      color: var(--brand-green, #5e8f72);
       text-decoration: none;
       transition: color 0.15s;
     }
@@ -138,7 +138,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
     }
     .goal-icon {
       font-size: 13px;
-      color: #38bdf8;
+      color: var(--brand-green, #5e8f72);
     }
     .goal-arrow {
       font-size: 13px;

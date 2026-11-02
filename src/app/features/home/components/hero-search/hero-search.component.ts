@@ -515,8 +515,8 @@ export interface PropertyTypeOption {
     }
 
     .buy-sell-tab-btn.active {
-      background: #548268;
-      border-color: #548268;
+      background: var(--brand-green, #5e8f72);
+      border-color: var(--brand-green, #5e8f72);
       color: #ffffff;
       box-shadow: none;
     }
@@ -546,9 +546,9 @@ export interface PropertyTypeOption {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      background: #ecfdf5;
-      color: #059669;
-      border: 1px solid #a7f3d0;
+      background: var(--brand-green-subtle, #e5f7ec);
+      color: var(--brand-green, #5e8f72);
+      border: 1px solid var(--brand-green, #5e8f72);
       padding: 1px 6px;
       border-radius: 0;
     }
@@ -628,7 +628,7 @@ export interface PropertyTypeOption {
       gap: 0.45rem;
       padding: 0.35rem 0.95rem;
       border-radius: 9999px;
-      background: #ecfdf5;
+      background: var(--brand-green-subtle, #e5f7ec);
       color: #065f46;
       border: 1.5px solid #a7f3d0;
       font-family: 'Montserrat', sans-serif;
@@ -641,7 +641,7 @@ export interface PropertyTypeOption {
 
     .rera-shield-icon {
       font-size: 16px;
-      color: #059669;
+      color: var(--brand-green, #5e8f72);
     }
 
     .hero-headline {
@@ -705,7 +705,7 @@ export interface PropertyTypeOption {
 
     .rera-badge-chip .material-symbols-outlined {
       font-size: 16px;
-      color: #059669;
+      color: var(--brand-green, #5e8f72);
     }
 
     .rera-highlight-chip {
@@ -1106,7 +1106,7 @@ export interface PropertyTypeOption {
       background: #f0fdfa !important;
     }
     .google-pin {
-      color: #0d9488 !important;
+      color: var(--brand-green, #5e8f72) !important;
     }
     .suggest-title-flex {
       display: flex;
@@ -1118,16 +1118,16 @@ export interface PropertyTypeOption {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      background: #e0f2fe;
-      color: #0284c7;
+      background: #eef3f5;
+      color: var(--brand-teal, #0f3b4a);
       padding: 1px 5px;
       border-radius: 3px;
     }
     .suggest-tag-add {
       font-size: 11px;
       font-weight: 600;
-      color: #0d9488;
-      background: #ccfbf1;
+      color: var(--brand-green, #5e8f72);
+      background: var(--brand-green-subtle, #e5f7ec);
       padding: 2px 7px;
       border-radius: 4px;
       white-space: nowrap;

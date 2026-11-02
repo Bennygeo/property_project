@@ -521,10 +521,10 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       line-height: 1;
     }
     .bpc-badge-plot {
-      background: rgba(16, 185, 129, 0.95);
+      background: rgba(94, 143, 114, 0.95);
     }
     .bpc-badge-flat {
-      background: rgba(220, 38, 38, 0.95);
+      background: rgba(199, 111, 86, 0.95);
     }
     .bpc-badge .bpc-icon {
       font-size: 12px;
@@ -534,7 +534,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       position: absolute;
       top: 8px;
       right: 8px;
-      color: #0284c7;
+      color: var(--brand-teal, #0f3b4a);
       display: flex;
     }
     .bpc-tag-verified .material-symbols-outlined {
@@ -545,7 +545,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       position: absolute;
       top: 8px;
       right: 8px;
-      background: #dc2626;
+      background: var(--brand-sold, #c76f56);
       color: #ffffff;
       font-size: 9.5px;
       font-weight: 600;
@@ -585,7 +585,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     .bpc-price {
       font-size: 13.5px;
       font-weight: 600;
-      color: #059669;
+      color: var(--brand-green, #5e8f72);
       white-space: nowrap;
       line-height: 1.2;
     }

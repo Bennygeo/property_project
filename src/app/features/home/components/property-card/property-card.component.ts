@@ -117,14 +117,14 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
              [title]="'Explore Builder: ' + (property.developerName || property.masterDetails?.developer || property.developer?.name)">
             <span class="material-symbols-outlined card-builder-icon">corporate_fare</span>
             <span class="card-builder-text">By {{ property.developerName || property.masterDetails?.developer || property.developer?.name }}</span>
-            <span class="material-symbols-outlined" style="font-size: 13px; margin-left: auto; color: #0284c7;">chevron_right</span>
+            <span class="material-symbols-outlined" style="font-size: 13px; margin-left: auto; color: var(--brand-teal, #0f3b4a);">chevron_right</span>
           </a>
         }
 
         <!-- Locality -->
         <p class="locality-row" [title]="property.locality + ', ' + property.city">
-          <span class="material-symbols-outlined loc-icon" [style.color]="property.isGpsValid === false && property.gpsErrorReason ? '#dc2626' : ''">location_on</span>
-          <span class="locality-text" [style.color]="property.isGpsValid === false && property.gpsErrorReason ? '#991b1b' : ''">{{ property.locality }}, {{ property.city }}</span>
+          <span class="material-symbols-outlined loc-icon" [style.color]="property.isGpsValid === false && property.gpsErrorReason ? '#c76f56' : ''">location_on</span>
+          <span class="locality-text" [style.color]="property.isGpsValid === false && property.gpsErrorReason ? '#a8523b' : ''">{{ property.locality }}, {{ property.city }}</span>
           @if (property.isGpsValid === false && property.gpsErrorReason) {
             <span class="pill-gps-error" title="GPS data is inaccurate or missing">GPS Inaccurate</span>
           }
@@ -245,7 +245,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     /* Minimalist Badges Overlay */
     .badge-gps-red {
-      background: #dc2626;
+      background: var(--brand-sold, #c76f56);
       color: #ffffff;
       font-size: 10.5px;
       font-weight: 700;
@@ -254,10 +254,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(220, 38, 38, 0.4);
+      box-shadow: 0 2px 4px rgba(199, 111, 86, 0.35);
     }
     .badge-proximity {
-      background: #0284c7;
+      background: var(--brand-teal, #0f3b4a);
       color: #ffffff;
       font-size: 10.5px;
       font-weight: 700;
@@ -268,9 +268,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
     }
     .pill-gps-error {
-      background: #fee2e2;
-      color: #dc2626;
-      border: 1px solid #f87171;
+      background: #fbf0ee;
+      color: var(--brand-sold, #c76f56);
+      border: 1px solid rgba(199, 111, 86, 0.4);
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
@@ -280,9 +280,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
     }
     .pill-distance {
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #7dd3fc;
+      background: #eef3f5;
+      color: var(--brand-teal, #0f3b4a);
+      border: 1px solid rgba(15, 59, 74, 0.25);
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
@@ -292,10 +292,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
     }
     .loc-icon.text-red {
-      color: #dc2626 !important;
+      color: var(--brand-sold, #c76f56) !important;
     }
     .badge-closest-proximity {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: var(--brand-teal, #0f3b4a);
       color: #ffffff;
       font-size: 11px;
       font-weight: 700;
@@ -306,17 +306,17 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
       gap: 4px;
       border: 1px solid rgba(255, 255, 255, 0.45);
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+      box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
       animation: pulseRadiusGlow 2.5s infinite ease-in-out;
     }
     .badge-closest-proximity .badge-icon {
       font-size: 13px;
-      color: #67e8f9;
+      color: var(--brand-green, #5e8f72);
     }
     .pill-closest-proximity {
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #7dd3fc;
+      background: #eef3f5;
+      color: var(--brand-teal, #0f3b4a);
+      border: 1px solid rgba(15, 59, 74, 0.25);
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
@@ -328,7 +328,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
     @keyframes pulseRadiusGlow {
       0%, 100% {
-        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+        box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
       }
       50% {
         box-shadow: 0 2px 12px rgba(14, 165, 233, 0.75);
@@ -363,7 +363,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .badge-verified .badge-icon {
       font-size: 13px;
-      color: #34d399;
+      color: #ffffff;
     }
 
     .badge-tour {
@@ -372,7 +372,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       gap: 4px;
       padding: 0.25rem 0.55rem;
       border-radius: 6px;
-      background: rgba(16, 185, 129, 0.9);
+      background: var(--brand-green, #5e8f72);
       backdrop-filter: blur(6px);
       color: #ffffff;
       font-size: 11px;
@@ -386,7 +386,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
 
     .badge-in-compare {
-      background: #0284c7;
+      background: var(--brand-teal, #0f3b4a);
       color: #ffffff;
       font-size: 10.5px;
       font-weight: 700;
@@ -395,11 +395,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+      box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
     }
 
     .property-card.is-in-compare {
-      border-color: #0284c7;
+      border-color: var(--brand-teal, #0f3b4a);
       box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.35);
     }
 
@@ -432,15 +432,15 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .btn-card-compare:hover {
       background: #ffffff;
-      color: #0284c7;
+      color: var(--brand-teal, #0f3b4a);
       transform: scale(1.06);
     }
 
     .btn-card-compare.comparing {
-      background: #0284c7;
+      background: var(--brand-teal, #0f3b4a);
       color: #ffffff;
-      border-color: #0284c7;
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.45);
+      border-color: var(--brand-teal, #0f3b4a);
+      box-shadow: 0 2px 6px rgba(15, 59, 74, 0.35);
     }
 
     .btn-card-compare span {
@@ -482,7 +482,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     /* Card Content */
     .card-content {
-      padding: 1rem 1.125rem;
+      padding: 0.8rem 0.8rem;
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -517,7 +517,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-weight: 600;
       color: #0f172a;
       line-height: 1.45;
-      min-height: 2.85rem;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -530,8 +529,8 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       align-items: center;
       gap: 4px;
       font-size: 11.5px;
-      color: #0369a1;
-      background: #f0f9ff;
+      color: var(--brand-teal, #0f3b4a);
+      background: #f8fafc;
       border: 1px solid #e0f2fe;
       border-radius: 4px;
       padding: 2px 6px;
@@ -546,14 +545,14 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .card-builder-row:hover {
-      background: #e0f2fe;
+      background: #eef3f5;
       border-color: #7dd3fc;
     }
 
     .card-builder-icon {
       font-size: 13px;
       flex-shrink: 0;
-      color: #0284c7;
+      color: var(--brand-teal, #0f3b4a);
     }
 
     .card-builder-text {
@@ -662,7 +661,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       height: 38px;
       border-radius: 8px;
       background: #ffffff;
-      color: #059669;
+      color: var(--brand-green, #5e8f72);
       border: 1px solid #e2e8f0;
       display: inline-flex;
       align-items: center;
@@ -675,9 +674,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .btn-action-wa:hover {
-      background: #f0fdf4;
-      border-color: #86efac;
-      color: #047857;
+      background: #eef5f1;
+      border-color: var(--brand-green, #5e8f72);
+      color: var(--brand-green, #5e8f72);
     }
 
     .btn-action-wa .btn-icon {
@@ -702,15 +701,15 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .btn-action-compare:hover {
-      border-color: #0284c7;
-      color: #0284c7;
-      background: #f0f9ff;
+      border-color: var(--brand-teal, #0f3b4a);
+      color: var(--brand-teal, #0f3b4a);
+      background: #f8fafc;
     }
 
     .btn-action-compare.comparing {
-      background: #e0f2fe;
-      border-color: #0284c7;
-      color: #0284c7;
+      background: #eef3f5;
+      border-color: var(--brand-teal, #0f3b4a);
+      color: var(--brand-teal, #0f3b4a);
       font-weight: 700;
     }
 

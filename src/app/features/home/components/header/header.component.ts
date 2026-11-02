@@ -736,10 +736,10 @@ import { AuthService } from '../../../../core/services/auth.service';
       color: var(--text-slate-950);
     }
     .dropdown-item.text-red {
-      color: #b91c1c;
+      color: var(--brand-sold, #c76f56);
     }
     .dropdown-item.text-red:hover {
-      background: #fee2e2;
+      background: #fbf0ee;
     }
     .dropdown-item span.material-symbols-outlined {
       font-size: 18px;
@@ -875,7 +875,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       transition: all 0.15s;
     }
     .drawer-close-btn:hover {
-      background: #fee2e2;
+      background: #fbf0ee;
       border-color: #fca5a5;
       color: var(--brand-red);
     }
@@ -930,8 +930,8 @@ import { AuthService } from '../../../../core/services/auth.service';
       gap: 4px;
       font-size: 10px;
       font-weight: 600;
-      color: #92400e;
-      background: #fef3c7;
+      color: var(--brand-booked, #d5b357);
+      background: #faf5e6;
       padding: 1px 6px;
       border-radius: 4px;
       margin-top: 2px;

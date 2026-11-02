@@ -87,13 +87,13 @@ import { Component } from '@angular/core';
       }
     }
     .text-red { color: var(--brand-red); }
-    .text-emerald { color: #047857; }
-    .text-blue { color: #1e40af; }
-    .text-amber { color: #92400e; }
-    .bg-red { background: #fee2e2; }
-    .bg-blue { background: #dbeafe; }
-    .bg-amber { background: #fef3c7; }
-    .bg-emerald { background: #d1fae5; }
+    .text-emerald { color: var(--brand-green, #5e8f72); }
+    .text-blue { color: var(--brand-teal, #0f3b4a); }
+    .text-amber { color: var(--brand-booked, #d5b357); }
+    .bg-red { background: #fbf0ee; }
+    .bg-blue { background: #eef3f5; }
+    .bg-amber { background: #faf5e6; }
+    .bg-emerald { background: #eef5f1; }
     .why-title {
       font-size: 1.45rem;
       font-weight: 600;
@@ -116,10 +116,10 @@ import { Component } from '@angular/core';
     }
     .guarantee-badge {
       padding: 0.75rem 1rem;
-      background: #ecfdf5;
-      border: 1px solid #a7f3d0;
+      background: #eef5f1;
+      border: 1px solid rgba(94, 143, 114, 0.35);
       border-radius: 0.75rem;
-      color: #064e3b;
+      color: #0f3b4a;
       font-size: 12px;
       font-weight: 600;
       display: flex;
@@ -206,8 +206,8 @@ import { Component } from '@angular/core';
       border-radius: 4px;
     }
     .emerald-pill {
-      background: #ecfdf5;
-      color: #047857;
+      background: #eef5f1;
+      color: var(--brand-green, #5e8f72);
     }
     .slate-pill {
       background: #f1f5f9;

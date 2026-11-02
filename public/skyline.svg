@@ -37,7 +37,7 @@
 
     <!-- Building 3 (High-Rise with Spire) -->
     <rect x="190" y="38" width="50" height="82" rx="1"/>
-    <line x1="215" y1="20" x2="215" y2="38" stroke="#c73434" stroke-width="1.5"/>
+    <line x1="215" y1="20" x2="215" y2="38" stroke="#c76f56" stroke-width="1.5"/>
 
     <!-- Building 4 (Pitched Villa) -->
     <polygon points="275,120 275,80 300,65 325,80 325,120" fill="#ffffff"/>
@@ -53,8 +53,8 @@
 
     <!-- Building 7 (Signature Tower with Red Keystone) -->
     <rect x="535" y="22" width="60" height="98" rx="1"/>
-    <rect x="555" y="10" width="20" height="12" fill="#c73434" stroke="#a82424"/>
-    <line x1="565" y1="0" x2="565" y2="10" stroke="#c73434" stroke-width="1.5"/>
+    <rect x="555" y="10" width="20" height="12" fill="#c76f56" stroke="#0f3b4a"/>
+    <line x1="565" y1="0" x2="565" y2="10" stroke="#c76f56" stroke-width="1.5"/>
 
     <!-- Building 8 (Modern Minimalist Cube) -->
     <rect x="630" y="58" width="50" height="62" rx="1"/>
