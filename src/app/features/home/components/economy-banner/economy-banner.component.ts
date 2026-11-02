@@ -37,24 +37,6 @@ import { CommonModule } from '@angular/common';
             </p>
           </div>
 
-          <div class="rera-badges-row">
-            <div class="rera-badge-chip">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>TNRERA Registered</span>
-            </div>
-            <div class="rera-badge-chip">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>CMDA &amp; DTCP Sanctioned</span>
-            </div>
-            <div class="rera-badge-chip">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>Clear Patta &amp; Title</span>
-            </div>
-            <div class="rera-badge-chip rera-highlight-chip">
-              <span class="material-symbols-outlined">shield</span>
-              <span>Zero Unapproved Sites</span>
-            </div>
-          </div>
         </div>
 
       </div>
@@ -228,4 +210,4 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class EconomyBannerComponent {}
+export class EconomyBannerComponent { }
