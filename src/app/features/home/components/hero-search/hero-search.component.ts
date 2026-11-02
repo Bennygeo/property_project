@@ -499,8 +499,8 @@ export interface PropertyTypeOption {
       /* max-width: 56rem; */
       margin-left: auto;
       margin-right: auto;
-      margin-bottom: 2.5rem;
-      margin-top: 4.5rem;
+      margin-bottom: 1.5rem;
+      margin-top: 3.5rem;
     }
 
     /* Buy / Sell Mode Tabs */
@@ -636,7 +636,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.45rem;
       padding: 0.35rem 0.95rem;
-      border-radius: 0;
+      border-radius: 9999px;
       background: #ecfdf5;
       color: #065f46;
       border: 1.5px solid #a7f3d0;
@@ -655,7 +655,7 @@ export interface PropertyTypeOption {
 
     .hero-headline {
       font-family: 'Montserrat', sans-serif;
-      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      font-size: clamp(1.4rem, 2.5vw, 1.6rem);
       font-weight: 500;
       color: #0f172a;
       letter-spacing: -0.02em;
@@ -665,13 +665,13 @@ export interface PropertyTypeOption {
     }
     @media (min-width: 640px) {
       .hero-headline {
-        font-size: 2rem;
+        font-size: 1.6rem;
         line-height: 1.2;
       }
     }
     @media (min-width: 1024px) {
       .hero-headline {
-        font-size: 2.25rem;
+        font-size: 1.6rem;
       }
     }
     .hero-subline {
@@ -702,7 +702,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.45rem;
       padding: 0.4rem 0.85rem;
-      border-radius: 0;
+      border-radius: 8px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       font-family: 'Montserrat', sans-serif;
@@ -722,7 +722,7 @@ export interface PropertyTypeOption {
       border-color: #bbf7d0;
       color: #166534;
       font-weight: 500;
-      border-radius: 0;
+      border-radius: 8px;
     }
     @media (min-width: 640px) {
       .hero-subline {

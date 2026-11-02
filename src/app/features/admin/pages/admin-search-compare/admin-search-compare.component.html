@@ -1,0 +1,373 @@
+<div class="admin-compare-page">
+  
+  <!-- ========================================== -->
+  <!-- TOP ADMIN HEADER                           -->
+  <!-- ========================================== -->
+  <header class="admin-topbar">
+    <div class="topbar-left">
+      <div class="admin-brand">
+        <div class="brand-shield-icon">
+          <span class="material-symbols-outlined">compare_arrows</span>
+        </div>
+        <div class="brand-titles">
+          <h1 class="brand-title">ADMIN PROPERTY SEARCH &amp; COMPARISON</h1>
+          <span class="brand-sub">Official Registry Search, Specification Benchmarking &amp; Side-by-Side Analysis</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Authenticated Administrator Badge & Navigation Links -->
+    <div class="topbar-right">
+      <div class="active-admin-badge" [title]="'Authenticated Administrator: ' + (adminService.currentAdmin()?.name || adminService.activePersona().name)">
+        <span class="material-symbols-outlined badge-shield-icon">verified_user</span>
+        <span class="p-avatar" 
+          [class.ez]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'EZ'"
+          [class.ra]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'RA'"
+          [class.be]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'BE'">
+          {{ adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials }}
+        </span>
+        <div class="p-info">
+          <div class="p-name-row">
+            <span class="p-name">{{ adminService.currentAdmin()?.name || adminService.activePersona().name }}</span>
+            <span class="status-live-dot" title="Authenticated Session Active"></span>
+          </div>
+          <span class="p-role">{{ adminService.currentAdmin()?.title || adminService.activePersona().title }}</span>
+        </div>
+      </div>
+
+      <a routerLink="/admin" class="btn-topbar-nav" title="Return to Admin Verification Dashboard">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Review Queue</span>
+      </a>
+
+      <a routerLink="/post-property" class="btn-topbar-nav" title="Post New Property Direct to Registry">
+        <span class="material-symbols-outlined">add_business</span>
+        <span>Post Property</span>
+      </a>
+
+      <a routerLink="/admin/profile" class="btn-topbar-nav" title="View Admin Profile & Audit Logs">
+        <span class="material-symbols-outlined">shield_person</span>
+        <span>Profile &amp; Logs</span>
+      </a>
+
+      <a routerLink="/" class="btn-goto-market" title="Visit Public Marketplace">
+        <span class="material-symbols-outlined">storefront</span>
+        <span>Marketplace</span>
+      </a>
+
+      <button type="button" class="btn-admin-signout" (click)="onSignOut()" title="Sign out of administrative session">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- ADMIN COMPARISON ACTION BANNER             -->
+  <!-- ========================================== -->
+  <section class="compare-action-banner" [class.has-selection]="compareService.selectedProperties().length > 0">
+    <div class="banner-inner">
+      <div class="banner-left">
+        <div class="status-icon-circle" [class.ready]="compareService.selectedProperties().length === 2">
+          <span class="material-symbols-outlined">
+            {{ compareService.selectedProperties().length === 2 ? 'task_alt' : 'difference' }}
+          </span>
+        </div>
+        <div class="banner-text">
+          <div class="banner-title-row">
+            <span class="banner-title">Administrative Comparison Tray</span>
+            <span class="badge-count" [class.full]="compareService.selectedProperties().length === 2">
+              {{ compareService.selectedProperties().length }}/2 Selected
+            </span>
+          </div>
+          <p class="banner-subtitle">
+            @if (compareService.selectedProperties().length === 0) {
+              Select any two properties using the "Compare" buttons below to perform granular side-by-side title, price and specification benchmarking.
+            } @else if (compareService.selectedProperties().length === 1) {
+              1 property selected: <strong>{{ compareService.propertyLeft()?.title }}</strong>. Select 1 more property to launch side-by-side comparison.
+            } @else {
+              Ready! Comparing <strong>{{ compareService.propertyLeft()?.title }}</strong> vs <strong>{{ compareService.propertyRight()?.title }}</strong>.
+            }
+          </p>
+        </div>
+      </div>
+
+      <div class="banner-actions">
+        @if (compareService.selectedProperties().length > 0) {
+          <button type="button" class="btn-banner-clear" (click)="clearCompare()" title="Clear comparison tray">
+            <span class="material-symbols-outlined">clear_all</span>
+            <span>Clear Tray</span>
+          </button>
+        }
+
+        <button 
+          type="button" 
+          class="btn-banner-compare" 
+          [disabled]="compareService.selectedProperties().length < 2"
+          (click)="openCompareModal()"
+          title="Open comprehensive side-by-side comparison matrix">
+          <span class="material-symbols-outlined">splitscreen</span>
+          <span>Open Side-by-Side Matrix</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- SEARCH & FILTER BAR                        -->
+  <!-- ========================================== -->
+  <section class="admin-search-controls-section">
+    <div class="search-bar-grid">
+      <!-- Search Keyword Input -->
+      <div class="search-field keyword-field">
+        <label for="admin-search-input" class="field-label">Search Keywords</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">search</span>
+          <input 
+            id="admin-search-input"
+            type="text" 
+            class="admin-input" 
+            placeholder="Search by title, location, RERA ID, developer..." 
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)" />
+          @if (searchQuery()) {
+            <button type="button" class="btn-clear-input" (click)="searchQuery.set('')">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- District Selector -->
+      <div class="search-field district-field">
+        <label for="admin-district-select" class="field-label">District / Hub</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">location_on</span>
+          <select 
+            id="admin-district-select"
+            class="admin-select"
+            [ngModel]="selectedDistrict()"
+            (ngModelChange)="selectedDistrict.set($event)">
+            <option value="">All Districts &amp; Zones</option>
+            @for (dist of districtsList(); track dist.name) {
+              <option [value]="dist.name">{{ dist.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Budget Selector -->
+      <div class="search-field budget-field">
+        <label for="admin-budget-select" class="field-label">Price / Budget</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">currency_rupee</span>
+          <select 
+            id="admin-budget-select"
+            class="admin-select"
+            [ngModel]="selectedBudget()"
+            (ngModelChange)="selectedBudget.set($event)">
+            @for (b of budgetRanges; track b.value) {
+              <option [value]="b.value">{{ b.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Sort By -->
+      <div class="search-field sort-field">
+        <label for="admin-sort-select" class="field-label">Sort Properties</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">sort</span>
+          <select 
+            id="admin-sort-select"
+            class="admin-select"
+            [ngModel]="sortBy()"
+            (ngModelChange)="sortBy.set($event)">
+            <option value="featured">Featured First</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="newest">Recently Registered</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Pills Row -->
+    <div class="filter-pills-row">
+      <div class="property-types-list">
+        @for (pt of propertyTypes; track pt.value) {
+          <button 
+            type="button" 
+            class="type-pill-btn" 
+            [class.active]="selectedType() === pt.value"
+            (click)="selectedType.set(pt.value)">
+            <span class="material-symbols-outlined pill-icon">{{ pt.icon }}</span>
+            <span>{{ pt.label }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="pills-right-controls">
+        <label class="verified-toggle-label">
+          <input 
+            type="checkbox" 
+            [checked]="onlyVerified()" 
+            (change)="onlyVerified.set(!onlyVerified())" />
+          <span class="material-symbols-outlined text-green">verified</span>
+          <span>RERA / Verified Only</span>
+        </label>
+
+        @if (searchQuery() || selectedDistrict() || selectedType() !== 'all' || selectedBudget() !== 'all' || onlyVerified()) {
+          <button type="button" class="btn-reset-filters" (click)="clearFilters()">
+            <span class="material-symbols-outlined">restart_alt</span>
+            <span>Reset</span>
+          </button>
+        }
+
+        <div class="view-mode-toggle">
+          <button 
+            type="button" 
+            class="btn-view-toggle" 
+            [class.active]="viewMode() === 'grid'" 
+            (click)="viewMode.set('grid')"
+            title="Grid View">
+            <span class="material-symbols-outlined">grid_view</span>
+          </button>
+          <button 
+            type="button" 
+            class="btn-view-toggle" 
+            [class.active]="viewMode() === 'list'" 
+            (click)="viewMode.set('list')"
+            title="List View">
+            <span class="material-symbols-outlined">view_list</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- RESULTS SECTION                            -->
+  <!-- ========================================== -->
+  <main class="admin-results-section">
+    <div class="results-meta-bar">
+      <span class="results-count-text">
+        Showing <strong>{{ filteredProperties().length }}</strong> verified registry properties
+      </span>
+      <span class="results-sub-text">
+        Click the <strong>Compare</strong> button on any property card to benchmark specs.
+      </span>
+    </div>
+
+    <!-- GRID VIEW -->
+    @if (viewMode() === 'grid') {
+      <div class="properties-grid">
+        @for (prop of filteredProperties(); track prop.id) {
+          <div class="card-wrapper" [class.is-in-compare]="isInCompare(prop.id)">
+            <app-property-card 
+              [property]="prop" 
+              [showCompare]="true" />
+          </div>
+        }
+      </div>
+    }
+
+    <!-- LIST VIEW -->
+    @if (viewMode() === 'list') {
+      <div class="properties-list">
+        @for (prop of filteredProperties(); track prop.id) {
+          <div class="list-item-row" [class.is-in-compare]="isInCompare(prop.id)">
+            <div class="list-thumb-wrap" [routerLink]="['/property', prop.id]">
+              <img [src]="prop.imageUrl" [alt]="prop.title" class="list-thumb" loading="lazy" />
+              @if (isInCompare(prop.id)) {
+                <span class="list-in-compare-badge">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                  <span>In Compare</span>
+                </span>
+              }
+            </div>
+
+            <div class="list-content-col">
+              <div class="list-title-row">
+                <a [routerLink]="['/property', prop.id]" class="list-title">{{ prop.title }}</a>
+                @if (prop.badges && prop.badges.rera) {
+                  <span class="rera-pill">
+                    <span class="material-symbols-outlined">verified</span>
+                    <span>{{ prop.badges.rera }}</span>
+                  </span>
+                }
+              </div>
+
+              <div class="list-location-row">
+                <span class="material-symbols-outlined loc-icon">location_on</span>
+                <span>{{ prop.locality || prop.city }}, {{ prop.district || prop.city }}</span>
+                @if (prop.cadastralAudit?.reraRegNo) {
+                  <span class="rera-id-tag">Reg: {{ prop.cadastralAudit?.reraRegNo }}</span>
+                }
+              </div>
+
+              <div class="list-specs-row">
+                <span class="spec-chip">
+                  <span class="material-symbols-outlined">square_foot</span>
+                  <span>{{ prop.sqft }} sq.ft</span>
+                </span>
+                <span class="spec-chip">
+                  <span class="material-symbols-outlined">category</span>
+                  <span>{{ prop.propertyType }}</span>
+                </span>
+                @if (prop.developer?.name || prop.developerName) {
+                  <span class="spec-chip">
+                    <span class="material-symbols-outlined">business</span>
+                    <span>{{ prop.developer?.name || prop.developerName }}</span>
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="list-pricing-col">
+              <span class="list-price">{{ formatPriceIndian(prop.price) }}</span>
+              <span class="list-rate">{{ prop.pricePerSqFt || '₹2,400 / sq.ft' }}</span>
+              
+              <div class="list-action-btns">
+                <button 
+                  type="button" 
+                  class="btn-list-compare" 
+                  [class.active]="isInCompare(prop.id)"
+                  (click)="toggleCompare(prop)"
+                  [title]="isInCompare(prop.id) ? 'Remove from comparison tray' : 'Add to comparison tray'">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                  <span>{{ isInCompare(prop.id) ? 'In Compare' : 'Compare' }}</span>
+                </button>
+
+                <a [routerLink]="['/property', prop.id]" class="btn-list-details">
+                  <span>View Details</span>
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- EMPTY STATE -->
+    @if (filteredProperties().length === 0) {
+      <div class="empty-state-box">
+        <span class="material-symbols-outlined empty-icon">search_off</span>
+        <h3 class="empty-title">No Matching Properties Found</h3>
+        <p class="empty-desc">No registered properties match your active filter criteria. Try clearing some filters or searching with broader keywords.</p>
+        <button type="button" class="btn-empty-reset" (click)="clearFilters()">
+          <span class="material-symbols-outlined">restart_alt</span>
+          <span>Reset All Filters</span>
+        </button>
+      </div>
+    }
+  </main>
+
+  <!-- ========================================== -->
+  <!-- COMPARISON DOCK & MODAL                    -->
+  <!-- ========================================== -->
+  <app-property-compare-dock />
+  <app-property-compare-modal />
+
+</div>

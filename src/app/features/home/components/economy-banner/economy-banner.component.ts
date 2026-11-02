@@ -73,7 +73,7 @@ import { CommonModule } from '@angular/common';
 
     .skyline-img {
       width: 100%;
-      max-width: 58rem;
+      max-width: 38rem;
       height: 7.5rem;
       object-fit: contain;
       object-position: bottom center;

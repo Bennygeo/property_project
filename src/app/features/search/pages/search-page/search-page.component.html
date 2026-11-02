@@ -848,18 +848,12 @@
       @if (viewMode() === 'list') {
       <div class="results-list">
         @for (prop of displayedProperties(); track prop.id) {
-        <article class="list-dossier-card" [class.is-in-compare]="compareService.isInCompare(prop.id)">
+        <article class="list-dossier-card">
           <!-- Thumbnail with Badges (Links to Details) -->
           <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
             <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
             
             <div class="list-thumb-badges">
-              @if (compareService.isInCompare(prop.id)) {
-              <span class="list-compare-active-badge">
-                <span class="material-symbols-outlined" style="font-size: 13px;">compare_arrows</span>
-                In Compare
-              </span>
-              }
 
               @if (prop.isClosestProximity) {
               <span class="list-closest-proximity-badge" [title]="'Closest neighboring property: ' + (prop.closestNeighborLocality ? prop.closestNeighborLocality + ' (' + prop.closestNeighborDistanceKm + ' km)' : prop.closestNeighborDistanceKm + ' km away')">
@@ -967,15 +961,6 @@
               </button>
 
               <div class="list-secondary-actions">
-                <button type="button" 
-                  class="btn-list-compare" 
-                  [class.comparing]="compareService.isInCompare(prop.id)"
-                  (click)="compareService.toggleCompare(prop)"
-                  [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property (max 2)'">
-                  <span class="material-symbols-outlined">compare_arrows</span>
-                  <span class="compare-btn-text">{{ compareService.isInCompare(prop.id) ? 'In Compare' : 'Compare' }}</span>
-                </button>
-
                 <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
                   rel="noopener">
                   <span class="material-symbols-outlined">chat</span>

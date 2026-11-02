@@ -47,6 +47,16 @@ export const routes: Routes = [
     title: 'Admin Officer Profile & Audit Logs — Find a Plot Portal'
   },
   {
+    path: 'admin/compare',
+    loadComponent: () => import('./features/admin/pages/admin-search-compare/admin-search-compare.component').then(m => m.AdminSearchCompareComponent),
+    title: 'Admin Property Search & Comparison Matrix — Find a Plot'
+  },
+  {
+    path: 'admin/search',
+    redirectTo: 'admin/compare',
+    pathMatch: 'full'
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
     title: 'Four-Eyes Review & Admin Compliance Portal — Find a Plot'

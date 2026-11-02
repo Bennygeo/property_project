@@ -16,7 +16,6 @@ import { TopupDialogComponent } from '../../../home/components/topup-dialog/topu
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { AiChatModalComponent } from '../../../home/components/ai-chat-modal/ai-chat-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
-import { CompareService } from '../../../../core/services/compare.service';
 import { MOCK_50_PROPERTIES } from '../../../../core/services/mock-properties-data';
 
 export interface FilterOption {
@@ -87,7 +86,6 @@ export class SearchPageComponent implements OnInit {
   readonly notificationService = inject(NotificationService);
   readonly metroService = inject(MetroService);
   readonly authService = inject(AuthService);
-  readonly compareService = inject(CompareService);
 
   // Target District Selection Signal (Dynamically loaded from MySQL Database)
   readonly selectedDistrict = signal<string>('');

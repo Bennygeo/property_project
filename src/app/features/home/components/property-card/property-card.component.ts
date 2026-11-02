@@ -13,7 +13,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <article class="property-card" [class.is-in-compare]="compareService.isInCompare(property.id)" (click)="onCardClick()">
+    <article class="property-card" [class.is-in-compare]="showCompare && compareService.isInCompare(property.id)" (click)="onCardClick()">
       <!-- Media Frame (Links to Details) -->
       <div class="card-media" [routerLink]="['/property', property.id]">
         <img 
@@ -26,7 +26,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
         <!-- Top Badges Group -->
         <div class="badges-overlay">
-          @if (compareService.isInCompare(property.id)) {
+          @if (showCompare && compareService.isInCompare(property.id)) {
             <span class="badge-in-compare">
               <span class="material-symbols-outlined badge-icon" style="font-size:12px;margin-right:2px;">compare_arrows</span>
               <span>In Compare</span>
@@ -72,6 +72,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
         <!-- Top Action Buttons (Compare & Shortlist) -->
         <div class="card-top-actions">
+          @if (showCompare) {
           <button 
             type="button"
             class="btn-card-compare" 
@@ -80,6 +81,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             (click)="$event.stopPropagation(); compareService.toggleCompare(property)">
             <span class="material-symbols-outlined">compare_arrows</span>
           </button>
+          }
 
           <button 
             type="button"
@@ -162,6 +164,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             <span>{{ property.isMediaUnlocked ? 'Watch 4K Tour' : 'View Details' }}</span>
           </button>
 
+          @if (showCompare) {
           <button 
             type="button"
             class="btn-action-compare"
@@ -171,6 +174,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             <span class="material-symbols-outlined btn-icon">compare_arrows</span>
             <span class="btn-compare-txt">{{ compareService.isInCompare(property.id) ? 'In Compare' : 'Compare' }}</span>
           </button>
+          }
 
           <a 
             class="btn-action-wa" 
@@ -748,6 +752,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 })
 export class PropertyCardComponent {
   @Input({ required: true }) property!: Property;
+  @Input() showCompare: boolean = false;
   readonly formatPriceIndian = formatPriceIndian;
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);
