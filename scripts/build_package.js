@@ -59,101 +59,9 @@ for (const u of uploadsDirs) {
 console.log('Backend files and upload directories prepared.');
 
 console.log('=== Step 4: Consolidating Database Schemas ===');
-// 1. Copy individual SQL files
+fs.copyFileSync(path.resolve('backend/sql/01_COMPLETE_DATABASE_SCHEMA.sql'), path.join(dbDir, '01_COMPLETE_DATABASE_SCHEMA.sql'));
 fs.copyFileSync(path.resolve('backend/sql/full_live_dump.sql'), path.join(dbDir, '02_FULL_LIVE_DATA_DUMP.sql'));
 fs.copyFileSync(path.resolve('backend/sql/recent_changes_live_migration.sql'), path.join(dbDir, '03_RECENT_CHANGES_MIGRATION.sql'));
-
-// 2. Build 01_COMPLETE_DATABASE_SCHEMA.sql
-const schemaContent = fs.readFileSync('backend/sql/schema.sql', 'utf8');
-const adminUsersContent = fs.readFileSync('backend/database/admin_users_migration.sql', 'utf8');
-const adminLogsContent = fs.readFileSync('backend/database/admin_activity_logs_migration.sql', 'utf8');
-
-const masterTableSql = `
--- ---------------------------------------------------------
--- Table: property_master_details (DTCP / Infrastructure / Civic Specifications)
--- ---------------------------------------------------------
-CREATE TABLE IF NOT EXISTS property_master_details (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    property_id VARCHAR(50) NOT NULL UNIQUE,
-    project_name VARCHAR(255) DEFAULT '',
-    developer VARCHAR(255) DEFAULT '',
-    rera_number VARCHAR(150) DEFAULT '',
-    dtcp_approved VARCHAR(10) DEFAULT 'Yes',
-    dtcp_approval_no VARCHAR(150) DEFAULT '',
-    patta_type VARCHAR(100) DEFAULT 'Individual Patta',
-    clear_title_available VARCHAR(10) DEFAULT 'Yes',
-    bank_loan_approved VARCHAR(10) DEFAULT 'Yes',
-    area_location VARCHAR(150) DEFAULT '',
-    village_locality VARCHAR(150) DEFAULT '',
-    taluk VARCHAR(100) DEFAULT '',
-    district VARCHAR(100) DEFAULT '',
-    pincode VARCHAR(20) DEFAULT '',
-    google_maps_link TEXT,
-    plot_no VARCHAR(50) DEFAULT '',
-    plot_size_sqft DECIMAL(12,2) DEFAULT 0,
-    plot_size_cents DECIMAL(10,2) DEFAULT 0,
-    dimension VARCHAR(100) DEFAULT '',
-    facing VARCHAR(50) DEFAULT 'East',
-    corner_plot VARCHAR(10) DEFAULT 'No',
-    land_use VARCHAR(100) DEFAULT 'Residential',
-    price_per_sqft DECIMAL(12,2) DEFAULT 0,
-    total_price DECIMAL(15,2) DEFAULT 0,
-    availability VARCHAR(50) DEFAULT 'Available',
-    petrol_bunk_distance DECIMAL(6,2) DEFAULT NULL,
-    schools_nearby VARCHAR(255) DEFAULT '',
-    colleges_nearby VARCHAR(255) DEFAULT '',
-    hospital_nearby VARCHAR(255) DEFAULT '',
-    corridor VARCHAR(100) DEFAULT 'IT Corridor',
-    bus_stop_distance DECIMAL(6,2) DEFAULT NULL,
-    railway_station_nearby VARCHAR(255) DEFAULT '',
-    highway_name VARCHAR(150) DEFAULT '',
-    highway_distance DECIMAL(6,2) DEFAULT NULL,
-    airport_distance DECIMAL(6,2) DEFAULT NULL,
-    suited_for VARCHAR(100) DEFAULT 'Both',
-    possession_timeline VARCHAR(100) DEFAULT 'Immediate',
-    electricity VARCHAR(50) DEFAULT 'Available',
-    water_connection VARCHAR(50) DEFAULT 'Available',
-    drainage_facility VARCHAR(100) DEFAULT 'Underground',
-    road_width_ft INT DEFAULT 30,
-    road_type VARCHAR(100) DEFAULT 'Tar Road',
-    street_lights VARCHAR(10) DEFAULT 'Yes',
-    compound_wall_gated VARCHAR(10) DEFAULT 'Yes',
-    park VARCHAR(10) DEFAULT 'Yes',
-    other_amenities TEXT,
-    developer_maintenance_years INT DEFAULT 2,
-    flood_zone VARCHAR(50) DEFAULT 'No',
-    waterlogging_history VARCHAR(10) DEFAULT 'No',
-    contact_person_phone VARCHAR(150) DEFAULT '',
-    remarks TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX (property_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-`;
-
-const completeConsolidatedSql = `-- =====================================================================
--- FIND A PLOT / MANNIDAM PROPERTY PLATFORM - COMPLETE PRODUCTION DATABASE
--- Consolidated Schema, Infrastructure Specifications, Admin Accounts & Seed Data
--- Character Set: utf8mb4 | Collation: utf8mb4_unicode_ci
--- =====================================================================
-
-SET FOREIGN_KEY_CHECKS = 0;
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-${schemaContent}
-
-${masterTableSql}
-
-${adminUsersContent}
-
-${adminLogsContent}
-
-SET FOREIGN_KEY_CHECKS = 1;
-COMMIT;
-`;
-
-fs.writeFileSync(path.join(dbDir, '01_COMPLETE_DATABASE_SCHEMA.sql'), completeConsolidatedSql, 'utf8');
 console.log('Database schemas consolidated in database/.');
 
 console.log('=== Step 5: Generating Deployment Guide ===');
@@ -175,6 +83,8 @@ This archive contains the complete production-ready build for **Find a Plot / Ma
      **Import \`database/01_COMPLETE_DATABASE_SCHEMA.sql\`**
    - Alternatively, if you want the full live data dump with all sample properties:
      **Import \`database/02_FULL_LIVE_DATA_DUMP.sql\`**
+   - If your database already exists and you only want the recent migration tables:
+     **Import \`database/03_RECENT_CHANGES_MIGRATION.sql\`**
 
 ---
 
@@ -187,7 +97,6 @@ This archive contains the complete production-ready build for **Find a Plot / Ma
    $this->username = $_ENV['DB_USER'] ?? 'your_database_user';
    $this->password = $_ENV['DB_PASS'] ?? 'your_database_password';
    \`\`\`
-2. (Optional) In \`public_html/backend/config/elevenlabs.php\`, you can set your \`ELEVENLABS_API_KEY\` and \`ELEVENLABS_VOICE_ID\` for the Virtual AI Property Presenter.
 
 ---
 
@@ -207,29 +116,32 @@ This archive contains the complete production-ready build for **Find a Plot / Ma
 Three administrative personas are pre-configured in the database:
 - **Ezhil** (Lead Reviewer): \`ezhil@mannidam.com\` / \`ezhil@2026\`
 - **Ram** (Peer Reviewer): \`ram@mannidam.com\` / \`ram@2026\`
-- **Benny** (Director Console): \`benny@mannidam.com\` / \`benny@2026\`
-
-Admin portal URL: \`/admin/login\`
+- **Benny** (Platform Administrator): \`benny@mannidam.com\` / \`benny@2026\`
 `;
 
 fs.writeFileSync(path.join(packageDir, 'DEPLOYMENT_GUIDE.md'), deploymentGuide, 'utf8');
 console.log('DEPLOYMENT_GUIDE.md written.');
 
 console.log('=== Step 6: Creating Final Production ZIP Archive ===');
-const zipOutput = path.resolve('property_portal_final_release.zip');
-if (fs.existsSync(zipOutput)) {
-  fs.unlinkSync(zipOutput);
+const zipFile = path.resolve('property_portal_final_release.zip');
+if (fs.existsSync(zipFile)) {
+  fs.unlinkSync(zipFile);
 }
 
-// Compress using PowerShell Compress-Archive
-const psCommand = `powershell -Command "Compress-Archive -Path '${packageDir}/*' -DestinationPath '${zipOutput}' -CompressionLevel Optimal -Force"`;
+// Check for 7-Zip or PowerShell Compress-Archive
 console.log('Running compression...');
-execSync(psCommand, { stdio: 'inherit' });
-
-const zipStats = fs.statSync(zipOutput);
-console.log('=================================================================');
-console.log('SUCCESS! Final production archive created:');
-console.log('Path: ' + zipOutput);
-console.log('Size: ' + (zipStats.size / (1024 * 1024)).toFixed(2) + ' MB');
-console.log('=================================================================');
-
+try {
+  // Use PowerShell Compress-Archive for standard Windows zip
+  const psCommand = 'powershell -Command "Compress-Archive -Path \'' + packageDir + '\\*\' -DestinationPath \'' + zipFile + '\' -CompressionLevel Optimal -Force"';
+  execSync(psCommand, { stdio: 'inherit' });
+  const stats = fs.statSync(zipFile);
+  const sizeMb = (stats.size / (1024 * 1024)).toFixed(2);
+  console.log('=================================================================');
+  console.log('SUCCESS! Final production archive created:');
+  console.log('Path: ' + zipFile);
+  console.log('Size: ' + sizeMb + ' MB');
+  console.log('=================================================================');
+} catch (err) {
+  console.error('Error creating ZIP archive:', err);
+  process.exit(1);
+}
