@@ -667,3 +667,37 @@ optgroup {
     -webkit-filter: none !important;
   }
 }
+
+/* ==========================================================================
+   ARCHITECTURAL PLANAR SYSTEM (Zero Border-Radius & Zero Dropshadow)
+   Matches Property Details Page Specification:
+   - Zero Curved Borders (border-radius: 0)
+   - Zero Dropshadows (box-shadow: none)
+   Strictly EXCEPTS Home Page Search Bar (Preserved 100% Intact as Requested).
+   ========================================================================== */
+app-home-page app-top-concierge-bar,
+app-home-page app-top-concierge-bar *,
+app-home-page app-header,
+app-home-page app-header *,
+app-home-page app-deals-scrolling-banner,
+app-home-page app-deals-scrolling-banner *,
+app-home-page .hero-text-center,
+app-home-page .hero-text-center *,
+app-home-page app-economy-banner,
+app-home-page app-economy-banner *,
+app-home-page app-featured-properties,
+app-home-page app-featured-properties *,
+app-home-page app-property-card,
+app-home-page app-property-card *,
+app-home-page app-why-choose-us,
+app-home-page app-why-choose-us *,
+app-home-page app-category-grid,
+app-home-page app-category-grid *,
+app-home-page app-value-props,
+app-home-page app-value-props *,
+app-home-page app-footer,
+app-home-page app-footer * {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}

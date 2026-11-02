@@ -55,6 +55,11 @@ export interface PropertyTypeOption {
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
         <div class="hero-text-center">
+          <div class="rera-badge-pill">
+            <span class="material-symbols-outlined rera-shield-icon">verified_user</span>
+            <span>100% RERA REGISTERED</span>
+          </div>
+
           <h1 class="hero-headline">Every Plot We Post is RERA Registered</h1>
           <p class="hero-subline">
             We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds. We do not undertake unapproved sites, guaranteeing complete legal title clearance and zero encroachment risks.
@@ -506,7 +511,7 @@ export interface PropertyTypeOption {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
       padding: 0.35rem 0.5rem;
-      border-radius: 9999px;
+      border-radius: 0;
       border: 1px solid #e2e8f0;
       box-shadow: none;
       margin-top: 1.25rem;
@@ -518,7 +523,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.45rem;
       padding: 0.45rem 1.15rem;
-      border-radius: 9999px;
+      border-radius: 0;
       font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
       font-weight: 500;
@@ -554,7 +559,7 @@ export interface PropertyTypeOption {
       color: #059669;
       border: 1px solid #a7f3d0;
       padding: 1px 6px;
-      border-radius: 9999px;
+      border-radius: 0;
     }
     .badge-hero-verified {
       display: inline-flex;
@@ -631,7 +636,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.45rem;
       padding: 0.35rem 0.95rem;
-      border-radius: 9999px;
+      border-radius: 0;
       background: #ecfdf5;
       color: #065f46;
       border: 1.5px solid #a7f3d0;
@@ -697,7 +702,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.45rem;
       padding: 0.4rem 0.85rem;
-      border-radius: 8px;
+      border-radius: 0;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       font-family: 'Montserrat', sans-serif;
@@ -717,6 +722,7 @@ export interface PropertyTypeOption {
       border-color: #bbf7d0;
       color: #166534;
       font-weight: 500;
+      border-radius: 0;
     }
     @media (min-width: 640px) {
       .hero-subline {
