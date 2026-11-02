@@ -111,3 +111,35 @@ SET `interactive_map_url` = 'assets/secura-masterplan-3d.html'
 WHERE `id` = 'p-1' AND (`interactive_map_url` IS NULL OR `interactive_map_url` = '');
 
 -- End of migration
+
+-- ---------------------------------------------------------------------
+-- 6. ENSURE ADMIN USERS & PASSWORD_HASH COLUMN EXIST
+-- ---------------------------------------------------------------------
+SET @dbname = DATABASE();
+SET @tablename = 'users';
+SET @columnname = 'password_hash';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = @tablename
+      AND COLUMN_NAME = @columnname
+  ) > 0,
+  'SELECT 1 AS column_already_exists',
+  'ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) DEFAULT NULL AFTER phone;'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+INSERT INTO users (id, name, email, phone, password_hash, role, points_balance)
+VALUES 
+  (101, 'Ezhil', 'ezhil@mannidam.com', '+91 94440 10001', '$2y$10$s8batNschbmVOPeuKPmAQO2fe3UfDbJ8qm.VvHaI74k.K7zuVAu8y', 'admin', 5000),
+  (102, 'Ram', 'ram@mannidam.com', '+91 94440 10002', '$2y$10$tN1.taAgnIhI/0Z94zyp6Ojb2h1sKAFx9IuXLeZi5swSWTwBLkZ1G', 'admin', 5000),
+  (103, 'Benny', 'benny@mannidam.com', '+91 94440 00003', '$2y$10$FiDMFPcOMyjptraT5aqkYe.pvJaXj0mwqId8Jd2M8PnZq5HsWKwM6', 'admin', 5000)
+ON DUPLICATE KEY UPDATE 
+  name = VALUES(name),
+  role = 'admin',
+  email = VALUES(email),
+  password_hash = VALUES(password_hash);
