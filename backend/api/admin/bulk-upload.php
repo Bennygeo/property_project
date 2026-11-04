@@ -91,7 +91,7 @@ if (empty($rows) || !is_array($rows)) {
 $cityCheck = $db->query("SELECT id FROM cities WHERE city_key = 'chennai' LIMIT 1")->fetch() ?: $db->query("SELECT id FROM cities LIMIT 1")->fetch();
 $defaultCityId = 1;
 if (!$cityCheck) {
-    $db->exec("INSERT INTO cities (id, name, city_key, state, country) VALUES (1, 'Chennai', 'chennai', 'Tamil Nadu', 'India') ON DUPLICATE KEY UPDATE name=VALUES(name)");
+    $db->exec("INSERT INTO cities (id, name, city_key, state) VALUES (1, 'Chennai', 'chennai', 'Tamil Nadu') ON DUPLICATE KEY UPDATE name=VALUES(name)");
 } else {
     $defaultCityId = (int)$cityCheck['id'];
 }
@@ -253,12 +253,38 @@ $mockImagePacks = [
     ]
 ];
 
-foreach ($rows as $index => $item) {
+$db->beginTransaction();
+try {
+    foreach ($rows as $index => $item) {
     try {
         // Map raw 49 canonical header names if provided directly
         if (!isset($item['propertyId']) && isset($item['Property ID'])) $item['propertyId'] = $item['Property ID'];
         if (!isset($item['developer']) && isset($item['Developer'])) $item['developer'] = $item['Developer'];
         if (!isset($item['projectName']) && isset($item['Project Name'])) $item['projectName'] = $item['Project Name'];
+        if (!isset($item['locality_name'])) {
+            $item['locality_name'] = $item['locality_name name'] 
+                ?? $item['localityName'] 
+                ?? $item['locality'] 
+                ?? $item['Locality Name'] 
+                ?? $item['Locality'] 
+                ?? $item['villageLocality'] 
+                ?? $item['Village / Locality'] 
+                ?? $item['areaLocation'] 
+                ?? $item['Area / Location'] 
+                ?? null;
+        }
+        if (!isset($item['city_name'])) {
+            $item['city_name'] = $item['city_name name'] 
+                ?? $item['cityName'] 
+                ?? $item['city'] 
+                ?? $item['City Name'] 
+                ?? $item['City'] 
+                ?? $item['district'] 
+                ?? $item['District'] 
+                ?? $item['taluk'] 
+                ?? $item['Taluk'] 
+                ?? null;
+        }
         if (!isset($item['reraNumber']) && isset($item['RERA Number'])) $item['reraNumber'] = $item['RERA Number'];
         if (!isset($item['dtcpApproved']) && isset($item['DTCP Approved'])) $item['dtcpApproved'] = $item['DTCP Approved'];
         if (!isset($item['dtcpApprovalNo']) && isset($item['DTCP / LP Approval No.'])) $item['dtcpApprovalNo'] = $item['DTCP / LP Approval No.'];
@@ -316,13 +342,48 @@ foreach ($rows as $index => $item) {
         }
         $seenIds[$pId] = true;
 
-        $projectName = trim((string)($item['projectName'] ?? 'Verified Layout'));
-        $rawPlotNo = trim((string)($item['plotNo'] ?? ''));
+        $rawTitle = trim((string)($item['title'] ?? $item['Title'] ?? $item['Property Title'] ?? $item['propertyTitle'] ?? ''));
+        $projectName = trim((string)($item['projectName'] ?? $item['Project Name'] ?? ''));
+        $rawPlotNo = trim((string)($item['plotNo'] ?? $item['Plot No.'] ?? $item['Plot No'] ?? ''));
+
+        // Extract Project Name & Plot from Title column (or projectName if it contains "plot")
+        $sourceTitle = !empty($rawTitle) ? $rawTitle : (stripos($projectName, 'plot') !== false ? $projectName : '');
+        if (!empty($sourceTitle)) {
+            // Pattern A: "<Project Name> [-–—|:,] Plot [No.?/#] <PlotNo>"
+            if (preg_match('/^(.*?)\s*[-–—|:,]\s*Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i', $sourceTitle, $m)) {
+                if (!empty(trim($m[1]))) $projectName = trim($m[1]);
+                if (!empty(trim($m[2]))) $rawPlotNo = trim($m[2]);
+            }
+            // Pattern B: "Plot [No.?/#] <PlotNo> [-–—|:,] <Project Name>"
+            elseif (preg_match('/^Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)\s*[-–—|:,]\s*(.*)$/i', $sourceTitle, $m)) {
+                if (!empty(trim($m[2]))) $projectName = trim($m[2]);
+                if (!empty(trim($m[1]))) $rawPlotNo = trim($m[1]);
+            }
+            // Pattern C: "<Project Name> Plot [No.?/#] <PlotNo>"
+            elseif (preg_match('/^(.*?)\s+Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i', $sourceTitle, $m)) {
+                if (!empty(trim($m[1]))) $projectName = trim($m[1]);
+                if (!empty(trim($m[2]))) $rawPlotNo = trim($m[2]);
+            }
+            // Pattern D: "<Project Name> [-–—|] <Digits/Letters>"
+            elseif (preg_match('/^(.*?)\s*[-–—|]\s*([0-9]+[A-Za-z]?)$/', $sourceTitle, $m)) {
+                if (!empty(trim($m[1]))) $projectName = trim($m[1]);
+                if (!empty(trim($m[2]))) $rawPlotNo = trim($m[2]);
+            }
+            elseif (empty($projectName)) {
+                $projectName = $sourceTitle;
+            }
+        }
+
+        if (empty($projectName)) {
+            $projectName = 'Verified Layout';
+        }
+
         if (empty($rawPlotNo) || stripos($rawPlotNo, '.com') !== false || stripos($rawPlotNo, 'http') !== false) {
             $plotNo = (string)($index + 1);
         } else {
             $plotNo = $rawPlotNo;
         }
+
         $title = $projectName . ($plotNo !== '' ? " - Plot {$plotNo}" : '');
 
         $sqftVal = (float)($item['plotSizeSqft'] ?? 0);
@@ -350,8 +411,58 @@ foreach ($rows as $index => $item) {
             $priceDisplay = '₹ ' . number_format($numToFormat);
         }
 
-        $locality = trim((string)($item['villageLocality'] ?? $item['areaLocation'] ?? 'Guduvanchery'));
-        $city = trim((string)($item['district'] ?? $item['taluk'] ?? 'Chennai'));
+        // Validate and extract genuine Locality & City from parsed columns
+        $isInvalidName = function($val): bool {
+            if ($val === null) return true;
+            $s = trim((string)$val);
+            if ($s === '' || $s === '1' || $s === '0' || strtolower($s) === 'null' || strtolower($s) === 'undefined') return true;
+            if (is_numeric($s)) return true;
+            if (str_contains($s, '₹') || str_contains(strtolower($s), 'sq.ft') || str_contains(strtolower($s), 'cents')) return true;
+            if (str_contains(strtolower($s), 'facing')) return true;
+            return false;
+        };
+
+        $rawLoc = '';
+        $locCandidates = [
+            $item['locality_name'] ?? null,
+            $item['locality_name name'] ?? null,
+            $item['localityName'] ?? null,
+            $item['Locality Name'] ?? null,
+            $item['locality'] ?? null,
+            $item['Locality'] ?? null,
+            $item['villageLocality'] ?? null,
+            $item['Village / Locality'] ?? null,
+            $item['areaLocation'] ?? null,
+            $item['Area / Location'] ?? null,
+        ];
+        foreach ($locCandidates as $cand) {
+            if (!$isInvalidName($cand)) {
+                $rawLoc = trim((string)$cand);
+                break;
+            }
+        }
+        $locality = !empty($rawLoc) ? $rawLoc : 'Guduvanchery';
+
+        $rawCity = '';
+        $cityCandidates = [
+            $item['city_name'] ?? null,
+            $item['city_name name'] ?? null,
+            $item['cityName'] ?? null,
+            $item['City Name'] ?? null,
+            $item['city'] ?? null,
+            $item['City'] ?? null,
+            $item['district'] ?? null,
+            $item['District'] ?? null,
+            $item['taluk'] ?? null,
+            $item['Taluk'] ?? null,
+        ];
+        foreach ($cityCandidates as $cand) {
+            if (!$isInvalidName($cand)) {
+                $rawCity = trim((string)$cand);
+                break;
+            }
+        }
+        $city = !empty($rawCity) ? $rawCity : 'Chennai';
         $facing = trim((string)($item['facing'] ?? 'East'));
         $corner = trim((string)($item['cornerPlot'] ?? 'No'));
         $facingOrView = $facing . ' Facing' . ($corner === 'Yes' ? ' (Corner Plot)' : '');
@@ -414,13 +525,16 @@ foreach ($rows as $index => $item) {
 
         // Insert into property_master_details table
         $masterData = array_merge($item, [
-            'propertyId'    => $pId,
-            'projectName'   => $projectName,
-            'plotSizeSqft'  => $sqftVal,
-            'plotSizeCents' => $centsVal,
-            'pricePerSqft'  => $rateVal,
-            'totalPrice'    => $totalVal,
-            'googleMapsLink'=> $mapsLink
+            'propertyId'      => $pId,
+            'projectName'     => $projectName,
+            'villageLocality' => $locality,
+            'areaLocation'    => $locality,
+            'district'        => $city,
+            'plotSizeSqft'    => $sqftVal,
+            'plotSizeCents'   => $centsVal,
+            'pricePerSqft'    => $rateVal,
+            'totalPrice'      => $totalVal,
+            'googleMapsLink'  => $mapsLink
         ]);
         PropertyMasterHelper::saveMasterDetails($db, $pId, $masterData);
 
@@ -466,7 +580,7 @@ foreach ($rows as $index => $item) {
 
         // Insert key highlights
         $highlights = [
-            $item['dtcpApproved'] === 'Yes' ? 'DTCP Sanctioned Layout' : 'Clear Title Deed',
+            (!empty($item['dtcpApproved']) && $item['dtcpApproved'] === 'Yes') ? 'DTCP Sanctioned Layout' : 'Clear Title Deed',
             !empty($item['roadWidthFt']) ? $item['roadWidthFt'] . ' Ft Wide Bitumen Road' : '30 Ft Wide Road',
             !empty($item['pattaType']) ? (string)$item['pattaType'] : 'Individual Patta',
             !empty($item['corridor']) ? 'Strategic ' . $item['corridor'] : 'High Appreciation Zone'
@@ -484,6 +598,15 @@ foreach ($rows as $index => $item) {
     } catch (\Throwable $e) {
         $errors[] = "Row #" . ($index + 1) . ": " . $e->getMessage();
     }
+}
+    if ($db->inTransaction()) {
+        $db->commit();
+    }
+} catch (\Throwable $trxErr) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Response::error('Database batch transaction failed: ' . $trxErr->getMessage(), 500);
 }
 
 Response::success([

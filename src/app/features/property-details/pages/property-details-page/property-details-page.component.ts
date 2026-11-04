@@ -97,6 +97,15 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     this.activeDetailTab.set(tab);
   }
 
+  cleanInfraText(val: string | null | undefined, fallback: string): string {
+    if (!val) return fallback;
+    const trimmed = String(val).trim();
+    if (trimmed.toUpperCase() === 'NULL' || trimmed.toUpperCase() === 'UNDEFINED' || !isNaN(Number(trimmed))) {
+      return fallback;
+    }
+    return trimmed;
+  }
+
   // Media-First Top Stage State
   readonly activeMediaTab = signal<MediaStageTab>('photos');
   readonly currentPhotoIdx = signal<number>(0);

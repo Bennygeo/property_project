@@ -21,15 +21,10 @@
       <!-- Main Omnibox Search Field with Target District Prefix Dropdown -->
       <div class="search-omnibox-row">
         <!-- Target District Custom Selector Dropdown (Matches Omnibox & Search UI) -->
-        <div class="district-target-selector"
-             [class.has-selection]="!!selectedDistrict()"
-             [class.is-open]="isDistrictDropdownOpen()"
-             (click)="toggleDistrictDropdown($event)"
-             role="combobox"
-             [attr.aria-expanded]="isDistrictDropdownOpen()"
-             aria-haspopup="listbox"
-             aria-label="Select Target District">
-          
+        <div class="district-target-selector" [class.has-selection]="!!selectedDistrict()"
+          [class.is-open]="isDistrictDropdownOpen()" (click)="toggleDistrictDropdown($event)" role="combobox"
+          [attr.aria-expanded]="isDistrictDropdownOpen()" aria-haspopup="listbox" aria-label="Select Target District">
+
           <div class="district-trigger-content">
             <span class="material-symbols-outlined district-selector-icon">location_on</span>
             <div class="district-trigger-texts">
@@ -41,21 +36,18 @@
           </div>
 
           @if (selectedDistrict()) {
-            <button type="button"
-                    class="district-clear-mini"
-                    (click)="clearDistrictSelection($event)"
-                    title="Clear district filter"
-                    aria-label="Clear district filter">
-              <span class="material-symbols-outlined">close</span>
-            </button>
+          <button type="button" class="district-clear-mini" (click)="clearDistrictSelection($event)"
+            title="Clear district filter" aria-label="Clear district filter">
+            <span class="material-symbols-outlined">close</span>
+          </button>
           }
 
-          <span class="material-symbols-outlined district-arrow-icon" [class.is-rotated]="isDistrictDropdownOpen()">expand_more</span>
+          <span class="material-symbols-outlined district-arrow-icon"
+            [class.is-rotated]="isDistrictDropdownOpen()">expand_more</span>
         </div>
 
-        <div class="search-omnibox"
-             [class.has-dropdown]="isSuggestionsOpen() && searchSuggestions().length > 0"
-             (click)="onSearchOmniboxClick($event)">
+        <div class="search-omnibox" [class.has-dropdown]="isSuggestionsOpen() && searchSuggestions().length > 0"
+          (click)="onSearchOmniboxClick($event)">
           <span class="material-symbols-outlined omnibox-icon">search</span>
 
           <!-- Multi-Level Selected Locality / Area Tags (e.g. Porur, Ramapuram) -->
@@ -64,18 +56,15 @@
             <span class="locality-tag-badge">
               <span class="material-symbols-outlined tag-loc-icon">location_on</span>
               <span class="tag-loc-text">{{ loc }}</span>
-              <button type="button" class="tag-loc-remove" (click)="removeLocalityTag(idx)" title="Remove {{ loc }}">&times;</button>
+              <button type="button" class="tag-loc-remove" (click)="removeLocalityTag(idx)"
+                title="Remove {{ loc }}">&times;</button>
             </span>
             }
 
             <input #omniboxInput type="text" class="omnibox-input" [value]="rawSearchInput()"
-              (input)="onSearchInput($any($event.target).value)"
-              (focus)="onSearchFocus()"
-              (blur)="onSearchBlur()"
-              (click)="scrollToTop()"
-              (keydown)="onSearchKeydown($event)"
-              autocomplete="off" autocorrect="off" autocapitalize="off"
-              spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
+              (input)="onSearchInput($any($event.target).value)" (focus)="onSearchFocus()" (blur)="onSearchBlur()"
+              (click)="scrollToTop()" (keydown)="onSearchKeydown($event)" autocomplete="off" autocorrect="off"
+              autocapitalize="off" spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
               [placeholder]="selectedDistrict() ? ('Search localities in ' + selectedDistrict() + ' (e.g. ' + getDistrictLocalityHint(selectedDistrict()) + ')...') : (selectedLocalities().length > 0 ? 'Add more localities (e.g. Ramapuram, Guindy)...' : 'Add locality (e.g. Porur, Ramapuram, Coimbatore), builder, or project...')">
           </div>
 
@@ -92,12 +81,14 @@
             <div class="suggestions-header">
               <span class="sugg-header-title">
                 @if (selectedDistrict()) {
-                  <span>Top Localities in <strong>{{ selectedDistrict() }}</strong></span>
+                <span>Top Localities in <strong>{{ selectedDistrict() }}</strong></span>
                 } @else {
-                  <span>{{ rawSearchInput().length >= 2 ? 'Verified Places & Locations' : 'Popular & Trending Locations' }}</span>
+                <span>{{ rawSearchInput().length >= 2 ? 'Verified Places & Locations' : 'Popular & Trending Locations'
+                  }}</span>
                 }
               </span>
-              <span class="sugg-header-tag">{{ selectedDistrict() ? (selectedDistrict() + ' Targeted') : (rawSearchInput().length >= 2 ? 'Google Places Active' : 'Explore') }}</span>
+              <span class="sugg-header-tag">{{ selectedDistrict() ? (selectedDistrict() + ' Targeted') :
+                (rawSearchInput().length >= 2 ? 'Google Places Active' : 'Explore') }}</span>
             </div>
             <ul class="suggestions-list">
               @for (item of searchSuggestions(); track item.query + item.label) {
@@ -109,13 +100,13 @@
                   <div class="suggestion-title-row">
                     <span class="suggestion-label">{{ item.label }}</span>
                     @if (item.type === 'google_place') {
-                      <span class="google-place-pill">Google Place</span>
+                    <span class="google-place-pill">Google Place</span>
                     }
                   </div>
                   <span class="suggestion-sub">{{ item.sub }}</span>
                 </div>
                 @if (item.query) {
-                  <span class="suggestion-type-badge">+ Add</span>
+                <span class="suggestion-type-badge">+ Add</span>
                 }
               </li>
               }
@@ -126,189 +117,161 @@
 
         <!-- Modern Custom Popover Dropdown Panel - Mega Expanded View -->
         @if (isDistrictDropdownOpen()) {
-          <div class="district-custom-dropdown expanded-dropdown" (click)="$event.stopPropagation()" role="listbox">
-            <div class="district-dropdown-header">
-              <div class="dist-header-title-wrap">
-                <div class="dist-header-badge-row">
-                  <span class="material-symbols-outlined dist-badge-icon">location_on</span>
-                  <span class="dist-header-title">Target Area &amp; Regional Districts</span>
-                  <span class="dist-header-badge">{{ totalDistrictsCount() }} Districts</span>
-                  <span class="dist-header-badge-sub">{{ totalAllPropertiesCount() }} Verified Dossiers</span>
-                </div>
-                <span class="dist-header-sub">Select your target district to focus localities, cadastral deeds, and verified property dossiers</span>
+        <div class="district-dropdown-backdrop" (click)="isDistrictDropdownOpen.set(false)" aria-hidden="true"></div>
+        <div class="district-custom-dropdown expanded-dropdown" (click)="$event.stopPropagation()" role="listbox">
+          <div class="district-dropdown-header">
+            <div class="dist-header-title-wrap">
+              <div class="dist-header-badge-row">
+                <span class="material-symbols-outlined dist-badge-icon">location_on</span>
+                <span class="dist-header-title">Target Area &amp; Regional Districts</span>
+                <span class="dist-header-badge">{{ totalDistrictsCount() }} Districts</span>
+                <span class="dist-header-badge-sub">{{ totalAllPropertiesCount() }} Verified Dossiers</span>
               </div>
-              
-              <button type="button" class="btn-close-dropdown" (click)="isDistrictDropdownOpen.set(false)" title="Close dropdown">
-                <span class="material-symbols-outlined">close</span>
+              <span class="dist-header-sub">Select your target district to focus localities, cadastral deeds, and
+                verified property dossiers</span>
+            </div>
+
+            <button type="button" class="btn-close-dropdown" (click)="isDistrictDropdownOpen.set(false)"
+              title="Close dropdown">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- In-Dropdown Search Filter Bar -->
+          <div class="district-search-bar" (click)="$event.stopPropagation(); scrollToTop()">
+            <span class="material-symbols-outlined dist-search-icon">search</span>
+            <input type="text" class="dist-search-input"
+              placeholder="Filter by district name or locality (e.g. Chennai, Coimbatore, Salem, Madipakkam)..."
+              [value]="districtSearchQuery()" (input)="districtSearchQuery.set($any($event.target).value)"
+              (focus)="scrollToTop()" (click)="$event.stopPropagation(); scrollToTop()">
+            @if (districtSearchQuery()) {
+            <button type="button" class="dist-search-clear"
+              (click)="districtSearchQuery.set(''); $event.stopPropagation()" aria-label="Clear filter">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+            }
+          </div>
+
+          <div class="district-scroll-area">
+            <!-- 🌟 10 Main Areas (5 columns across desktop for zero-scroll visibility) -->
+            @if (filteredMainHubs().length > 0) {
+            <div class="district-group-section hubs-section">
+              <div class="group-header group-header-hubs">
+                <span class="group-title">
+                  <span class="group-emoji">🌟</span> 10 Major Real Estate Hubs
+                </span>
+                <span class="group-badge">High Demand Market Areas</span>
+              </div>
+              <div class="hubs-expanded-grid">
+                @for (hub of filteredMainHubs(); track hub.name) {
+                <div class="hub-expanded-card" [class.is-active]="selectedDistrict() === hub.name"
+                  (click)="onSelectDistrictOption(hub.name)" role="option"
+                  [attr.aria-selected]="selectedDistrict() === hub.name"
+                  [title]="'Select ' + hub.name + ' (' + hub.propertyCount + ' properties)'">
+                  <div class="hub-card-header">
+                    <span class="material-symbols-outlined hub-icon">apartment</span>
+                    <span class="hub-name">{{ hub.name }}</span>
+                    @if (selectedDistrict() === hub.name) {
+                    <span class="material-symbols-outlined hub-check">check_circle</span>
+                    }
+                  </div>
+                  <div class="hub-card-meta">
+                    <span class="hub-count-pill">{{ hub.propertyCount }} properties</span>
+                    @if (getDistrictLocalityHint(hub.name); as hint) {
+                    <span class="hub-locality-hint" [title]="hint">{{ hint }}</span>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+            }
+
+            <!-- Regional Groups (Side-by-Side 4 Columns for zero-scroll visibility) -->
+            @if (filteredRegionalGroups().length > 0) {
+            <div class="regional-clusters-container">
+              <div class="clusters-header-row">
+                <div class="clusters-header-title">
+                  <span class="material-symbols-outlined clusters-header-icon">map</span>
+                  <span>All 38 Districts by Geographical Region</span>
+                </div>
+                <span class="clusters-header-badge">{{ filteredRegionalGroups().length }} Regional Zones</span>
+              </div>
+
+              <div class="regional-clusters-grid">
+                @for (group of filteredRegionalGroups(); track group.regionName) {
+                <div class="regional-cluster-col">
+                  <div class="regional-cluster-header">
+                    <div class="cluster-title-wrap">
+                      <span class="material-symbols-outlined cluster-icon">{{ getRegionIcon(group.regionName) }}</span>
+                      <span class="cluster-name">{{ group.regionName }}</span>
+                    </div>
+                    <span class="cluster-count-badge">{{ group.districts.length }}</span>
+                  </div>
+
+                  <div class="cluster-districts-list">
+                    @for (dist of group.districts; track dist.name) {
+                    <div class="district-compact-item" [class.is-active]="selectedDistrict() === dist.name"
+                      (click)="onSelectDistrictOption(dist.name)" role="option"
+                      [attr.aria-selected]="selectedDistrict() === dist.name"
+                      [title]="dist.name + ' (' + dist.propertyCount + ' properties)'">
+                      <div class="dist-compact-main">
+                        <span class="dist-compact-name">{{ dist.name }}</span>
+                        @if (getDistrictLocalityHint(dist.name); as hint) {
+                        @if (hint !== 'localities or layouts') {
+                        <span class="dist-compact-localities" [title]="hint">
+                          {{ hint }}
+                        </span>
+                        }
+                        }
+                      </div>
+                      <div class="dist-compact-right">
+                        <span class="dist-count-chip">{{ dist.propertyCount }}</span>
+                        @if (selectedDistrict() === dist.name) {
+                        <span class="material-symbols-outlined dist-check-icon">check_circle</span>
+                        }
+                      </div>
+                    </div>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+            }
+
+            @if (filteredMainHubs().length === 0 && filteredRegionalGroups().length === 0) {
+            <div class="district-empty-results">
+              <span class="material-symbols-outlined">search_off</span>
+              <p>No districts found matching "{{ districtSearchQuery() }}"</p>
+            </div>
+            }
+          </div>
+
+          <!-- Dropdown Footer -->
+          <div class="district-dropdown-footer">
+            <div class="footer-selected-info">
+              <span class="material-symbols-outlined footer-info-icon">info</span>
+              @if (selectedDistrict()) {
+              <span>Selected: {{ selectedDistrict() }} (Showing properties in this target area)</span>
+              } @else {
+              <span>Showing verified properties across All Districts &amp; Regions</span>
+              }
+            </div>
+            <div class="footer-btn-actions">
+              @if (selectedDistrict()) {
+              <button type="button" class="btn-footer-clear" (click)="clearDistrictSelection($event)">
+                <span class="material-symbols-outlined">restart_alt</span>
+                <span>Reset to All</span>
+              </button>
+              }
+              <button type="button" class="btn-footer-done" (click)="isDistrictDropdownOpen.set(false)">
+                Done
               </button>
             </div>
-
-            <!-- In-Dropdown Search Filter Bar -->
-            <div class="district-search-bar" (click)="$event.stopPropagation(); scrollToTop()">
-              <span class="material-symbols-outlined dist-search-icon">search</span>
-              <input type="text"
-                     class="dist-search-input"
-                     placeholder="Filter by district name or locality (e.g. Chennai, Coimbatore, Salem, Madipakkam)..."
-                     [value]="districtSearchQuery()"
-                     (input)="districtSearchQuery.set($any($event.target).value)"
-                     (focus)="scrollToTop()"
-                     (click)="$event.stopPropagation(); scrollToTop()">
-              @if (districtSearchQuery()) {
-                <button type="button" class="dist-search-clear" (click)="districtSearchQuery.set(''); $event.stopPropagation()" aria-label="Clear filter">
-                  <span class="material-symbols-outlined">close</span>
-                </button>
-              }
-            </div>
-
-            <div class="district-scroll-area">
-              <!-- Option: All Districts & Regions Banner -->
-              @if (!districtSearchQuery()) {
-                <div class="district-opt-all-banner"
-                     [class.is-active]="!selectedDistrict()"
-                     (click)="onSelectDistrictOption('')"
-                     role="option"
-                     [attr.aria-selected]="!selectedDistrict()">
-                  <div class="all-banner-left">
-                    <div class="opt-icon-globe">
-                      <span class="material-symbols-outlined">public</span>
-                    </div>
-                    <div class="all-banner-texts">
-                      <span class="all-banner-title">All Districts &amp; Regions</span>
-                      <span class="all-banner-sub">Statewide Tamil Nadu property search (Search without district restriction)</span>
-                    </div>
-                  </div>
-                  <div class="all-banner-right">
-                    <span class="all-banner-count">{{ totalAllPropertiesCount() }} properties</span>
-                    @if (!selectedDistrict()) {
-                      <span class="material-symbols-outlined check-active">check_circle</span>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- 🌟 10 Main Areas (5 columns across desktop for zero-scroll visibility) -->
-              @if (filteredMainHubs().length > 0) {
-                <div class="district-group-section hubs-section">
-                  <div class="group-header group-header-hubs">
-                    <span class="group-title">
-                      <span class="group-emoji">🌟</span> 10 Major Real Estate Hubs
-                    </span>
-                    <span class="group-badge">High Demand Market Areas</span>
-                  </div>
-                  <div class="hubs-expanded-grid">
-                    @for (hub of filteredMainHubs(); track hub.name) {
-                      <div class="hub-expanded-card"
-                           [class.is-active]="selectedDistrict() === hub.name"
-                           (click)="onSelectDistrictOption(hub.name)"
-                           role="option"
-                           [attr.aria-selected]="selectedDistrict() === hub.name"
-                           [title]="'Select ' + hub.name + ' (' + hub.propertyCount + ' properties)'">
-                        <div class="hub-card-header">
-                          <span class="material-symbols-outlined hub-icon">apartment</span>
-                          <span class="hub-name">{{ hub.name }}</span>
-                          @if (selectedDistrict() === hub.name) {
-                            <span class="material-symbols-outlined hub-check">check_circle</span>
-                          }
-                        </div>
-                        <div class="hub-card-meta">
-                          <span class="hub-count-pill">{{ hub.propertyCount }} properties</span>
-                          @if (getDistrictLocalityHint(hub.name); as hint) {
-                            <span class="hub-locality-hint" [title]="hint">{{ hint }}</span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Regional Groups (Side-by-Side 4 Columns for zero-scroll visibility) -->
-              @if (filteredRegionalGroups().length > 0) {
-                <div class="regional-clusters-container">
-                  <div class="clusters-header-row">
-                    <div class="clusters-header-title">
-                      <span class="material-symbols-outlined clusters-header-icon">map</span>
-                      <span>All 38 Districts by Geographical Region</span>
-                    </div>
-                    <span class="clusters-header-badge">{{ filteredRegionalGroups().length }} Regional Zones</span>
-                  </div>
-
-                  <div class="regional-clusters-grid">
-                    @for (group of filteredRegionalGroups(); track group.regionName) {
-                      <div class="regional-cluster-col">
-                        <div class="regional-cluster-header">
-                          <div class="cluster-title-wrap">
-                            <span class="material-symbols-outlined cluster-icon">{{ getRegionIcon(group.regionName) }}</span>
-                            <span class="cluster-name">{{ group.regionName }}</span>
-                          </div>
-                          <span class="cluster-count-badge">{{ group.districts.length }}</span>
-                        </div>
-
-                        <div class="cluster-districts-list">
-                          @for (dist of group.districts; track dist.name) {
-                            <div class="district-compact-item"
-                                 [class.is-active]="selectedDistrict() === dist.name"
-                                 (click)="onSelectDistrictOption(dist.name)"
-                                 role="option"
-                                 [attr.aria-selected]="selectedDistrict() === dist.name"
-                                 [title]="dist.name + ' (' + dist.propertyCount + ' properties)'">
-                              <div class="dist-compact-main">
-                                <span class="dist-compact-name">{{ dist.name }}</span>
-                                @if (getDistrictLocalityHint(dist.name); as hint) {
-                                  @if (hint !== 'localities or layouts') {
-                                    <span class="dist-compact-localities" [title]="hint">
-                                      {{ hint }}
-                                    </span>
-                                  }
-                                }
-                              </div>
-                              <div class="dist-compact-right">
-                                <span class="dist-count-chip">{{ dist.propertyCount }}</span>
-                                @if (selectedDistrict() === dist.name) {
-                                  <span class="material-symbols-outlined dist-check-icon">check_circle</span>
-                                }
-                              </div>
-                            </div>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              @if (filteredMainHubs().length === 0 && filteredRegionalGroups().length === 0) {
-                <div class="district-empty-results">
-                  <span class="material-symbols-outlined">search_off</span>
-                  <p>No districts found matching "{{ districtSearchQuery() }}"</p>
-                </div>
-              }
-            </div>
-
-            <!-- Dropdown Footer -->
-            <div class="district-dropdown-footer">
-              <div class="footer-selected-info">
-                <span class="material-symbols-outlined footer-info-icon">info</span>
-                @if (selectedDistrict()) {
-                  <span>Selected: <strong>{{ selectedDistrict() }}</strong> (Showing properties in this target area)</span>
-                } @else {
-                  <span>Showing verified properties across <strong>All Districts &amp; Regions</strong></span>
-                }
-              </div>
-              <div class="footer-btn-actions">
-                @if (selectedDistrict()) {
-                  <button type="button" class="btn-footer-clear" (click)="clearDistrictSelection($event)">
-                    <span class="material-symbols-outlined">restart_alt</span>
-                    <span>Reset to All</span>
-                  </button>
-                }
-                <button type="button" class="btn-footer-done" (click)="isDistrictDropdownOpen.set(false)">
-                  Done
-                </button>
-              </div>
-            </div>
-
           </div>
+
+        </div>
         }
       </div>
 
@@ -320,11 +283,6 @@
             [class.active]="selectedType() === 'all' && selectedBudget() === 'all' && !videoOnly() && !droneOnly()"
             (click)="selectAllAssets()">
             All Assets
-          </button>
-          <button type="button" class="preset-chip" [class.active]="selectedType() === 'Apartments & Flats'"
-            (click)="setType('Apartments & Flats')">
-            <span class="material-symbols-outlined">apartment</span>
-            Apartments &amp; Flats
           </button>
           <button type="button" class="preset-chip" [class.active]="selectedType() === 'Gated CMDA Plots'"
             (click)="setType('Gated CMDA Plots')">
@@ -371,7 +329,8 @@
             </button>
             }
             <button type="button" class="btn-toggle-mobile" (click)="toggleMobileFilter()" aria-label="Toggle filters">
-              <span class="material-symbols-outlined chevron-icon" [class.rotated]="isMobileFilterOpen()">expand_more</span>
+              <span class="material-symbols-outlined chevron-icon"
+                [class.rotated]="isMobileFilterOpen()">expand_more</span>
             </button>
           </div>
         </div>
@@ -435,8 +394,10 @@
             <!-- Show More / Less Toggle Button -->
             @if (filteredBuilders().length > 8 && !builderSearchQuery().trim()) {
             <button type="button" class="btn-toggle-builders" (click)="toggleBuilderExpand()">
-              <span>{{ isBuilderListExpanded() ? 'Show Fewer Builders' : '+ Show All ' + filteredBuilders().length + ' Builders' }}</span>
-              <span class="material-symbols-outlined chevron-sm" [class.rotated]="isBuilderListExpanded()">expand_more</span>
+              <span>{{ isBuilderListExpanded() ? 'Show Fewer Builders' : '+ Show All ' + filteredBuilders().length + '
+                Builders' }}</span>
+              <span class="material-symbols-outlined chevron-sm"
+                [class.rotated]="isBuilderListExpanded()">expand_more</span>
             </button>
             }
           </div>
@@ -713,7 +674,9 @@
             <span class="radius-badge-pill">5 km Radius Applied</span>
           </div>
           <p class="radius-desc">
-            No exact property matched "<strong>{{ radiusSearchLocationName() }}</strong>". We automatically expanded your search to include <strong>{{ radiusFoundCount() }} verified properties within a 5 km GPS radius</strong> using cadastral coordinate distance calculation.
+            No exact property matched "<strong>{{ radiusSearchLocationName() }}</strong>". We automatically expanded
+            your search to include <strong>{{ radiusFoundCount() }} verified properties within a 5 km GPS
+              radius</strong> using cadastral coordinate distance calculation.
           </p>
         </div>
       </div>
@@ -737,8 +700,9 @@
         <article class="list-dossier-card">
           <!-- Thumbnail with Badges (Links to Details) -->
           <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
-            <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
-            
+            <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
+              loading="lazy" decoding="async">
+
             <div class="list-thumb-badges">
 
 
@@ -756,7 +720,8 @@
           <!-- Info Section -->
           <div class="list-info">
             <div class="list-meta-top">
-              <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo || 'TNRERA/13/LO/0114/2026' }}</span>
+              <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber ||
+                prop.plotDetails?.reraLayoutNo || 'TNRERA/13/LO/0114/2026' }}</span>
               @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
               <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
               } @else if (prop.badges?.brokerage) {
@@ -774,21 +739,20 @@
             </h3>
 
             @if (getDeveloperName(prop)) {
-              @if ((prop.developerProjectsCount || 0) > 1) {
-              <a [routerLink]="['/builder', getDeveloperName(prop)]"
-                 class="list-builder-row"
-                 title="View Developer Portfolio">
-                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-                <span class="material-symbols-outlined" style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
-              </a>
-              } @else {
-              <div class="list-builder-row non-clickable"
-                   title="Promoter / Developer">
-                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-              </div>
-              }
+            @if ((prop.developerProjectsCount || 0) > 1) {
+            <a [routerLink]="['/builder', getDeveloperName(prop)]" class="list-builder-row"
+              title="View Developer Portfolio">
+              <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+              <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+              <span class="material-symbols-outlined"
+                style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
+            </a>
+            } @else {
+            <div class="list-builder-row non-clickable" title="Promoter / Developer">
+              <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+              <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+            </div>
+            }
             }
 
             <div class="list-locality">
@@ -797,7 +761,7 @@
 
             </div>
 
-            
+
           </div>
 
           <!-- Price & Action Section -->
@@ -830,48 +794,50 @@
       <!-- Infinite Scroll Trigger (No Pagination: Initial 20, Next 10 on Scroll) -->
       <!-- Progressive API Scroll Loader & Skeleton Placeholders -->
       @if (propertyService.isFetchingApi()) {
-        <div class="scroll-skeleton-grid">
-          <div class="skeleton-card" *ngFor="let s of [1, 2, 3]">
-            <div class="skeleton-thumb-frame shimmer-bg">
-              <div class="skeleton-badge shimmer-bg"></div>
+      <div class="scroll-skeleton-grid">
+        <div class="skeleton-card" *ngFor="let s of [1, 2, 3]">
+          <div class="skeleton-thumb-frame shimmer-bg">
+            <div class="skeleton-badge shimmer-bg"></div>
+          </div>
+          <div class="skeleton-content-frame">
+            <div class="skeleton-line shimmer-bg line-title"></div>
+            <div class="skeleton-line shimmer-bg line-sub"></div>
+            <div class="skeleton-meta-row">
+              <div class="skeleton-tag shimmer-bg"></div>
+              <div class="skeleton-tag shimmer-bg"></div>
             </div>
-            <div class="skeleton-content-frame">
-              <div class="skeleton-line shimmer-bg line-title"></div>
-              <div class="skeleton-line shimmer-bg line-sub"></div>
-              <div class="skeleton-meta-row">
-                <div class="skeleton-tag shimmer-bg"></div>
-                <div class="skeleton-tag shimmer-bg"></div>
-              </div>
-              <div class="skeleton-foot-row">
-                <div class="skeleton-price-line shimmer-bg"></div>
-                <div class="skeleton-btn shimmer-bg"></div>
-              </div>
+            <div class="skeleton-foot-row">
+              <div class="skeleton-price-line shimmer-bg"></div>
+              <div class="skeleton-btn shimmer-bg"></div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="api-scroll-loader-banner">
-          <div class="loader-spinner-circle"></div>
-          <div class="loader-info">
-            <span class="loader-main-text">Loading verified properties...</span>
-            <span class="loader-sub-text">Fetching next 10 properties from registry database</span>
-          </div>
-          <div class="loader-pulsing-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+      <div class="api-scroll-loader-banner">
+        <div class="loader-spinner-circle"></div>
+        <div class="loader-info">
+          <span class="loader-main-text">Loading verified properties...</span>
+          <span class="loader-sub-text">Fetching next 10 properties from registry database</span>
         </div>
+        <div class="loader-pulsing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
       }
 
       @if (!propertyService.isFetchingApi() && propertyService.hasMoreApiProperties()) {
       <div class="infinite-scroll-container">
         <button type="button" class="btn-infinite-expand" (click)="loadMore()">
           <span class="material-symbols-outlined expand-icon">expand_more</span>
-          <span>Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() }} properties • Scroll down for next 10</span>
+          <span>Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() }} properties •
+            Scroll down for next 10</span>
         </button>
       </div>
-      } @else if (!propertyService.isFetchingApi() && displayedProperties().length > 0 && propertyService.totalApiProperties() > 0) {
+      } @else if (!propertyService.isFetchingApi() && displayedProperties().length > 0 &&
+      propertyService.totalApiProperties() > 0) {
       <div class="infinite-scroll-container">
         <div class="all-loaded-badge">
           <span class="material-symbols-outlined">verified</span>
@@ -893,18 +859,18 @@
             </div>
             <h2 class="no-items-title">No Matching Properties Found</h2>
             <p class="no-items-desc">
-              We couldn't find any verified cadastral records matching 
+              We couldn't find any verified cadastral records matching
               @if (selectedLocalities().length > 0) {
-                <span>locality <strong>"{{ selectedLocalities().join(', ') }}"</strong></span>
+              <span>locality <strong>"{{ selectedLocalities().join(', ') }}"</strong></span>
               }
               @if (searchQuery()) {
-                <span> query <strong>"{{ searchQuery() }}"</strong></span>
+              <span> query <strong>"{{ searchQuery() }}"</strong></span>
               }
               @if (selectedDeveloper() !== 'all') {
-                <span> builder <strong>"{{ selectedDeveloper() }}"</strong></span>
+              <span> builder <strong>"{{ selectedDeveloper() }}"</strong></span>
               }
               @if (selectedCity() !== 'all') {
-                <span> in <strong>{{ selectedCity() | uppercase }}</strong></span>
+              <span> in <strong>{{ selectedCity() | uppercase }}</strong></span>
               }
               . See our hand-picked recommendations below or try resetting your filters.
             </p>
@@ -913,10 +879,10 @@
 
         <div class="no-items-actions">
           @if (searchQuery() || selectedLocalities().length > 0 || selectedDeveloper() !== 'all') {
-            <button type="button" class="btn-clear-search-action" (click)="clearSearchQuery()">
-              <span class="material-symbols-outlined">backspace</span>
-              <span>Clear Search Query</span>
-            </button>
+          <button type="button" class="btn-clear-search-action" (click)="clearSearchQuery()">
+            <span class="material-symbols-outlined">backspace</span>
+            <span>Clear Search Query</span>
+          </button>
           }
           <button type="button" class="btn-reset-filters-action" (click)="resetAllFilters()">
             <span class="material-symbols-outlined">restart_alt</span>
@@ -935,7 +901,8 @@
             <div>
               <h3 class="suggested-title">Suggested Properties for You</h3>
               <p class="suggested-subtitle">
-                Explore trending verified layouts and prime properties with clean titles, 4K video tours, and DTCP/RERA approvals
+                Explore trending verified layouts and prime properties with clean titles, 4K video tours, and DTCP/RERA
+                approvals
               </p>
             </div>
           </div>
@@ -946,7 +913,7 @@
         @if (viewMode() === 'grid') {
         <div class="results-grid">
           @for (prop of suggestedProperties(); track prop.id) {
-            <app-property-card [property]="prop" />
+          <app-property-card [property]="prop" />
           }
         </div>
         }
@@ -958,10 +925,12 @@
           <article class="list-dossier-card">
             <!-- Thumbnail with Badges (Links to Details) -->
             <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
-              <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img" loading="lazy" decoding="async">
-              
+              <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
+                loading="lazy" decoding="async">
+
               <div class="list-thumb-badges">
-                <span class="badge-tag-sm" style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:700;">Suggested For You</span>
+                <span class="badge-tag-sm"
+                  style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:700;">Suggested For You</span>
 
               </div>
 
@@ -970,7 +939,8 @@
             <!-- Info Section -->
             <div class="list-info">
               <div class="list-meta-top">
-                <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo || 'TNRERA/13/LO/0114/2026' }}</span>
+                <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber ||
+                  prop.plotDetails?.reraLayoutNo || 'TNRERA/13/LO/0114/2026' }}</span>
                 @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
                 <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
                 } @else if (prop.badges?.brokerage) {
@@ -983,10 +953,10 @@
               </h3>
 
               @if (getDeveloperName(prop)) {
-                <div class="list-builder-row non-clickable" title="Promoter / Developer">
-                  <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                  <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-                </div>
+              <div class="list-builder-row non-clickable" title="Promoter / Developer">
+                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+              </div>
               }
 
               <div class="list-locality">
@@ -994,7 +964,7 @@
                 <span>{{ prop.locality }}, {{ prop.city }}</span>
               </div>
 
-              
+
             </div>
 
             <!-- Price & Action Section -->
@@ -1074,7 +1044,8 @@
             <span class="ad-label">Verified Launch</span>
           </div>
           <div class="ad-header-actions">
-            <button type="button" class="btn-ad-icon" (click)="toggleAdPosition()" [title]="adPosition() === 'right' ? 'Move ad to left sidebar' : 'Move ad to right side'">
+            <button type="button" class="btn-ad-icon" (click)="toggleAdPosition()"
+              [title]="adPosition() === 'right' ? 'Move ad to left sidebar' : 'Move ad to right side'">
               <span class="material-symbols-outlined">swap_horiz</span>
             </button>
             <button type="button" class="btn-ad-icon" (click)="dismissAd()" title="Hide advertisement">
@@ -1085,7 +1056,8 @@
 
         <!-- Banner Media with Overlay -->
         <div class="ad-media-frame" (click)="openSponsoredProject()">
-          <img src="plot-banner.jpg" alt="Greenfield CMDA Approved Layout" class="ad-media-img" loading="lazy" decoding="async">
+          <img src="plot-banner.jpg" alt="Greenfield CMDA Approved Layout" class="ad-media-img" loading="lazy"
+            decoding="async">
           <div class="ad-overlay-badge">
             <span class="material-symbols-outlined">verified</span>
             <span>CMDA &amp; RERA Sanctioned</span>
@@ -1130,7 +1102,9 @@
               <span>Explore 4K Video Tour</span>
             </button>
 
-            <a class="btn-ad-whatsapp" href="https://wa.me/919444100000?text=Hi%2C%20I%20am%20interested%20in%20the%20sponsored%20Greenfield%20CMDA%20Signature%20Enclave%20on%20OMR." target="_blank" rel="noopener">
+            <a class="btn-ad-whatsapp"
+              href="https://wa.me/919444100000?text=Hi%2C%20I%20am%20interested%20in%20the%20sponsored%20Greenfield%20CMDA%20Signature%20Enclave%20on%20OMR."
+              target="_blank" rel="noopener">
               <span class="material-symbols-outlined">chat</span>
               <span>Chat with SRO Concierge</span>
             </a>

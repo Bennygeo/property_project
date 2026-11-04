@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TopConciergeBarComponent } from '../../components/top-concierge-bar/top-concierge-bar.component';
 import { HeaderComponent } from '../../components/header/header.component';
 import { HeroSearchComponent } from '../../components/hero-search/hero-search.component';
+import { RecentSitesComponent } from '../../components/recent-sites/recent-sites.component';
 import { EconomyBannerComponent } from '../../components/economy-banner/economy-banner.component';
 import { ValuePropsComponent } from '../../components/value-props/value-props.component';
 import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
@@ -22,6 +23,7 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
     TopConciergeBarComponent,
     HeaderComponent,
     HeroSearchComponent,
+    RecentSitesComponent,
     EconomyBannerComponent,
     FeaturedPropertiesComponent,
     WhyChooseUsComponent,
@@ -43,8 +45,11 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
         <!-- Hero Search Console (Search-Section Background starts flush below header, containing header banner, intent strip & search console) -->
         <app-hero-search />
 
+        <!-- Recently Added Sites (Two Columns in a Row) -->
+        <app-recent-sites />
+
         <!-- Silhouette Building Diagram Standing Over The Line -->
-        <app-economy-banner />
+        <!-- <app-economy-banner /> -->
 
         <!-- Featured Verified Properties Grid -->
         <app-featured-properties />

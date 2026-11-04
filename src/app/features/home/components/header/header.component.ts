@@ -23,52 +23,6 @@ import { AuthService } from '../../../../core/services/auth.service';
               class="brand-logo" 
               src="logo.svg">
           </a>
-
-          <!-- City Selector (Google Material Dropdown Combobox) -->
-          <div 
-            class="mat-dropdown-container header-city-dropdown"
-            [class.is-open]="isCityDropdownOpen()"
-            (click)="$event.stopPropagation()">
-            <div 
-              class="city-selector-box mat-dropdown-trigger"
-              role="combobox"
-              [attr.aria-expanded]="isCityDropdownOpen()"
-              aria-haspopup="listbox"
-              aria-label="Select City Jurisdiction"
-              tabindex="0"
-              (click)="toggleCityDropdown()"
-              (keydown.enter)="toggleCityDropdown()"
-              (keydown.space)="toggleCityDropdown(); $event.preventDefault()">
-              <span class="city-selected-name">{{ getSelectedCityLabel() }}</span>
-              <span class="material-symbols-outlined expand-icon" [class.rotated]="isCityDropdownOpen()">expand_more</span>
-            </div>
-
-            @if (isCityDropdownOpen()) {
-              <div class="mat-dropdown-panel header-city-panel" role="listbox" aria-label="City Options">
-                <div class="mat-dropdown-panel-inner">
-                  @for (city of cities; track city.value) {
-                    <div 
-                      class="mat-dropdown-item"
-                      role="option"
-                      [attr.aria-selected]="propertyService.selectedCity() === city.value"
-                      [class.selected]="propertyService.selectedCity() === city.value"
-                      (click)="selectCity(city.value)">
-                      <div class="item-left">
-                        <span class="material-symbols-outlined item-icon">apartment</span>
-                        <div class="item-text-group">
-                          <span class="item-label">{{ city.label }}</span>
-                          <span class="item-sub">{{ city.sub }}</span>
-                        </div>
-                      </div>
-                      @if (propertyService.selectedCity() === city.value) {
-                        <span class="material-symbols-outlined item-check">check</span>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
         </div>
 
         <!-- Navigation Links -->

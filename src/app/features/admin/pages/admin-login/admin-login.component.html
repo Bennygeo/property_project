@@ -22,6 +22,31 @@
       </div>
     }
 
+    <!-- Quick Select Admin Persona -->
+    <div class="quick-personas-section">
+      <span class="quick-personas-title">Select Administrator Profile:</span>
+      <div class="quick-personas-grid">
+        @for (cred of credentials; track cred.id) {
+          <button 
+            type="button" 
+            class="quick-persona-btn"
+            (click)="quickSelect(cred)"
+            [disabled]="adminService.isLoading()">
+            <span class="persona-avatar">{{ cred.avatarInitials }}</span>
+            <div class="persona-info">
+              <span class="persona-name">{{ cred.name }}</span>
+              <span class="persona-role">{{ cred.title }}</span>
+            </div>
+            <span class="material-symbols-outlined persona-arrow">login</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="login-divider">
+      <span>or sign in with credentials</span>
+    </div>
+
     <!-- Main Authentication Form -->
     <form (submit)="$event.preventDefault(); onSubmit()" class="login-form">
       

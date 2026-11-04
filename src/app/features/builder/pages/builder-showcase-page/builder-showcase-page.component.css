@@ -93,7 +93,8 @@
 
 .crumb-current {
   color: #0f172a;
-  font-weight: 600;
+  font-weight: 300;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -147,7 +148,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .builder-loading-state h3 {
@@ -177,7 +180,7 @@
 .hero-blueprint-grid {
   position: absolute;
   inset: 0;
-  background-image: 
+  background-image:
     radial-gradient(circle, rgba(245, 158, 11, 0.12) 1px, transparent 1px),
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
@@ -1003,7 +1006,8 @@
   color: #ffffff;
 }
 
-.prop-tour-tag, .prop-photos-tag {
+.prop-tour-tag,
+.prop-photos-tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1302,4 +1306,3 @@
     grid-template-columns: 1fr;
   }
 }
-

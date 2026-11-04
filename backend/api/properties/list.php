@@ -338,6 +338,8 @@ if ($isNearbyGps) {
                 pmd.google_maps_link AS googleMapsLink,
                 pmd.developer AS developerName,
                 pmd.project_name AS projectName,
+                pmd.plot_no AS plotNo,
+                pmd.area_location AS areaLocation,
                 pmd.village_locality AS villageLocality,
                 pmd.district AS district,
                 pmd.taluk AS taluk,
@@ -431,6 +433,8 @@ if ($isNearbyGps) {
             pmd.google_maps_link AS googleMapsLink,
             pmd.developer AS developerName,
             pmd.project_name AS projectName,
+            pmd.plot_no AS plotNo,
+            pmd.area_location AS areaLocation,
             pmd.village_locality AS villageLocality,
             pmd.district AS district,
             pmd.taluk AS taluk,
@@ -614,7 +618,52 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
         $isGpsValid = ($lat >= 8.0 && $lat <= 37.0 && $lon >= 68.0 && $lon <= 98.0);
     }
 
+    // Compute clean plot address
+    $addrParts = [];
+    $pNo = trim((string)($row['plotNo'] ?? ''));
+    if ((empty($pNo) || $pNo === '1') && !empty($row['title'])) {
+        if (preg_match('/Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i', $row['title'], $pm)) {
+            $pNo = trim($pm[1]);
+        }
+    }
+    if (!empty($pNo)) {
+        $addrParts[] = 'Plot ' . $pNo;
+    }
+    $pName = trim((string)($row['projectName'] ?? ''));
+    if (empty($pName) && !empty($row['title'])) {
+        $cleanT = trim(preg_replace('/[-–—|:,]?\s*Plot\s*(?:No\.?|Number|#)?\s*[A-Za-z0-9\/-]+/i', '', $row['title']));
+        if (!empty($cleanT) && strtolower($cleanT) !== 'verified layout') {
+            $pName = $cleanT;
+        }
+    }
+    if (!empty($pName) && strtolower($pName) !== 'null' && !in_array($pName, $addrParts, true)) {
+        $addrParts[] = $pName;
+    }
+    $vl = trim((string)($row['villageLocality'] ?? ''));
+    if (!empty($vl) && $vl !== '1' && !is_numeric($vl) && !in_array($vl, $addrParts, true) && !str_contains($vl, '₹')) {
+        $addrParts[] = $vl;
+    }
+    $tk = trim((string)($row['taluk'] ?? ''));
+    if (!empty($tk) && $tk !== '1' && !is_numeric($tk) && !str_contains(strtolower($tk), 'sq.ft') && !str_contains(strtolower($tk), 'cents') && !in_array($tk, $addrParts, true)) {
+        $addrParts[] = $tk;
+    }
+    $dt = trim((string)($row['district'] ?? ''));
+    if (empty($dt) || $dt === '1' || is_numeric($dt)) {
+        $dt = (!empty($row['city']) && $row['city'] !== '1' && !is_numeric($row['city'])) ? $row['city'] : 'Chennai';
+    }
+    if (!in_array($dt, $addrParts, true)) {
+        $addrParts[] = $dt;
+    }
+    $pin = trim((string)($row['pincode'] ?? ''));
+    if (preg_match('/^\d{6}$/', $pin)) {
+        $addrParts[count($addrParts) - 1] .= ' - ' . $pin;
+    }
+    $plotAddress = !empty($addrParts) ? implode(', ', $addrParts) : 'Chennai, Tamil Nadu';
+
     return [
+        'plotAddress'  => $plotAddress,
+        'plotNo'       => $pNo,
+        'areaLocation' => $row['areaLocation'] ?? '',
         'id'           => $row['id'],
         'title'        => $row['title'],
         'propertyType' => $row['propertyType'],
@@ -705,6 +754,8 @@ if ($total === 0) {
             pmd.google_maps_link AS googleMapsLink,
             pmd.developer AS developerName,
             pmd.project_name AS projectName,
+            pmd.plot_no AS plotNo,
+            pmd.area_location AS areaLocation,
             pmd.village_locality AS villageLocality,
             pmd.district AS district,
             pmd.taluk AS taluk,

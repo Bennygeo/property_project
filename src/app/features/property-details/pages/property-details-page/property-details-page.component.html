@@ -46,13 +46,9 @@
 
         <!-- LEFT COLUMN: BADGES, TITLE, DEVELOPER & LOCATION -->
         <div class="hanu-header-left">
+
           <div class="hanu-ref-badges">
             <span class="hanu-badge-type">{{ prop.propertyType }}</span>
-            <span class="hanu-badge-rera font-mono" title="TNRERA Statutory Registration Number">
-              <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
-              <span>RERA: {{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo ||
-                'TNRERA/13/LO/0114/2026' }}</span>
-            </span>
             <span class="hanu-badge-free-maint">
               <span class="material-symbols-outlined" style="font-size: 14px;">home_repair_service</span>
               <span>{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears +
@@ -62,16 +58,16 @@
 
           <h1 class="hanu-title">{{ prop.title }}</h1>
 
-          @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
+          @if ((prop.developerName && prop.developerName !== 'NULL') || (prop.masterDetails?.developer &&
+          prop.masterDetails?.developer !== 'NULL') || (prop.developer?.name && prop.developer?.name !== 'NULL')) {
           @if ((prop.developerProjectsCount || 0) > 1) {
-          <a [routerLink]="['/builder', prop.developerName || prop.masterDetails?.developer || prop.developer?.name]"
-            class="hanu-builder-strip"
-            title="Explore {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }} showcase portfolio">
+          <a [routerLink]="['/builder', (prop.developerName && prop.developerName !== 'NULL' ? prop.developerName : (prop.masterDetails?.developer && prop.masterDetails?.developer !== 'NULL' ? prop.masterDetails?.developer : prop.developer?.name))]"
+            class="hanu-builder-strip" title="Explore developer showcase portfolio">
             <span class="material-symbols-outlined builder-icon">corporate_fare</span>
             <span class="builder-by-label">By</span>
-            <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer ||
-              prop.developer?.name
-              }}</strong>
+            <strong class="builder-name-text">{{ (prop.developerName && prop.developerName !== 'NULL' ?
+              prop.developerName : (prop.masterDetails?.developer && prop.masterDetails?.developer !== 'NULL' ?
+              prop.masterDetails?.developer : prop.developer?.name)) }}</strong>
             <span class="builder-badge-verified">
               <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
               Verified Developer
@@ -82,13 +78,12 @@
             </span>
           </a>
           } @else {
-          <div class="hanu-builder-strip non-clickable"
-            title="Promoted by {{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name }}">
+          <div class="hanu-builder-strip non-clickable" title="Promoted by developer">
             <span class="material-symbols-outlined builder-icon">corporate_fare</span>
             <span class="builder-by-label">By</span>
-            <strong class="builder-name-text">{{ prop.developerName || prop.masterDetails?.developer ||
-              prop.developer?.name
-              }}</strong>
+            <span class="builder-name-text">{{ (prop.developerName && prop.developerName !== 'NULL' ? prop.developerName
+              : (prop.masterDetails?.developer && prop.masterDetails?.developer !== 'NULL' ?
+              prop.masterDetails?.developer : prop.developer?.name)) }}</span>
             <span class="builder-badge-verified">
               <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
               Verified Developer
@@ -98,7 +93,7 @@
           }
 
           <div class="hanu-loc-row">
-            <span class="material-symbols-outlined text-red">location_on</span>
+            <span class="material-symbols-outlined hanu-loc-pin">location_on</span>
             <span class="hanu-loc-text">{{ prop.locality }}, {{ prop.city }}</span>
             <span class="hanu-dot">•</span>
             <span>{{ prop.facingOrView }}</span>
@@ -514,8 +509,8 @@
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">POWER GRID</span>
-                      <h4 class="infra-main-title">{{ prop.masterDetails?.electricity || '3-Phase EB Line Active with
-                        Transformer' }}</h4>
+                      <h4 class="infra-main-title">{{ cleanInfraText(prop.masterDetails?.electricity, '3-Phase EB Line
+                        Active with Transformer') }}</h4>
                       <p class="infra-summary-text">
                         Dedicated local distribution transformer with 3-phase high/low-tension power lines active for
                         immediate domestic meter commissioning.
@@ -536,8 +531,8 @@
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">WATER RESOURCE</span>
-                      <h4 class="infra-main-title">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Ground Water
-                        Connection' }}</h4>
+                      <h4 class="infra-main-title">{{ cleanInfraText(prop.masterDetails?.waterConnection, 'Sweet Potable
+                        Ground Water Connection') }}</h4>
                       <p class="infra-summary-text">
                         Natural groundwater table accessible at shallow depths, yielding pure sweet potable water with
                         overhead reservoir piping access.
@@ -558,8 +553,8 @@
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">CIVIL DRAINAGE</span>
-                      <h4 class="infra-main-title">{{ prop.masterDetails?.drainageFacility || 'Constructed Storm Water
-                        Drainage' }}</h4>
+                      <h4 class="infra-main-title">{{ cleanInfraText(prop.masterDetails?.drainageFacility, 'Constructed
+                        Storm Water Drainage') }}</h4>
                       <p class="infra-summary-text">
                         Engineered masonry stormwater channels along road flanks preventing surface water accumulation
                         and
@@ -1171,8 +1166,9 @@
             </div>
             <div class="developer-meta">
               <span class="developer-type-pill">BUILDER / DEVELOPER</span>
-              <h3 class="developer-title">{{ prop.developerName || prop.masterDetails?.developer || prop.developer?.name
-                }}</h3>
+              <h3 class="developer-title">{{ (prop.developerName && prop.developerName !== 'NULL' ? prop.developerName :
+                (prop.masterDetails?.developer && prop.masterDetails?.developer !== 'NULL' ?
+                prop.masterDetails?.developer : (prop.developer?.name || 'Verified Promoter'))) }}</h3>
               <div class="developer-verification">
                 <span class="material-symbols-outlined">verified</span>
                 <span>TNRERA &amp; Cadastral Verified</span>
@@ -1195,7 +1191,7 @@
           <div class="realtor-contact-actions">
             <a class="btn-contact-wa"
               [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Find%20a%20Plot,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'"
-              target="_blank" rel="noopener" title="Chat with Verified Cadastral Concierge">
+              target="_blank" rel="noopener" title="Chat">
               <div class="wa-icon-badge">
                 <svg viewBox="0 0 24 24" class="wa-svg-icon" fill="currentColor">
                   <path
@@ -1212,51 +1208,6 @@
               <span class="material-symbols-outlined wa-chevron">chevron_right</span>
             </a>
           </div>
-
-          <div class="sidebar-divider"></div>
-
-          <!-- SCHEDULE SITE VISIT FORM -->
-          <form class="hanu-visit-form" (submit)="scheduleVisit($event)">
-            <h4 class="form-title">Schedule a Site Inspection</h4>
-            <p class="form-sub">Pick your preferred date to visit the property in person.</p>
-
-            <div class="form-group">
-              <label for="visit-name">Your Full Name</label>
-              <input id="visit-name" type="text" class="hanu-form-input" [value]="buyerName()"
-                (input)="buyerName.set($any($event.target).value)" placeholder="e.g. Anand Sundaram" required>
-            </div>
-
-            <div class="form-group">
-              <label for="visit-phone">Mobile Number</label>
-              <input id="visit-phone" type="tel" class="hanu-form-input" [value]="buyerPhone()"
-                (input)="buyerPhone.set($any($event.target).value)" placeholder="+91 94441 00000" required>
-            </div>
-
-            <div class="form-row-half">
-              <div class="form-group">
-                <label for="visit-date">Date</label>
-                <input id="visit-date" type="date" class="hanu-form-input" [value]="visitDate()"
-                  (input)="visitDate.set($any($event.target).value)" required>
-              </div>
-
-              <div class="form-group">
-                <label for="visit-slot">Slot</label>
-                <select id="visit-slot" class="hanu-form-input" [value]="visitTimeSlot()"
-                  (change)="visitTimeSlot.set($any($event.target).value)">
-                  <option value="morning">Morning (10 AM - 1 PM)</option>
-                  <option value="afternoon">Afternoon (1 PM - 4 PM)</option>
-                  <option value="evening">Evening (4 PM - 7 PM)</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-submit-visit" [disabled]="isSubmittingVisit()">
-              <span class="material-symbols-outlined">calendar_month</span>
-              <span>{{ isSubmittingVisit() ? 'Confirming Visit...' : 'Request Site Visit' }}</span>
-            </button>
-          </form>
-
-
         </div>
 
         <!-- SIMILAR PROPERTIES IN SAME CORRIDOR -->

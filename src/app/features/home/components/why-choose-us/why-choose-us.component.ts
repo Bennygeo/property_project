@@ -95,8 +95,8 @@ import { Component } from '@angular/core';
     .bg-amber { background: #faf5e6; }
     .bg-emerald { background: #eef5f1; }
     .why-title {
-      font-size: 1.45rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 500;
       color: var(--text-slate-950);
       letter-spacing: -0.02em;
       margin-top: 0.25rem;
@@ -108,7 +108,7 @@ import { Component } from '@angular/core';
     }
     .why-subtitle {
       color: var(--text-slate-600);
-      font-size: 0.95rem;
+      font-size: 14px;
       margin-top: 0.5rem;
       max-width: 38rem;
       line-height: 1.6;
@@ -121,7 +121,7 @@ import { Component } from '@angular/core';
       border-radius: 0.75rem;
       color: #0f3b4a;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -175,13 +175,13 @@ import { Component } from '@angular/core';
       font-size: 26px;
     }
     .pillar-name {
-      font-size: 1rem;
+      font-size: 14px;
       font-weight: 500;
       color: var(--text-slate-950);
       line-height: 1.35;
     }
     .pillar-text {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-slate-600);
       line-height: 1.65;
       letter-spacing: -0.005em;

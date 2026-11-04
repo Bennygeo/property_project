@@ -212,7 +212,7 @@ optgroup {
   flex-direction: column;
   background: #ffffff;
   border: 1.5px solid #cbd5e1;
-  border-radius: 12px;
+  border-radius: 3px;
   padding: 0.625rem 0.875rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -374,7 +374,7 @@ optgroup {
   min-width: 250px;
   max-width: calc(100vw - 2rem);
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 3px;
   border: 1.5px solid #e2e8f0;
   box-shadow: 0 14px 28px -4px rgba(15, 23, 42, 0.16), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
   z-index: 1050;
@@ -419,7 +419,7 @@ optgroup {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
@@ -496,7 +496,7 @@ optgroup {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: 3px;
   border: 1px solid #e2e8f0;
   background: #ffffff;
   color: var(--text-slate-700);
@@ -541,7 +541,7 @@ optgroup {
 
 .modal-dialog {
   background: #ffffff;
-  border-radius: 1rem;
+  border-radius: 3px;
   border: 1px solid var(--surface-slate-200);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   width: 100%;
@@ -585,7 +585,7 @@ optgroup {
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -669,35 +669,85 @@ optgroup {
 }
 
 /* ==========================================================================
-   ARCHITECTURAL PLANAR SYSTEM (Zero Border-Radius & Zero Dropshadow)
-   Matches Property Details Page Specification:
-   - Zero Curved Borders (border-radius: 0)
-   - Zero Dropshadows (box-shadow: none)
-   Strictly EXCEPTS Home Page Search Bar (Preserved 100% Intact as Requested).
+   SYSTEM-WIDE 3PX BORDER RADIUS SPECIFICATION
+   Apply 3px border-radius everywhere across the application,
+   EXCEPT for .property-card (which retains its distinct custom styling)
+   and circular indicators/avatars (which preserve 50% border radius).
    ========================================================================== */
+
+/* 2. Comprehensive 3px Rule for All Components & Pages Except Property Card & Circular Elements */
 app-home-page app-top-concierge-bar,
-app-home-page app-top-concierge-bar *,
+app-home-page app-top-concierge-bar *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-header,
-app-home-page app-header *,
+app-home-page app-header *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-deals-scrolling-banner,
-app-home-page app-deals-scrolling-banner *,
+app-home-page app-deals-scrolling-banner *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page .hero-text-center,
-app-home-page .hero-text-center *,
+app-home-page .hero-text-center *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-economy-banner,
-app-home-page app-economy-banner *,
-app-home-page app-featured-properties,
-app-home-page app-featured-properties *,
-app-home-page app-property-card,
-app-home-page app-property-card *,
+app-home-page app-economy-banner *:not([class*="circle"]):not([class*="avatar"]),
+app-home-page app-featured-properties>*:not(app-property-card),
 app-home-page app-why-choose-us,
-app-home-page app-why-choose-us *,
+app-home-page app-why-choose-us *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-category-grid,
-app-home-page app-category-grid *,
+app-home-page app-category-grid *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-value-props,
-app-home-page app-value-props *,
+app-home-page app-value-props *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-footer,
-app-home-page app-footer * {
-  border-radius: 0 !important;
+app-home-page app-footer *:not([class*="circle"]):not([class*="avatar"]) {
+  border-radius: 3px !important;
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
+}
+
+/* 3. Search Page (Exempting Property Card & Quick Class), Property Details, Admin, Post Property, User Profile */
+app-search-page *:not(.property-card):not(.property-card *):not(.preset-pills-row):not(.preset-pills-row *):not(.preset-pills-list):not(.preset-pills-list *):not(.preset-chip):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
+app-post-property-page *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
+app-user-profile-page *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
+app-admin-dashboard *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
+app-admin-search-compare *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]) {
+  border-radius: 3px !important;
+}
+
+app-search-page .preset-pills-row,
+app-search-page .preset-pills-row *,
+app-search-page .preset-pills-list,
+app-search-page .preset-pills-list *,
+app-search-page .preset-chip {
+  border-radius: 0 !important;
+}
+
+/* 4. Explicitly Protect Circles and Radios */
+[class*="avatar-circle"],
+[class*="avatar"],
+.developer-avatar-circle,
+.user-avatar,
+.rounded-full,
+input[type="radio"] {
+  border-radius: 50% !important;
+}
+
+
+/* ==========================================================================
+   HOME PAGE UNIFIED TYPOGRAPHY SPECIFICATION
+   - Section Main Headings: 1.5rem (24px), font-weight: 500
+   - Subtitles, descriptions & body text: 14px
+   ========================================================================== */
+app-home-page h1,
+app-home-page h2,
+app-home-page .section-title,
+app-home-page .hero-headline,
+app-home-page .title-200,
+app-home-page .why-title {
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+}
+
+app-home-page .hero-subline,
+app-home-page .section-subtitle,
+app-home-page .why-subtitle,
+app-home-page .desc-200,
+app-home-page .pillar-text {
+  font-size: 14px !important;
 }

@@ -71,12 +71,22 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
               
               <!-- Left Narrative Block -->
               <div class="col-narrative">
+                <div class="banner-eyebrow">
+                  <span class="banner-live-dot"></span>
+                  <span class="banner-eyebrow-text">DIRECT MANDATE LIQUIDATION</span>
+                </div>
                 <h2 class="title-200">
                   Immediate Selling <span class="text-accent">Offers</span>
                 </h2>
                 <p class="desc-200">
                   Direct liquidation mandates from motivated sellers. 100% legal audit by High Court advocates &amp; ready for 48-hr deed registration.
                 </p>
+                <div class="banner-cta-row">
+                  <a routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }" class="btn-banner-action">
+                    <span>Explore Verified Deals</span>
+                    <span class="material-symbols-outlined cta-arrow">arrow_forward</span>
+                  </a>
+                </div>
               </div>
 
               <!-- Right Visual: Extended Plot Showcase Card -->
@@ -118,12 +128,22 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
               
               <!-- Left Narrative Block -->
               <div class="col-narrative">
+                <div class="banner-eyebrow">
+                  <span class="banner-live-dot"></span>
+                  <span class="banner-eyebrow-text">BELOW CIRCLE RATE DISCOUNTS</span>
+                </div>
                 <h2 class="title-200">
                   Lesser Than <span class="text-accent">Market Price</span>
                 </h2>
                 <p class="desc-200">
                   Distress liquidations strictly discounted below government circle rates. High rental yield &amp; bank NOC guaranteed.
                 </p>
+                <div class="banner-cta-row">
+                  <a routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" class="btn-banner-action">
+                    <span>Explore Distress Deals</span>
+                    <span class="material-symbols-outlined cta-arrow">arrow_forward</span>
+                  </a>
+                </div>
               </div>
 
               <!-- Right Visual: Extended Flat Showcase Card -->
@@ -208,25 +228,26 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       }
     }
 
-    /* 200px Height Billboard Shell docked directly below header */
+    /* Billboard Shell docked directly below header */
     .flash-billboard {
       position: relative;
-      border-radius: 0 0 1rem 1rem;
-      border: 1px solid #e2e8f0;
+      border-radius: 3px !important;
+      border: 1px solid var(--hairline-border, #e2e8f0);
       border-top: none;
       overflow: hidden;
-      min-height: 200px;
+      min-height: 210px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      color: #0f172a;
-      background: #ffffff;
+      color: #ffffff;
+      background: #0f172a;
+      box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.25);
     }
 
     @media (min-width: 1024px) {
       .flash-billboard {
-        height: 200px;
-        max-height: 200px;
+        height: 210px;
+        max-height: 210px;
       }
     }
 
@@ -239,7 +260,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       overflow: hidden;
     }
 
-    /* Plot Imagery Layer for Banner Background */
+    /* Plot Imagery Layer for Banner Background - Full Image Background */
     .flash-plot-img-layer {
       position: absolute;
       inset: 0;
@@ -248,26 +269,37 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       opacity: 0;
       transform: scale(1.04);
       transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s ease-out;
-      filter: saturate(1.15) contrast(1.05);
+      filter: saturate(1.1) contrast(1.05);
     }
 
     .flash-plot-img-layer.bg-visible {
-      opacity: 0.16;
+      opacity: 1;
       transform: scale(1);
     }
 
-    /* Light Translucent Scrim for Crisp Text Legibility */
+    /* Architectural Gradient Scrim for High Contrast & Text Legibility */
     .flash-plot-scrim {
       position: absolute;
       inset: 0;
       background: linear-gradient(
         90deg,
-        rgba(255, 255, 255, 0.96) 0%,
-        rgba(255, 255, 255, 0.88) 45%,
-        rgba(248, 250, 252, 0.80) 75%,
-        rgba(255, 255, 255, 0.95) 100%
+        rgba(15, 59, 74, 0.94) 0%,
+        rgba(15, 23, 42, 0.85) 42%,
+        rgba(15, 23, 42, 0.55) 75%,
+        rgba(2, 6, 23, 0.90) 100%
       );
       pointer-events: none;
+    }
+
+    @media (max-width: 1023px) {
+      .flash-plot-scrim {
+        background: linear-gradient(
+          180deg,
+          rgba(15, 59, 74, 0.95) 0%,
+          rgba(15, 23, 42, 0.88) 50%,
+          rgba(2, 6, 23, 0.97) 100%
+        );
+      }
     }
 
     .flash-gradient-layer {
@@ -281,60 +313,11 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       opacity: 1;
     }
 
-    /* Slide 0: Subtle Warm Crimson & Alabaster Gradient */
-    .gradient-slide-0 {
-      background: linear-gradient(135deg, #fff5f5 0%, #fff8f6 45%, #f8fafc 100%);
-    }
-
-    /* Slide 1: Subtle Fresh Emerald/Sky & Slate Gradient */
-    .gradient-slide-1 {
-      background: linear-gradient(135deg, #f0fdf4 0%, #f0f9ff 45%, #f8fafc 100%);
-    }
-
-    /* Ambient Gradient Highlights */
-    .ambient-glow {
-      position: absolute;
-      border-radius: 9999px;
-      filter: blur(60px);
-      pointer-events: none;
-    }
-
-    .glow-1 {
-      top: -30%;
-      left: 5%;
-      width: 440px;
-      height: 260px;
-      background: radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, rgba(254, 202, 202, 0.05) 60%, transparent 80%);
-    }
-
-    .glow-2 {
-      bottom: -40%;
-      right: 15%;
-      width: 460px;
-      height: 280px;
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.10) 0%, rgba(254, 226, 226, 0.04) 60%, transparent 80%);
-    }
-
-    .glow-3 {
-      top: -30%;
-      left: 8%;
-      width: 440px;
-      height: 260px;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(167, 243, 208, 0.05) 60%, transparent 80%);
-    }
-
-    .glow-4 {
-      bottom: -40%;
-      right: 15%;
-      width: 460px;
-      height: 280px;
-      background: radial-gradient(circle, rgba(6, 182, 212, 0.10) 0%, rgba(186, 230, 253, 0.04) 60%, transparent 80%);
-    }
-
+    /* Ambient Subtle Green Glow */
     .flash-gradient-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 40%, rgba(241, 245, 249, 0.4) 100%);
+      background: radial-gradient(circle at 10% 40%, rgba(94, 143, 114, 0.18) 0%, transparent 60%);
       pointer-events: none;
     }
 
@@ -393,43 +376,55 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     .col-narrative {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       min-width: 0;
     }
 
-    .eyebrow-pill-wrap {
+    .banner-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .pill-mini {
-      background: var(--brand-green, #5e8f72);
-      color: #ffffff;
-      font-size: 9.5px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
-      border-radius: 9999px;
-    }
-
-    .tag-mini {
       font-size: 11px;
       font-weight: 600;
-      color: #64748b;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--brand-green-subtle, #e5f7ec);
+      margin-bottom: 2px;
+    }
+
+    .banner-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-green, #5e8f72);
+      box-shadow: 0 0 0 0 rgba(94, 143, 114, 0.7);
+      animation: bannerLivePulse 1.8s infinite;
+      display: inline-block;
+    }
+
+    @keyframes bannerLivePulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(94, 143, 114, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 6px rgba(94, 143, 114, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(94, 143, 114, 0);
+      }
     }
 
     .title-200 {
       font-size: 1.5rem;
-      font-weight: 600;
-      line-height: 1.6;
-      letter-spacing: -0.03em;
-      color: #0f172a;
+      font-weight: 500;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      color: #ffffff;
       margin: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     }
     @media (min-width: 1280px) {
       .title-200 {
@@ -438,19 +433,58 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     }
 
     .text-accent {
-      color: var(--brand-green, #5e8f72);
+      color: var(--brand-sold, #e5f7ec);
     }
 
     .desc-200 {
-      font-size: 14px;
-      line-height: 1.55;
-      color: #475569;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: #e2e8f0;
       letter-spacing: -0.01em;
       margin: 0;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .banner-cta-row {
+      margin-top: 0.35rem;
+    }
+
+    .btn-banner-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--brand-booked, #5e8f72);
+      /* border: 1px solid var(--brand-green-border, #3d684e); */
+      color: #ffffff;
+      padding: 0.42rem 0.9rem;
+      border-radius: 3px !important;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      width: fit-content;
+    }
+
+    .btn-banner-action:hover {
+      background: var(--brand-green-hover, #497259);
+      border-color: var(--brand-green-hover, #497259);
+      box-shadow: 0 4px 12px rgba(94, 143, 114, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-banner-action .cta-arrow {
+      font-size: 15px;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-banner-action:hover .cta-arrow {
+      transform: translateX(3px);
     }
 
     /* Right Visual: Extended Property Showcase Card */
@@ -466,32 +500,27 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     .banner-property-card {
       display: flex;
       flex-direction: column;
-      height: 160px;
+      height: 170px;
       width: 100%;
       max-width: 640px;
-      border-radius: 12px;
+      border-radius: 6px 20px 20px 20px;
       overflow: hidden;
-      background: #ffffff;
-      /* border: 1px solid #e2e8f0; */
-      /* box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06); */
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       text-decoration: none;
       cursor: pointer;
       position: relative;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
       box-sizing: border-box;
-    }
-    .banner-property-card:hover {
-      transform: translateY(-2px);
-      border-color: #cbd5e1;
-      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
     }
 
     .bpc-img-wrap {
       position: relative;
       width: 100%;
-      height: 114px;
+      height: 110px;
       overflow: hidden;
-      background: #f1f5f9;
+      background: rgba(15, 23, 42, 0.5);
     }
     .bpc-img {
       width: 100%;
@@ -512,7 +541,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       align-items: center;
       gap: 4px;
       padding: 3px 8px;
-      border-radius: 5px;
+      border-radius: 3px !important;
       font-size: 9.5px;
       font-weight: 600;
       letter-spacing: 0.05em;
@@ -521,7 +550,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       line-height: 1;
     }
     .bpc-badge-plot {
-      background: rgba(94, 143, 114, 0.95);
+      background: var(--brand-green, #5e8f72);
     }
     .bpc-badge-flat {
       background: rgba(199, 111, 86, 0.95);
@@ -534,7 +563,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       position: absolute;
       top: 8px;
       right: 8px;
-      color: var(--brand-teal, #0f3b4a);
+      color: var(--brand-green, #5e8f72);
       display: flex;
     }
     .bpc-tag-verified .material-symbols-outlined {
@@ -550,7 +579,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       font-size: 9.5px;
       font-weight: 600;
       padding: 3px 7px;
-      border-radius: 5px;
+      border-radius: 3px !important;
       letter-spacing: 0.03em;
       line-height: 1;
     }
@@ -561,8 +590,8 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       flex-direction: column;
       justify-content: center;
       gap: 4px;
-      background: #ffffff;
-      border-top: 1px solid #f1f5f9;
+      background: rgba(15, 23, 42, 0.88);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
       flex: 1;
     }
 
@@ -575,7 +604,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     .bpc-title {
       font-size: 13.5px;
       font-weight: 600;
-      color: #0f172a;
+      color: #ffffff;
       margin: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -584,8 +613,8 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     }
     .bpc-price {
       font-size: 13.5px;
-      font-weight: 600;
-      color: var(--brand-green, #5e8f72);
+      font-weight: 700;
+      color: var(--brand-green-subtle, #e5f7ec);
       white-space: nowrap;
       line-height: 1.2;
     }
@@ -595,7 +624,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       align-items: center;
       justify-content: space-between;
       font-size: 11.5px;
-      color: #64748b;
+      color: #cbd5e1;
       line-height: 1.2;
     }
     .bpc-loc {
@@ -605,6 +634,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: #cbd5e1;
     }
     .bpc-loc .material-symbols-outlined {
       font-size: 14px;
@@ -612,7 +642,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     }
     .bpc-sqft {
       font-weight: 600;
-      color: #475569;
+      color: #cbd5e1;
     }
 
     /* Subtle Minimalist Slide Dots */
@@ -630,7 +660,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       width: 7px;
       height: 7px;
       border-radius: 9999px;
-      background: #cbd5e1;
+      background: rgba(255, 255, 255, 0.4);
       border: none;
       padding: 0;
       cursor: pointer;
@@ -638,7 +668,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     }
 
     .slide-dot:hover {
-      background: #94a3b8;
+      background: rgba(255, 255, 255, 0.7);
     }
 
     .slide-dot.active {
@@ -653,7 +683,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       left: 0;
       right: 0;
       height: 2px;
-      background: #e2e8f0;
+      background: rgba(255, 255, 255, 0.15);
       z-index: 3;
       overflow: hidden;
     }
@@ -661,7 +691,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     .flash-progress-bar {
       height: 100%;
       width: 100%;
-      background: #c76f56;
+      background: var(--brand-green, #5e8f72);
       transform-origin: left;
       transform: scaleX(0);
       animation: flashTimer 6s linear forwards;
@@ -725,9 +755,10 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         max-width: 100%;
         flex-direction: row;
         align-items: center;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        background: rgba(15, 23, 42, 0.85);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       }
       .bpc-img-wrap {
         width: 80px;
@@ -742,7 +773,8 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       .bpc-info {
         padding: 6px 12px;
         border-top: none;
-        border-left: 1px solid #f1f5f9;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
         justify-content: center;
       }
       .bpc-title {

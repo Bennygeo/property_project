@@ -144,9 +144,7 @@ export class PostPropertyPageComponent {
 
   // Property Type Visual Card Selector Definitions
   readonly propertyTypes = [
-    { id: 'Apartments & Flats', label: 'Apartments & Flats', icon: 'apartment', desc: 'Flats & High-Rise' },
     { id: 'Independent Villas', label: 'Independent Villas', icon: 'villa', desc: 'Villas & Mansions' },
-    { id: 'Luxury Penthouses', label: 'Luxury Penthouses', icon: 'balcony', desc: 'Sky Duplex & Terraces' },
     { id: 'Gated CMDA Plots', label: 'Plots & Land', icon: 'terrain', desc: 'CMDA / DTCP Layouts' },
     { id: 'Commercial Spaces', label: 'Commercial Spaces', icon: 'domain', desc: 'Offices & Retail' },
     { id: 'Farm Land & Estates', label: 'Farm Land & Estates', icon: 'yard', desc: 'Agricultural Acreage' }

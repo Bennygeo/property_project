@@ -69,9 +69,18 @@ export class AdminLoginComponent {
   readonly adminService = inject(AdminService);
   readonly router = inject(Router);
 
+  readonly credentials = ADMIN_CREDENTIALS;
+
   loginId = signal<string>('');
   password = signal<string>('');
   errorMessage = signal<string>('');
+
+  quickSelect(cred: AdminCredentialInfo): void {
+    this.loginId.set(cred.email);
+    this.password.set(cred.defaultPassword);
+    this.errorMessage.set('');
+    this.onSubmit();
+  }
 
   onSubmit(): void {
     if (!this.loginId().trim()) {

@@ -995,11 +995,6 @@ export class PropertyService {
     const tryPost = (url: string) => this.http.post<{ success: boolean; data: any; message: string }>(url, payload);
 
     return tryPost(`${environment.apiUrl}/admin/bulk-upload.php`).pipe(
-      catchError(() => tryPost('/P_demo_4/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/p_demo_4/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/p_demo_3/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/api/admin/bulk-upload.php')),
-      catchError(() => tryPost(`${environment.apacheApiUrl}/admin/bulk-upload.php`)),
       map(res => {
         if (res && res.success) {
           this.loadPropertiesFromApi();

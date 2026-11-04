@@ -200,8 +200,8 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     }
 
     .section-title {
-      font-size: 1.4rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 500;
       color: #0f172a;
       letter-spacing: -0.025em;
       margin: 0;
@@ -214,7 +214,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
 
     .section-subtitle {
       color: #64748b;
-      font-size: 0.9rem;
+      font-size: 14px;
       margin: 0;
       line-height: 1.5;
     }
@@ -240,7 +240,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       align-items: center;
       gap: 4px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: #0f172a;
       text-decoration: none;
       transition: color 0.15s ease;
@@ -264,7 +264,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     .filter-pills-bar {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
       overflow-x: auto;
       padding-top: 1.5rem;
       padding-bottom: 0.5rem;
@@ -272,6 +271,9 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
+    }
+    .filter-pills-bar :last-child {
+      border: none;
     }
     .filter-pills-bar::-webkit-scrollbar {
       display: none;
@@ -281,12 +283,13 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       display: inline-flex;
       align-items: center;
       padding: 0.45rem 1rem;
-      border-radius: 9999px;
       font-size: 13px;
       font-weight: 500;
       color: #475569;
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: none;
+      border-right: 1px solid #ccc;
+      border-radius: none !important;
       cursor: pointer;
       white-space: nowrap;
       box-shadow: none;
@@ -294,8 +297,8 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     }
 
     .filter-chip:hover {
-      background: #f8fafc;
-      color: #0f172a;
+      background: var(--brand-teal);
+      color: #ffffffff;
       border-color: #cbd5e1;
     }
 

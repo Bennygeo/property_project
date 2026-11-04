@@ -12,6 +12,7 @@ class Response {
      * Set standard CORS and content headers for JSON API.
      */
     public static function initCors(): void {
+        ini_set('display_errors', '0');
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');

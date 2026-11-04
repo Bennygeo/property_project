@@ -57,7 +57,7 @@ export interface PropertyTypeOption {
         <div class="hero-text-center">
           <h1 class="hero-headline">Every Plot We Post is RERA Registered</h1>
           <p class="hero-subline">
-            We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds. We do not undertake unapproved sites, guaranteeing complete legal title clearance and zero encroachment risks.
+            We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds.
           </p>
 
           <!-- Buy / Sell Mode Tabs -->
@@ -370,6 +370,7 @@ export interface PropertyTypeOption {
       z-index: 10;
       background-color: #ffffff;
       padding-top: 0;
+      padding-bottom: 2.25rem;
       margin-top: 0;
       border-bottom: none;
     }
@@ -488,7 +489,7 @@ export interface PropertyTypeOption {
       padding: 0;
       border: none;
       box-shadow: none;
-      margin-top: 1.25rem;
+      /* margin-top: 1.25rem; */
       margin-bottom: 0.25rem;
     }
 
@@ -646,7 +647,7 @@ export interface PropertyTypeOption {
 
     .hero-headline {
       font-family: 'Montserrat', sans-serif;
-      font-size: clamp(1.4rem, 2.5vw, 1.6rem);
+      font-size: 1.2rem;
       font-weight: 500;
       color: #0f172a;
       letter-spacing: -0.02em;
@@ -656,19 +657,19 @@ export interface PropertyTypeOption {
     }
     @media (min-width: 640px) {
       .hero-headline {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         line-height: 1.2;
       }
     }
     @media (min-width: 1024px) {
       .hero-headline {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
       }
     }
     .hero-subline {
       font-family: 'Montserrat', sans-serif;
       color: #475569;
-      font-size: 0.95rem;
+      font-size: 14px;
       margin-top: 0.65rem;
       margin-bottom: 1.25rem;
       font-weight: 400;
@@ -1573,10 +1574,8 @@ export class HeroSearchComponent implements OnInit {
 
   // 3. Multi-Select Property Classes (100acress style)
   readonly propertyTypes: PropertyTypeOption[] = [
-    { value: 'Apartments & Flats', label: 'Flat / High-Rise Apartment', icon: 'apartment', desc: 'Gated societies & high-rises' },
-    { value: 'Independent Villas', label: 'Independent Villa / House', icon: 'villa', desc: 'Private plots & courtyards' },
     { value: 'Gated CMDA Plots', label: 'Gated CMDA / DTCP Plots', icon: 'terrain', desc: 'Sanctioned residential land' },
-    { value: 'Commercial Spaces', label: 'Commercial Office & SCO', icon: 'domain', desc: 'Grade-A retail & office parks' }
+    { value: 'Commercial', label: 'Commercial Plots', icon: 'domain', desc: 'Grade-A retail & office parks' }
   ];
   readonly selectedTypes = signal<string[]>([]);
   readonly isTypeDropdownOpen = signal<boolean>(false);

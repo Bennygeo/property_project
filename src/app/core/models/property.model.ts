@@ -182,6 +182,9 @@ export interface Property {
   distanceKm?: number;
 
   // Master property factsheet fields from bulk upload
+  plotAddress?: string;
+  plotNo?: string;
+  areaLocation?: string;
   developerName?: string;
   projectName?: string;
   villageLocality?: string;

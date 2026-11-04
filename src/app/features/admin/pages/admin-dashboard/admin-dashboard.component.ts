@@ -91,10 +91,10 @@ import { UserMindsetBarComponent } from '../../../../shared/components/user-mind
 import { ActivatedRoute } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
-import { 
-  AdminFinancialTransaction, 
-  AdminFinancialSummary, 
-  AdminChannelItem 
+import {
+  AdminFinancialTransaction,
+  AdminFinancialSummary,
+  AdminChannelItem
 } from '../../../../core/services/admin.service';
 
 export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset' | 'bulk_upload';
@@ -319,9 +319,6 @@ export class AdminDashboardComponent {
 
   // Property Type Visual Selector Definitions
   readonly propertyTypes = [
-    { id: 'Apartments & Flats', label: 'Apartments & Flats', icon: 'apartment', desc: 'Flats & High-Rise' },
-    { id: 'Independent Villas', label: 'Independent Villas', icon: 'villa', desc: 'Villas & Mansions' },
-    { id: 'Luxury Penthouses', label: 'Luxury Penthouses', icon: 'balcony', desc: 'Sky Duplex & Terraces' },
     { id: 'Gated CMDA Plots', label: 'Plots & Land', icon: 'terrain', desc: 'CMDA / DTCP Layouts' },
     { id: 'Commercial Spaces', label: 'Commercial Spaces', icon: 'domain', desc: 'Offices & Retail' },
     { id: 'Farm Land & Estates', label: 'Farm Land & Estates', icon: 'yard', desc: 'Agricultural Acreage' }
@@ -1504,8 +1501,8 @@ export class AdminDashboardComponent {
 
         // Detect header row by matching property keywords
         const headerKeywords = [
-          'property', 'project', 'developer', 'rera', 'dtcp', 'patta', 'location', 'locality', 
-          'area', 'plot', 'sqft', 'cents', 'dimension', 'facing', 'price', 'rate', 'road', 
+          'property', 'project', 'developer', 'rera', 'dtcp', 'patta', 'location', 'locality',
+          'area', 'plot', 'sqft', 'cents', 'dimension', 'facing', 'price', 'rate', 'road',
           'electricity', 'water', 'drainage', 'remarks', 'amenities', 'corridor', 'pincode'
         ];
 
@@ -1551,6 +1548,32 @@ export class AdminDashboardComponent {
             'east', 'west', 'north', 'south', 'it corridor', 'gst road', 'omr'
           ];
           return nonIdWords.includes(lower);
+        };
+
+        const extractProjectAndPlotFromTitle = (title: string): { projectName: string; plotNo: string } | null => {
+          if (!title || !title.trim()) return null;
+          const t = title.trim();
+          // Pattern A: <Project Name> [-–—|:,] Plot [No.?/#] <PlotNo>
+          const mA = t.match(/^(.*?)\s*[-–—|:,]\s*Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i);
+          if (mA && mA[1].trim() && mA[2].trim()) {
+            return { projectName: mA[1].trim(), plotNo: mA[2].trim() };
+          }
+          // Pattern B: Plot [No.?/#] <PlotNo> [-–—|:,] <Project Name>
+          const mB = t.match(/^Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)\s*[-–—|:,]\s*(.*)$/i);
+          if (mB && mB[1].trim() && mB[2].trim()) {
+            return { projectName: mB[2].trim(), plotNo: mB[1].trim() };
+          }
+          // Pattern C: <Project Name> Plot [No.?/#] <PlotNo>
+          const mC = t.match(/^(.*?)\s+Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i);
+          if (mC && mC[1].trim() && mC[2].trim()) {
+            return { projectName: mC[1].trim(), plotNo: mC[2].trim() };
+          }
+          // Pattern D: <Project Name> [-–—|] <Digits/Letters>
+          const mD = t.match(/^(.*?)\s*[-–—|]\s*([0-9]+[A-Za-z]?)$/);
+          if (mD && mD[1].trim() && mD[2].trim()) {
+            return { projectName: mD[1].trim(), plotNo: mD[2].trim() };
+          }
+          return { projectName: t, plotNo: '' };
         };
 
         const mappedRows = validDataRows.map((r, idx) => {
@@ -1628,8 +1651,36 @@ export class AdminDashboardComponent {
 
           // 1: Developer
           const developer = String(getCol(1, 'developer', 'builder', 'promoter', 'company') || 'Mannidam Verified Developer').trim();
+          // Check for Title column first (Priority: Project Name & Plot fetched from Title column)
+          const titleCol = String(getCol(-1, 'title', 'propertytitle', 'listingtitle', 'titlename', 'plottitle', 'propertyname') || '').trim();
+
           // 2: Project Name
-          const projectName = String(getCol(2, 'projectname', 'layoutname', 'communityname', 'project') || 'Verified Cadastral Layout').trim();
+          let projectName = String(getCol(2, 'projectname', 'layoutname', 'communityname', 'project') || '').trim();
+          // 15: Plot No.
+          let rawPlotNo = String(getCol(15, 'plotno', 'plotnumber', 'siteno', 'surveyno') || '').trim();
+
+          // Extract Project Name & Plot from Title column or from projectName if it contains "Plot"
+          const sourceForTitle = titleCol || (projectName.toLowerCase().includes('plot') ? projectName : '');
+          if (sourceForTitle) {
+            const extracted = extractProjectAndPlotFromTitle(sourceForTitle);
+            if (extracted) {
+              if (extracted.projectName) {
+                projectName = extracted.projectName;
+              }
+              if (extracted.plotNo) {
+                rawPlotNo = extracted.plotNo;
+              }
+            }
+          }
+
+          if (!rawPlotNo || rawPlotNo.toLowerCase().includes('.com') || rawPlotNo.toLowerCase().includes('http')) {
+            rawPlotNo = String(idx + 1);
+          }
+          const plotNo = rawPlotNo;
+
+          if (!projectName) {
+            projectName = 'Verified Cadastral Layout';
+          }
           // 3: RERA Number
           const reraNo = String(getCol(3, 'reranumber', 'rerano', 'rera', 'reraregno') || 'CMDA / DTCP Sanctioned').trim();
           // 4: DTCP Approved
@@ -1642,24 +1693,68 @@ export class AdminDashboardComponent {
           const clearTitleAvailable = String(getCol(7, 'cleartitleecavailable', 'cleartitleavailable', 'cleartitle') || 'Yes').trim();
           // 8: Bank Loan Approved
           const bankLoanApproved = String(getCol(8, 'bankloanapproved', 'bankloan', 'bankapproval') || 'Yes').trim();
-          // 9: Area / Location
-          const areaLocation = String(getCol(9, 'arealocation', 'area', 'location') || 'Guduvanchery').trim();
-          // 10: Village / Locality
-          const villageLocality = String(getCol(10, 'villagelocality', 'locality', 'village', 'neighborhood') || areaLocation).trim();
-          // 11: Taluk
-          const taluk = String(getCol(11, 'taluk', 'tehsil') || 'Vandalur').trim();
-          // 12: District
-          const district = String(getCol(12, 'district', 'city') || 'Chengalpattu').trim();
+          // Helper to reject placeholder / dummy numeric strings
+          const isInvalidName = (val: any): boolean => {
+            if (val === undefined || val === null) return true;
+            const s = String(val).trim();
+            if (!s || s === '1' || s === '0' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return true;
+            if (/^\d+$/.test(s)) return true; // Single digits or numbers
+            if (s.includes('₹') || s.toLowerCase().includes('sq.ft') || s.toLowerCase().includes('cents')) return true;
+            if (s.toLowerCase().includes('facing')) return true;
+            return false;
+          };
+
+          // 9 & 10: Locality Name (Priority: explicit column header search)
+          const extractedLocality = String(getCol(-1,
+            'localityname', 'locality_name', 'localitynamename', 'locality_name_name',
+            'locality', 'villagelocality', 'village_locality', 'village',
+            'arealocation', 'area_location', 'area', 'location'
+          ) || '').trim();
+
+          let resolvedLocality = !isInvalidName(extractedLocality) ? extractedLocality : '';
+          if (!resolvedLocality) {
+            const col10 = r[10] !== undefined && r[10] !== null ? String(r[10]).trim() : '';
+            if (!isInvalidName(col10)) {
+              resolvedLocality = col10;
+            }
+          }
+          if (!resolvedLocality) {
+            const col9 = r[9] !== undefined && r[9] !== null ? String(r[9]).trim() : '';
+            if (!isInvalidName(col9)) {
+              resolvedLocality = col9;
+            }
+          }
+          if (!resolvedLocality) {
+            resolvedLocality = 'Guduvanchery';
+          }
+
+          // 11 & 12: City Name & District (Priority: explicit column header search)
+          const extractedCity = String(getCol(-1,
+            'cityname', 'city_name', 'citynamename', 'city_name_name',
+            'city', 'district', 'districtname', 'district_name', 'taluk', 'town'
+          ) || '').trim();
+
+          let resolvedCity = !isInvalidName(extractedCity) ? extractedCity : '';
+          if (!resolvedCity) {
+            const col12 = r[12] !== undefined && r[12] !== null ? String(r[12]).trim() : '';
+            if (!isInvalidName(col12)) {
+              resolvedCity = col12;
+            }
+          }
+          if (!resolvedCity) {
+            resolvedCity = 'Chennai';
+          }
+
+          const areaLocation = resolvedLocality;
+          const villageLocality = resolvedLocality;
+          const talukRaw = String(getCol(-1, 'taluk', 'tehsil') || '').trim();
+          const taluk = !isInvalidName(talukRaw) ? talukRaw : resolvedCity;
+          const district = resolvedCity;
           // 13: Pincode
           const pincode = String(getCol(13, 'pincode', 'pin', 'postalcode') || '603202').trim();
           // 14: Google Maps Link
           const googleMapsLink = String(getCol(14, 'googlemapslink', 'mapslink', 'gpslink', 'gps', 'locationlink', 'maplink', 'coordinates', 'latlong') || '').trim();
-          // 15: Plot No.
-          let rawPlotNo = String(getCol(15, 'plotno', 'plotnumber', 'siteno', 'surveyno') || '').trim();
-          if (!rawPlotNo || rawPlotNo.toLowerCase().includes('.com') || rawPlotNo.toLowerCase().includes('http')) {
-            rawPlotNo = String(idx + 1);
-          }
-          const plotNo = rawPlotNo;
+          // (Plot No already extracted and resolved)
 
           // 16: Plot Size (sq.ft)
           let sqft = getNumCol(16, 'plotsizesqft', 'sqft', 'plotsize', 'areainsqft', 'extent');
@@ -1758,6 +1853,10 @@ export class AdminDashboardComponent {
             pattaType,
             clearTitleAvailable: clearTitleAvailable === 'No' ? 'No' : 'Yes',
             bankLoanApproved: bankLoanApproved === 'No' ? 'No' : 'Yes',
+            locality_name: resolvedLocality,
+            city_name: resolvedCity,
+            localityName: resolvedLocality,
+            cityName: resolvedCity,
             areaLocation,
             villageLocality,
             taluk,
