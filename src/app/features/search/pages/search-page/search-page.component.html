@@ -706,62 +706,83 @@
 
           </div>
 
-          <!-- Right Half: Padded Dossier Body -->
+          <!-- Right Half: Padded Dossier Body (Standard Height, Zero Empty Space, Rich Detailing) -->
           <div class="list-dossier-body">
-            <!-- Info Section -->
-            <div class="list-info">
-              @if ((prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) ||
-              !authService.canViewProperty(prop.id)) {
-              <div class="list-meta-top">
-                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
-                <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
-                }
-                @if (!authService.canViewProperty(prop.id)) {
-                <span class="badge-signin-lock">
-                  🔒 Sign In to View
-                </span>
-                }
-              </div>
-              }
-
-              <h3 class="list-title">
+            <!-- Row 1: Title & Developer Chip -->
+            <div class="list-body-header">
+              <h3 class="list-title" [title]="prop.title">
                 <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
               </h3>
-
               @if (getDeveloperName(prop)) {
               @if ((prop.developerProjectsCount || 0) > 1) {
-              <a [routerLink]="['/builder', getDeveloperName(prop)]" class="list-builder-row"
+              <a [routerLink]="['/builder', getDeveloperName(prop)]" class="list-builder-chip"
                 title="View Developer Portfolio">
-                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-                <span class="material-symbols-outlined"
-                  style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
+                <span class="material-symbols-outlined chip-icon">corporate_fare</span>
+                <span class="chip-text">By {{ getDeveloperName(prop) }}</span>
+                <span class="material-symbols-outlined chip-arrow">arrow_forward</span>
               </a>
               } @else {
-              <div class="list-builder-row non-clickable" title="Promoter / Developer">
-                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+              <div class="list-builder-chip" title="Promoter / Developer">
+                <span class="material-symbols-outlined chip-icon">corporate_fare</span>
+                <span class="chip-text">By {{ getDeveloperName(prop) }}</span>
               </div>
               }
               }
-
-              <div class="list-locality">
-                <span class="material-symbols-outlined loc-icon">location_on</span>
-                <span>{{ prop.locality }}, {{ prop.city }}</span>
-              </div>
             </div>
 
-            <!-- Price & Action Section -->
-            <div class="list-price-action">
+            <!-- Row 2: Location & Cadastral Status Tag -->
+            <div class="list-locality-row">
+              <span class="material-symbols-outlined loc-icon">location_on</span>
+              <span class="loc-text">{{ prop.locality }}, {{ prop.city }}</span>
+              @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
+              <span class="dot-sep">•</span>
+              <span class="list-spec-tag">{{ prop.badges.specialTag }}</span>
+              }
+              @if (!authService.canViewProperty(prop.id)) {
+              <span class="dot-sep">•</span>
+              <span class="list-lock-tag">🔒 Sign In to View</span>
+              }
+            </div>
+
+            <!-- Row 3: Architectural & Land Specs Strip -->
+            <div class="list-specs-strip">
+              @if (prop.sqft) {
+              <div class="spec-pill" title="Plot Extent">
+                <span class="material-symbols-outlined spec-icon">straighten</span>
+                <span>{{ prop.sqft }}</span>
+              </div>
+              }
+              @if (prop.facingOrView || prop.bhkBadge) {
+              <div class="spec-pill" title="Facing &amp; Configuration">
+                <span class="material-symbols-outlined spec-icon">explore</span>
+                <span>{{ prop.facingOrView || prop.bhkBadge }}</span>
+              </div>
+              }
+              @if (prop.projectStatus) {
+              <div class="spec-pill status-pill" title="Readiness Status">
+                <span class="material-symbols-outlined spec-icon">verified</span>
+                <span>{{ prop.projectStatus }}</span>
+              </div>
+              } @else if (prop.highlights && prop.highlights[0]) {
+              <div class="spec-pill status-pill" title="Highlight">
+                <span class="material-symbols-outlined spec-icon">task_alt</span>
+                <span>{{ prop.highlights[0] }}</span>
+              </div>
+              }
+            </div>
+
+            <!-- Row 4: Price & Action Footer -->
+            <div class="list-footer-row">
               <div class="list-price-block">
-                <div class="list-main-price">{{ prop.price }}</div>
-                <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+                <span class="list-main-price">{{ prop.price }}</span>
+                <span class="list-unit-price">{{ prop.pricePerSqFt }}</span>
               </div>
 
               <div class="list-actions-row">
                 <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
                   rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
                   <span class="material-symbols-outlined">chat</span>
+                  <span>Inquire</span>
                 </a>
 
                 <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
@@ -939,44 +960,70 @@
 
             </div>
 
-            <!-- Right Half: Padded Dossier Body -->
+            <!-- Right Half: Padded Dossier Body (Standard Height, Zero Empty Space, Rich Detailing) -->
             <div class="list-dossier-body">
-              <!-- Info Section -->
-              <div class="list-info">
-                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
-                <div class="list-meta-top">
-                  <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
-                </div>
-                }
-
-                <h3 class="list-title">
+              <!-- Row 1: Title & Developer Chip -->
+              <div class="list-body-header">
+                <h3 class="list-title" [title]="prop.title">
                   <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
                 </h3>
-
                 @if (getDeveloperName(prop)) {
-                <div class="list-builder-row non-clickable" title="Promoter / Developer">
-                  <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                  <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+                <div class="list-builder-chip" title="Promoter / Developer">
+                  <span class="material-symbols-outlined chip-icon">corporate_fare</span>
+                  <span class="chip-text">By {{ getDeveloperName(prop) }}</span>
                 </div>
                 }
-
-                <div class="list-locality">
-                  <span class="material-symbols-outlined loc-icon">location_on</span>
-                  <span>{{ prop.locality }}, {{ prop.city }}</span>
-                </div>
               </div>
 
-              <!-- Price & Action Section -->
-              <div class="list-price-action">
+              <!-- Row 2: Location & Cadastral Status Tag -->
+              <div class="list-locality-row">
+                <span class="material-symbols-outlined loc-icon">location_on</span>
+                <span class="loc-text">{{ prop.locality }}, {{ prop.city }}</span>
+                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
+                <span class="dot-sep">•</span>
+                <span class="list-spec-tag">{{ prop.badges.specialTag }}</span>
+                }
+              </div>
+
+              <!-- Row 3: Architectural & Land Specs Strip -->
+              <div class="list-specs-strip">
+                @if (prop.sqft) {
+                <div class="spec-pill" title="Plot Extent">
+                  <span class="material-symbols-outlined spec-icon">straighten</span>
+                  <span>{{ prop.sqft }}</span>
+                </div>
+                }
+                @if (prop.facingOrView || prop.bhkBadge) {
+                <div class="spec-pill" title="Facing &amp; Configuration">
+                  <span class="material-symbols-outlined spec-icon">explore</span>
+                  <span>{{ prop.facingOrView || prop.bhkBadge }}</span>
+                </div>
+                }
+                @if (prop.projectStatus) {
+                <div class="spec-pill status-pill" title="Readiness Status">
+                  <span class="material-symbols-outlined spec-icon">verified</span>
+                  <span>{{ prop.projectStatus }}</span>
+                </div>
+                } @else if (prop.highlights && prop.highlights[0]) {
+                <div class="spec-pill status-pill" title="Highlight">
+                  <span class="material-symbols-outlined spec-icon">task_alt</span>
+                  <span>{{ prop.highlights[0] }}</span>
+                </div>
+                }
+              </div>
+
+              <!-- Row 4: Price & Action Footer -->
+              <div class="list-footer-row">
                 <div class="list-price-block">
-                  <div class="list-main-price">{{ prop.price }}</div>
-                  <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+                  <span class="list-main-price">{{ prop.price }}</span>
+                  <span class="list-unit-price">{{ prop.pricePerSqFt }}</span>
                 </div>
 
                 <div class="list-actions-row">
                   <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
                     rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
                     <span class="material-symbols-outlined">chat</span>
+                    <span>Inquire</span>
                   </a>
 
                   <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
