@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
@@ -52,8 +52,19 @@ export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_tran
 })
 export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly showFloatingWa = signal<boolean>(false);
+  readonly isScrolledPastHeader = signal<boolean>(false);
   private waObserver: IntersectionObserver | null = null;
   readonly formatPriceIndian = formatPriceIndian;
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    if (typeof window !== 'undefined') {
+      const scrolled = window.scrollY > 180;
+      if (this.isScrolledPastHeader() !== scrolled) {
+        this.isScrolledPastHeader.set(scrolled);
+      }
+    }
+  }
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);

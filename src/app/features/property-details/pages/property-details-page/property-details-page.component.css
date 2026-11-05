@@ -516,24 +516,6 @@
   width: 100%;
 }
 
-.mobile-pricing-deck {
-  display: flex;
-}
-
-.desktop-pricing-deck {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .mobile-pricing-deck {
-    display: none !important;
-  }
-
-  .desktop-pricing-deck {
-    display: flex !important;
-  }
-}
-
 @media (max-width: 900px) {
   .hanu-header-right {
     flex: 1 1 auto;
@@ -680,7 +662,7 @@
 .hanu-sidebar-column {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0;
   border: none;
   background: transparent;
   box-shadow: none !important;
@@ -695,6 +677,34 @@
     position: sticky;
     top: 80px;
     z-index: 50;
+  }
+}
+
+.sidebar-scrolled-pricing-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding-bottom: 12px;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  animation: fadeInDock 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInDock {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1023px) {
+  .sidebar-scrolled-pricing-deck {
+    display: none !important;
   }
 }
 
@@ -2489,7 +2499,7 @@
   padding: 14px 16px;
   box-shadow: none !important;
   box-sizing: border-box;
-  margin-bottom: 0;
+  margin-bottom: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 12px;

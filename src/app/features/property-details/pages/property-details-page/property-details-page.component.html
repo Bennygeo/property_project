@@ -118,8 +118,8 @@
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: PRICING, QUICK CONCIERGE ACTIONS & ASSURANCE (MOBILE ONLY) -->
-        <div class="hanu-header-right mobile-pricing-deck">
+        <!-- RIGHT COLUMN: PRICING, QUICK CONCIERGE ACTIONS & ASSURANCE -->
+        <div class="hanu-header-right">
           <!-- Price Card -->
           <div class="header-price-card">
             <div class="header-price-main">
@@ -1231,8 +1231,9 @@
       <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
       <aside class="hanu-sidebar-column" id="inquiry-box">
 
-        <!-- DESKTOP PRICING & QUICK ACTIONS DECK (STICKY WITH SIDEBAR) -->
-        <div class="hanu-header-right desktop-pricing-deck">
+        <!-- DOCKED PRICING & QUICK ACTIONS (APPEARS WHEN SCROLLED PAST HEADER) -->
+        @if (isScrolledPastHeader()) {
+        <div class="sidebar-scrolled-pricing-deck">
           <!-- Price Card -->
           <div class="header-price-card">
             <div class="header-price-main">
@@ -1266,6 +1267,7 @@
             </div>
           </div>
         </div>
+        }
 
         <!-- BUILDER / DEVELOPER HIGHLIGHT CARD -->
         @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
