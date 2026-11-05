@@ -516,6 +516,24 @@
   width: 100%;
 }
 
+.mobile-pricing-deck {
+  display: flex;
+}
+
+.desktop-pricing-deck {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .mobile-pricing-deck {
+    display: none !important;
+  }
+
+  .desktop-pricing-deck {
+    display: flex !important;
+  }
+}
+
 @media (max-width: 900px) {
   .hanu-header-right {
     flex: 1 1 auto;
@@ -662,7 +680,7 @@
 .hanu-sidebar-column {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 1rem;
   border: none;
   background: transparent;
   box-shadow: none !important;
@@ -675,7 +693,8 @@
 @media (min-width: 1024px) {
   .hanu-sidebar-column {
     position: sticky;
-    top: 3rem;
+    top: 80px;
+    z-index: 50;
   }
 }
 
@@ -2470,7 +2489,7 @@
   padding: 14px 16px;
   box-shadow: none !important;
   box-sizing: border-box;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;

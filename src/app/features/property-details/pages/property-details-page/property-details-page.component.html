@@ -118,8 +118,8 @@
           </div>
         </div>
 
-        <!-- RIGHT COLUMN: PRICING, QUICK CONCIERGE ACTIONS & ASSURANCE -->
-        <div class="hanu-header-right">
+        <!-- RIGHT COLUMN: PRICING, QUICK CONCIERGE ACTIONS & ASSURANCE (MOBILE ONLY) -->
+        <div class="hanu-header-right mobile-pricing-deck">
           <!-- Price Card -->
           <div class="header-price-card">
             <div class="header-price-main">
@@ -1230,6 +1230,42 @@
 
       <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
       <aside class="hanu-sidebar-column" id="inquiry-box">
+
+        <!-- DESKTOP PRICING & QUICK ACTIONS DECK (STICKY WITH SIDEBAR) -->
+        <div class="hanu-header-right desktop-pricing-deck">
+          <!-- Price Card -->
+          <div class="header-price-card">
+            <div class="header-price-main">
+              <span class="hanu-main-price">{{ formatPriceIndian(prop.price) }}</span>
+              <span class="hanu-unit-price">{{ prop.pricePerSqFt }}</span>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons Deck -->
+          <div class="header-actions-deck">
+            <button type="button" class="btn-hdr-site-visit" (click)="openSiteVisitModal()"
+              title="Schedule Free In-Person Site Inspection">
+              <span class="material-symbols-outlined">event_available</span>
+              <span>Schedule Site Visit</span>
+            </button>
+
+            <div class="hdr-utility-actions">
+              <button type="button" class="btn-hdr-utility" (click)="shareProperty()" title="Share Property Dossier">
+                <span class="material-symbols-outlined">share</span>
+                <span>Share</span>
+              </button>
+
+              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted"
+                (click)="propertyService.toggleShortlist(prop.id)"
+                [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                <span class="material-symbols-outlined">
+                  {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                </span>
+                <span>{{ prop.isShortlisted ? 'Shortlisted' : 'Shortlist' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- BUILDER / DEVELOPER HIGHLIGHT CARD -->
         @if (prop.developerName || prop.masterDetails?.developer || prop.developer?.name) {
