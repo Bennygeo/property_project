@@ -4,7 +4,6 @@ import { TopConciergeBarComponent } from '../../components/top-concierge-bar/top
 import { HeaderComponent } from '../../components/header/header.component';
 import { HeroSearchComponent } from '../../components/hero-search/hero-search.component';
 import { RecentSitesComponent } from '../../components/recent-sites/recent-sites.component';
-import { EconomyBannerComponent } from '../../components/economy-banner/economy-banner.component';
 import { ValuePropsComponent } from '../../components/value-props/value-props.component';
 import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
 import { FeaturedPropertiesComponent } from '../../components/featured-properties/featured-properties.component';
@@ -24,7 +23,6 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
     HeaderComponent,
     HeroSearchComponent,
     RecentSitesComponent,
-    EconomyBannerComponent,
     FeaturedPropertiesComponent,
     WhyChooseUsComponent,
     FooterComponent,
