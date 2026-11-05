@@ -155,3 +155,4 @@ Remove-Item -Recurse -Force $stageDir
 
 Write-Host "`nPackaging completed successfully!" -ForegroundColor Green
 Get-Item $desktopZip | Select-Object Name, @{Name="Size (MB)";Expression={[math]::Round($_.Length/1MB,2)}}, LastWriteTime | Format-Table -AutoSize
+

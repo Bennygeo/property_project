@@ -21,10 +21,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       <!-- Section Header -->
       <div class="section-header-row">
         <div class="header-left">
-          <div class="live-pulse-badge">
-            <span class="live-dot"></span>
-            <span class="live-text">JUST ADDED</span>
-          </div>
           <h2 class="section-title">Recently Added Sites</h2>
           <p class="section-subtitle">
             Freshly surveyed layouts, authenticated direct owner deeds, and verified DTCP/RERA sanctioned plots.
@@ -513,7 +509,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
     @media (min-width: 640px) {
       .site-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
       }
     }
 
@@ -526,7 +522,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .site-price {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--brand-green-subtle, #e5f7ec);
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
