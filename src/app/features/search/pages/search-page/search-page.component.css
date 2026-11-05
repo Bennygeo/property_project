@@ -3920,3 +3920,44 @@ input[type="radio"] {
   border-color: #cbd5e1 !important;
   font-weight: 500;
 }
+
+/* ==========================================================================
+   SEMANTIC MILD SPECTRUM ACCENT BAR (FLAT & REVERSIBLE)
+   ========================================================================== */
+.search-spectrum-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -0.15rem;
+  margin-bottom: 0.25rem;
+  width: fit-content;
+}
+
+.ssb-track {
+  display: inline-flex;
+  align-items: center;
+  height: 3.5px;
+  width: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+.ssb-seg {
+  flex: 1;
+  height: 100%;
+}
+
+.ssb-red    { background: #d26e63; }
+.ssb-yellow { background: #dc9642; }
+.ssb-green  { background: #76a34c; }
+.ssb-cyan   { background: #47a4b8; }
+.ssb-slate  { background: #204b5c; }
+
+.ssb-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
