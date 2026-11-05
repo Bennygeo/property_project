@@ -325,21 +325,6 @@
             </div>
           </div>
 
-          <div class="snapshot-tile theme-tile-sanction">
-            <div class="snapshot-icon-wrap theme-emerald">
-              <span class="material-symbols-outlined">verified</span>
-            </div>
-            <div class="snapshot-text">
-              <span class="snapshot-label">RERA Registration No.</span>
-              <strong class="snapshot-val text-emerald font-mono" style="word-break: break-all; font-size: 13.5px;">
-                {{ prop.badges?.rera || prop.masterDetails?.reraNumber || prop.plotDetails?.reraLayoutNo ||
-                'TNRERA/13/LO/0114/2026' }}
-              </strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.dtcpApproved === 'Yes' ? 'DTCP Sanctioned Layout' :
-                'Statutory Sanctioned' }}</span>
-            </div>
-          </div>
-
           <div class="snapshot-tile theme-tile-facing">
             <div class="snapshot-icon-wrap theme-purple">
               <span class="material-symbols-outlined">explore</span>
@@ -415,7 +400,6 @@
               [attr.aria-selected]="activeDetailTab() === 'infrastructure'">
               <span class="material-symbols-outlined ctx-tab-icon">domain</span>
               <span class="ctx-tab-text">Infrastructure</span>
-              <span class="ctx-tab-badge">8 Systems</span>
             </button>
 
             <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'legal_specs'"
@@ -423,7 +407,6 @@
               [attr.aria-selected]="activeDetailTab() === 'legal_specs'">
               <span class="material-symbols-outlined ctx-tab-icon">gavel</span>
               <span class="ctx-tab-text">Legal Specs</span>
-              <span class="ctx-tab-badge">Verified</span>
             </button>
 
             <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'location_transit'"
@@ -431,7 +414,6 @@
               [attr.aria-selected]="activeDetailTab() === 'location_transit'">
               <span class="material-symbols-outlined ctx-tab-icon">near_me</span>
               <span class="ctx-tab-text">Connectivity</span>
-              <span class="ctx-tab-badge">GPS + Map</span>
             </button>
 
             <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'overview'"
@@ -1101,44 +1083,75 @@
               <!-- Property Description & Highlights -->
               <section class="hanu-card">
                 <div class="hanu-card-header">
-                  <span class="material-symbols-outlined text-red">article</span>
+                  <span class="material-symbols-outlined overview-header-icon">description</span>
                   <div>
                     <h2>Property Overview &amp; Highlights</h2>
-                    <p class="hanu-card-subtitle">Verified property narrative and layout orientation summary</p>
+                    <p class="hanu-card-subtitle">Verified property narrative, development viability, and layout advantages</p>
                   </div>
                 </div>
 
-                <div class="hanu-overview-text">
-                  <p>
-                    {{ prop.developer?.aboutText || prop.description || (prop.title + ' is a verified property situated
-                    in
-                    the highly coveted corridor of ' + prop.locality + ', ' + prop.city + '. Featuring excellent
-                    frontage,
-                    direct road access, and clear legal title documents, this asset represents a prime opportunity for
-                    investors, home buyers, and commercial operators seeking high-growth real estate.') }}
-                  </p>
+                <!-- Executive Narrative Editorial Box -->
+                <div class="overview-narrative-card">
+                  <div class="narrative-quote-bar"></div>
+                  <div class="narrative-body">
+                    <span class="narrative-badge">DEVELOPMENT DOSSIER</span>
+                    <p class="narrative-lead">
+                      {{ prop.developer?.aboutText || prop.description || (prop.title + ' is an authenticated, government-sanctioned property situated in the prime corridor of ' + prop.locality + ', ' + prop.city + '. Featuring clear cadastral boundaries, direct road access, and verified freehold documentation, this property represents an outstanding asset for immediate villa construction or high-yield capital appreciation.') }}
+                    </p>
+                  </div>
                 </div>
 
-                @if (prop.highlights && prop.highlights.length > 0) {
-                <div class="overview-amenities-wrap">
-                  <h4 class="overview-amenities-title">Key Property Advantages</h4>
-                  <div class="overview-amenities-tags">
-                    @for (hl of prop.highlights; track $index) {
-                    <div class="amenity-chip">
-                      <span class="material-symbols-outlined amenity-chip-icon">check_circle</span>
-                      <span>{{ hl }}</span>
+                <!-- Core Development Viability Matrix -->
+                <div class="overview-specs-matrix">
+                  <div class="overview-spec-cell">
+                    <span class="overview-spec-label">Development Suitability</span>
+                    <strong class="overview-spec-val text-brand">{{ prop.masterDetails?.suitedFor ? ('Suited for ' + prop.masterDetails?.suitedFor) : 'Immediate Possession &amp; Villa Construction' }}</strong>
+                    <span class="overview-spec-sub">Ready for Immediate Construction</span>
+                  </div>
+
+                  <div class="overview-spec-cell">
+                    <span class="overview-spec-label">Possession Timeline</span>
+                    <strong class="overview-spec-val">{{ prop.masterDetails?.possessionTimeline || 'Ready for Immediate Handover' }}</strong>
+                    <span class="overview-spec-sub">Direct Handover from Promoter</span>
+                  </div>
+
+                  <div class="overview-spec-cell">
+                    <span class="overview-spec-label">Zoning Classification</span>
+                    <strong class="overview-spec-val">{{ (prop.masterDetails?.landUse || 'Residential') + ' Zone' }}</strong>
+                    <span class="overview-spec-sub">Sanctioned Land Conversion</span>
+                  </div>
+
+                  <div class="overview-spec-cell">
+                    <span class="overview-spec-label">Boundary Frontage</span>
+                    <strong class="overview-spec-val">{{ prop.masterDetails?.dimension ? (prop.masterDetails.dimension + ' Ft Dimension') : (prop.plotDetails?.dimensionRanges || 'Demarcated Boundaries') }}</strong>
+                    <span class="overview-spec-sub">{{ prop.masterDetails?.cornerPlot === 'Yes' ? 'Corner Plot (Double Road Frontage)' : 'Standard Linear Frontage' }}</span>
+                  </div>
+                </div>
+
+                <!-- Key Property Advantages -->
+                @if (sanitizedHighlights().length > 0) {
+                <div class="overview-section">
+                  <h4 class="overview-section-title">Key Property Advantages</h4>
+                  <div class="overview-highlights-grid">
+                    @for (hl of sanitizedHighlights(); track $index) {
+                    <div class="overview-highlight-item">
+                      <div class="hl-icon-wrap">
+                        <span class="material-symbols-outlined">check</span>
+                      </div>
+                      <span class="hl-text">{{ hl }}</span>
                     </div>
                     }
                   </div>
                 </div>
                 }
 
+                <!-- Layout Features & Amenities -->
                 @if (prop.amenitiesList && prop.amenitiesList.length > 0) {
-                <div class="overview-amenities-wrap">
-                  <h4 class="overview-amenities-title">Layout Features &amp; Amenities</h4>
+                <div class="overview-section">
+                  <h4 class="overview-section-title">Layout Features &amp; Amenities</h4>
                   <div class="overview-amenities-tags">
                     @for (amenity of prop.amenitiesList; track amenity.name) {
-                    <div class="amenity-chip">
+                    <div class="overview-amenity-chip">
                       <span class="material-symbols-outlined amenity-chip-icon">{{ amenity.icon || 'verified' }}</span>
                       <span>{{ amenity.name }}</span>
                     </div>
@@ -1353,8 +1366,19 @@
               <span class="material-symbols-outlined">calendar_month</span>
               <span>Preferred Date</span>
             </label>
-            <input id="sv-date" type="date" class="sv-input" [min]="minVisitDate()" [value]="promptVisitDate()"
-              (input)="promptVisitDate.set($any($event.target).value)" required>
+            <div class="sv-date-wrap">
+              <input id="sv-date" type="date" class="sv-input sv-date-input" [min]="minVisitDate()" [value]="promptVisitDate()"
+                (click)="$any($event.target).showPicker?.()"
+                (input)="promptVisitDate.set($any($event.target).value)" required>
+            </div>
+            <div class="sv-quick-chips">
+              <button type="button" class="sv-quick-chip" (click)="setQuickDate('tomorrow')" [class.active]="isQuickDate('tomorrow')">
+                Tomorrow
+              </button>
+              <button type="button" class="sv-quick-chip" (click)="setQuickDate('weekend')" [class.active]="isQuickDate('weekend')">
+                Weekend
+              </button>
+            </div>
           </div>
 
           <!-- Time Slot -->
@@ -1363,12 +1387,26 @@
               <span class="material-symbols-outlined">schedule</span>
               <span>Time Slot</span>
             </label>
-            <select id="sv-slot" class="sv-input sv-select" [value]="promptVisitSlot()"
-              (change)="promptVisitSlot.set($any($event.target).value)">
-              <option value="morning">Morning (9:00 AM – 12:00 PM)</option>
-              <option value="afternoon">Afternoon (12:00 PM – 3:00 PM)</option>
-              <option value="evening">Evening (3:00 PM – 6:00 PM)</option>
-            </select>
+            <div class="sv-select-wrap">
+              <select id="sv-slot" class="sv-input sv-select" [value]="promptVisitSlot()"
+                (change)="promptVisitSlot.set($any($event.target).value)">
+                <option value="morning">Morning (9:00 AM – 12:00 PM)</option>
+                <option value="afternoon">Afternoon (12:00 PM – 3:00 PM)</option>
+                <option value="evening">Evening (3:00 PM – 6:00 PM)</option>
+              </select>
+              <span class="material-symbols-outlined sv-select-icon">expand_more</span>
+            </div>
+            <div class="sv-quick-chips">
+              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('morning')" [class.active]="promptVisitSlot() === 'morning'">
+                Morning
+              </button>
+              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('afternoon')" [class.active]="promptVisitSlot() === 'afternoon'">
+                Afternoon
+              </button>
+              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('evening')" [class.active]="promptVisitSlot() === 'evening'">
+                Evening
+              </button>
+            </div>
           </div>
 
           <!-- Buyer Name -->

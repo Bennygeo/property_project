@@ -106,6 +106,28 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     return trimmed;
   }
 
+  readonly sanitizedHighlights = computed<string[]>(() => {
+    const prop = this.property();
+    if (!prop) return [];
+    const raw = Array.isArray(prop.highlights) ? prop.highlights : [];
+    const blacklisted = new Set(['plots', 'plot', 'published', 'strategic published', 'draft', 'null', 'undefined', 'yes', 'no']);
+    const cleaned = raw
+      .map(h => String(h || '').trim())
+      .filter(h => h.length > 2 && !blacklisted.has(h.toLowerCase()));
+
+    if (cleaned.length === 0) {
+      const list: string[] = [];
+      if (prop.masterDetails?.dtcpApproved === 'Yes') list.push('DTCP / CMDA Sanctioned Layout');
+      if (prop.masterDetails?.roadWidthFt) list.push(`${prop.masterDetails.roadWidthFt} Ft Wide ${prop.masterDetails.roadType || 'Bitumen'} Road`);
+      if (prop.masterDetails?.clearTitleAvailable === 'Yes') list.push('30-Year Verified Clear Title Deed');
+      if (prop.masterDetails?.pattaType) list.push(prop.masterDetails.pattaType);
+      if (prop.masterDetails?.bankLoanApproved === 'Yes') list.push('Pre-Approved Bank Loans Available');
+      if (prop.masterDetails?.suitedFor) list.push(`Suited for ${prop.masterDetails.suitedFor}`);
+      return list.length > 0 ? list : ['Government Sanctioned Layout', 'Clear Freehold Ownership', 'Verified Cadastral Survey'];
+    }
+    return cleaned;
+  });
+
   // Media-First Top Stage State
   readonly activeMediaTab = signal<MediaStageTab>('photos');
   readonly currentPhotoIdx = signal<number>(0);
@@ -189,6 +211,37 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly minVisitDate = computed<string>(() => {
     return new Date().toISOString().split('T')[0];
   });
+
+  setQuickDate(preset: 'tomorrow' | 'weekend'): void {
+    const now = new Date();
+    if (preset === 'tomorrow') {
+      const tomorrow = new Date(Date.now() + 86400000);
+      this.promptVisitDate.set(tomorrow.toISOString().split('T')[0]);
+    } else if (preset === 'weekend') {
+      const day = now.getDay();
+      const daysToSaturday = (6 - day + 7) % 7 || 7;
+      const saturday = new Date(now.getTime() + daysToSaturday * 86400000);
+      this.promptVisitDate.set(saturday.toISOString().split('T')[0]);
+    }
+  }
+
+  isQuickDate(preset: 'tomorrow' | 'weekend'): boolean {
+    const cur = this.promptVisitDate();
+    if (!cur) return false;
+    const now = new Date();
+    if (preset === 'tomorrow') {
+      const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      return cur === tomorrowStr;
+    }
+    if (preset === 'weekend') {
+      const day = now.getDay();
+      const daysToSaturday = (6 - day + 7) % 7 || 7;
+      const satStr = new Date(now.getTime() + daysToSaturday * 86400000).toISOString().split('T')[0];
+      const sunStr = new Date(now.getTime() + (daysToSaturday + 1) * 86400000).toISOString().split('T')[0];
+      return cur === satStr || cur === sunStr;
+    }
+    return false;
+  }
 
   // Similar Properties in same City/Corridor
   readonly similarProperties = computed<Property[]>(() => {
