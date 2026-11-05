@@ -163,6 +163,8 @@ export class AdminService {
     const tryLogin = (url: string) => this.http.post<{ success: boolean; data: { admin: any }; message: string }>(url, body);
 
     return tryLogin(`${environment.apiUrl}/admin/login.php`).pipe(
+      catchError(() => tryLogin('/P_demo_5/backend/api/admin/login.php')),
+      catchError(() => tryLogin('/p_demo_5/backend/api/admin/login.php')),
       catchError(() => tryLogin('/P_demo_4/backend/api/admin/login.php')),
       catchError(() => tryLogin('/p_demo_4/backend/api/admin/login.php')),
       catchError(() => tryLogin('/p_demo_3/backend/api/admin/login.php')),
@@ -248,6 +250,8 @@ export class AdminService {
     );
 
     tryGet(`${environment.apiUrl}/admin/properties.php`).pipe(
+      catchError(() => tryGet('/P_demo_5/backend/api/admin/properties.php')),
+      catchError(() => tryGet('/p_demo_5/backend/api/admin/properties.php')),
       catchError(() => tryGet('/P_demo_4/backend/api/admin/properties.php')),
       catchError(() => tryGet('/p_demo_4/backend/api/admin/properties.php')),
       catchError(() => tryGet('/p_demo_3/backend/api/admin/properties.php')),
@@ -520,6 +524,8 @@ export class AdminService {
     const tryProfile = (url: string) => this.http.get<{ success: boolean; data: any }>(url, { params });
 
     return tryProfile(`${environment.apiUrl}/admin/profile.php`).pipe(
+      catchError(() => tryProfile('/P_demo_5/backend/api/admin/profile.php')),
+      catchError(() => tryProfile('/p_demo_5/backend/api/admin/profile.php')),
       catchError(() => tryProfile('/P_demo_4/backend/api/admin/profile.php')),
       catchError(() => tryProfile('/p_demo_4/backend/api/admin/profile.php')),
       catchError(() => tryProfile('/p_demo_3/backend/api/admin/profile.php')),
@@ -545,6 +551,8 @@ export class AdminService {
     const tryGet = (url: string) => this.http.get<{ success: boolean; data: AdminFinancialData }>(url, { params });
 
     tryGet(`${environment.apiUrl}/admin/financials.php`).pipe(
+      catchError(() => tryGet('/P_demo_5/backend/api/admin/financials.php')),
+      catchError(() => tryGet('/p_demo_5/backend/api/admin/financials.php')),
       catchError(() => tryGet('/P_demo_4/backend/api/admin/financials.php')),
       catchError(() => tryGet('/p_demo_4/backend/api/admin/financials.php')),
       catchError(() => tryGet('/p_demo_3/backend/api/admin/financials.php')),
@@ -581,6 +589,8 @@ export class AdminService {
     const tryPost = (url: string) => this.http.post<{ success: boolean; message: string; data: any }>(url, body);
 
     return tryPost(`${environment.apiUrl}/admin/financials.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/financials.php')),
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/financials.php')),
       catchError(() => tryPost('/P_demo_4/backend/api/admin/financials.php')),
       catchError(() => tryPost('/p_demo_4/backend/api/admin/financials.php')),
       catchError(() => tryPost('/p_demo_3/backend/api/admin/financials.php')),

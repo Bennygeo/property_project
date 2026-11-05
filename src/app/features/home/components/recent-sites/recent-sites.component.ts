@@ -395,7 +395,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .top-left-badges {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 0.65rem;
       flex-wrap: wrap;
     }

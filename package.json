@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:p_demo_5": "ng build --base-href /p_demo_5/",
+    "build:p_demo_4": "ng build --base-href /p_demo_4/",
     "build:p_demo_3": "ng build --base-href /p_demo_3/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
