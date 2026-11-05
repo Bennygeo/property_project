@@ -1319,6 +1319,8 @@
   scrollbar-width: none;
   position: relative;
   z-index: 1;
+  border: 1px solid var(--brand-teal);
+  border-bottom: none;
 }
 
 .context-tabs-ribbon::-webkit-scrollbar {

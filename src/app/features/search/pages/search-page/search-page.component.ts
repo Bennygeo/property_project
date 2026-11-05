@@ -144,11 +144,25 @@ export class SearchPageComponent implements OnInit {
       prop?.builder ||
       '';
     const clean = raw ? raw.replace(/â\x80\x93|â\x80\x94|â/g, '–').trim() : '';
-    if (clean) return clean;
+    if (clean && clean.toLowerCase() !== 'null' && clean.toLowerCase() !== 'undefined' && clean.toLowerCase() !== 'none') {
+      return clean;
+    }
     if (prop?.title?.toLowerCase().includes('cadastral') || prop?.title?.toLowerCase().includes('layout')) {
       return 'Executive Engineer – Tamil Nadu Housing Board';
     }
     return '';
+  }
+
+  isRera(p: any): boolean {
+    const r = p?.badges?.rera || p?.masterDetails?.reraNumber || p?.plotDetails?.reraLayoutNo || p?.reraNumber || '';
+    if (!r) return true;
+    const lower = String(r).toLowerCase().trim();
+    return !['no', 'none', 'false', '0', 'unapproved'].includes(lower);
+  }
+
+  getReraText(p: any): string {
+    const r = p?.badges?.rera || p?.masterDetails?.reraNumber || p?.plotDetails?.reraLayoutNo || p?.reraNumber || '';
+    return r ? `RERA Approved: ${r}` : 'RERA Approved Layout';
   }
 
   toggleDistrictDropdown(event?: Event): void {
@@ -334,9 +348,6 @@ export class SearchPageComponent implements OnInit {
 
   readonly propertyTypes: FilterOption[] = [
     { value: 'all', label: 'All Classifications', icon: 'apps' },
-    { value: 'Apartments & Flats', label: 'Apartments & Flats', icon: 'apartment' },
-    { value: 'Independent Villas', label: 'Independent Villas', icon: 'villa' },
-    { value: 'Luxury Penthouses', label: 'Luxury Penthouses', icon: 'balcony' },
     { value: 'Gated CMDA Plots', label: 'Gated CMDA Plots', icon: 'terrain' },
     { value: 'Commercial Spaces', label: 'Commercial Spaces', icon: 'domain' }
   ];
@@ -491,7 +502,7 @@ export class SearchPageComponent implements OnInit {
       // 7. Drone Survey Available
       if (drone) {
         if (!(p.premiumMedia || []).some(m => m && (
-          (m.tag && (m.tag.toLowerCase().includes('drone') || m.tag.toLowerCase().includes('aerial'))) || 
+          (m.tag && (m.tag.toLowerCase().includes('drone') || m.tag.toLowerCase().includes('aerial'))) ||
           (m.title && (m.title.toLowerCase().includes('drone') || m.title.toLowerCase().includes('aerial')))
         ))) return false;
       }
@@ -499,7 +510,7 @@ export class SearchPageComponent implements OnInit {
       // 8. Ready to Move / Clear Patta
       if (ready) {
         const highlightsList = p.highlights || [];
-        const hasReady = highlightsList.some(h => 
+        const hasReady = highlightsList.some(h =>
           h && (h.toLowerCase().includes('ready') || h.toLowerCase().includes('patta') || h.toLowerCase().includes('immediate'))
         ) || (p.title && p.title.toLowerCase().includes('ready'));
         if (!hasReady) return false;
@@ -727,7 +738,7 @@ export class SearchPageComponent implements OnInit {
     const dist = this.selectedDistrict();
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { 
+      queryParams: {
         district: dist || null,
         localities: locs.length > 0 ? locs.join(',') : null,
         q: q ? q : null

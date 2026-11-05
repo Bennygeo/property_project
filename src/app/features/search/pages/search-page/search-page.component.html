@@ -418,22 +418,6 @@
             </div>
           </div>
 
-          <!-- 4. Configuration (BHK / Plots) -->
-          <div class="filter-group">
-            <label class="filter-group-label">
-              <span class="material-symbols-outlined label-icon">bed</span>
-              <span>Configuration / BHK</span>
-            </label>
-            <div class="bhk-grid">
-              @for (bhk of bhkOptions; track bhk.value) {
-              <button type="button" class="bhk-pill" [class.selected]="selectedBhk() === bhk.value"
-                (click)="setBhk(bhk.value)">
-                {{ bhk.label }}
-              </button>
-              }
-            </div>
-          </div>
-
           <!-- 5. Verification & Regulatory Badges -->
           <div class="filter-group">
             <label class="filter-group-label">
@@ -499,25 +483,6 @@
               </label>
             </div>
           </div>
-
-          <!-- 7. Ready / Possession -->
-          <div class="filter-group">
-            <label class="filter-group-label">
-              <span class="material-symbols-outlined label-icon">key</span>
-              <span>Possession Status</span>
-            </label>
-            <label class="toggle-item" (click)="toggleReadyToMove()">
-              <div class="custom-checkbox" [class.checked]="readyToMoveOnly()">
-                @if (readyToMoveOnly()) {
-                <span class="material-symbols-outlined check-icon">check</span>
-                }
-              </div>
-              <div class="toggle-text">
-                <span class="toggle-title">Ready to Move / Patta Clear</span>
-                <span class="toggle-sub">Immediate registration available</span>
-              </div>
-            </label>
-          </div>
         </div>
       </div>
 
@@ -547,7 +512,6 @@
               <span class="ssb-seg ssb-cyan" title="4. Potable Water &amp; 3-Phase Power"></span>
               <span class="ssb-seg ssb-slate" title="5. Demarcated Cadastral Pegs"></span>
             </div>
-            <span class="ssb-label">Cadastral Certified</span>
           </div>
 
           <!-- Active Filter Tags -->
@@ -716,9 +680,6 @@
               loading="lazy" decoding="async">
 
             <div class="list-thumb-badges">
-
-
-
               @if (prop.isMediaUnlocked) {
               <span class="list-unlocked-badge">
                 <span class="material-symbols-outlined">smart_display</span>
@@ -727,17 +688,32 @@
               }
             </div>
 
+            <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
+            <div class="card-top-left-badges">
+              @if (isRera(prop)) {
+              <img 
+                src="assets/badge/rera_approved_60x60.png" 
+                alt="RERA Approved" 
+                class="card-badge-rera" 
+                [title]="getReraText(prop)"
+                loading="lazy">
+              }
+              <img 
+                src="assets/badge/no-brokerage.png" 
+                alt="0% Brokerage" 
+                class="card-badge-no-brokerage" 
+                title="0% Brokerage"
+                loading="lazy">
+            </div>
+
           </div>
 
           <!-- Info Section -->
           <div class="list-info">
+            @if ((prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) || !authService.canViewProperty(prop.id)) {
             <div class="list-meta-top">
-              <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber ||
-                prop.plotDetails?.reraLayoutNo || 'TNRERA/13/LO/0114/2026' }}</span>
               @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
               <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
-              } @else if (prop.badges?.brokerage) {
-              <span class="badge-tag-sm">{{ prop.badges.brokerage }}</span>
               }
               @if (!authService.canViewProperty(prop.id)) {
               <span class="badge-signin-lock">
@@ -745,6 +721,7 @@
               </span>
               }
             </div>
+            }
 
             <h3 class="list-title">
               <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
@@ -940,25 +917,38 @@
               <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
                 loading="lazy" decoding="async">
 
+              <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
+              <div class="card-top-left-badges">
+                @if (isRera(prop)) {
+                <img 
+                  src="assets/badge/rera_approved_60x60.png" 
+                  alt="RERA Approved" 
+                  class="card-badge-rera" 
+                  [title]="getReraText(prop)"
+                  loading="lazy">
+                }
+                <img 
+                  src="assets/badge/no-brokerage.png" 
+                  alt="0% Brokerage" 
+                  class="card-badge-no-brokerage" 
+                  title="0% Brokerage"
+                  loading="lazy">
+              </div>
+
               <div class="list-thumb-badges">
                 <span class="badge-tag-sm"
-                  style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:700;">Suggested For You</span>
-
+                  style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:600;">Suggested For You</span>
               </div>
 
             </div>
 
             <!-- Info Section -->
             <div class="list-info">
+              @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
               <div class="list-meta-top">
-                <span class="badge-rera-sm font-mono">{{ prop.badges?.rera || prop.masterDetails?.reraNumber ||
-                  prop.plotDetails?.reraLayoutNo || 'TNRERA/13/LO/0114/2026' }}</span>
-                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
                 <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
-                } @else if (prop.badges?.brokerage) {
-                <span class="badge-tag-sm">{{ prop.badges.brokerage }}</span>
-                }
               </div>
+              }
 
               <h3 class="list-title">
                 <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>

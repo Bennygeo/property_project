@@ -1747,7 +1747,7 @@ input[type="radio"] {
 .list-dossier-card {
   background: #ffffff;
   border: 1px solid var(--hairline-border, #e2e8f0);
-  border-radius: 0;
+  border-radius: 6px;
   padding: 1.125rem;
   display: flex;
   flex-direction: column;
@@ -1775,7 +1775,7 @@ input[type="radio"] {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  border-radius: 0;
+  border-radius: 6px;
   overflow: hidden;
   background: #f1f5f9;
   cursor: pointer;
@@ -1800,6 +1800,39 @@ input[type="radio"] {
   transform: none;
 }
 
+/* Top Left Badges inside List Thumbnail */
+.list-thumb-wrapper .card-top-left-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 3;
+}
+
+.list-thumb-wrapper .card-badge-rera {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50% !important;
+  padding: 2.5px;
+  box-sizing: border-box;
+  display: block;
+}
+
+.list-thumb-wrapper .card-badge-no-brokerage {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  padding: 2px 4px;
+  box-sizing: border-box;
+  display: block;
+}
+
 .list-photo-count {
   position: absolute;
   bottom: 6px;
@@ -1822,14 +1855,14 @@ input[type="radio"] {
 
 .list-unlocked-badge {
   position: absolute;
-  top: 6px;
+  bottom: 6px;
   left: 6px;
   background: var(--brand-green, #5e8f72);
   color: #ffffff;
   padding: 2px 7px;
-  border-radius: 0;
+  border-radius: 4px;
   font-size: 9.5px;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   display: flex;
@@ -1907,8 +1940,8 @@ input[type="radio"] {
 }
 
 .list-title {
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-size: 14.5px;
+  font-weight: 600;
   color: var(--text-slate-950, #020617);
   line-height: 1.35;
   margin: 0;
@@ -2048,16 +2081,44 @@ input[type="radio"] {
 }
 
 .list-main-price {
-  font-size: 1.35rem;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-slate-950, #020617);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .list-unit-price {
   font-size: 11.5px;
   font-weight: 500;
   color: var(--text-slate-500, #64748b);
+}
+
+/* Strict Typography Bounds for Compact List Dossier View (<= 15px, <= 600 weight) */
+.list-dossier-card .list-title,
+.list-dossier-card .list-title-link {
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+}
+
+.list-dossier-card .list-main-price {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.list-dossier-card strong,
+.list-dossier-card b {
+  font-weight: 600 !important;
+}
+
+.list-dossier-card h1,
+.list-dossier-card h2,
+.list-dossier-card h3,
+.list-dossier-card h4,
+.list-dossier-card p,
+.list-dossier-card span,
+.list-dossier-card a,
+.list-dossier-card div {
+  max-font-size: 15px;
 }
 
 .list-actions-stack {
