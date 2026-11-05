@@ -14,6 +14,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       <div class="section-header-row">
         <div class="header-left">
           <h2 class="section-title">Featured Verified Properties</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="section-subtitle">
             Audited legal titles, genuine owner contacts, and verified site dimensions.
           </p>
@@ -205,6 +206,22 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       color: #0f172a;
       letter-spacing: -0.025em;
       margin: 0;
+    }
+
+    .header-spectrum-rule {
+      height: 3.5px;
+      width: 140px;
+      border-radius: 2px;
+      margin: 8px 0 10px 0;
+      background: linear-gradient(
+        90deg,
+        #dc3522 0%, #dc3522 16.66%,
+        #f59e0b 16.66%, #f59e0b 33.33%,
+        #84cc16 33.33%, #84cc16 50%,
+        #0ea5e9 50%, #0ea5e9 66.66%,
+        #94a3b8 66.66%, #94a3b8 83.33%,
+        #334155 83.33%, #334155 100%
+      );
     }
     @media (min-width: 640px) {
       .section-title {

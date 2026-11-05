@@ -160,7 +160,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .property-card {
       background: #ffffff;
       border-radius: 6px 20px 20px 20px !important;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #eeeeee;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -185,7 +185,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       overflow: hidden;
       background: #f1f5f9;
       cursor: pointer;
-      border-radius: 3px 3px 0 0 !important;
+      border-radius: 6px 20px 0 0 !important;
     }
 
     .card-img {
@@ -197,6 +197,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       object-position: center;
       display: block;
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 6px 20px 0 0 !important;
     }
 
     .property-card:hover .card-img {

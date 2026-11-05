@@ -22,6 +22,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       <div class="section-header-row">
         <div class="header-left">
           <h2 class="section-title">Recently Added Sites</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="section-subtitle">
             Freshly surveyed layouts, authenticated direct owner deeds, and verified DTCP/RERA sanctioned plots.
           </p>
@@ -256,6 +257,22 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       margin: 0;
     }
 
+    .header-spectrum-rule {
+      height: 3.5px;
+      width: 140px;
+      border-radius: 2px;
+      margin: 8px 0 10px 0;
+      background: linear-gradient(
+        90deg,
+        #dc3522 0%, #dc3522 16.66%,
+        #f59e0b 16.66%, #f59e0b 33.33%,
+        #84cc16 33.33%, #84cc16 50%,
+        #0ea5e9 50%, #0ea5e9 66.66%,
+        #94a3b8 66.66%, #94a3b8 83.33%,
+        #334155 83.33%, #334155 100%
+      );
+    }
+
     .section-subtitle {
       color: var(--text-slate-500, #64748b);
       font-size: 14px;
@@ -314,9 +331,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       justify-content: space-between;
       min-height: 310px;
       width: 100%;
-      border-radius: 3px !important;
+      border-radius: 6px 20px 20px 20px !important;
       overflow: hidden;
-      border: 1px solid var(--hairline-border, #e2e8f0);
+      border: 1px solid #eeeeee;
       cursor: pointer;
       text-decoration: none;
       box-sizing: border-box;

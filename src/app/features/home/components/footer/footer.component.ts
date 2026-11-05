@@ -22,9 +22,9 @@ import { RouterLink } from '@angular/router';
 
           <!-- Central Minimalist Navigation -->
           <nav class="footer-links-inline" aria-label="Footer Navigation">
-            <a routerLink="/search" class="footer-link">Properties</a>
-            <a routerLink="/developers" class="footer-link">Developers</a>
-            <a routerLink="/post-property" class="footer-link">Post Listing</a>
+            <a routerLink="/search" class="footer-link"><span class="link-prefix">→</span> Properties</a>
+            <a routerLink="/developers" class="footer-link"><span class="link-prefix">→</span> Developers</a>
+            <a routerLink="/post-property" class="footer-link"><span class="link-prefix">→</span> Post Listing</a>
             <a href="tel:18004197568" class="footer-link phone-link" title="Concierge Desk">
               <span class="material-symbols-outlined icon-xs">call</span>
               <span>1800-419-PLOT</span>
@@ -45,6 +45,9 @@ import { RouterLink } from '@angular/router';
           </div>
         </div>
 
+        <!-- Architectural Drafting Hatch Divider (Motif C) -->
+        <div class="footer-draft-hatch" aria-hidden="true"></div>
+
         <!-- Hairline Divider & Sub-row -->
         <div class="footer-legal-bar">
           <div class="legal-left">
@@ -64,6 +67,8 @@ import { RouterLink } from '@angular/router';
           </div>
         </div>
       </div>
+      <!-- Architectural Bottom Drafting Band (Motif C) -->
+      <div class="footer-bottom-draft-band" aria-hidden="true"></div>
     </footer>
   `,
   styles: [`
@@ -275,8 +280,41 @@ import { RouterLink } from '@angular/router';
     }
 
     /* Legal Sub-bar */
-    .footer-legal-bar {
+    .link-prefix {
+      color: var(--brand-green, #5e8f72);
+      font-weight: 700;
+      font-size: 13px;
+      margin-right: 2px;
+      opacity: 0.9;
+    }
+
+    .footer-draft-hatch {
+      width: 100%;
+      height: 6px;
       margin-top: 1.25rem;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.09),
+        rgba(255, 255, 255, 0.09) 3px,
+        transparent 3px,
+        transparent 7px
+      );
+    }
+
+    .footer-bottom-draft-band {
+      width: 100%;
+      height: 8px;
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.05) 4px,
+        transparent 4px,
+        transparent 8px
+      );
+    }
+
+    .footer-legal-bar {
+      margin-top: 0.75rem;
       padding-top: 1rem;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       display: flex;
