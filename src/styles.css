@@ -701,7 +701,7 @@ app-home-page app-footer *:not([class*="circle"]):not([class*="avatar"]) {
 }
 
 /* 3. Search Page (Exempting Property Card & Quick Class), Property Details, Admin, Post Property, User Profile */
-app-search-page *:not(.property-card):not(.property-card *):not(.preset-pills-row):not(.preset-pills-row *):not(.preset-pills-list):not(.preset-pills-list *):not(.preset-chip):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
+app-search-page *:not(.property-card):not(.property-card *):not(.list-dossier-card):not(.list-dossier-card *):not(.preset-pills-row):not(.preset-pills-row *):not(.preset-pills-list):not(.preset-pills-list *):not(.preset-chip):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
 app-post-property-page *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
 app-user-profile-page *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),
 app-admin-dashboard *:not(.property-card):not(.property-card *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]),

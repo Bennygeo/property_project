@@ -17,7 +17,7 @@
    2. Quick Class section (.preset-pills-row, .preset-pills-list, .preset-chip) -> border-radius: 0
    3. Circular badges / radios -> border-radius: 50%
 */
-:host *:not(app-property-card):not(app-property-card *):not(.property-card):not(.property-card *):not(.preset-pills-row):not(.preset-pills-row *):not(.preset-pills-list):not(.preset-pills-list *):not(.preset-chip):not(.preset-chip *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]) {
+:host *:not(app-property-card):not(app-property-card *):not(.property-card):not(.property-card *):not(.list-dossier-card):not(.list-dossier-card *):not(.preset-pills-row):not(.preset-pills-row *):not(.preset-pills-list):not(.preset-pills-list *):not(.preset-chip):not(.preset-chip *):not(.card-badge-rera):not([class*="circle"]):not([class*="avatar"]):not([type="radio"]) {
   border-radius: 3px !important;
   box-shadow: none !important;
 }
@@ -1750,7 +1750,7 @@ input[type="radio"] {
   padding: 0 !important;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
@@ -1784,6 +1784,7 @@ input[type="radio"] {
   background: #0f172a;
   cursor: pointer;
   flex-shrink: 0;
+  border-radius: 6px 20px 0 0 !important;
 }
 
 @media (min-width: 768px) {
@@ -1793,6 +1794,7 @@ input[type="radio"] {
     aspect-ratio: auto;
     height: 100%;
     max-height: 180px;
+    border-radius: 6px 0 0 20px !important;
   }
 
   /* Creative vertical spectrum hairline separator between image & content */
@@ -1815,6 +1817,13 @@ input[type="radio"] {
   object-fit: cover;
   display: block;
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 6px 20px 0 0 !important;
+}
+
+@media (min-width: 768px) {
+  .list-thumb-img {
+    border-radius: 6px 0 0 20px !important;
+  }
 }
 
 .list-dossier-card:hover .list-thumb-img {
@@ -1894,6 +1903,13 @@ input[type="radio"] {
   box-sizing: border-box;
   overflow: hidden;
   height: 100%;
+  border-radius: 0 0 20px 20px !important;
+}
+
+@media (min-width: 768px) {
+  .list-dossier-body {
+    border-radius: 0 20px 20px 0 !important;
+  }
 }
 
 /* Row 1: Header (Title & Developer Chip) */
@@ -2078,7 +2094,7 @@ input[type="radio"] {
 .btn-list-wa {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 6px !important;
   background: #eef7f2;
   color: #106f47;
   border: none !important;
@@ -2104,7 +2120,7 @@ input[type="radio"] {
 .btn-list-shortlist {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 6px !important;
   background: #f8fafc;
   border: none !important;
   color: #64748b;
