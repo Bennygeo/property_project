@@ -104,7 +104,7 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
 
     .intent-modal-container {
       background: #ffffff;
-      border-radius: 18px;
+      border-radius: 6px;
       max-width: 480px;
       width: 100%;
       box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(226, 232, 240, 0.9);
@@ -350,7 +350,7 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     @media (max-width: 500px) {
       .intent-modal-container {
         padding: 1.25rem 1rem 1rem;
-        border-radius: 16px;
+        border-radius: 6px;
         gap: 0.95rem;
       }
       .modal-heading {

@@ -475,7 +475,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       font-weight: 600;
       color: var(--text-slate-700);
       padding: 0.4rem 0.65rem;
-      border-radius: 9999px;
+      border-radius: 6px;
       text-decoration: none;
       border: 1px solid transparent;
       transition: all 0.15s ease;
@@ -485,11 +485,7 @@ import { AuthService } from '../../../../core/services/auth.service';
         display: inline-flex;
       }
     }
-    .shortlist-btn:hover {
-      background: #f8fafc;
-      border-color: #e2e8f0;
-      color: var(--text-slate-950);
-    }
+
     .shortlist-count {
       padding: 1px 6px;
       background: #e2e8f0;
@@ -558,13 +554,8 @@ import { AuthService } from '../../../../core/services/auth.service';
       font-weight: 600;
       color: var(--brand-red);
       cursor: pointer;
-      transition: all 0.15s;
     }
-    .signin-btn:hover {
-      background: #fef2f2;
-      border-color: var(--brand-red-hover);
-      color: var(--brand-red-hover);
-    }
+
     .signin-btn span.material-symbols-outlined {
       font-size: 18px;
     }

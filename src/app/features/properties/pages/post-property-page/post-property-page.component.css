@@ -1,3 +1,38 @@
+/* Architectural Spectrum Rule (Motif B) & Technical Drafting Hatch (Motif C) */
+.header-spectrum-rule {
+  height: 3.5px;
+  width: 140px;
+  border-radius: 2px;
+  margin: 8px 0 10px 0;
+  background: linear-gradient(
+    90deg,
+    #dc3522 0%, #dc3522 16.66%,
+    #f59e0b 16.66%, #f59e0b 33.33%,
+    #84cc16 33.33%, #84cc16 50%,
+    #0ea5e9 50%, #0ea5e9 66.66%,
+    #94a3b8 66.66%, #94a3b8 83.33%,
+    #334155 83.33%, #334155 100%
+  );
+}
+
+.hero-spectrum-rule {
+  margin: 10px auto 14px auto;
+}
+
+.block-draft-hatch {
+  height: 4px;
+  width: 100%;
+  margin: 6px 0 10px 0;
+  background: repeating-linear-gradient(
+    45deg,
+    #e2e8f0,
+    #e2e8f0 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  opacity: 0.85;
+}
+
 /* ==========================================================================
    POST PROPERTY USER PAGE STYLING
    Architectural Real Estate Registry Design System

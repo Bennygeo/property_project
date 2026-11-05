@@ -329,7 +329,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 310px;
+      min-height: 260px;
       width: 100%;
       border-radius: 6px 20px 20px 20px !important;
       overflow: hidden;
@@ -343,7 +343,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .recent-site-card:hover {
       border-color: var(--brand-green, #5e8f72);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
       box-shadow: 0 10px 25px -5px rgba(15, 59, 74, 0.2);
     }
 
@@ -435,7 +435,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       width: 44px;
       height: 44px;
       object-fit: contain;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.5);
       border-radius: none;
       padding: 3px;
       box-sizing: border-box;
@@ -448,7 +448,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       max-width: 110px;
       object-fit: contain;
       display: block;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.5);
       padding: 2px 6px;
       border-radius: none;
     }

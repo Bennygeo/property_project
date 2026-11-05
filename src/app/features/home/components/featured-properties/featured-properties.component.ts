@@ -83,7 +83,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
         <div class="search-insist-banner">
           <div class="insist-left">
             <div class="insist-badge">
-              <span class="insist-dot"></span>
               <span>20 Curated Highlights Shown</span>
             </div>
             <h3 class="insist-title">Looking for specific localities, budgets, or plot directions?</h3>
@@ -96,7 +95,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
               <span>Go to Advanced Search Page</span>
               <span class="material-symbols-outlined btn-arrow">arrow_forward</span>
             </a>
-            <span class="insist-subtext">Direct owner deeds • 0% Brokerage • Instant SRO Deed</span>
           </div>
         </div>
       } @else {
@@ -396,16 +394,15 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     /* Search Insist Banner (Directs user to Search page after 20 properties) */
     .search-insist-banner {
       margin-top: 2.25rem;
-      background: linear-gradient(135deg, #0f3b4a 0%, #174b5c 100%);
+      background: var(--brand-teal);
       border-radius: 6px 20px 20px 20px !important;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: none;
       padding: 1.75rem 2rem;
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 10px 30px -10px rgba(15, 59, 74, 0.35);
     }
     @media (min-width: 860px) {
       .search-insist-banner {
@@ -422,7 +419,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
+      height: 3px;
       background: linear-gradient(
         90deg,
         #dc3522 0%, #dc3522 16.66%,
@@ -445,16 +442,14 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 9999px;
-      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
       font-size: 11px;
       font-weight: 600;
-      color: #a7f3d0;
+      color: var(--brand-booked);
       width: fit-content;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      
     }
 
     .insist-dot {
@@ -466,8 +461,8 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     }
 
     .insist-title {
-      font-size: 1.25rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 500;
       color: #ffffff;
       margin: 0;
       letter-spacing: -0.015em;
@@ -475,15 +470,15 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     }
     @media (min-width: 640px) {
       .insist-title {
-        font-size: 1.35rem;
+        font-size: 1rem;
       }
     }
 
     .insist-desc {
-      font-size: 13.5px;
+      font-size: 12px;
       color: #cbd5e1;
       margin: 0;
-      line-height: 1.55;
+      line-height: 1.7;
     }
 
     .insist-right {
@@ -507,7 +502,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       color: #0f3b4a;
       font-size: 14px;
       font-weight: 600;
-      padding: 0.85rem 1.5rem;
+      padding: 0.55rem 1.2rem;
       border-radius: 6px 14px 14px 14px;
       text-decoration: none;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);

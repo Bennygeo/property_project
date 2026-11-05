@@ -228,11 +228,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       display: block;
     }
 
-    /*
-    .card-badge-rera:hover {
-      transform: scale(1.1);
-    }
-    */
 
     .card-badge-no-brokerage {
         height: 52px;
@@ -246,13 +241,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
         background: #ffffff77;
         padding: 3px;
     }
-
-    /*
-    .card-badge-no-brokerage:hover {
-      transform: scale(1.09);
-    }
-    */
-
     /* Badges Overlay (Bottom-left of image) */
     .badges-overlay {
       position: absolute;
