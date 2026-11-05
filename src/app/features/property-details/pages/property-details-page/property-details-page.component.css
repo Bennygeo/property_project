@@ -866,7 +866,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 10px;
   background: rgba(15, 23, 42, 0.85);
   color: #ffffff;
   border: none !important;
@@ -1129,8 +1129,8 @@
 }
 
 .snapshot-val {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: #0f172a;
   line-height: 1.25;
   white-space: nowrap;
@@ -1544,10 +1544,12 @@
   border-radius: 0 !important;
   padding: 1.25rem 0;
   display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
   box-shadow: none !important;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .infra-card:hover {
@@ -1573,26 +1575,30 @@
 
 .infra-card-header-row {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: flex-start;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .infra-icon-emblem {
-  width: auto;
-  height: auto;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: flex-start;
+  justify-content: center;
   flex-shrink: 0;
   transition: none !important;
 }
 
 .infra-icon-emblem span {
-  font-size: 28px;
+  font-size: 38px;
   line-height: 1;
+  display: block;
 }
 
 .infra-card:hover .infra-icon-emblem {
@@ -1651,25 +1657,31 @@
 }
 
 .infra-card-details {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 4px;
+  overflow: hidden;
 }
 
 .infra-category-tag {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--brand-green, #5e8f72);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #64748b;
   text-transform: uppercase;
+  line-height: 1.3;
 }
 
 .infra-main-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #0f172a;
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
   transition: none !important;
 }
 
@@ -1679,9 +1691,9 @@
 
 .infra-status-desc,
 .infra-summary-text {
-  font-size: 13px;
-  color: #475569;
-  line-height: 1.55;
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -3521,5 +3533,236 @@
   .floating-wa-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   12. CREATIVE ARCHITECTURAL BORDERS & SPECTRUM ACCENTS (REVERSIBLE)
+   ========================================================================== */
+
+/* A. Semantic Spectrum Accent Bar (Image 2 inspiration) */
+.creative-spectrum-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -0.2rem;
+  margin-bottom: 0.75rem;
+  background: #f8fafc;
+  padding: 3px 8px 3px 6px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.csb-track {
+  display: inline-flex;
+  align-items: center;
+  height: 4px;
+  width: 130px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.csb-seg {
+  flex: 1;
+  height: 100%;
+}
+
+.csb-red {
+  background: #d26e63;
+}
+
+.csb-yellow {
+  background: #dc9642;
+}
+
+.csb-green {
+  background: #76a34c;
+}
+
+.csb-cyan {
+  background: #47a4b8;
+}
+
+.csb-silver {
+  background: #94a3b8;
+}
+
+.csb-slate {
+  background: #204b5c;
+}
+
+.csb-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* B. Architectural Cadastral Hatching Divider (Image 3 inspiration) */
+.readiness-horizon-wrapper {
+  margin: 1.25rem 0 0.75rem 0;
+  width: 100%;
+}
+
+.cadastral-hatch-divider {
+  width: 100%;
+  height: 5px;
+  background: repeating-linear-gradient(-45deg,
+      #e2e8f0,
+      #e2e8f0 4px,
+      transparent 4px,
+      transparent 8px);
+  margin: 5px 0;
+  border-radius: 6px;
+  opacity: 0.75;
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+}
+
+/* C. Development Readiness Chevron Journey (Image 1 inspiration) */
+.readiness-journey-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 0;
+  box-sizing: border-box;
+  box-shadow: none !important;
+}
+
+.readiness-journey-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rjh-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #0f3b4a;
+}
+
+.rjh-title-wrap .material-symbols-outlined {
+  font-size: 19px;
+  color: #5e8f72;
+}
+
+.rjh-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f3b4a;
+}
+
+.rjh-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: f1f5f9;
+  color: #000000;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #d1e7db;
+}
+
+.rjh-badge .material-symbols-outlined {
+  font-size: 14px;
+  color: #5e8f72;
+}
+
+.readiness-chevron-track {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow-x: auto;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.rc-step {
+  flex: 1;
+  min-width: 115px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 0 14px 0 18px;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+  cursor: default;
+  box-sizing: border-box;
+  box-shadow: none !important;
+}
+
+.rc-step:first-child {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+  border-radius: 6px 0 0 6px;
+  padding-left: 14px;
+}
+
+.rc-step:last-child {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
+  border-radius: 0 6px 6px 0;
+  padding-right: 14px;
+}
+
+.rc-step.step-1 {
+  background: #d26e63;
+}
+
+.rc-step.step-2 {
+  background: #dc9642;
+}
+
+.rc-step.step-3 {
+  background: #76a34c;
+}
+
+.rc-step.step-4 {
+  background: #47a4b8;
+}
+
+.rc-step.step-5 {
+  background: #204b5c;
+}
+
+.rc-check {
+  font-size: 16px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.rc-step-label {
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 680px) {
+  .readiness-chevron-track {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rc-step,
+  .rc-step:first-child,
+  .rc-step:last-child {
+    clip-path: none !important;
+    border-radius: 6px !important;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    height: auto;
   }
 }

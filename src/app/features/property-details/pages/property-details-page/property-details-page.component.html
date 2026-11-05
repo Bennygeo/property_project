@@ -58,6 +58,19 @@
 
           <h1 class="hanu-title">{{ prop.title }}</h1>
 
+          <!-- Creative Due Diligence Spectrum Accent Bar (Image 2 inspiration) -->
+          <div class="creative-spectrum-bar" title="Cadastral &amp; Statutory Diligence Clearance Spectrum">
+            <div class="csb-track">
+              <span class="csb-seg csb-red" title="1. 100% Clear Freehold Title"></span>
+              <span class="csb-seg csb-yellow" title="2. DTCP / CMDA Approved Layout"></span>
+              <span class="csb-seg csb-green" title="3. Bitumen Road &amp; Demarcation"></span>
+              <span class="csb-seg csb-cyan" title="4. Potable Ground Water Verified"></span>
+              <span class="csb-seg csb-silver" title="5. Street Lighting Active"></span>
+              <span class="csb-seg csb-slate" title="6. Fenced &amp; Gated Security"></span>
+            </div>
+            <span class="csb-label">Cadastral &amp; Statutory Clearance</span>
+          </div>
+
           @if ((prop.developerName && prop.developerName !== 'NULL') || (prop.masterDetails?.developer &&
           prop.masterDetails?.developer !== 'NULL') || (prop.developer?.name && prop.developer?.name !== 'NULL')) {
           @if ((prop.developerProjectsCount || 0) > 1) {
@@ -206,7 +219,6 @@
 
                 <button type="button" class="hanu-btn-fs" (click)="openFullscreen()">
                   <span class="material-symbols-outlined">fullscreen</span>
-                  <span>View Fullscreen</span>
                 </button>
               </div>
             </div>
@@ -345,6 +357,43 @@
               <span class="snapshot-label">Utilities Status</span>
               <strong class="snapshot-val text-cyan">{{ prop.masterDetails?.electricity || '3-Phase EB Line' }}</strong>
               <span class="snapshot-sub">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Water' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================== -->
+        <!-- DEVELOPMENT READINESS PIPELINE (CADASTRAL STAGES & CHEVRON JOURNEY)    -->
+        <!-- ====================================================================== -->
+        <div class="readiness-horizon-wrapper">
+          <!-- Development Readiness Chevron Journey (Image 1 inspiration) -->
+          <div class="readiness-journey-card">
+            <div class="readiness-journey-header">
+              <div class="rjh-title-wrap">
+                <span class="rjh-title">DEVELOPMENT READINESS PIPELINE</span>
+              </div>
+              <span class="rjh-badge">
+                <span class="material-symbols-outlined">verified</span>
+                <span>Phase 5 / 5 Complete</span>
+              </span>
+            </div>
+
+            <div class="readiness-chevron-track">
+              <div class="rc-step step-1 done" title="Encumbrance Free Deed · 100% Clear Legal Title Verified">
+                <span class="rc-step-label">1. Clear Title</span>
+              </div>
+              <div class="rc-step step-2 done" title="DTCP / CMDA Approved Layout Order Issued">
+                <span class="rc-step-label">2. DTCP Sanction</span>
+              </div>
+              <div class="rc-step step-3 done" title="30-40 Ft Wide Bitumen Tar Roads Laid">
+                <span class="rc-step-label">3. Bitumen Roads</span>
+              </div>
+              <div class="rc-step step-4 done" title="Sweet Potable Groundwater &amp; 3-Phase EB Line Active">
+                <span class="rc-step-label">4. Water &amp; Power</span>
+              </div>
+              <div class="rc-step step-5 ready" title="Immediate Construction Ready · Instant Handover">
+                <span class="material-symbols-outlined rc-check">check_circle</span>
+                <span class="rc-step-label">5. Ready to Build</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1086,7 +1135,8 @@
                   <span class="material-symbols-outlined overview-header-icon">description</span>
                   <div>
                     <h2>Property Overview &amp; Highlights</h2>
-                    <p class="hanu-card-subtitle">Verified property narrative, development viability, and layout advantages</p>
+                    <p class="hanu-card-subtitle">Verified property narrative, development viability, and layout
+                      advantages</p>
                   </div>
                 </div>
 
@@ -1096,7 +1146,11 @@
                   <div class="narrative-body">
                     <span class="narrative-badge">DEVELOPMENT DOSSIER</span>
                     <p class="narrative-lead">
-                      {{ prop.developer?.aboutText || prop.description || (prop.title + ' is an authenticated, government-sanctioned property situated in the prime corridor of ' + prop.locality + ', ' + prop.city + '. Featuring clear cadastral boundaries, direct road access, and verified freehold documentation, this property represents an outstanding asset for immediate villa construction or high-yield capital appreciation.') }}
+                      {{ prop.developer?.aboutText || prop.description || (prop.title + ' is an authenticated,
+                      government-sanctioned property situated in the prime corridor of ' + prop.locality + ', ' +
+                      prop.city + '. Featuring clear cadastral boundaries, direct road access, and verified freehold
+                      documentation, this property represents an outstanding asset for immediate villa construction or
+                      high-yield capital appreciation.') }}
                     </p>
                   </div>
                 </div>
@@ -1105,28 +1159,36 @@
                 <div class="overview-specs-matrix">
                   <div class="overview-spec-cell">
                     <span class="overview-spec-label">Development Suitability</span>
-                    <strong class="overview-spec-val text-brand">{{ prop.masterDetails?.suitedFor ? ('Suited for ' + prop.masterDetails?.suitedFor) : 'Immediate Possession &amp; Villa Construction' }}</strong>
+                    <strong class="overview-spec-val text-brand">{{ prop.masterDetails?.suitedFor ? ('Suited for ' +
+                      prop.masterDetails?.suitedFor) : 'Immediate Possession &amp; Villa Construction' }}</strong>
                     <span class="overview-spec-sub">Ready for Immediate Construction</span>
                   </div>
 
                   <div class="overview-spec-cell">
                     <span class="overview-spec-label">Possession Timeline</span>
-                    <strong class="overview-spec-val">{{ prop.masterDetails?.possessionTimeline || 'Ready for Immediate Handover' }}</strong>
+                    <strong class="overview-spec-val">{{ prop.masterDetails?.possessionTimeline || 'Ready for Immediate
+                      Handover' }}</strong>
                     <span class="overview-spec-sub">Direct Handover from Promoter</span>
                   </div>
 
                   <div class="overview-spec-cell">
                     <span class="overview-spec-label">Zoning Classification</span>
-                    <strong class="overview-spec-val">{{ (prop.masterDetails?.landUse || 'Residential') + ' Zone' }}</strong>
+                    <strong class="overview-spec-val">{{ (prop.masterDetails?.landUse || 'Residential') + ' Zone'
+                      }}</strong>
                     <span class="overview-spec-sub">Sanctioned Land Conversion</span>
                   </div>
 
                   <div class="overview-spec-cell">
                     <span class="overview-spec-label">Boundary Frontage</span>
-                    <strong class="overview-spec-val">{{ prop.masterDetails?.dimension ? (prop.masterDetails.dimension + ' Ft Dimension') : (prop.plotDetails?.dimensionRanges || 'Demarcated Boundaries') }}</strong>
-                    <span class="overview-spec-sub">{{ prop.masterDetails?.cornerPlot === 'Yes' ? 'Corner Plot (Double Road Frontage)' : 'Standard Linear Frontage' }}</span>
+                    <strong class="overview-spec-val">{{ prop.masterDetails?.dimension ? (prop.masterDetails.dimension +
+                      ' Ft Dimension') : (prop.plotDetails?.dimensionRanges || 'Demarcated Boundaries') }}</strong>
+                    <span class="overview-spec-sub">{{ prop.masterDetails?.cornerPlot === 'Yes' ? 'Corner Plot (Double
+                      Road Frontage)' : 'Standard Linear Frontage' }}</span>
                   </div>
                 </div>
+
+                <!-- Architectural Cadastral Hatch Divider (Image 3 inspiration) -->
+                <div class="cadastral-hatch-divider" role="presentation" aria-hidden="true"></div>
 
                 <!-- Key Property Advantages -->
                 @if (sanitizedHighlights().length > 0) {
@@ -1367,15 +1429,17 @@
               <span>Preferred Date</span>
             </label>
             <div class="sv-date-wrap">
-              <input id="sv-date" type="date" class="sv-input sv-date-input" [min]="minVisitDate()" [value]="promptVisitDate()"
-                (click)="$any($event.target).showPicker?.()"
+              <input id="sv-date" type="date" class="sv-input sv-date-input" [min]="minVisitDate()"
+                [value]="promptVisitDate()" (click)="$any($event.target).showPicker?.()"
                 (input)="promptVisitDate.set($any($event.target).value)" required>
             </div>
             <div class="sv-quick-chips">
-              <button type="button" class="sv-quick-chip" (click)="setQuickDate('tomorrow')" [class.active]="isQuickDate('tomorrow')">
+              <button type="button" class="sv-quick-chip" (click)="setQuickDate('tomorrow')"
+                [class.active]="isQuickDate('tomorrow')">
                 Tomorrow
               </button>
-              <button type="button" class="sv-quick-chip" (click)="setQuickDate('weekend')" [class.active]="isQuickDate('weekend')">
+              <button type="button" class="sv-quick-chip" (click)="setQuickDate('weekend')"
+                [class.active]="isQuickDate('weekend')">
                 Weekend
               </button>
             </div>
@@ -1397,13 +1461,16 @@
               <span class="material-symbols-outlined sv-select-icon">expand_more</span>
             </div>
             <div class="sv-quick-chips">
-              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('morning')" [class.active]="promptVisitSlot() === 'morning'">
+              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('morning')"
+                [class.active]="promptVisitSlot() === 'morning'">
                 Morning
               </button>
-              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('afternoon')" [class.active]="promptVisitSlot() === 'afternoon'">
+              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('afternoon')"
+                [class.active]="promptVisitSlot() === 'afternoon'">
                 Afternoon
               </button>
-              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('evening')" [class.active]="promptVisitSlot() === 'evening'">
+              <button type="button" class="sv-quick-chip" (click)="promptVisitSlot.set('evening')"
+                [class.active]="promptVisitSlot() === 'evening'">
                 Evening
               </button>
             </div>
