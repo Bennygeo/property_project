@@ -682,7 +682,7 @@
             <!-- Cinematic Gradient Scrim (Edge Blend & Badge Contrast) -->
             <div class="list-thumb-gradient-scrim"></div>
 
-            <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
+            <!-- Top Left Badges: RERA Approved & No Brokerage ONLY (No Overlapping Badges) -->
             <div class="card-top-left-badges">
               @if (isRera(prop)) {
               <img src="assets/badge/rera_approved_60x60.png" alt="RERA Approved" class="card-badge-rera"
@@ -691,22 +691,9 @@
               <img src="assets/badge/no-brokerage.png" alt="0% Brokerage" class="card-badge-no-brokerage"
                 title="0% Brokerage" loading="lazy">
             </div>
-
-            <div class="list-thumb-badges">
-              @if (prop.isMediaUnlocked) {
-              <span class="list-unlocked-badge">
-                <span class="material-symbols-outlined">smart_display</span>
-                4K Unlocked
-              </span>
-              }
-              @if (prop.propertyType) {
-              <span class="list-type-pill">{{ prop.propertyType }}</span>
-              }
-            </div>
-
           </div>
 
-          <!-- Right Half: Padded Dossier Body (Standard Height, Zero Empty Space, Rich Detailing) -->
+          <!-- Right Half: Padded Dossier Body (Standard Height 180px, Rich Detailing) -->
           <div class="list-dossier-body">
             <!-- Row 1: Title & Developer Chip -->
             <div class="list-body-header">
@@ -780,9 +767,8 @@
 
               <div class="list-actions-row">
                 <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
-                  rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+                  rel="noopener" title="Inquire on WhatsApp" aria-label="Inquire on WhatsApp">
                   <span class="material-symbols-outlined">chat</span>
-                  <span>Inquire</span>
                 </a>
 
                 <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
@@ -940,7 +926,7 @@
               <!-- Cinematic Gradient Scrim (Edge Blend & Badge Contrast) -->
               <div class="list-thumb-gradient-scrim"></div>
 
-              <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
+              <!-- Top Left Badges: RERA Approved & No Brokerage ONLY (No Overlapping Badges) -->
               <div class="card-top-left-badges">
                 @if (isRera(prop)) {
                 <img src="assets/badge/rera_approved_60x60.png" alt="RERA Approved" class="card-badge-rera"
@@ -950,17 +936,9 @@
                   title="0% Brokerage" loading="lazy">
               </div>
 
-              <div class="list-thumb-badges">
-                <span class="badge-tag-sm"
-                  style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:600;">Suggested For You</span>
-                @if (prop.propertyType) {
-                <span class="list-type-pill">{{ prop.propertyType }}</span>
-                }
-              </div>
-
             </div>
 
-            <!-- Right Half: Padded Dossier Body (Standard Height, Zero Empty Space, Rich Detailing) -->
+            <!-- Right Half: Padded Dossier Body (Standard Height 180px, Rich Detailing) -->
             <div class="list-dossier-body">
               <!-- Row 1: Title & Developer Chip -->
               <div class="list-body-header">
@@ -1021,9 +999,8 @@
 
                 <div class="list-actions-row">
                   <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
-                    rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+                    rel="noopener" title="Inquire on WhatsApp" aria-label="Inquire on WhatsApp">
                     <span class="material-symbols-outlined">chat</span>
-                    <span>Inquire</span>
                   </a>
 
                   <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
