@@ -261,7 +261,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       height: 3.5px;
       width: 140px;
       border-radius: 2px;
-      margin: 8px 0 10px 0;
+      margin: 0;
       background: linear-gradient(
         90deg,
         #dc3522 0%, #dc3522 16.66%,

@@ -20,9 +20,9 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           </p>
         </div>
         <div class="header-right">
-          <span class="meta-count">{{ propertyService.properties().length }} Properties</span>
-          <a class="meta-link" routerLink="/search">
-            <span>Explore all</span>
+          <span class="meta-count">Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() || propertyService.properties().length }}</span>
+          <a class="meta-link" routerLink="/search" [queryParams]="getSearchQueryParams()">
+            <span>Search all properties</span>
             <span class="material-symbols-outlined link-arrow">arrow_forward</span>
           </a>
         </div>
@@ -71,64 +71,34 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
         </button>
       </div>
 
-      <!-- Properties Grid -->
-      @if (propertyService.properties().length > 0) {
+      <!-- Properties Grid (Capped to 20 on Home Page) -->
+      @if (displayedProperties().length > 0) {
         <div class="cards-grid">
-          @for (prop of propertyService.properties(); track prop.id) {
+          @for (prop of displayedProperties(); track prop.id) {
             <app-property-card [property]="prop" />
           }
         </div>
-        <!-- Progressive API Scroll Loader & Skeletons -->
-        @if (propertyService.isFetchingApi()) {
-          <div class="scroll-skeleton-grid">
-            <div class="skeleton-card" *ngFor="let s of [1, 2, 3]">
-              <div class="skeleton-thumb-frame shimmer-bg">
-                <div class="skeleton-badge shimmer-bg"></div>
-              </div>
-              <div class="skeleton-content-frame">
-                <div class="skeleton-line shimmer-bg line-title"></div>
-                <div class="skeleton-line shimmer-bg line-sub"></div>
-                <div class="skeleton-meta-row">
-                  <div class="skeleton-tag shimmer-bg"></div>
-                  <div class="skeleton-tag shimmer-bg"></div>
-                </div>
-                <div class="skeleton-foot-row">
-                  <div class="skeleton-price-line shimmer-bg"></div>
-                  <div class="skeleton-btn shimmer-bg"></div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div class="api-scroll-loader-banner">
-            <div class="loader-spinner-circle"></div>
-            <div class="loader-info">
-              <span class="loader-main-text">Loading verified properties...</span>
-              <span class="loader-sub-text">Fetching next 10 plots from registry database</span>
+        <!-- Prominent Insist Banner Directing to Full Search Page -->
+        <div class="search-insist-banner">
+          <div class="insist-left">
+            <div class="insist-badge">
+              <span class="insist-dot"></span>
+              <span>20 Curated Highlights Shown</span>
             </div>
-            <div class="loader-pulsing-dots">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+            <h3 class="insist-title">Looking for specific localities, budgets, or plot directions?</h3>
+            <p class="insist-desc">
+              The Home page displays a curated sample of 20 featured plots. Head to our comprehensive Search Engine to filter by price/sq.ft, DTCP/RERA sanctions, direction, and live satellite coordinates.
+            </p>
           </div>
-        }
-
-        @if (!propertyService.isFetchingApi() && propertyService.hasMoreApiProperties()) {
-          <div class="infinite-scroll-container">
-            <button type="button" class="btn-infinite-expand" (click)="loadMore()">
-              <span class="material-symbols-outlined expand-icon">expand_more</span>
-              <span>Showing {{ propertyService.properties().length }} of {{ propertyService.totalApiProperties() }} properties • Scroll down for next 10</span>
-            </button>
+          <div class="insist-right">
+            <a class="btn-insist-search" routerLink="/search" [queryParams]="getSearchQueryParams()">
+              <span>Go to Advanced Search Page</span>
+              <span class="material-symbols-outlined btn-arrow">arrow_forward</span>
+            </a>
+            <span class="insist-subtext">Direct owner deeds • 0% Brokerage • Instant SRO Deed</span>
           </div>
-        } @else if (!propertyService.isFetchingApi() && propertyService.properties().length > 0 && propertyService.totalApiProperties() > 0) {
-          <div class="infinite-scroll-container">
-            <div class="all-loaded-badge">
-              <span class="material-symbols-outlined">verified</span>
-              <span>All {{ propertyService.properties().length }} verified properties loaded</span>
-            </div>
-          </div>
-        }
+        </div>
       } @else {
         <div class="empty-results-box">
           <div class="empty-icon-wrap">
@@ -212,7 +182,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       height: 3.5px;
       width: 140px;
       border-radius: 2px;
-      margin: 8px 0 10px 0;
+      margin: 0;
       background: linear-gradient(
         90deg,
         #dc3522 0%, #dc3522 16.66%,
@@ -422,42 +392,161 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
     .btn-reset-search .material-symbols-outlined {
       font-size: 16px;
     }
+
+    /* Search Insist Banner (Directs user to Search page after 20 properties) */
+    .search-insist-banner {
+      margin-top: 2.25rem;
+      background: linear-gradient(135deg, #0f3b4a 0%, #174b5c 100%);
+      border-radius: 6px 20px 20px 20px !important;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 1.75rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px -10px rgba(15, 59, 74, 0.35);
+    }
+    @media (min-width: 860px) {
+      .search-insist-banner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 2rem 2.5rem;
+      }
+    }
+
+    .search-insist-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(
+        90deg,
+        #dc3522 0%, #dc3522 16.66%,
+        #f59e0b 16.66%, #f59e0b 33.33%,
+        #84cc16 33.33%, #84cc16 50%,
+        #0ea5e9 50%, #0ea5e9 66.66%,
+        #94a3b8 66.66%, #94a3b8 83.33%,
+        #334155 83.33%, #334155 100%
+      );
+    }
+
+    .insist-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 44rem;
+    }
+
+    .insist-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      padding: 0.25rem 0.75rem;
+      font-size: 11px;
+      font-weight: 600;
+      color: #a7f3d0;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .insist-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+    }
+
+    .insist-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.015em;
+      line-height: 1.35;
+    }
+    @media (min-width: 640px) {
+      .insist-title {
+        font-size: 1.35rem;
+      }
+    }
+
+    .insist-desc {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    .insist-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    @media (min-width: 860px) {
+      .insist-right {
+        align-items: flex-end;
+      }
+    }
+
+    .btn-insist-search {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #ffffff;
+      color: #0f3b4a;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0.85rem 1.5rem;
+      border-radius: 6px 14px 14px 14px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .btn-insist-search:hover {
+      background: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    .btn-insist-search .btn-arrow {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+    }
+    .btn-insist-search:hover .btn-arrow {
+      transform: translateX(3px);
+    }
+
+    .insist-subtext {
+      font-size: 11px;
+      color: #94a3b8;
+    }
   `]
 })
 export class FeaturedPropertiesComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
 
-  // Infinite Scroll: Initially show 20, load next 10 on scroll
-  readonly displayedCount = signal<number>(20);
+  // Strictly load and display only 20 properties on Home page
   readonly displayedProperties = computed(() => {
-    return this.propertyService.properties().slice(0, this.displayedCount());
-  });
-  readonly hasMore = computed<boolean>(() => {
-    return this.displayedCount() < this.propertyService.properties().length;
+    return this.propertyService.properties().slice(0, 20);
   });
 
-  private isScrollThrottled = false;
-
-  loadMore(): void {
-    if (this.propertyService.hasMoreApiProperties() && !this.propertyService.isFetchingApi()) {
-      this.propertyService.loadNextBatch(10, {
-        propertyType: this.propertyService.activeCategoryFilter() !== 'all' ? this.propertyService.activeCategoryFilter() : undefined
-      });
+  getSearchQueryParams(): Record<string, string> {
+    const cat = this.propertyService.activeCategoryFilter();
+    if (cat && cat !== 'all') {
+      return { type: cat };
     }
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    if (!this.propertyService.hasMoreApiProperties() || this.propertyService.isFetchingApi() || this.isScrollThrottled) return;
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const threshold = document.documentElement.scrollHeight - 700;
-    if (scrollPosition >= threshold) {
-      this.isScrollThrottled = true;
-      this.loadMore();
-      setTimeout(() => {
-        this.isScrollThrottled = false;
-      }, 400);
-    }
+    return {};
   }
 
   setCategory(cat: string): void {
@@ -471,7 +560,11 @@ export class FeaturedPropertiesComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.propertyService.loadPropertiesFromApi();
+    this.propertyService.loadPropertiesFromApi({
+      offset: 0,
+      limit: 20,
+      append: false
+    });
   }
 
   resetSearch(): void {

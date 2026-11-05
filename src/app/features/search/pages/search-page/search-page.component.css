@@ -2622,7 +2622,7 @@ input[type="radio"] {
 }
 
 .no-items-title {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #0f172a;
   margin: 0 0 0.35rem 0;
@@ -2654,9 +2654,9 @@ input[type="radio"] {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0.55rem 1rem;
+  padding: 0.45rem 0.8rem;
   border-radius: 0;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -2708,8 +2708,8 @@ input[type="radio"] {
 }
 
 .suggested-icon-circle {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 0;
   background: #5e8f72;
   color: #ffffff;
@@ -2725,7 +2725,7 @@ input[type="radio"] {
 }
 
 .suggested-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #0f3b4a;
   margin: 0;
