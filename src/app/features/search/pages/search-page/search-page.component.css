@@ -1746,7 +1746,7 @@ input[type="radio"] {
 .list-dossier-card {
   background: #ffffff;
   border: 1px solid #eeeeee !important;
-  border-radius: 6px;
+  border-radius: 6px 20px 20px 20px !important;
   padding: 0 !important;
   display: flex;
   flex-direction: column;
