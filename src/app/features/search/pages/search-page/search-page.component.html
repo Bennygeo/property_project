@@ -674,10 +674,23 @@
       <div class="results-list">
         @for (prop of displayedProperties(); track prop.id) {
         <article class="list-dossier-card">
-          <!-- Thumbnail with Badges (Links to Details) -->
+          <!-- Left Half: Full-bleed Image with Creative Atmospheric Gradient -->
           <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
             <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
               loading="lazy" decoding="async">
+
+            <!-- Cinematic Gradient Scrim (Edge Blend & Badge Contrast) -->
+            <div class="list-thumb-gradient-scrim"></div>
+
+            <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
+            <div class="card-top-left-badges">
+              @if (isRera(prop)) {
+              <img src="assets/badge/rera_approved_60x60.png" alt="RERA Approved" class="card-badge-rera"
+                [title]="getReraText(prop)" loading="lazy">
+              }
+              <img src="assets/badge/no-brokerage.png" alt="0% Brokerage" class="card-badge-no-brokerage"
+                title="0% Brokerage" loading="lazy">
+            </div>
 
             <div class="list-thumb-badges">
               @if (prop.isMediaUnlocked) {
@@ -686,93 +699,79 @@
                 4K Unlocked
               </span>
               }
-            </div>
-
-            <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
-            <div class="card-top-left-badges">
-              @if (isRera(prop)) {
-              <img 
-                src="assets/badge/rera_approved_60x60.png" 
-                alt="RERA Approved" 
-                class="card-badge-rera" 
-                [title]="getReraText(prop)"
-                loading="lazy">
+              @if (prop.propertyType) {
+              <span class="list-type-pill">{{ prop.propertyType }}</span>
               }
-              <img 
-                src="assets/badge/no-brokerage.png" 
-                alt="0% Brokerage" 
-                class="card-badge-no-brokerage" 
-                title="0% Brokerage"
-                loading="lazy">
             </div>
 
           </div>
 
-          <!-- Info Section -->
-          <div class="list-info">
-            @if ((prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) || !authService.canViewProperty(prop.id)) {
-            <div class="list-meta-top">
-              @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
-              <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
-              }
-              @if (!authService.canViewProperty(prop.id)) {
-              <span class="badge-signin-lock">
-                🔒 Sign In to View
-              </span>
-              }
-            </div>
-            }
-
-            <h3 class="list-title">
-              <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
-            </h3>
-
-            @if (getDeveloperName(prop)) {
-            @if ((prop.developerProjectsCount || 0) > 1) {
-            <a [routerLink]="['/builder', getDeveloperName(prop)]" class="list-builder-row"
-              title="View Developer Portfolio">
-              <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-              <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-              <span class="material-symbols-outlined"
-                style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
-            </a>
-            } @else {
-            <div class="list-builder-row non-clickable" title="Promoter / Developer">
-              <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-              <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-            </div>
-            }
-            }
-
-            <div class="list-locality">
-              <span class="material-symbols-outlined loc-icon">location_on</span>
-              <span>{{ prop.locality }}, {{ prop.city }}</span>
-
-            </div>
-
-
-          </div>
-
-          <!-- Price & Action Section -->
-          <div class="list-price-action">
-            <div class="list-price-block">
-              <div class="list-main-price">{{ prop.price }}</div>
-              <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
-            </div>
-
-            <div class="list-actions-row">
-              <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
-                rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
-                <span class="material-symbols-outlined">chat</span>
-              </a>
-
-              <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
-                (click)="propertyService.toggleShortlist(prop.id)"
-                [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
-                <span class="material-symbols-outlined">
-                  {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+          <!-- Right Half: Padded Dossier Body -->
+          <div class="list-dossier-body">
+            <!-- Info Section -->
+            <div class="list-info">
+              @if ((prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) ||
+              !authService.canViewProperty(prop.id)) {
+              <div class="list-meta-top">
+                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
+                <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
+                }
+                @if (!authService.canViewProperty(prop.id)) {
+                <span class="badge-signin-lock">
+                  🔒 Sign In to View
                 </span>
-              </button>
+                }
+              </div>
+              }
+
+              <h3 class="list-title">
+                <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
+              </h3>
+
+              @if (getDeveloperName(prop)) {
+              @if ((prop.developerProjectsCount || 0) > 1) {
+              <a [routerLink]="['/builder', getDeveloperName(prop)]" class="list-builder-row"
+                title="View Developer Portfolio">
+                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+                <span class="material-symbols-outlined"
+                  style="font-size: 13px; color: var(--brand-teal, #0f3b4a); margin-left: 2px;">arrow_forward</span>
+              </a>
+              } @else {
+              <div class="list-builder-row non-clickable" title="Promoter / Developer">
+                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+              </div>
+              }
+              }
+
+              <div class="list-locality">
+                <span class="material-symbols-outlined loc-icon">location_on</span>
+                <span>{{ prop.locality }}, {{ prop.city }}</span>
+              </div>
+            </div>
+
+            <!-- Price & Action Section -->
+            <div class="list-price-action">
+              <div class="list-price-block">
+                <div class="list-main-price">{{ prop.price }}</div>
+                <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+              </div>
+
+              <div class="list-actions-row">
+                <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
+                  rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+                  <span class="material-symbols-outlined">chat</span>
+                </a>
+
+                <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
+                  (click)="propertyService.toggleShortlist(prop.id)"
+                  [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                  <span class="material-symbols-outlined">
+                    {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </article>
@@ -912,83 +911,82 @@
         <div class="results-list">
           @for (prop of suggestedProperties(); track prop.id) {
           <article class="list-dossier-card">
-            <!-- Thumbnail with Badges (Links to Details) -->
+            <!-- Left Half: Full-bleed Image with Creative Atmospheric Gradient -->
             <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
               <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
                 loading="lazy" decoding="async">
 
+              <!-- Cinematic Gradient Scrim (Edge Blend & Badge Contrast) -->
+              <div class="list-thumb-gradient-scrim"></div>
+
               <!-- Top Left Badges: RERA Approved & No Brokerage from Card View -->
               <div class="card-top-left-badges">
                 @if (isRera(prop)) {
-                <img 
-                  src="assets/badge/rera_approved_60x60.png" 
-                  alt="RERA Approved" 
-                  class="card-badge-rera" 
-                  [title]="getReraText(prop)"
-                  loading="lazy">
+                <img src="assets/badge/rera_approved_60x60.png" alt="RERA Approved" class="card-badge-rera"
+                  [title]="getReraText(prop)" loading="lazy">
                 }
-                <img 
-                  src="assets/badge/no-brokerage.png" 
-                  alt="0% Brokerage" 
-                  class="card-badge-no-brokerage" 
-                  title="0% Brokerage"
-                  loading="lazy">
+                <img src="assets/badge/no-brokerage.png" alt="0% Brokerage" class="card-badge-no-brokerage"
+                  title="0% Brokerage" loading="lazy">
               </div>
 
               <div class="list-thumb-badges">
                 <span class="badge-tag-sm"
                   style="background:var(--brand-teal, #0f3b4a);color:#ffffff;font-weight:600;">Suggested For You</span>
+                @if (prop.propertyType) {
+                <span class="list-type-pill">{{ prop.propertyType }}</span>
+                }
               </div>
 
             </div>
 
-            <!-- Info Section -->
-            <div class="list-info">
-              @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
-              <div class="list-meta-top">
-                <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
-              </div>
-              }
+            <!-- Right Half: Padded Dossier Body -->
+            <div class="list-dossier-body">
+              <!-- Info Section -->
+              <div class="list-info">
+                @if (prop.badges?.specialTag && !prop.badges.specialTag.toLowerCase().includes('cadastral')) {
+                <div class="list-meta-top">
+                  <span class="badge-tag-sm">{{ prop.badges.specialTag }}</span>
+                </div>
+                }
 
-              <h3 class="list-title">
-                <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
-              </h3>
+                <h3 class="list-title">
+                  <a [routerLink]="['/property', prop.id]" class="list-title-link">{{ prop.title }}</a>
+                </h3>
 
-              @if (getDeveloperName(prop)) {
-              <div class="list-builder-row non-clickable" title="Promoter / Developer">
-                <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
-                <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
-              </div>
-              }
+                @if (getDeveloperName(prop)) {
+                <div class="list-builder-row non-clickable" title="Promoter / Developer">
+                  <span class="material-symbols-outlined list-builder-icon">corporate_fare</span>
+                  <span class="list-builder-text">By <strong>{{ getDeveloperName(prop) }}</strong></span>
+                </div>
+                }
 
-              <div class="list-locality">
-                <span class="material-symbols-outlined loc-icon">location_on</span>
-                <span>{{ prop.locality }}, {{ prop.city }}</span>
-              </div>
-
-
-            </div>
-
-            <!-- Price & Action Section -->
-            <div class="list-price-action">
-              <div class="list-price-block">
-                <div class="list-main-price">{{ prop.price }}</div>
-                <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+                <div class="list-locality">
+                  <span class="material-symbols-outlined loc-icon">location_on</span>
+                  <span>{{ prop.locality }}, {{ prop.city }}</span>
+                </div>
               </div>
 
-              <div class="list-actions-row">
-                <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
-                  rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
-                  <span class="material-symbols-outlined">chat</span>
-                </a>
+              <!-- Price & Action Section -->
+              <div class="list-price-action">
+                <div class="list-price-block">
+                  <div class="list-main-price">{{ prop.price }}</div>
+                  <div class="list-unit-price">{{ prop.pricePerSqFt }}</div>
+                </div>
 
-                <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
-                  (click)="propertyService.toggleShortlist(prop.id)"
-                  [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
-                  <span class="material-symbols-outlined">
-                    {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
-                  </span>
-                </button>
+                <div class="list-actions-row">
+                  <a class="btn-list-wa" [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" target="_blank"
+                    rel="noopener" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+                    <span class="material-symbols-outlined">chat</span>
+                  </a>
+
+                  <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted"
+                    (click)="propertyService.toggleShortlist(prop.id)"
+                    [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                    <span class="material-symbols-outlined">
+                      {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </article>
