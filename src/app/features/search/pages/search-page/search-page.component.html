@@ -745,17 +745,6 @@
                 <span>{{ prop.facingOrView || prop.bhkBadge }}</span>
               </div>
               }
-              @if (prop.projectStatus) {
-              <div class="spec-pill status-pill" title="Readiness Status">
-                <span class="material-symbols-outlined spec-icon">verified</span>
-                <span>{{ prop.projectStatus }}</span>
-              </div>
-              } @else if (prop.highlights && prop.highlights[0]) {
-              <div class="spec-pill status-pill" title="Highlight">
-                <span class="material-symbols-outlined spec-icon">task_alt</span>
-                <span>{{ prop.highlights[0] }}</span>
-              </div>
-              }
             </div>
 
             <!-- Row 4: Price & Action Footer -->
@@ -975,17 +964,6 @@
                 <div class="spec-pill" title="Facing &amp; Configuration">
                   <span class="material-symbols-outlined spec-icon">explore</span>
                   <span>{{ prop.facingOrView || prop.bhkBadge }}</span>
-                </div>
-                }
-                @if (prop.projectStatus) {
-                <div class="spec-pill status-pill" title="Readiness Status">
-                  <span class="material-symbols-outlined spec-icon">verified</span>
-                  <span>{{ prop.projectStatus }}</span>
-                </div>
-                } @else if (prop.highlights && prop.highlights[0]) {
-                <div class="spec-pill status-pill" title="Highlight">
-                  <span class="material-symbols-outlined spec-icon">task_alt</span>
-                  <span>{{ prop.highlights[0] }}</span>
                 </div>
                 }
               </div>

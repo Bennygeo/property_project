@@ -144,11 +144,15 @@ export class SearchPageComponent implements OnInit {
       prop?.builder ||
       '';
     const clean = raw ? raw.replace(/â\x80\x93|â\x80\x94|â/g, '–').trim() : '';
-    if (clean && clean.toLowerCase() !== 'null' && clean.toLowerCase() !== 'undefined' && clean.toLowerCase() !== 'none') {
+    if (
+      clean &&
+      clean.toLowerCase() !== 'null' &&
+      clean.toLowerCase() !== 'undefined' &&
+      clean.toLowerCase() !== 'none' &&
+      !clean.toLowerCase().includes('housing board') &&
+      !clean.toLowerCase().includes('executive engineer')
+    ) {
       return clean;
-    }
-    if (prop?.title?.toLowerCase().includes('cadastral') || prop?.title?.toLowerCase().includes('layout')) {
-      return 'Executive Engineer – Tamil Nadu Housing Board';
     }
     return '';
   }
