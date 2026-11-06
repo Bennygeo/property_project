@@ -9,7 +9,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <section class="max-w-content flash-banner-section" aria-label="Exclusive Verified Deals">
+    <section class="flash-banner-section" aria-label="Exclusive Verified Deals">
       <div 
         class="flash-billboard" 
         (mouseenter)="pauseAutoSlide()" 
@@ -58,8 +58,8 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
           <div class="flash-gradient-overlay"></div>
         </div>
 
-        <!-- Panoramic Full-Width 200px Content Body -->
-        <div class="flash-panoramic-body">
+        <!-- Panoramic Full-Width Content Body -->
+        <div class="flash-panoramic-body max-w-content">
 
           <!-- Left & Center Deck: Fills 100% available space with smooth slide transitions -->
           <div class="slides-deck">
@@ -708,27 +708,43 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       100% { transform: scaleX(1); }
     }
 
-    /* Mobile adjustments: strictly 120px tall on screens <= 1023px (Web screens >= 1024px unaffected) */
+    /* Mobile adjustments: strictly 100px tall and full width on screens <= 1023px (Web screens >= 1024px unaffected) */
     @media (max-width: 1023px) {
+      .flash-banner-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-bottom: 0.75rem;
+      }
       .flash-billboard {
-        height: 120px;
-        min-height: 120px;
-        max-height: 120px;
+        height: 100px;
+        min-height: 100px;
+        max-height: 100px;
+        width: 100%;
         margin-top: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0 !important;
         cursor: pointer;
       }
       .flash-panoramic-body {
-        padding: 8px 12px 10px;
+        padding: 6px 12px 6px;
         flex-direction: column;
         justify-content: center;
         align-items: stretch;
         gap: 0;
         height: 100%;
+        width: 100%;
+        max-width: 100% !important;
         box-sizing: border-box;
       }
       .slides-deck {
         height: 100%;
         min-height: 0;
+        width: 100%;
         display: flex;
         align-items: stretch;
       }
@@ -737,7 +753,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        gap: 6px;
+        gap: 4px;
         position: absolute;
         inset: 0;
         height: 100%;
@@ -762,24 +778,24 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         display: none !important;
       }
       .title-200 {
-        font-size: 13.5px;
+        font-size: 12px;
         font-weight: 600;
-        line-height: 1.25;
+        line-height: 1.2;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         color: #ffffff;
         margin: 0;
-        padding-right: 46px; /* Room for slide dots positioned top-right */
+        padding-right: 40px; /* Room for slide dots positioned top-right */
       }
       .col-property-card {
         display: flex;
         width: 100%;
-        height: 58px;
+        height: 52px;
         margin: 0;
       }
       .banner-property-card {
-        height: 58px;
+        height: 52px;
         width: 100%;
         max-width: 100%;
         flex-direction: row;
@@ -793,7 +809,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         box-sizing: border-box;
       }
       .bpc-img-wrap {
-        width: 72px;
+        width: 62px;
         height: 100%;
         flex-shrink: 0;
         background: rgba(15, 23, 42, 0.6);
@@ -809,14 +825,14 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         display: none !important;
       }
       .bpc-info {
-        padding: 0 12px 0 10px;
+        padding: 0 10px 0 8px;
         border-top: none;
         border-left: 1px solid rgba(255, 255, 255, 0.08);
         background: transparent;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 4px;
+        gap: 3px;
         flex: 1;
         min-width: 0;
         height: 100%;
@@ -828,21 +844,21 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         gap: 8px;
       }
       .bpc-title {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         color: #ffffff;
         margin: 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        line-height: 1.2;
+        line-height: 1.15;
       }
       .bpc-price {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         color: #ffffff;
         white-space: nowrap;
-        line-height: 1.2;
+        line-height: 1.15;
         flex-shrink: 0;
       }
       .bpc-meta-row {
@@ -850,25 +866,25 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        font-size: 11px;
-        line-height: 1.2;
+        font-size: 10.5px;
+        line-height: 1.15;
       }
       .bpc-loc {
         display: inline-flex;
         align-items: center;
-        gap: 3px;
+        gap: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         color: #cbd5e1;
-        font-size: 11px;
+        font-size: 10.5px;
       }
       .bpc-loc .material-symbols-outlined {
-        font-size: 13px;
+        font-size: 12px;
         color: var(--brand-green, #5e8f72);
       }
       .bpc-sqft {
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 500;
         color: #94a3b8;
         white-space: nowrap;
@@ -876,53 +892,53 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       }
       .banner-slide-dots {
         position: absolute;
-        top: 9px;
+        top: 6px;
         right: 12px;
         bottom: auto;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         z-index: 10;
       }
       .slide-dot {
-        width: 6px;
-        height: 6px;
+        width: 5px;
+        height: 5px;
       }
       .slide-dot.active {
-        width: 14px;
+        width: 12px;
       }
     }
 
     @media (max-width: 480px) {
       .flash-panoramic-body {
-        padding: 7px 10px 9px;
+        padding: 5px 8px 5px;
       }
       .title-200 {
-        font-size: 12.5px;
-        padding-right: 42px;
+        font-size: 11.5px;
+        padding-right: 36px;
       }
       .col-property-card {
-        height: 56px;
+        height: 52px;
       }
       .banner-property-card {
-        height: 56px;
+        height: 52px;
       }
       .bpc-img-wrap {
-        width: 66px;
+        width: 58px;
       }
       .bpc-title {
-        font-size: 12px;
+        font-size: 11.5px;
       }
       .bpc-price {
-        font-size: 13px;
+        font-size: 12.5px;
       }
       .bpc-loc,
       .bpc-sqft {
-        font-size: 10.5px;
+        font-size: 10px;
       }
       .banner-slide-dots {
-        top: 8px;
-        right: 10px;
+        top: 5px;
+        right: 8px;
       }
     }
   `]

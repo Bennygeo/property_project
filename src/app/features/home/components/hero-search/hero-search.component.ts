@@ -725,7 +725,7 @@ export interface PropertyTypeOption {
     }
     @media (max-width: 640px) {
       .hero-section {
-        padding-top: 1.25rem;
+        padding-top: 0;
       }
       .hero-text-center {
         margin-bottom: 1.25rem;
