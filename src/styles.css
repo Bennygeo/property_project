@@ -676,8 +676,6 @@ optgroup {
    ========================================================================== */
 
 /* 2. Comprehensive 3px Rule for All Components & Pages Except Property Card & Circular Elements */
-app-home-page app-top-concierge-bar,
-app-home-page app-top-concierge-bar *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-header,
 app-home-page app-header *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page .hero-text-center,

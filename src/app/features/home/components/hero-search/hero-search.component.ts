@@ -69,7 +69,7 @@ export interface PropertyTypeOption {
             <a routerLink="/post-property" class="buy-sell-tab-btn btn-sell-link" title="Post your RERA-approved property to sell">
               <span class="material-symbols-outlined tab-icon">add_home_work</span>
               <span>Sell Property</span>
-              <span class="tab-badge-free">Post Free</span>
+              <span class="tab-badge-free"><span class="badge-post-word">Post </span>Free</span>
             </a>
           </div>
         </div>
@@ -226,6 +226,7 @@ export interface PropertyTypeOption {
                   <span class="segment-label">Property Type</span>
                   <span class="segment-value">{{ getSelectedTypeDisplay() }}</span>
                 </div>
+                <span class="material-symbols-outlined chevron-icon" [class.rotated]="isTypeDropdownOpen()" aria-hidden="true">expand_more</span>
               </div>
 
               <!-- Multi-Select Popover Panel -->
@@ -285,6 +286,7 @@ export interface PropertyTypeOption {
                   <span class="segment-label">Budget</span>
                   <span class="segment-value">{{ propertyService.selectedBudget() }}</span>
                 </div>
+                <span class="material-symbols-outlined chevron-icon" [class.rotated]="isBudgetDropdownOpen()" aria-hidden="true">expand_more</span>
               </div>
 
               <!-- Budget Popover Panel -->
@@ -350,6 +352,7 @@ export interface PropertyTypeOption {
             <!-- Segment 4: Search Button -->
             <div class="pill-action-wrap">
               <button type="button" class="btn-pill-search" (click)="executeSearch()" id="hero-search-btn">
+                <span class="material-symbols-outlined search-btn-icon" aria-hidden="true">search</span>
                 <span class="search-btn-text">Search</span>
               </button>
             </div>
@@ -896,6 +899,7 @@ export interface PropertyTypeOption {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       height: 38px;
       padding: 0 1.5rem;
       border-radius: 9999px;
@@ -907,6 +911,10 @@ export interface PropertyTypeOption {
       border: 2px solid var(--brand-green);
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-pill-search .search-btn-icon {
+      font-size: 17px;
+      color: var(--brand-green);
     }
     .btn-pill-search:hover {
       /* background: #fef2f2; */
@@ -941,20 +949,93 @@ export interface PropertyTypeOption {
 
     /* Mobile Responsive Pill Stack */
     @media (max-width: 768px) {
+      .hero-buy-sell-tabs {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        gap: 8px;
+        margin-top: 0.5rem;
+        margin-bottom: 0.85rem;
+        box-sizing: border-box;
+      }
+      .buy-sell-tab-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 44px;
+        padding: 0 8px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
+        box-sizing: border-box;
+        text-decoration: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .buy-sell-tab-btn .tab-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .buy-sell-tab-btn.active {
+        background: var(--brand-green, #5e8f72);
+        border: 1.5px solid var(--brand-green, #5e8f72);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.28);
+      }
+      .buy-sell-tab-btn.active .tab-icon {
+        color: #ffffff;
+      }
+      .buy-sell-tab-btn.btn-sell-link {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        color: #334155;
+      }
+      .buy-sell-tab-btn.btn-sell-link .tab-icon {
+        color: #64748b;
+      }
+      .tab-badge-free {
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        background: var(--brand-green-subtle, #e5f7ec);
+        color: var(--brand-green, #5e8f72);
+        border: 1px solid var(--brand-green, #5e8f72);
+        padding: 2px 5px;
+        border-radius: 4px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
       .search-pill-bar {
         flex-direction: column;
         border-radius: 18px;
-        padding: 0.75rem;
+        padding: 0.85rem;
         gap: 0.625rem;
         box-sizing: border-box;
+        box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04);
+        border: 1px solid #e2e8f0;
       }
       .pill-segment {
         width: 100%;
         border-radius: 12px;
         background: #f8fafc;
         border: 1px solid #f1f5f9;
-        padding: 0.65rem 0.85rem;
+        padding: 0.75rem 0.95rem;
         box-sizing: border-box;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .pill-segment:active {
+        background: #f1f5f9;
+        border-color: #e2e8f0;
+      }
+      .segment-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
       }
       .type-popover-panel,
       .budget-popover-panel {
@@ -974,19 +1055,51 @@ export interface PropertyTypeOption {
       .pill-action-wrap {
         width: 100%;
         margin-left: 0;
-        display: flex;
-        justify-content: left;
+        margin-top: 0.35rem;
+        display: block;
       }
       .btn-pill-search {
-        width: auto;
-        min-width: 130px;
+        width: 100% !important;
+        min-width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: center;
         justify-content: center;
-        padding: 0 1.5rem;
-        height: 38px;
-        font-size: 13px;
+        gap: 8px;
+        background: var(--brand-green, #5e8f72);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-size: 14.5px;
         font-weight: 600;
-        border: 1.5px solid var(--brand-green, #5e8f72);
-        border-radius: 9999px;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 14px rgba(94, 143, 114, 0.35);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        margin: 0;
+        padding: 0 1rem;
+      }
+      .btn-pill-search .search-btn-icon {
+        font-size: 20px;
+        color: #ffffff;
+      }
+      .btn-pill-search:hover,
+      .btn-pill-search:active {
+        background: var(--brand-green-hover, #497259);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(94, 143, 114, 0.4);
+      }
+    }
+
+    @media (max-width: 380px) {
+      .buy-sell-tab-btn {
+        font-size: 12px;
+        gap: 4px;
+        padding: 0 4px;
+      }
+      .badge-post-word {
+        display: none;
       }
     }
 
