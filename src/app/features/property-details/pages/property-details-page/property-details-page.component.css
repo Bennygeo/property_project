@@ -4562,7 +4562,7 @@
     align-items: flex-start !important;
     gap: 10px !important;
     padding: 10px !important;
-    background: rgba(248, 250, 252, 0.4) !important;
+    background: rgba(248, 250, 252, 0.01) !important;
     border-radius: 8px !important;
   }
 
@@ -4573,47 +4573,47 @@
     flex-direction: row !important;
     align-items: flex-start !important;
     gap: 10px !important;
-    background: rgba(13, 148, 136, 0.035) !important; /* Ultra-mild Teal matching #0d9488 */
+    background: rgba(13, 148, 136, 0.01) !important; /* 0.01 Teal matching #0d9488 */
   }
 
   .connected-workspace-window .transit-card:nth-child(2),
   .connected-workspace-window .transit-card:has(.transit-icon-box.highway) {
-    background: rgba(37, 99, 235, 0.035) !important; /* Ultra-mild Cobalt Blue matching #2563eb */
+    background: rgba(37, 99, 235, 0.01) !important; /* 0.01 Cobalt Blue matching #2563eb */
   }
 
   .connected-workspace-window .transit-card:nth-child(3),
   .connected-workspace-window .transit-card:has(.transit-icon-box.train) {
-    background: rgba(124, 58, 237, 0.035) !important; /* Ultra-mild Violet matching #7c3aed */
+    background: rgba(124, 58, 237, 0.01) !important; /* 0.01 Violet matching #7c3aed */
   }
 
   .connected-workspace-window .transit-card:nth-child(4),
   .connected-workspace-window .transit-card:has(.transit-icon-box.bus) {
-    background: rgba(22, 163, 74, 0.035) !important; /* Ultra-mild Green matching #16a34a */
+    background: rgba(22, 163, 74, 0.01) !important; /* 0.01 Green matching #16a34a */
   }
 
   .connected-workspace-window .transit-card:nth-child(5),
   .connected-workspace-window .transit-card:has(.transit-icon-box.airport) {
-    background: rgba(2, 132, 199, 0.035) !important; /* Ultra-mild Sky Blue matching #0284c7 */
+    background: rgba(2, 132, 199, 0.01) !important; /* 0.01 Sky Blue matching #0284c7 */
   }
 
   .connected-workspace-window .transit-card:nth-child(6),
   .connected-workspace-window .transit-card:has(.transit-icon-box.fuel) {
-    background: rgba(217, 119, 6, 0.035) !important; /* Ultra-mild Amber matching #d97706 */
+    background: rgba(217, 119, 6, 0.01) !important; /* 0.01 Amber matching #d97706 */
   }
 
   .connected-workspace-window .transit-card:nth-child(7),
   .connected-workspace-window .transit-card:has(.transit-icon-box.school) {
-    background: rgba(79, 70, 229, 0.035) !important; /* Ultra-mild Indigo matching #4f46e5 */
+    background: rgba(79, 70, 229, 0.01) !important; /* 0.01 Indigo matching #4f46e5 */
   }
 
   .connected-workspace-window .transit-card:nth-child(8),
   .connected-workspace-window .transit-card:has(.transit-icon-box.hospital) {
-    background: rgba(225, 29, 72, 0.035) !important; /* Ultra-mild Rose matching #e11d48 */
+    background: rgba(225, 29, 72, 0.01) !important; /* 0.01 Rose matching #e11d48 */
   }
 
   .connected-workspace-window .transit-card:nth-child(9),
   .connected-workspace-window .transit-card:has(.transit-icon-box.safety) {
-    background: rgba(8, 145, 178, 0.035) !important; /* Ultra-mild Cyan matching #0891b2 */
+    background: rgba(8, 145, 178, 0.01) !important; /* 0.01 Cyan matching #0891b2 */
   }
 
   .transit-icon-box {
