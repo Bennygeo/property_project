@@ -196,7 +196,7 @@
             <button type="button" class="hanu-tab-btn" [class.active]="activeMediaTab() === 'walkthrough'"
               [class.unlocked]="prop.isMediaUnlocked" (click)="setMediaTab('walkthrough')">
               <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'smart_display' : 'lock' }}</span>
-              <span>4K Walkthrough</span>
+              <span>Walkthrough</span>
               @if (!prop.isMediaUnlocked) {
               <span class="pts-badge">{{ prop.mediaPoints }} Pts</span>
               }
@@ -205,7 +205,7 @@
             <button type="button" class="hanu-tab-btn" [class.active]="activeMediaTab() === 'drone'"
               [class.unlocked]="prop.isMediaUnlocked" (click)="setMediaTab('drone')">
               <span class="material-symbols-outlined">{{ prop.isMediaUnlocked ? 'flight' : 'lock' }}</span>
-              <span>Drone Aerial Survey</span>
+              <span>Drone View</span>
               @if (!prop.isMediaUnlocked) {
               <span class="pts-badge">{{ prop.mediaPoints }} Pts</span>
               }
@@ -854,7 +854,6 @@
               <!-- 2. Legal Clearances & Title Sanction -->
               <section class="hanu-card" id="legal-approvals">
                 <div class="hanu-card-header">
-                  <span class="material-symbols-outlined text-red">gavel</span>
                   <div class="legal-header-title-wrap">
                     <h2>Legal Clearances &amp; Sanctions Dossier</h2>
                     <p class="hanu-card-subtitle">State statutory approvals, revenue patta classification, and banking
@@ -945,15 +944,10 @@
               <!-- 3. Physical Survey & Field Audit Remarks -->
               <section class="hanu-card survey-audit-card" id="survey-remarks">
                 <div class="hanu-card-header">
-                  <span class="material-symbols-outlined text-red">fact_check</span>
                   <div>
                     <h2>Field Audit &amp; Cadastral Remarks</h2>
                     <p class="hanu-card-subtitle">Direct observations and ground verification notes from field surveyors
                     </p>
-                  </div>
-                  <div class="cadastral-seal-badge">
-                    <span class="material-symbols-outlined">verified</span>
-                    <span>Ground Demarcated</span>
                   </div>
                 </div>
 
@@ -1153,11 +1147,11 @@
                 <div class="overview-narrative-card">
                   <div class="narrative-quote-bar"></div>
                   <div class="narrative-body">
-                    <span class="narrative-badge">DEVELOPMENT DOSSIER</span>
+                    <span class="narrative-badge">DEVELOPMENT</span>
                     <p class="narrative-lead">
                       {{ prop.developer?.aboutText || prop.description || (prop.title + ' is an authenticated,
                       government-sanctioned property situated in the prime corridor of ' + prop.locality + ', ' +
-                      prop.city + '. Featuring clear cadastral boundaries, direct road access, and verified freehold
+                      prop.city + '. Featuring clear boundaries, direct road access, and verified freehold
                       documentation, this property represents an outstanding asset for immediate villa construction or
                       high-yield capital appreciation.') }}
                     </p>

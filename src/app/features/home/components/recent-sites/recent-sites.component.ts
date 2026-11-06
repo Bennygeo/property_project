@@ -250,7 +250,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .section-title {
-      font-size: 1.5rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--text-slate-900, #0f172a);
       letter-spacing: -0.02em;

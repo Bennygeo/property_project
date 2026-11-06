@@ -67,7 +67,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       color: var(--brand-red);
     }
     .section-title {
-      font-size: 1.5rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--text-slate-950);
       letter-spacing: -0.02em;
@@ -75,7 +75,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
     }
     @media (min-width: 640px) {
       .section-title {
-        font-size: 1.5rem;
+        font-size: 1rem;
       }
     }
     .view-all-link {

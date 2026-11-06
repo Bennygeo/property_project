@@ -595,7 +595,7 @@
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 400;
   color: var(--text-primary);
   margin: 0 0 4px 0;
@@ -1700,11 +1700,11 @@
   border-radius: 50%;
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: var(--brand-green);
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(18px);
 }
 
