@@ -106,6 +106,23 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
   setDetailTab(tab: DetailContextTab): void {
     this.activeDetailTab.set(tab);
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      setTimeout(() => {
+        const workspaceEl = document.getElementById('details-context-workspace');
+        if (workspaceEl) {
+          const isMobile = window.innerWidth <= 768;
+          const offset = isMobile ? 10 : 76;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = workspaceEl.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = Math.max(0, elementPosition - offset);
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 15);
+    }
   }
 
   cleanInfraText(val: string | null | undefined, fallback: string): string {
@@ -433,6 +450,20 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   // Media Tab Selection
   setMediaTab(tab: MediaStageTab): void {
     this.activeMediaTab.set(tab);
+    if (typeof window !== 'undefined' && typeof document !== 'undefined' && window.innerWidth <= 768) {
+      setTimeout(() => {
+        const mediaEl = document.querySelector('.hanu-media-card');
+        if (mediaEl) {
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = mediaEl.getBoundingClientRect().top;
+          const offsetPosition = Math.max(0, elementRect - bodyRect - 10);
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 15);
+    }
   }
 
   // Photo Carousel Controls
