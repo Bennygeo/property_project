@@ -317,7 +317,7 @@
    2. MAIN DOSSIER PAGE CONTAINER (FLAT, OPEN CANVAS)
    ========================================================================== */
 .hanu-property-page {
-  padding: 2rem 1rem 5rem;
+  padding: 2rem 1rem 2rem;
   background: #ffffff;
 }
 
@@ -1474,7 +1474,7 @@
 }
 
 .hanu-card-header h2 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #0f172a;
   margin: 0;
@@ -3810,9 +3810,10 @@
 }
 
 @media (max-width: 768px) {
+
   /* 1. Page Container & Spacing */
   .hanu-property-page {
-    padding: 0.75rem 0.75rem 5.5rem !important;
+    padding: 0.75rem 0.75rem 2.5rem !important;
   }
 
   .hanu-two-col-layout {
@@ -3908,7 +3909,7 @@
   }
 
   .hanu-title {
-    font-size: 18px !important;
+    font-size: 15px !important;
     font-weight: 600 !important;
     line-height: 1.3 !important;
     margin: 0 0 0.4rem 0 !important;
@@ -3951,7 +3952,7 @@
     padding: 10px 12px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 6px;
   }
 
   .mob-ctx-price-col {
@@ -3961,7 +3962,7 @@
   }
 
   .mob-ctx-price {
-    font-size: 18.5px;
+    font-size: 15px;
     font-weight: 700;
     color: #0f172a;
     letter-spacing: -0.02em;
@@ -4307,12 +4308,53 @@
   }
 
   .connected-workspace-window {
-    padding: 14px 12px !important;
+    padding: 16px 14px !important;
     border-radius: 0 0 8px 8px !important;
+    border: none !important;
+  }
+
+  /* Universal No-Boxes & No-Borders Rule Inside Tabs View on Mobile */
+  .connected-workspace-window .hanu-card,
+  .connected-workspace-window .hanu-card-header,
+  .connected-workspace-window .infrastructure-iconic-grid,
+  .connected-workspace-window .infra-card,
+  .connected-workspace-window .infra-card:nth-child(even),
+  .connected-workspace-window .infra-card:nth-last-child(2),
+  .connected-workspace-window .infra-card:last-child,
+  .connected-workspace-window .infra-additional-bar,
+  .connected-workspace-window .hanu-specs-grid,
+  .connected-workspace-window .hanu-spec-item,
+  .connected-workspace-window .hanu-spec-item:nth-child(even),
+  .connected-workspace-window .hanu-spec-item:nth-last-child(2),
+  .connected-workspace-window .hanu-spec-item:last-child,
+  .connected-workspace-window .legal-clearance-badge,
+  .connected-workspace-window .cadastral-seal-badge,
+  .connected-workspace-window .bank-chip,
+  .connected-workspace-window .survey-audit-card,
+  .connected-workspace-window .audit-point,
+  .connected-workspace-window .transit-matrix-grid,
+  .connected-workspace-window .transit-card,
+  .connected-workspace-window .transit-card.highlight-corridor-card,
+  .connected-workspace-window .transit-card:nth-last-child(2),
+  .connected-workspace-window .transit-card:last-child,
+  .connected-workspace-window .overview-narrative-card,
+  .connected-workspace-window .overview-specs-matrix,
+  .connected-workspace-window .overview-spec-cell,
+  .connected-workspace-window .overview-highlight-item,
+  .connected-workspace-window .overview-amenity-chip {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
 
   .connected-workspace-window .hanu-card {
-    margin: 0 0 1.25rem 0 !important;
+    margin: 0 0 1.5rem 0 !important;
+    padding: 0 !important;
   }
 
   .connected-workspace-window .hanu-card:last-child {
@@ -4322,15 +4364,16 @@
   .hanu-card-header {
     flex-wrap: wrap !important;
     align-items: flex-start !important;
-    gap: 8px !important;
-    padding-bottom: 10px !important;
-    margin-bottom: 12px !important;
+    gap: 6px !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 14px !important;
   }
 
   .hanu-card-header h2 {
-    font-size: 14.5px !important;
+    font-size: 15px !important;
     font-weight: 600 !important;
     line-height: 1.3 !important;
+    color: #0f172a !important;
   }
 
   .hanu-card-subtitle {
@@ -4342,49 +4385,39 @@
   .legal-clearance-badge,
   .cadastral-seal-badge {
     margin-left: 0 !important;
+    padding: 0 !important;
     width: fit-content !important;
+    color: #2c4938 !important;
   }
 
-  /* 8. Tab 1 (Infrastructure): Clean Zebra-Striped 1-Column Spec Table */
+  /* 8. Tab 1 (Infrastructure): Open Planar Spec List (No Inner Boxes or Borders) */
   .infrastructure-iconic-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0 !important;
+    gap: 14px !important;
     margin-top: 0.25rem !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   .infra-card {
-    padding: 10px 12px !important;
+    padding: 0 !important;
     gap: 12px !important;
-    align-items: center !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    background: #ffffff !important;
-  }
-
-  .infra-card:nth-child(even) {
-    background: #f8fafc !important;
-  }
-
-  .infra-card:last-child {
-    border-bottom: none !important;
+    align-items: flex-start !important;
   }
 
   .infra-card-header-row {
-    margin-top: 0 !important;
+    margin-top: 2px !important;
   }
 
   .infra-icon-emblem {
-    width: 32px !important;
-    height: 32px !important;
-    min-width: 32px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
     align-items: center !important;
   }
 
   .infra-icon-emblem span {
-    font-size: 24px !important;
+    font-size: 22px !important;
   }
 
   .infra-category-tag {
@@ -4401,32 +4434,25 @@
     display: none !important;
   }
 
-  /* 9. Tab 2 (Legal Specs): Clean Bordered 2-Column Key-Value Specification Table */
+  .infra-additional-bar {
+    padding: 4px 0 0 0 !important;
+    margin-top: 14px !important;
+  }
+
+  /* 9. Tab 2 (Legal Specs): Open Planar 2-Column Key-Value List (No Inner Boxes or Borders) */
   .hanu-specs-grid {
     display: flex !important;
     flex-direction: column !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    background: #ffffff !important;
+    gap: 12px !important;
   }
 
   .hanu-spec-item {
     display: grid !important;
-    grid-template-columns: 42% 58% !important;
-    align-items: start !important;
+    grid-template-columns: 44% 56% !important;
+    align-items: baseline !important;
     gap: 10px !important;
-    padding: 10px 12px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
-  }
-
-  .hanu-spec-item:nth-child(even) {
-    background: #f8fafc !important;
-  }
-
-  .hanu-spec-item:last-child {
-    border-bottom: none !important;
   }
 
   .spec-label {
@@ -4450,57 +4476,82 @@
   }
 
   .hanu-spec-item.bank-loans-item {
-    grid-template-columns: 1fr !important;
-    gap: 4px !important;
+    grid-template-columns: 44% 56% !important;
+  }
+
+  .hanu-spec-item.bank-loans-item .bank-pill-row {
+    grid-column: 2 / -1 !important;
+    gap: 8px !important;
+    margin-top: 2px !important;
+  }
+
+  .bank-chip {
+    padding: 0 !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+  }
+
+  .bank-chip:not(:last-child)::after {
+    content: "•";
+    margin-left: 8px;
+    color: #cbd5e1;
   }
 
   .survey-audit-card {
-    padding: 12px !important;
-    border-radius: 8px !important;
-    margin-top: 1rem !important;
+    padding: 0 !important;
+    margin-top: 1.5rem !important;
+  }
+
+  .survey-audit-body {
+    margin-top: 0.5rem !important;
   }
 
   .surveyor-stamp-box {
     display: none !important;
   }
 
-  /* 10. Tab 3 (Connectivity): Crisp 2-Column Vertical Cards */
+  .audit-checkpoints {
+    gap: 10px 14px !important;
+  }
+
+  .audit-point {
+    padding: 0 !important;
+    font-size: 11.5px !important;
+  }
+
+  /* 10. Tab 3 (Connectivity): Open Planar 2-Column Benchmarks (No Inner Boxes or Borders) */
   .transit-matrix-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+    gap: 16px 12px !important;
     margin-top: 0.25rem !important;
   }
 
   .transit-card {
-    flex-direction: column !important;
+    flex-direction: row !important;
     align-items: flex-start !important;
-    gap: 6px !important;
-    padding: 10px 12px !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    background: #f8fafc !important;
+    gap: 10px !important;
+    padding: 0 !important;
   }
 
   .transit-card.highlight-corridor-card {
     grid-column: 1 / -1 !important;
     flex-direction: row !important;
-    align-items: center !important;
-    gap: 12px !important;
-    background: #f0fdf4 !important;
-    border-color: #bbf7d0 !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
   }
 
   .transit-icon-box {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    margin: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    margin: 2px 0 0 0 !important;
     align-items: center !important;
   }
 
   .transit-icon-box span {
-    font-size: 22px !important;
+    font-size: 20px !important;
   }
 
   .transit-type {
@@ -4519,9 +4570,19 @@
     margin-top: 1px !important;
   }
 
-  /* 11. Tab 4 (Overview): 2x2 Quick Specs Matrix */
+  /* 11. Tab 4 (Overview): Open Planar Narrative & Specs (No Inner Boxes or Borders) */
+  .overview-narrative-card {
+    margin: 0 0 1.25rem 0 !important;
+  }
+
+  .narrative-quote-bar,
+  .cadastral-hatch-divider {
+    display: none !important;
+  }
+
   .overview-narrative-card .narrative-body {
-    padding: 12px !important;
+    padding: 0 !important;
+    gap: 4px !important;
   }
 
   .narrative-lead {
@@ -4532,17 +4593,33 @@
   .overview-specs-matrix {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
+    gap: 14px 12px !important;
+    padding: 0 !important;
     margin-bottom: 1.25rem !important;
   }
 
   .overview-spec-cell {
-    padding: 10px 12px !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    background: #f8fafc !important;
+    padding: 0 !important;
+  }
+
+  .overview-highlights-grid {
+    gap: 10px !important;
+  }
+
+  .overview-highlight-item {
+    padding: 0 !important;
+    gap: 10px !important;
+  }
+
+  .overview-amenities-tags {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 12px !important;
+  }
+
+  .overview-amenity-chip {
+    padding: 0 !important;
+    gap: 6px !important;
   }
 
   /* 12. Hide Redundant In-Page WhatsApp Card & Floating Widgets on Mobile (Replaced by Unified Bottom Dock) */
