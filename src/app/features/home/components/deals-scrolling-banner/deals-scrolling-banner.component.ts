@@ -9,7 +9,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <section class="flash-banner-section" aria-label="Exclusive Verified Deals">
+    <section class="max-w-content flash-banner-section" aria-label="Exclusive Verified Deals">
       <div 
         class="flash-billboard" 
         (mouseenter)="pauseAutoSlide()" 
@@ -58,8 +58,8 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
           <div class="flash-gradient-overlay"></div>
         </div>
 
-        <!-- Panoramic Full-Width Content Body -->
-        <div class="flash-panoramic-body max-w-content">
+        <!-- Panoramic Full-Width 200px Content Body -->
+        <div class="flash-panoramic-body">
 
           <!-- Left & Center Deck: Fills 100% available space with smooth slide transitions -->
           <div class="slides-deck">
@@ -911,7 +911,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
 
     @media (max-width: 480px) {
       .flash-panoramic-body {
-        padding: 5px 8px 5px;
+        padding: 12px;
       }
       .title-200 {
         font-size: 11.5px;
