@@ -125,7 +125,7 @@ export interface PropertyTypeOption {
               <!-- Mobile Search Button at the end of search text area -->
               <button type="button" class="btn-mobile-input-search" (click)="executeSearch(); $event.stopPropagation()" id="mobile-inline-search-btn" aria-label="Search properties">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <span class="search-text-mobile">Search</span>
+                <!-- <span class="search-text-mobile">Search</span> -->
               </button>
 
               <!-- Trending & Auto-Suggest Dropdown Panel -->
@@ -397,7 +397,6 @@ export interface PropertyTypeOption {
               <!-- 1. BUY -> PLOTS | COMMERCIAL ? -->
               <div class="mobile-q-section">
                 <div class="mobile-q-title">
-                  <span class="q-step-num">1</span>
                   <span>BUY &rarr; PLOTS | COMMERCIAL ?</span>
                 </div>
                 <div class="mobile-q-toggle-row">
@@ -423,7 +422,6 @@ export interface PropertyTypeOption {
               <!-- 2. PRICE RANGES ? -->
               <div class="mobile-q-section">
                 <div class="mobile-q-title">
-                  <span class="q-step-num">2</span>
                   <span>PRICE RANGES ?</span>
                 </div>
                 <div class="mobile-q-budget-grid">
@@ -442,7 +440,6 @@ export interface PropertyTypeOption {
               <!-- 3. INVESTMENT | READY TO BUILD ? -->
               <div class="mobile-q-section">
                 <div class="mobile-q-title">
-                  <span class="q-step-num">3</span>
                   <span>INVESTMENT | READY TO BUILD ?</span>
                 </div>
                 <div class="mobile-q-toggle-row">
@@ -487,7 +484,7 @@ export interface PropertyTypeOption {
               <div class="mobile-q-footer">
                 <button type="button" class="btn-mobile-prompt-search" (click)="executeMobileGuidedSearch()">
                   <span class="material-symbols-outlined search-icon">search</span>
-                  <span>Search Properties</span>
+                  <span>Search Plots</span>
                 </button>
               </div>
             </div>
@@ -636,10 +633,10 @@ export interface PropertyTypeOption {
       justify-content: center;
       gap: 0.5rem;
       padding: 0.5rem 1.25rem;
-      border-radius: 8px;
+      border-radius: 6px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
-      font-weight: 600;
+      font-weight: 500;
       color: #334155;
       text-decoration: none;
       border: 1.5px solid #cbd5e1;
@@ -700,7 +697,7 @@ export interface PropertyTypeOption {
 
     .tab-badge-free {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       background: var(--brand-green-subtle, #e5f7ec);
@@ -714,7 +711,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.625rem;
       padding: 0.3rem 0.85rem 0.3rem 0.35rem;
-      border-radius: 9999px;
+      border-radius: 6px;
       background: #ffffff;
       border: 1.5px solid #e2e8f0;
       /* box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04); */
@@ -736,7 +733,7 @@ export interface PropertyTypeOption {
       color: #ffffff;
       border-radius: 9999px;
       font-size: 10.5px;
-      font-weight: 600;
+      font-weight: 500;
       letter-spacing: 0.06em;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
     }
@@ -746,7 +743,7 @@ export interface PropertyTypeOption {
     }
     .badge-main-text {
       font-size: 12.5px;
-      font-weight: 600;
+      font-weight: 500;
       color: #1e293b;
       letter-spacing: -0.01em;
     }
@@ -1192,7 +1189,7 @@ export interface PropertyTypeOption {
       /* Mobile Search Bar: Clean single row with Search Button at the end of text area */
       .search-pill-bar {
         flex-direction: column;
-        border-radius: 16px;
+        border-radius: 6px;
         padding: 0.35rem;
         gap: 0;
         box-sizing: border-box;
@@ -1233,7 +1230,7 @@ export interface PropertyTypeOption {
         align-items: center;
         justify-content: center;
         gap: 5px;
-        height: 40px;
+        height: 44px;
         padding: 0 14px;
         background: var(--brand-green, #5e8f72);
         color: #ffffff;
@@ -1247,6 +1244,7 @@ export interface PropertyTypeOption {
         box-shadow: 0 2px 8px rgba(94, 143, 114, 0.35);
         transition: all 0.15s ease;
         margin-left: 4px;
+       border-radius:9999px;
       }
       .btn-mobile-input-search:active {
         transform: scale(0.97);
@@ -1261,10 +1259,10 @@ export interface PropertyTypeOption {
         display: block;
         margin-top: 10px;
         background: #ffffff;
-        border-radius: 18px;
+        border-radius: 6px;
         border: 1px solid #e2e8f0;
         box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.14), 0 6px 14px rgba(15, 23, 42, 0.05);
-        padding: 1.15rem;
+        padding: 0.8rem;
         box-sizing: border-box;
         animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 120;
@@ -1283,8 +1281,8 @@ export interface PropertyTypeOption {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 13.5px;
-        font-weight: 700;
+        font-size: 13px;
+        font-weight: 500;
         color: #0f172a;
       }
       .mobile-q-headline .q-icon {
@@ -1314,7 +1312,7 @@ export interface PropertyTypeOption {
         align-items: center;
         gap: 6px;
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 500;
         color: #1e293b;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -1326,11 +1324,11 @@ export interface PropertyTypeOption {
         justify-content: center;
         width: 18px;
         height: 18px;
-        border-radius: 50%;
+        border-radius: 6px;
         background: var(--brand-green-subtle, #e5f7ec);
         color: var(--brand-green, #5e8f72);
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 500;
       }
       .mobile-q-toggle-row {
         display: flex;
@@ -1343,12 +1341,12 @@ export interface PropertyTypeOption {
         justify-content: center;
         gap: 6px;
         height: 42px;
-        border-radius: 10px;
+        border-radius: 6px;
         font-family: 'Montserrat', sans-serif;
         font-size: 13px;
-        font-weight: 600;
-        border: 1.5px solid #cbd5e1;
-        background: #ffffff;
+        font-weight: 500;
+        border: none;
+        background: #f7f6f6ff;
         color: #334155;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -1367,7 +1365,7 @@ export interface PropertyTypeOption {
         background: var(--brand-green, #5e8f72);
         border-color: var(--brand-green, #5e8f72);
         color: #ffffff;
-        font-weight: 700;
+        font-weight: 500;
         box-shadow: 0 2px 8px rgba(94, 143, 114, 0.3);
       }
       .mobile-q-chip.active .chip-icon {
@@ -1398,10 +1396,10 @@ export interface PropertyTypeOption {
         background: var(--brand-green, #5e8f72);
         color: #ffffff;
         border: none;
-        border-radius: 12px;
+        border-radius: 6px;
         font-family: 'Montserrat', sans-serif;
         font-size: 14.5px;
-        font-weight: 700;
+        font-weight: 500;
         cursor: pointer;
         box-shadow: 0 4px 14px rgba(94, 143, 114, 0.4);
         transition: all 0.15s ease;
@@ -1416,13 +1414,13 @@ export interface PropertyTypeOption {
       .mobile-q-matches {
         margin-top: 0.75rem;
         background: #f8fafc;
-        border-radius: 10px;
+        border-radius: 6px;
         padding: 0.6rem 0.75rem;
         border: 1px solid #e2e8f0;
       }
       .mobile-q-matches-header {
         font-size: 10.5px;
-        font-weight: 700;
+        font-weight: 500;
         color: #64748b;
         text-transform: uppercase;
         margin-bottom: 0.4rem;
@@ -1448,7 +1446,7 @@ export interface PropertyTypeOption {
       }
       .mobile-q-match-item .match-title {
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 500;
         color: #0f172a;
       }
       .mobile-q-match-item .match-sub {
@@ -1489,7 +1487,7 @@ export interface PropertyTypeOption {
       max-height: 440px;
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      border-radius: 12px;
+      border-radius: 6px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       z-index: 100;
       overflow-y: auto;
@@ -1523,7 +1521,7 @@ export interface PropertyTypeOption {
       background: #f8fafc;
       border-bottom: 1px solid #f1f5f9;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-700);
@@ -1573,7 +1571,7 @@ export interface PropertyTypeOption {
     }
     .suggest-name {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-900);
     }
     .suggest-sub {
@@ -1582,7 +1580,7 @@ export interface PropertyTypeOption {
     }
     .suggest-tag {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--brand-green, #5e8f72);
       background: var(--brand-green-subtle, #e5f7ec);
       border: 1px solid rgba(94, 143, 114, 0.25);
@@ -1604,7 +1602,7 @@ export interface PropertyTypeOption {
     }
     .google-badge-tag {
       font-size: 9.5px;
-      font-weight: 700;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       background: #eef3f5;
@@ -1614,7 +1612,7 @@ export interface PropertyTypeOption {
     }
     .suggest-tag-add {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--brand-green, #5e8f72);
       background: var(--brand-green-subtle, #e5f7ec);
       padding: 2px 7px;
@@ -1642,7 +1640,7 @@ export interface PropertyTypeOption {
       position: relative;
       width: 52px;
       height: 52px;
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
       flex-shrink: 0;
       background: #e2e8f0;
@@ -1660,7 +1658,7 @@ export interface PropertyTypeOption {
       background: rgba(15, 23, 42, 0.85);
       color: #ffffff;
       font-size: 9px;
-      font-weight: 600;
+      font-weight: 500;
       padding: 1px 4px;
       border-radius: 3px;
       line-height: 1.1;
@@ -1684,7 +1682,7 @@ export interface PropertyTypeOption {
     }
     .prop-title {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-900);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1692,7 +1690,7 @@ export interface PropertyTypeOption {
     }
     .prop-price {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--brand-green, #5e8f72);
       white-space: nowrap;
       font-family: ui-monospace, monospace;
@@ -1719,7 +1717,7 @@ export interface PropertyTypeOption {
     }
     .prop-type-pill {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-600);
       background: #f1f5f9;
       padding: 1px 6px;
@@ -1757,7 +1755,7 @@ export interface PropertyTypeOption {
     }
     .empty-title {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-800);
       margin: 0;
     }
@@ -1793,7 +1791,7 @@ export interface PropertyTypeOption {
     }
     .popover-title {
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-800);
@@ -1807,7 +1805,7 @@ export interface PropertyTypeOption {
       background: transparent;
       border: none;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--brand-green, #5e8f72);
       cursor: pointer;
       padding: 2px 4px;
@@ -1831,7 +1829,7 @@ export interface PropertyTypeOption {
       align-items: center;
       gap: 0.625rem;
       padding: 0.5rem 0.625rem;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
       transition: background 0.15s;
     }
@@ -1858,7 +1856,7 @@ export interface PropertyTypeOption {
     .chkbox-mark {
       font-size: 11px;
       line-height: 1;
-      font-weight: 600;
+      font-weight: 500;
       color: #ffffff;
     }
     .check-texts {
@@ -1867,7 +1865,7 @@ export interface PropertyTypeOption {
     }
     .check-label {
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-900);
     }
     .check-sub {
@@ -1879,11 +1877,11 @@ export interface PropertyTypeOption {
       align-items: center;
       justify-content: center;
       padding: 1px 6px;
-      border-radius: 9999px;
+      border-radius: 6px;
       background: var(--brand-green-subtle, #e5f7ec);
       color: var(--brand-green-dark, #2c4938);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 500;
       margin-left: auto;
       margin-right: 4px;
     }
@@ -1897,7 +1895,7 @@ export interface PropertyTypeOption {
     }
     .selection-summary {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-500);
     }
     .btn-apply-popover {
@@ -1906,7 +1904,7 @@ export interface PropertyTypeOption {
       background: var(--brand-green, #5e8f72);
       color: #ffffff;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border: none;
@@ -1926,12 +1924,12 @@ export interface PropertyTypeOption {
     }
     .tier-pill {
       padding: 0.5rem 0.5rem;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid #e2e8f0;
       background: #ffffff;
       color: var(--text-slate-700);
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
@@ -1944,7 +1942,7 @@ export interface PropertyTypeOption {
       background: var(--brand-green, #5e8f72);
       border-color: var(--brand-green, #5e8f72);
       color: #ffffff;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     /* Custom Min-Max Section */
@@ -1954,7 +1952,7 @@ export interface PropertyTypeOption {
     }
     .minmax-title {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-slate-500);
@@ -1974,7 +1972,7 @@ export interface PropertyTypeOption {
     }
     .minmax-field label {
       font-size: 9px;
-      font-weight: 600;
+      font-weight: 500;
       color: var(--text-slate-400);
       text-transform: uppercase;
     }
@@ -1985,7 +1983,7 @@ export interface PropertyTypeOption {
       border: 1px solid #cbd5e1;
       background: #ffffff;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       padding: 0 4px;
       color: var(--text-slate-800);
       outline: none;
@@ -2003,11 +2001,11 @@ export interface PropertyTypeOption {
       padding: 0.875rem 1.5rem;
       background-color: var(--brand-green, #5e8f72);
       color: #ffffff;
-      font-weight: 600;
+      font-weight: 500;
       font-size: 14px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      border-radius: 12px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2030,7 +2028,7 @@ export interface PropertyTypeOption {
       .btn-hero-search {
         height: 48px;
         font-size: 13px;
-        border-radius: 10px;
+        border-radius: 6px;
       }
     }
 

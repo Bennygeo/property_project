@@ -314,9 +314,7 @@ import { RouterLink } from '@angular/router';
     }
 
     .footer-legal-bar {
-      margin-top: 0.75rem;
       padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
       display: flex;
       flex-direction: column;
       gap: 0.65rem;
