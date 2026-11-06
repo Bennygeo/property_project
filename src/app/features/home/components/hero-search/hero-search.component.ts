@@ -60,17 +60,33 @@ export interface PropertyTypeOption {
             We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds.
           </p>
 
-          <!-- Buy / Sell Mode Tabs -->
-          <div class="hero-buy-sell-tabs">
-            <button type="button" class="buy-sell-tab-btn active" title="Search and explore verified properties to buy">
+          <!-- Buy / Post / Commercial Mode Tabs -->
+          <div class="hero-buy-sell-tabs" role="tablist" aria-label="Search and listing modes">
+            <button 
+              type="button" 
+              class="buy-sell-tab-btn" 
+              [class.active]="activeHeroTab() === 'buy'" 
+              (click)="setHeroTab('buy')" 
+              title="Search and explore verified properties to buy">
               <span class="material-symbols-outlined tab-icon">apartment</span>
-              <span>Buy Properties</span>
+              <span>Buy</span>
             </button>
-            <a routerLink="/post-property" class="buy-sell-tab-btn btn-sell-link" title="Post your RERA-approved property to sell">
+            <a 
+              routerLink="/post-property" 
+              class="buy-sell-tab-btn btn-post-link" 
+              title="Post your property">
               <span class="material-symbols-outlined tab-icon">add_home_work</span>
-              <span>Sell Property</span>
-              <span class="tab-badge-free"><span class="badge-post-word">Post </span>Free</span>
+              <span>Post</span>
             </a>
+            <button 
+              type="button" 
+              class="buy-sell-tab-btn" 
+              [class.active]="activeHeroTab() === 'commercial'" 
+              (click)="setHeroTab('commercial')" 
+              title="Explore commercial plots and retail spaces">
+              <span class="material-symbols-outlined tab-icon">domain</span>
+              <span>Commercial</span>
+            </button>
           </div>
         </div>
 
@@ -483,63 +499,81 @@ export interface PropertyTypeOption {
       margin-top: 3.5rem;
     }
 
-    /* Buy / Sell Mode Tabs (Isolated Independent Buttons) */
+    /* Buy / Post / Commercial Mode Tabs (Isolated Independent Buttons) */
     .hero-buy-sell-tabs {
       display: inline-flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.625rem;
       background: transparent;
       padding: 0;
       border: none;
       box-shadow: none;
-      /* margin-top: 1.25rem; */
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
     }
 
     .buy-sell-tab-btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
-      padding: 0.55rem 1.25rem;
-      border-radius: 0;
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
-      font-weight: 500;
-      color: #475569;
+      font-weight: 600;
+      color: #334155;
       text-decoration: none;
-      border: 1px solid #cbd5e1;
+      border: 1.5px solid #cbd5e1;
       background: #ffffff;
       cursor: pointer;
-      transition: all 0.15s ease;
-      box-shadow: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      user-select: none;
+      outline: none;
     }
 
     .buy-sell-tab-btn .tab-icon {
       font-size: 18px;
+      color: #64748b;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease;
+    }
+
+    .buy-sell-tab-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      color: #0f172a;
+    }
+
+    .buy-sell-tab-btn:hover .tab-icon {
+      color: #334155;
     }
 
     .buy-sell-tab-btn.active {
       background: var(--brand-green, #5e8f72);
       border-color: var(--brand-green, #5e8f72);
       color: #ffffff;
-      box-shadow: none;
+      box-shadow: 0 2px 8px rgba(94, 143, 114, 0.25);
     }
 
     .buy-sell-tab-btn.active .tab-icon {
       color: #ffffff;
     }
 
-    .buy-sell-tab-btn.btn-sell-link {
+    .buy-sell-tab-btn.btn-post-link {
       background: #ffffff;
-      border: 1px solid #cbd5e1;
-      color: #475569;
+      border: 1.5px solid #cbd5e1;
+      color: #334155;
     }
 
-    .buy-sell-tab-btn.btn-sell-link .tab-icon {
-      color: #475569;
+    .buy-sell-tab-btn.btn-post-link .tab-icon {
+      color: #64748b;
     }
 
-    .buy-sell-tab-btn.btn-sell-link:hover {
+    .buy-sell-tab-btn.btn-post-link:hover {
       background: #f8fafc;
       border-color: #94a3b8;
       color: #0f172a;
@@ -957,23 +991,24 @@ export interface PropertyTypeOption {
         margin-top: 0.5rem;
         margin-bottom: 0.85rem;
         box-sizing: border-box;
+        padding: 0;
       }
       .buy-sell-tab-btn {
         flex: 1 1 0;
         min-width: 0;
         height: 44px;
-        padding: 0 8px;
+        padding: 0 4px;
         border-radius: 10px;
         font-size: 13px;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         white-space: nowrap;
         box-sizing: border-box;
         text-decoration: none;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
       .buy-sell-tab-btn .tab-icon {
         font-size: 18px;
@@ -988,26 +1023,13 @@ export interface PropertyTypeOption {
       .buy-sell-tab-btn.active .tab-icon {
         color: #ffffff;
       }
-      .buy-sell-tab-btn.btn-sell-link {
+      .buy-sell-tab-btn:not(.active) {
         background: #ffffff;
         border: 1.5px solid #cbd5e1;
         color: #334155;
       }
-      .buy-sell-tab-btn.btn-sell-link .tab-icon {
+      .buy-sell-tab-btn:not(.active) .tab-icon {
         color: #64748b;
-      }
-      .tab-badge-free {
-        font-size: 9.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        background: var(--brand-green-subtle, #e5f7ec);
-        color: var(--brand-green, #5e8f72);
-        border: 1px solid var(--brand-green, #5e8f72);
-        padding: 2px 5px;
-        border-radius: 4px;
-        line-height: 1;
-        flex-shrink: 0;
       }
       .search-pill-bar {
         flex-direction: column;
@@ -1093,13 +1115,17 @@ export interface PropertyTypeOption {
     }
 
     @media (max-width: 380px) {
+      .hero-buy-sell-tabs {
+        gap: 6px;
+      }
       .buy-sell-tab-btn {
         font-size: 12px;
         gap: 4px;
-        padding: 0 4px;
+        padding: 0 2px;
+        height: 40px;
       }
-      .badge-post-word {
-        display: none;
+      .buy-sell-tab-btn .tab-icon {
+        font-size: 16px;
       }
     }
 
@@ -1670,6 +1696,24 @@ export class HeroSearchComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
 
+  // Hero Top Mode Tabs (Buy | Post | Commercial)
+  readonly activeHeroTab = signal<'buy' | 'commercial'>('buy');
+
+  setHeroTab(mode: 'buy' | 'commercial'): void {
+    this.activeHeroTab.set(mode);
+    if (mode === 'commercial') {
+      this.selectedTypes.set(['Commercial Spaces']);
+      this.propertyService.selectedPropertyType.set('Commercial Spaces');
+      this.propertyService.setCategoryFilter('commercial');
+      this.activeRibbonTab.set('commercial');
+    } else {
+      this.selectedTypes.set([]);
+      this.propertyService.selectedPropertyType.set('all');
+      this.propertyService.setCategoryFilter('all');
+      this.activeRibbonTab.set('all');
+    }
+  }
+
   // 1. Expanded Ribbon Tabs (100acress Style)
   readonly assetRibbonTabs = [
     { id: 'all', label: 'All Assets', icon: 'grid_view', badge: '' },
@@ -1779,6 +1823,11 @@ export class HeroSearchComponent implements OnInit {
   // Ribbon Tab Action
   onSelectRibbonTab(tabId: string): void {
     this.activeRibbonTab.set(tabId);
+    if (tabId === 'commercial') {
+      this.activeHeroTab.set('commercial');
+    } else {
+      this.activeHeroTab.set('buy');
+    }
     if (tabId === 'plots') {
       this.selectedTypes.set(['Gated CMDA Plots']);
       this.propertyService.selectedPropertyType.set('Gated CMDA Plots');
