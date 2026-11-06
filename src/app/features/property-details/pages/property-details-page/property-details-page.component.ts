@@ -5,12 +5,12 @@ import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps
 import { formatPriceIndian, parsePriceToNumber } from '../../../../core/utils/price-helper';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { 
-  Property, 
-  PremiumMediaItem, 
-  FloorPlanItem, 
-  AmenityItem, 
-  ConnectivityItem 
+import {
+  Property,
+  PremiumMediaItem,
+  FloorPlanItem,
+  AmenityItem,
+  ConnectivityItem
 } from '../../../../core/models/property.model';
 import { PropertyService, NearbyLocality } from '../../../../core/services/property.service';
 import { WalletService } from '../../../../core/services/wallet.service';
@@ -295,7 +295,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     return views.includes(id) && views.length === 1;
   });
 
-  
+
   ngAfterViewInit(): void {
     this.setupWhatsAppObserver();
   }
@@ -648,7 +648,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         title: prop.title,
         text: `Check out ${prop.title} in ${prop.locality}, ${prop.city} on Find a Plot Verified Registry.`,
         url: window.location.href
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       navigator.clipboard.writeText(window.location.href);
       this.notificationService.show({

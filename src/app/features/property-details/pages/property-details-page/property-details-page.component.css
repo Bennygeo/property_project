@@ -317,7 +317,7 @@
    2. MAIN DOSSIER PAGE CONTAINER (FLAT, OPEN CANVAS)
    ========================================================================== */
 .hanu-property-page {
-  padding: 2rem 1rem 2rem;
+  padding: 2.75rem 1.5rem 3.5rem;
   background: #ffffff;
 }
 
@@ -328,8 +328,8 @@
   border: none;
   border-bottom: none;
   border-radius: 0;
-  padding: 0 0 1.25rem 0;
-  margin-bottom: 1.25rem;
+  padding: 0 0 1.5rem 0;
+  margin-bottom: 1.75rem;
   box-shadow: none !important;
 }
 
@@ -638,22 +638,21 @@
 .hanu-two-col-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: start;
 }
 
 @media (min-width: 1024px) {
   .hanu-two-col-layout {
     grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 1.5rem;
+    gap: 2rem;
   }
 }
 
 .hanu-main-column {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.75rem;
   min-width: 0;
 }
 
@@ -1081,10 +1080,10 @@
   border: none;
   border-right: 1px solid #e2e8f0;
   border-radius: 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   align-items: flex-start;
   justify-content: center;
   box-shadow: none !important;
@@ -1194,12 +1193,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 2rem;
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 6px;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
   box-shadow: none !important;
   position: relative;
 }
@@ -1446,7 +1445,7 @@
   border: none;
   border-radius: 0 !important;
   box-shadow: none !important;
-  padding: 1.75rem 1.5rem 1rem 1.5rem;
+  padding: 2.25rem 2rem 1.5rem 2rem;
   position: relative;
 }
 
@@ -1459,7 +1458,7 @@
   border: none;
   box-shadow: none !important;
   border-radius: 0;
-  margin: 0 0 2rem 0;
+  margin: 0 0 2.5rem 0;
   background: transparent;
   padding: 0;
 }
@@ -1467,9 +1466,9 @@
 .hanu-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-bottom: 0.85rem;
-  margin-bottom: 1.25rem;
+  gap: 12px;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -2291,7 +2290,6 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #eef6f1;
   color: var(--brand-green, #5e8f72);
   display: flex;
   align-items: center;
@@ -3631,7 +3629,7 @@
 
 /* B. Architectural Cadastral Hatching Divider (Image 3 inspiration) */
 .readiness-horizon-wrapper {
-  margin: 1.25rem 0 0.75rem 0;
+  margin: 1.75rem 0 1.25rem 0;
   width: 100%;
 }
 
@@ -3655,7 +3653,7 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 14px 18px;
+  padding: 18px 22px;
   margin: 0;
   box-sizing: border-box;
   box-shadow: none !important;
@@ -3665,9 +3663,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .rjh-title-wrap {
@@ -3813,21 +3811,21 @@
 
   /* 1. Page Container & Spacing */
   .hanu-property-page {
-    padding: 0.75rem 0.75rem 2.5rem !important;
+    padding: 1.25rem 1rem 3.5rem !important;
   }
 
   .hanu-two-col-layout {
-    gap: 1rem !important;
+    gap: 1.5rem !important;
   }
 
   .hanu-main-column {
-    gap: 0.75rem !important;
+    gap: 1.25rem !important;
   }
 
   /* 2. Above-the-Fold Header Compression (Instant Context Before Gallery) */
   .hanu-header-block {
-    padding: 0 0 0.5rem 0 !important;
-    margin-bottom: 0.25rem !important;
+    padding: 0 0 0.75rem 0 !important;
+    margin-bottom: 0.75rem !important;
   }
 
   /* Hide the tall desktop right-side price & 3-button stack above the gallery */
@@ -3841,9 +3839,9 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: nowrap;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.65rem;
   }
 
   .hanu-badge-type {
@@ -3912,16 +3910,16 @@
     font-size: 15px !important;
     font-weight: 600 !important;
     line-height: 1.3 !important;
-    margin: 0 0 0.4rem 0 !important;
+    margin: 0 0 0.6rem 0 !important;
   }
 
   .hanu-builder-strip {
     display: flex !important;
     flex-wrap: wrap !important;
     align-items: center !important;
-    gap: 5px !important;
-    padding: 3px 0 !important;
-    margin-bottom: 0.4rem !important;
+    gap: 8px !important;
+    padding: 4px 0 !important;
+    margin-bottom: 0.6rem !important;
     width: 100% !important;
     box-sizing: border-box !important;
     font-size: 12px !important;
@@ -3933,8 +3931,8 @@
 
   .hanu-loc-row {
     font-size: 12.5px !important;
-    gap: 5px !important;
-    margin-bottom: 0.15rem !important;
+    gap: 8px !important;
+    margin-bottom: 0.35rem !important;
   }
 
   .hanu-loc-row .hanu-loc-pin {
@@ -3947,9 +3945,9 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-    padding: 10px 12px;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px 14px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
@@ -4017,8 +4015,8 @@
   .hanu-media-tabs {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 4px !important;
-    padding: 8px 8px 0 8px !important;
+    gap: 6px !important;
+    padding: 10px 10px 0 10px !important;
     overflow: visible !important;
   }
 
@@ -4027,9 +4025,9 @@
     width: 100% !important;
     min-width: 0 !important;
     justify-content: center !important;
-    padding: 8px 4px !important;
+    padding: 10px 6px !important;
     font-size: 11.5px !important;
-    gap: 4px !important;
+    gap: 6px !important;
     border-radius: 6px 6px 0 0 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -4078,8 +4076,8 @@
   }
 
   .hanu-thumb-strip {
-    padding: 8px !important;
-    gap: 6px !important;
+    padding: 10px !important;
+    gap: 8px !important;
   }
 
   .hanu-thumb-box {
@@ -4104,8 +4102,8 @@
   }
 
   .snapshot-tile {
-    padding: 12px !important;
-    gap: 3px !important;
+    padding: 15px 16px !important;
+    gap: 5px !important;
   }
 
   /* Explicit 2x2 cell borders for tiles 2, 3, 4, 5 */
@@ -4152,12 +4150,12 @@
   }
 
   .readiness-journey-card {
-    padding: 10px 10px 12px 10px !important;
+    padding: 14px 14px 16px 14px !important;
     border-radius: 8px !important;
   }
 
   .readiness-journey-header {
-    margin-bottom: 8px !important;
+    margin-bottom: 12px !important;
   }
 
   .rjh-title {
@@ -4174,7 +4172,7 @@
     flex-direction: row !important;
     align-items: stretch !important;
     width: 100% !important;
-    gap: 2px !important;
+    gap: 4px !important;
     overflow: hidden !important;
     padding: 0 !important;
   }
@@ -4183,8 +4181,8 @@
     flex: 1 1 0% !important;
     width: auto !important;
     min-width: 0 !important;
-    height: 38px !important;
-    padding: 2px 5px 2px 9px !important;
+    height: 40px !important;
+    padding: 2px 6px 2px 10px !important;
     display: inline-flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -4225,10 +4223,10 @@
 
   /* 6. Free Maintenance Service Banner: Scannable 2x2 Perks */
   .free-maint-feature-banner {
-    padding: 12px !important;
+    padding: 16px 18px !important;
     margin-bottom: 0 !important;
     border-radius: 8px !important;
-    gap: 8px !important;
+    gap: 12px !important;
   }
 
   .maint-subtitle {
@@ -4244,8 +4242,8 @@
   .maint-perk-chips {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px 8px !important;
-    margin-top: 2px !important;
+    gap: 10px 14px !important;
+    margin-top: 8px !important;
   }
 
   .maint-perk-chip {
@@ -4265,7 +4263,7 @@
   .connected-workspace-shell {
     overflow: visible !important;
     border-radius: 8px !important;
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 1.5rem !important;
     scroll-margin-top: 70px !important;
   }
 
@@ -4275,8 +4273,8 @@
     z-index: 45 !important;
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 3px !important;
-    padding: 6px 6px 0 6px !important;
+    gap: 5px !important;
+    padding: 8px 8px 0 8px !important;
     border-radius: 8px 8px 0 0 !important;
     overflow: visible !important;
   }
@@ -4286,8 +4284,8 @@
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 3px !important;
-    padding: 8px 2px !important;
+    gap: 5px !important;
+    padding: 10px 4px !important;
     font-size: 11px !important;
     width: 100% !important;
     min-width: 0 !important;
@@ -4308,7 +4306,7 @@
   }
 
   .connected-workspace-window {
-    padding: 16px 14px !important;
+    padding: 22px 16px 18px 16px !important;
     border-radius: 0 0 8px 8px !important;
     border: none !important;
   }
@@ -4368,7 +4366,7 @@
   }
 
   .connected-workspace-window .hanu-card {
-    margin: 0 0 1.5rem 0 !important;
+    margin: 0 0 2rem 0 !important;
     padding: 0 !important;
   }
 
@@ -4379,9 +4377,9 @@
   .hanu-card-header {
     flex-wrap: wrap !important;
     align-items: flex-start !important;
-    gap: 6px !important;
+    gap: 8px !important;
     padding-bottom: 0 !important;
-    margin-bottom: 10px !important;
+    margin-bottom: 16px !important;
   }
 
   .hanu-card-header h2 {
@@ -4409,14 +4407,14 @@
   .infrastructure-iconic-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 2px !important;
-    margin-top: 0.25rem !important;
+    gap: 6px !important;
+    margin-top: 0.5rem !important;
     overflow: visible !important;
   }
 
   .connected-workspace-window .infra-card {
-    padding: 10px 10px !important;
-    gap: 12px !important;
+    padding: 12px 14px !important;
+    gap: 14px !important;
     align-items: center !important;
     background: #ffffff !important;
     border-radius: 6px !important;
@@ -4456,8 +4454,8 @@
   }
 
   .infra-additional-bar {
-    padding: 10px !important;
-    margin-top: 8px !important;
+    padding: 12px 14px !important;
+    margin-top: 10px !important;
     background: #f8fafc !important;
     border-radius: 6px !important;
   }
@@ -4466,15 +4464,16 @@
   .hanu-specs-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 2px !important;
+    gap: 6px !important;
+    margin-top: 0.5rem !important;
   }
 
   .connected-workspace-window .hanu-spec-item {
     display: grid !important;
     grid-template-columns: 44% 56% !important;
     align-items: baseline !important;
-    gap: 10px !important;
-    padding: 9px 10px !important;
+    gap: 12px !important;
+    padding: 11px 12px !important;
     box-sizing: border-box !important;
     background: #ffffff !important;
     border-radius: 6px !important;
@@ -4553,15 +4552,15 @@
   .transit-matrix-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    margin-top: 0.25rem !important;
+    gap: 10px !important;
+    margin-top: 0.5rem !important;
   }
 
   .connected-workspace-window .transit-card {
     flex-direction: row !important;
     align-items: flex-start !important;
-    gap: 10px !important;
-    padding: 10px !important;
+    gap: 12px !important;
+    padding: 12px 14px !important;
     background: rgba(248, 250, 252, 0.01) !important;
     border-radius: 8px !important;
   }
@@ -4572,48 +4571,57 @@
     grid-column: 1 / -1 !important;
     flex-direction: row !important;
     align-items: flex-start !important;
-    gap: 10px !important;
-    background: rgba(13, 148, 136, 0.01) !important; /* 0.01 Teal matching #0d9488 */
+    gap: 12px !important;
+    background: rgba(13, 148, 136, 0.01) !important;
+    /* 0.01 Teal matching #0d9488 */
   }
 
   .connected-workspace-window .transit-card:nth-child(2),
   .connected-workspace-window .transit-card:has(.transit-icon-box.highway) {
-    background: rgba(37, 99, 235, 0.01) !important; /* 0.01 Cobalt Blue matching #2563eb */
+    background: rgba(37, 99, 235, 0.01) !important;
+    /* 0.01 Cobalt Blue matching #2563eb */
   }
 
   .connected-workspace-window .transit-card:nth-child(3),
   .connected-workspace-window .transit-card:has(.transit-icon-box.train) {
-    background: rgba(124, 58, 237, 0.01) !important; /* 0.01 Violet matching #7c3aed */
+    background: rgba(124, 58, 237, 0.01) !important;
+    /* 0.01 Violet matching #7c3aed */
   }
 
   .connected-workspace-window .transit-card:nth-child(4),
   .connected-workspace-window .transit-card:has(.transit-icon-box.bus) {
-    background: rgba(22, 163, 74, 0.01) !important; /* 0.01 Green matching #16a34a */
+    background: rgba(22, 163, 74, 0.01) !important;
+    /* 0.01 Green matching #16a34a */
   }
 
   .connected-workspace-window .transit-card:nth-child(5),
   .connected-workspace-window .transit-card:has(.transit-icon-box.airport) {
-    background: rgba(2, 132, 199, 0.01) !important; /* 0.01 Sky Blue matching #0284c7 */
+    background: rgba(2, 132, 199, 0.01) !important;
+    /* 0.01 Sky Blue matching #0284c7 */
   }
 
   .connected-workspace-window .transit-card:nth-child(6),
   .connected-workspace-window .transit-card:has(.transit-icon-box.fuel) {
-    background: rgba(217, 119, 6, 0.01) !important; /* 0.01 Amber matching #d97706 */
+    background: rgba(217, 119, 6, 0.01) !important;
+    /* 0.01 Amber matching #d97706 */
   }
 
   .connected-workspace-window .transit-card:nth-child(7),
   .connected-workspace-window .transit-card:has(.transit-icon-box.school) {
-    background: rgba(79, 70, 229, 0.01) !important; /* 0.01 Indigo matching #4f46e5 */
+    background: rgba(79, 70, 229, 0.01) !important;
+    /* 0.01 Indigo matching #4f46e5 */
   }
 
   .connected-workspace-window .transit-card:nth-child(8),
   .connected-workspace-window .transit-card:has(.transit-icon-box.hospital) {
-    background: rgba(225, 29, 72, 0.01) !important; /* 0.01 Rose matching #e11d48 */
+    background: rgba(225, 29, 72, 0.01) !important;
+    /* 0.01 Rose matching #e11d48 */
   }
 
   .connected-workspace-window .transit-card:nth-child(9),
   .connected-workspace-window .transit-card:has(.transit-icon-box.safety) {
-    background: rgba(8, 145, 178, 0.01) !important; /* 0.01 Cyan matching #0891b2 */
+    background: rgba(8, 145, 178, 0.01) !important;
+    /* 0.01 Cyan matching #0891b2 */
   }
 
   .transit-icon-box {
@@ -4646,7 +4654,7 @@
 
   /* 11. Tab 4 (Overview): Borderless Alternating Mild BG Specs */
   .overview-narrative-card {
-    margin: 0 0 1.25rem 0 !important;
+    margin: 0 0 1.75rem 0 !important;
   }
 
   .narrative-quote-bar,
@@ -4656,7 +4664,7 @@
 
   .overview-narrative-card .narrative-body {
     padding: 0 !important;
-    gap: 4px !important;
+    gap: 8px !important;
   }
 
   .narrative-lead {
@@ -4667,13 +4675,13 @@
   .overview-specs-matrix {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    gap: 8px !important;
     padding: 0 !important;
-    margin-bottom: 1.25rem !important;
+    margin-bottom: 1.75rem !important;
   }
 
   .connected-workspace-window .overview-spec-cell {
-    padding: 9px 10px !important;
+    padding: 12px 12px !important;
     background: #ffffff !important;
     border-radius: 6px !important;
   }
@@ -4683,12 +4691,12 @@
   }
 
   .overview-highlights-grid {
-    gap: 4px !important;
+    gap: 6px !important;
   }
 
   .connected-workspace-window .overview-highlight-item {
-    padding: 8px 10px !important;
-    gap: 10px !important;
+    padding: 11px 12px !important;
+    gap: 12px !important;
     background: #ffffff !important;
     border-radius: 6px !important;
   }
@@ -4700,7 +4708,8 @@
   .overview-amenities-tags {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px 12px !important;
+    gap: 12px 16px !important;
+    margin-top: 6px !important;
   }
 
   .overview-amenity-chip {
@@ -4795,7 +4804,7 @@
     height: 40px;
     padding: 0 1rem;
     border-radius: 10px;
-    background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+    background: var(--brand-teal);
     border: none;
     color: #ffffff;
     font-size: 0.82rem;
