@@ -54,6 +54,17 @@
               <span>{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears +
                 ' Years Free Maintenance') : 'Free Maintenance Included' }}</span>
             </span>
+
+            <!-- Mobile-Only Top-Right Quick Utility Icons (Share & Shortlist) -->
+            <div class="mobile-hdr-quick-icons">
+              <button type="button" class="btn-mob-icon" (click)="shareProperty()" aria-label="Share Property">
+                <span class="material-symbols-outlined">share</span>
+              </button>
+              <button type="button" class="btn-mob-icon" [class.shortlisted]="prop.isShortlisted"
+                (click)="propertyService.toggleShortlist(prop.id)" aria-label="Shortlist Property">
+                <span class="material-symbols-outlined">{{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}</span>
+              </button>
+            </div>
           </div>
 
           <h1 class="hanu-title">{{ prop.title }}</h1>
@@ -115,6 +126,24 @@
             <span class="hanu-dot">•</span>
             <span>{{ prop.bhkBadge }}</span>
             }
+          </div>
+
+          <!-- Mobile-Only Instant Context Summary Bar (Price + Rate + Statutory Badge) -->
+          <div class="mobile-instant-context-bar">
+            <div class="mob-ctx-price-col">
+              <span class="mob-ctx-price">{{ formatPriceIndian(prop.price) }}</span>
+              <span class="mob-ctx-rate">{{ prop.pricePerSqFt }}</span>
+            </div>
+            <div class="mob-ctx-pills-col">
+              <span class="mob-ctx-pill verified">
+                <span class="material-symbols-outlined">verified</span>
+                <span>DTCP &amp; RERA</span>
+              </span>
+              <span class="mob-ctx-pill ready">
+                <span class="material-symbols-outlined">bolt</span>
+                <span>Ready to Build</span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -1368,6 +1397,29 @@
         <span class="material-symbols-outlined floating-wa-arrow">arrow_forward</span>
       </a>
     </aside>
+
+    <!-- MOBILE-ONLY STICKY BOTTOM ACTION DOCK (Instant Price Context + WhatsApp + Schedule Visit) -->
+    <div class="mobile-sticky-bottom-dock" aria-label="Quick Property Actions">
+      <div class="mob-dock-price-box">
+        <span class="mob-dock-price">{{ formatPriceIndian(prop.price) }}</span>
+        <span class="mob-dock-sub">{{ prop.sqft }} • {{ prop.pricePerSqFt }}</span>
+      </div>
+      <div class="mob-dock-actions">
+        <a class="btn-mob-dock-wa"
+          [href]="prop.whatsappUrl || 'https://wa.me/919444100000?text=Hi%20Find%20a%20Plot,%20I%20am%20interested%20in%20' + prop.title + '%20(REF:%20' + prop.id + ')'"
+          target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+          <svg viewBox="0 0 24 24" class="mob-dock-wa-svg" fill="currentColor">
+            <path
+              d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.17-.47-.29z" />
+          </svg>
+          <span>Chat</span>
+        </a>
+        <button type="button" class="btn-mob-dock-visit" (click)="openSiteVisitModal()">
+          <span class="material-symbols-outlined">event_available</span>
+          <span>Book Visit</span>
+        </button>
+      </div>
+    </div>
 
   </div>
   } @else {

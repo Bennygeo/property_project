@@ -392,7 +392,7 @@
 }
 
 .hanu-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   color: #0f172a;
   line-height: 1.25;
@@ -538,7 +538,7 @@
 }
 
 .hanu-main-price {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #0f172a;
   letter-spacing: -0.02em;
@@ -583,7 +583,7 @@
 }
 
 .btn-hdr-site-visit span.material-symbols-outlined {
-  font-size: 18px;
+  font-size: 16px;
   color: #ffffff;
 }
 
@@ -765,7 +765,7 @@
 }
 
 .hanu-tab-btn .material-symbols-outlined {
-  font-size: 18px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.9);
   transition: none !important;
 }
@@ -1004,7 +1004,7 @@
 }
 
 .hanu-lock-overlay h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   margin: 0 0 6px;
 }
@@ -3054,7 +3054,7 @@
 }
 
 .sv-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #0f172a;
   line-height: 1.3;
@@ -3794,5 +3794,567 @@
     box-sizing: border-box;
     padding: 9px 12px;
     height: auto;
+  }
+}
+
+/* ==========================================================================
+   MOBILE-FIRST RAPID CONTEXT ARCHITECTURE (<= 768px ONLY)
+   Desktop (> 768px) remains 100% untouched.
+   ========================================================================== */
+
+/* Hide mobile-exclusive elements on Desktop (> 768px) */
+.mobile-hdr-quick-icons,
+.mobile-instant-context-bar,
+.mobile-sticky-bottom-dock {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* 1. Page Container & Breathing Space */
+  .hanu-property-page {
+    padding: 0.625rem 0.625rem 5.5rem !important;
+  }
+
+  .hanu-layout-grid {
+    gap: 0.875rem !important;
+  }
+
+  /* 2. Above-the-Fold Header Compression (Instant Context Before Gallery) */
+  .hanu-header-block {
+    padding: 0.875rem !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 14px !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Hide the tall desktop right-side price & 3-button stack above the gallery */
+  .hanu-header-right,
+  .creative-spectrum-bar {
+    display: none !important;
+  }
+
+  .hanu-ref-badges {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.375rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .ref-pill {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .badge-pill.available {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.55rem;
+  }
+
+  /* Hide secondary top badge to keep Row 1 on a single clean line with Share/Save icons */
+  .badge-pill.rera {
+    display: none !important;
+  }
+
+  /* Compact Share & Shortlist Icon Actions on Top Right */
+  .mobile-hdr-quick-icons {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-left: auto;
+  }
+
+  .mob-hdr-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .mob-hdr-icon-btn .material-symbols-outlined {
+    font-size: 17px;
+  }
+
+  .mob-hdr-icon-btn.active {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+  }
+
+  .hanu-title {
+    font-size: 1.15rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .hanu-loc-row {
+    font-size: 0.78rem !important;
+    gap: 0.25rem !important;
+  }
+
+  .hanu-loc-row .loc-pin {
+    font-size: 1rem !important;
+  }
+
+  .hanu-loc-row .loc-sep,
+  .hanu-loc-row .loc-corridor {
+    display: none !important;
+  }
+
+  /* Instant Context Bar: Price + Rate + Verified Approvals in 1 glance */
+  .mobile-instant-context-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.625rem;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  .mic-price-cluster {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+  }
+
+  .mic-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #064e3b;
+    letter-spacing: -0.02em;
+  }
+
+  .mic-rate {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  .mic-trust-pills {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .mic-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.22rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .mic-pill .material-symbols-outlined {
+    font-size: 13px;
+  }
+
+  .mic-pill.verified {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  .mic-pill.ready {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  /* 3. Media Showcase Card: Fit all 3 tabs on screen + crisp stage */
+  .hanu-media-card {
+    border-radius: 14px !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .hanu-media-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.25rem !important;
+    padding: 0.375rem !important;
+    overflow: visible !important;
+  }
+
+  .media-tab-btn {
+    justify-content: center !important;
+    padding: 0.45rem 0.25rem !important;
+    font-size: 0.72rem !important;
+    gap: 0.25rem !important;
+    border-radius: 8px !important;
+    white-space: nowrap;
+  }
+
+  .media-tab-btn .material-symbols-outlined {
+    font-size: 15px !important;
+  }
+
+  .media-tab-btn .tab-badge {
+    display: none !important;
+  }
+
+  .hanu-photo-stage,
+  .hanu-video-stage {
+    height: 230px !important;
+    min-height: 230px !important;
+  }
+
+  .hanu-thumb-strip {
+    padding: 0.45rem 0.5rem !important;
+    gap: 0.375rem !important;
+  }
+
+  .thumb-btn {
+    width: 58px !important;
+    height: 40px !important;
+    border-radius: 6px !important;
+  }
+
+  /* 4. Executive 5-Second Snapshot Grid: Clean 2x2 + Full-Width 5th Utility Bar */
+  .executive-snapshot-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .exec-metric-tile {
+    padding: 0.65rem 0.75rem !important;
+    border-radius: 11px !important;
+    gap: 0.55rem !important;
+  }
+
+  /* 5th tile spans full width so there is never an orphan empty grid cell */
+  .executive-snapshot-grid .exec-metric-tile:nth-child(5) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .exec-tile-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .exec-tile-icon .material-symbols-outlined {
+    font-size: 17px !important;
+  }
+
+  .exec-tile-label {
+    font-size: 0.64rem !important;
+  }
+
+  .exec-tile-value {
+    font-size: 0.84rem !important;
+  }
+
+  .exec-tile-sub {
+    font-size: 0.68rem !important;
+  }
+
+  /* 5. Readiness Pipeline: Compact 2-Column Matrix instead of 5 tall stacked bars */
+  .readiness-journey-bar {
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 12px !important;
+  }
+
+  .rjh-title {
+    font-size: 0.76rem !important;
+  }
+
+  .rjh-badge {
+    font-size: 0.65rem !important;
+    padding: 2px 7px !important;
+  }
+
+  .readiness-chevron-track {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.375rem !important;
+    overflow: visible !important;
+  }
+
+  .rc-step,
+  .rc-step:first-child,
+  .rc-step:last-child {
+    clip-path: none !important;
+    border-radius: 7px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 30px !important;
+    padding: 0 0.5rem !important;
+    font-size: 0.7rem !important;
+    justify-content: flex-start !important;
+  }
+
+  .rc-step.step-5 {
+    grid-column: 1 / -1 !important;
+    justify-content: center !important;
+  }
+
+  .rc-check {
+    font-size: 14px !important;
+  }
+
+  /* 6. Free 1-Year Maintenance Banner: Scannable 2x2 Chips, No Long Paragraph */
+  .free-maint-feature-banner {
+    padding: 0.875rem !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 13px !important;
+  }
+
+  .maint-subtitle {
+    display: none !important;
+  }
+
+  .maint-headline {
+    font-size: 0.92rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .maint-perk-chips {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.375rem !important;
+  }
+
+  .maint-perk-chip {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.68rem !important;
+  }
+
+  /* 7. Context Workspace Tabs: All 4 Tabs Visible Simultaneously (No Horizontal Cut-Off) */
+  .context-tabs-workspace {
+    border-radius: 14px !important;
+  }
+
+  .context-tabs-ribbon {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.25rem !important;
+    padding: 0.375rem !important;
+    overflow: visible !important;
+  }
+
+  .context-tab-btn {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0.45rem 0.2rem !important;
+    gap: 0.2rem !important;
+    font-size: 0.66rem !important;
+    text-align: center !important;
+    border-radius: 8px !important;
+  }
+
+  .context-tab-btn .material-symbols-outlined {
+    font-size: 16px !important;
+  }
+
+  .context-tab-count {
+    display: none !important;
+  }
+
+  .context-tab-panel {
+    padding: 0.875rem !important;
+  }
+
+  .panel-intro-strip {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .panel-intro-title {
+    font-size: 0.95rem !important;
+  }
+
+  .panel-intro-sub {
+    font-size: 0.74rem !important;
+  }
+
+  /* 8. Tab 1 (Infrastructure): 2-Column Compact Visual Cards (Hide Wall-of-Text Paragraph) */
+  .infrastructure-iconic-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .infra-card {
+    padding: 0.65rem !important;
+    border-radius: 10px !important;
+    gap: 0.35rem !important;
+  }
+
+  .infra-summary-text {
+    display: none !important;
+  }
+
+  .infra-icon-box {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .infra-icon-box .material-symbols-outlined {
+    font-size: 16px !important;
+  }
+
+  .infra-status-chip {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.35rem !important;
+  }
+
+  .infra-Title {
+    font-size: 0.78rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .infra-highlight-metric {
+    padding: 0.25rem 0.45rem !important;
+    font-size: 0.66rem !important;
+  }
+
+  /* 9. Tab 3 (Connectivity): 2-Column Distance Benchmarks */
+  .transit-matrix-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .transit-node-card.highlight-corridor-card {
+    grid-column: 1 / -1 !important;
+  }
+
+  .transit-node-card {
+    padding: 0.65rem !important;
+    border-radius: 10px !important;
+    gap: 0.5rem !important;
+  }
+
+  .transit-node-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .transit-node-name {
+    font-size: 0.76rem !important;
+  }
+
+  .transit-dist-pill {
+    font-size: 0.65rem !important;
+    padding: 0.15rem 0.4rem !important;
+  }
+
+  /* 10. Tab 4 (Overview): 2x2 Quick Specs Matrix */
+  .overview-specs-matrix {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  /* 11. Hide Desktop Floating WhatsApp Pill (Replaced by Unified Bottom Dock) */
+  .sticky-wa-floating-bar {
+    display: none !important;
+  }
+
+  /* 12. Mobile Sticky Bottom Conversion Dock */
+  .mobile-sticky-bottom-dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 990;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.625rem;
+    padding: 0.625rem 0.875rem calc(0.625rem + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .mob-dock-price-box {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .mob-dock-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #064e3b;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .mob-dock-sub {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mob-dock-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .btn-mob-dock-wa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    height: 40px;
+    padding: 0 0.85rem;
+    border-radius: 10px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .mob-dock-wa-svg {
+    width: 17px;
+    height: 17px;
+    color: #16a34a;
+    flex-shrink: 0;
+  }
+
+  .btn-mob-dock-visit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    height: 40px;
+    padding: 0 1rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+    border: none;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(6, 95, 70, 0.25);
+  }
+
+  .btn-mob-dock-visit .material-symbols-outlined {
+    font-size: 17px;
   }
 }
