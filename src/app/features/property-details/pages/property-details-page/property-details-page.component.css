@@ -4313,7 +4313,7 @@
     border: none !important;
   }
 
-  /* Universal No-Boxes & No-Borders Rule Inside Tabs View on Mobile */
+  /* Universal No-Borders Rule Inside Tabs View on Mobile (Mild Alternating BG Allowed) */
   .connected-workspace-window .hanu-card,
   .connected-workspace-window .hanu-card-header,
   .connected-workspace-window .infrastructure-iconic-grid,
@@ -4347,9 +4347,24 @@
     border-bottom: none !important;
     border-left: none !important;
     border-right: none !important;
+    box-shadow: none !important;
+  }
+
+  .connected-workspace-window .hanu-card,
+  .connected-workspace-window .hanu-card-header,
+  .connected-workspace-window .infrastructure-iconic-grid,
+  .connected-workspace-window .hanu-specs-grid,
+  .connected-workspace-window .legal-clearance-badge,
+  .connected-workspace-window .cadastral-seal-badge,
+  .connected-workspace-window .bank-chip,
+  .connected-workspace-window .survey-audit-card,
+  .connected-workspace-window .audit-point,
+  .connected-workspace-window .transit-matrix-grid,
+  .connected-workspace-window .overview-narrative-card,
+  .connected-workspace-window .overview-specs-matrix,
+  .connected-workspace-window .overview-amenity-chip {
     background: transparent !important;
     border-radius: 0 !important;
-    box-shadow: none !important;
   }
 
   .connected-workspace-window .hanu-card {
@@ -4366,7 +4381,7 @@
     align-items: flex-start !important;
     gap: 6px !important;
     padding-bottom: 0 !important;
-    margin-bottom: 14px !important;
+    margin-bottom: 10px !important;
   }
 
   .hanu-card-header h2 {
@@ -4390,23 +4405,29 @@
     color: #2c4938 !important;
   }
 
-  /* 8. Tab 1 (Infrastructure): Open Planar Spec List (No Inner Boxes or Borders) */
+  /* 8. Tab 1 (Infrastructure): Borderless Alternating Mild BG Spec List */
   .infrastructure-iconic-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 14px !important;
+    gap: 2px !important;
     margin-top: 0.25rem !important;
     overflow: visible !important;
   }
 
-  .infra-card {
-    padding: 0 !important;
+  .connected-workspace-window .infra-card {
+    padding: 10px 10px !important;
     gap: 12px !important;
-    align-items: flex-start !important;
+    align-items: center !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+  }
+
+  .connected-workspace-window .infra-card:nth-child(even) {
+    background: #f8fafc !important;
   }
 
   .infra-card-header-row {
-    margin-top: 2px !important;
+    margin-top: 0 !important;
   }
 
   .infra-icon-emblem {
@@ -4426,7 +4447,7 @@
 
   .infra-main-title {
     font-size: 13px !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
     line-height: 1.3 !important;
   }
 
@@ -4435,24 +4456,32 @@
   }
 
   .infra-additional-bar {
-    padding: 4px 0 0 0 !important;
-    margin-top: 14px !important;
+    padding: 10px !important;
+    margin-top: 8px !important;
+    background: #f8fafc !important;
+    border-radius: 6px !important;
   }
 
-  /* 9. Tab 2 (Legal Specs): Open Planar 2-Column Key-Value List (No Inner Boxes or Borders) */
+  /* 9. Tab 2 (Legal Specs): Borderless Alternating Mild BG Key-Value List */
   .hanu-specs-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 2px !important;
   }
 
-  .hanu-spec-item {
+  .connected-workspace-window .hanu-spec-item {
     display: grid !important;
     grid-template-columns: 44% 56% !important;
     align-items: baseline !important;
     gap: 10px !important;
-    padding: 0 !important;
+    padding: 9px 10px !important;
     box-sizing: border-box !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+  }
+
+  .connected-workspace-window .hanu-spec-item:nth-child(even) {
+    background: #f8fafc !important;
   }
 
   .spec-label {
@@ -4520,26 +4549,33 @@
     font-size: 11.5px !important;
   }
 
-  /* 10. Tab 3 (Connectivity): Open Planar 2-Column Benchmarks (No Inner Boxes or Borders) */
+  /* 10. Tab 3 (Connectivity): Borderless Alternating Mild BG Benchmarks */
   .transit-matrix-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 16px 12px !important;
+    gap: 6px !important;
     margin-top: 0.25rem !important;
   }
 
-  .transit-card {
+  .connected-workspace-window .transit-card {
     flex-direction: row !important;
     align-items: flex-start !important;
     gap: 10px !important;
-    padding: 0 !important;
+    padding: 9px 10px !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
   }
 
-  .transit-card.highlight-corridor-card {
+  .connected-workspace-window .transit-card:nth-child(even) {
+    background: #f8fafc !important;
+  }
+
+  .connected-workspace-window .transit-card.highlight-corridor-card {
     grid-column: 1 / -1 !important;
     flex-direction: row !important;
     align-items: flex-start !important;
     gap: 10px !important;
+    background: #f8fafc !important;
   }
 
   .transit-icon-box {
@@ -4570,7 +4606,7 @@
     margin-top: 1px !important;
   }
 
-  /* 11. Tab 4 (Overview): Open Planar Narrative & Specs (No Inner Boxes or Borders) */
+  /* 11. Tab 4 (Overview): Borderless Alternating Mild BG Specs */
   .overview-narrative-card {
     margin: 0 0 1.25rem 0 !important;
   }
@@ -4593,22 +4629,34 @@
   .overview-specs-matrix {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 14px 12px !important;
+    gap: 6px !important;
     padding: 0 !important;
     margin-bottom: 1.25rem !important;
   }
 
-  .overview-spec-cell {
-    padding: 0 !important;
+  .connected-workspace-window .overview-spec-cell {
+    padding: 9px 10px !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+  }
+
+  .connected-workspace-window .overview-spec-cell:nth-child(even) {
+    background: #f8fafc !important;
   }
 
   .overview-highlights-grid {
-    gap: 10px !important;
+    gap: 4px !important;
   }
 
-  .overview-highlight-item {
-    padding: 0 !important;
+  .connected-workspace-window .overview-highlight-item {
+    padding: 8px 10px !important;
     gap: 10px !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+  }
+
+  .connected-workspace-window .overview-highlight-item:nth-child(even) {
+    background: #f8fafc !important;
   }
 
   .overview-amenities-tags {
