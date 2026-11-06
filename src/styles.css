@@ -680,8 +680,6 @@ app-home-page app-top-concierge-bar,
 app-home-page app-top-concierge-bar *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-header,
 app-home-page app-header *:not([class*="circle"]):not([class*="avatar"]),
-app-home-page app-deals-scrolling-banner,
-app-home-page app-deals-scrolling-banner *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page .hero-text-center,
 app-home-page .hero-text-center *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-economy-banner,
@@ -725,6 +723,12 @@ app-search-page .preset-chip {
 .rounded-full,
 input[type="radio"] {
   border-radius: 6px !important;
+}
+
+/* Deals Scrolling Banner docked under header */
+app-deals-scrolling-banner .flash-billboard,
+.flash-billboard {
+  border-radius: 0 0 6px 6px !important;
 }
 
 

@@ -236,6 +236,9 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       border: 1px solid var(--hairline-border, #e2e8f0);
       border-top: none;
       overflow: hidden;
+      isolation: isolate;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
       min-height: 210px;
       display: flex;
       flex-direction: column;
@@ -259,6 +262,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
+      border-radius: 0 0 6px 6px !important;
     }
 
     /* Plot Imagery Layer for Banner Background - Full Image Background */
@@ -687,6 +691,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       background: rgba(255, 255, 255, 0.15);
       z-index: 3;
       overflow: hidden;
+      border-radius: 0 0 6px 6px !important;
     }
 
     .flash-progress-bar {
@@ -725,9 +730,13 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         max-height: 100px;
         width: 100%;
         margin-top: 0;
-        border-left: none;
-        border-right: none;
+        border: 1px solid var(--hairline-border, #e2e8f0);
+        border-top: none;
         border-radius: 0 0 6px 6px !important;
+        overflow: hidden;
+        isolation: isolate;
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
+        mask-image: radial-gradient(white, black);
         cursor: pointer;
       }
       .flash-panoramic-body {
