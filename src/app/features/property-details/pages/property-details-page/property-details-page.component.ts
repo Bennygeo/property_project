@@ -110,8 +110,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       setTimeout(() => {
         const workspaceEl = document.getElementById('details-context-workspace');
         if (workspaceEl) {
-          const isMobile = window.innerWidth <= 768;
-          const offset = isMobile ? 10 : 76;
+          const headerEl = document.querySelector('app-header');
+          const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 64;
+          const offset = headerHeight + 8;
           const bodyRect = document.body.getBoundingClientRect().top;
           const elementRect = workspaceEl.getBoundingClientRect().top;
           const elementPosition = elementRect - bodyRect;
@@ -454,9 +455,11 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       setTimeout(() => {
         const mediaEl = document.querySelector('.hanu-media-card');
         if (mediaEl) {
+          const headerEl = document.querySelector('app-header');
+          const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 64;
           const bodyRect = document.body.getBoundingClientRect().top;
           const elementRect = mediaEl.getBoundingClientRect().top;
-          const offsetPosition = Math.max(0, elementRect - bodyRect - 10);
+          const offsetPosition = Math.max(0, elementRect - bodyRect - (headerHeight + 8));
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'

@@ -4145,13 +4145,13 @@
     font-size: 11px !important;
   }
 
-  /* 5. Readiness Pipeline: Compact 2-Column Matrix */
+  /* 5. Readiness Pipeline: Desktop-Style Horizontal Interlocking Chevron Arrow Bar */
   .readiness-horizon-wrapper {
     margin: 0 !important;
   }
 
   .readiness-journey-card {
-    padding: 12px !important;
+    padding: 10px 10px 12px 10px !important;
     border-radius: 8px !important;
   }
 
@@ -4169,32 +4169,57 @@
   }
 
   .readiness-chevron-track {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-    overflow: visible !important;
-  }
-
-  .rc-step,
-  .rc-step:first-child,
-  .rc-step:last-child {
-    clip-path: none !important;
-    border-radius: 6px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
     width: 100% !important;
-    min-width: 0 !important;
-    height: 32px !important;
-    padding: 0 10px !important;
-    font-size: 11px !important;
-    justify-content: flex-start !important;
+    gap: 2px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
   }
 
+  .rc-step {
+    flex: 1 1 0% !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 38px !important;
+    padding: 2px 5px 2px 9px !important;
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    font-size: 9.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.12 !important;
+    text-align: center !important;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%, 6px 50%) !important;
+    border-radius: 0 !important;
+  }
+
+  .rc-step:first-child {
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%) !important;
+    border-radius: 6px 0 0 6px !important;
+    padding-left: 4px !important;
+  }
+
+  .rc-step:last-child,
   .rc-step.step-5 {
-    grid-column: 1 / -1 !important;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 6px 50%) !important;
+    border-radius: 0 6px 6px 0 !important;
+    padding-right: 4px !important;
     justify-content: center !important;
   }
 
+  .rc-step-label {
+    white-space: normal !important;
+    display: block !important;
+    word-break: break-word !important;
+    letter-spacing: -0.01em !important;
+  }
+
   .rc-check {
-    font-size: 14px !important;
+    display: none !important;
   }
 
   /* 6. Free Maintenance Service Banner: Scannable 2x2 Perks */
@@ -4235,16 +4260,17 @@
     margin-top: 1px;
   }
 
-  /* 7. Context Workspace Tabs: Sticky 4-Column Bar + Auto-Top Readability */
+  /* 7. Context Workspace Tabs: Sticky Below Header (62px) + Auto-Top Readability */
   .connected-workspace-shell {
     overflow: visible !important;
     border-radius: 8px !important;
     margin-bottom: 0.5rem !important;
+    scroll-margin-top: 70px !important;
   }
 
   .context-tabs-ribbon {
     position: sticky !important;
-    top: 0 !important;
+    top: 62px !important;
     z-index: 45 !important;
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -4519,7 +4545,8 @@
     background: #f8fafc !important;
   }
 
-  /* 12. Hide Overlapping Floating Widgets on Mobile (Replaced by Unified Bottom Dock) */
+  /* 12. Hide Redundant In-Page WhatsApp Card & Floating Widgets on Mobile (Replaced by Unified Bottom Dock) */
+  .hanu-realtor-card,
   .sticky-wa-floating-bar,
   :host ::ng-deep app-virtual-property-presenter {
     display: none !important;
