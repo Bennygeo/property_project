@@ -95,7 +95,7 @@ export interface PropertyTypeOption {
           <div class="search-pill-bar">
             
             <!-- Segment 1: Locality / Project -->
-            <div class="pill-segment segment-locality" (click)="openLocationSuggest(); $event.stopPropagation()">
+            <div class="pill-segment segment-locality" (click)="onSearchInputClick($event)">
               <div class="segment-input-wrap">
                 <label class="segment-label" for="hero-locality-input">Location / Project</label>
                 <input 
@@ -104,14 +104,14 @@ export interface PropertyTypeOption {
                   type="text" 
                   class="pill-input-text" 
                   [value]="propertyService.searchQuery()"
-                  (focus)="openLocationSuggest()"
-                  (click)="openLocationSuggest(); $event.stopPropagation()"
+                  (focus)="onSearchInputFocus()"
+                  (click)="onSearchInputClick($event)"
                   (input)="onSearchInput($event)"
                   (keydown.enter)="onInputEnter($event)"
                   autocomplete="off"
                   role="combobox"
                   aria-autocomplete="list"
-                  [attr.aria-expanded]="isLocationSuggestOpen()"
+                  [attr.aria-expanded]="isLocationSuggestOpen() || isMobileQuestionnaireOpen()"
                   placeholder="City, locality or project...">
               </div>
 
@@ -121,6 +121,12 @@ export interface PropertyTypeOption {
                   <span class="clear-cross">&times;</span>
                 </button>
               }
+
+              <!-- Mobile Search Button at the end of search text area -->
+              <button type="button" class="btn-mobile-input-search" (click)="executeSearch(); $event.stopPropagation()" id="mobile-inline-search-btn" aria-label="Search properties">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <span class="search-text-mobile">Search</span>
+              </button>
 
               <!-- Trending & Auto-Suggest Dropdown Panel -->
               @if (isLocationSuggestOpen()) {
@@ -226,11 +232,11 @@ export interface PropertyTypeOption {
             </div>
 
             <!-- Vertical Hairline Divider -->
-            <div class="pill-divider"></div>
+            <div class="pill-divider desktop-segment"></div>
 
             <!-- Segment 2: Property Type -->
             <div 
-              class="pill-segment segment-dropdown" 
+              class="pill-segment segment-dropdown desktop-segment" 
               [class.is-open]="isTypeDropdownOpen()"
               (click)="$event.stopPropagation()">
               <div 
@@ -286,11 +292,11 @@ export interface PropertyTypeOption {
             </div>
 
             <!-- Vertical Hairline Divider -->
-            <div class="pill-divider"></div>
+            <div class="pill-divider desktop-segment"></div>
 
             <!-- Segment 3: Budget Range -->
             <div 
-              class="pill-segment segment-dropdown" 
+              class="pill-segment segment-dropdown desktop-segment" 
               [class.is-open]="isBudgetDropdownOpen()"
               (click)="$event.stopPropagation()">
               <div 
@@ -365,8 +371,8 @@ export interface PropertyTypeOption {
               }
             </div>
 
-            <!-- Segment 4: Search Button -->
-            <div class="pill-action-wrap">
+            <!-- Segment 4: Search Button (Desktop) -->
+            <div class="pill-action-wrap desktop-segment">
               <button type="button" class="btn-pill-search" (click)="executeSearch()" id="hero-search-btn">
                 <span class="material-symbols-outlined search-btn-icon" aria-hidden="true">search</span>
                 <span class="search-btn-text">Search</span>
@@ -374,6 +380,119 @@ export interface PropertyTypeOption {
             </div>
 
           </div>
+
+          <!-- Mobile Guided Questionnaire Prompt (Opens when User Focuses Search Bar) -->
+          @if (isMobileQuestionnaireOpen()) {
+            <div class="mobile-questionnaire-card" (click)="$event.stopPropagation()">
+              <div class="mobile-q-header">
+                <div class="mobile-q-headline">
+                  <span class="material-symbols-outlined q-icon">tune</span>
+                  <span>Quick Preferences</span>
+                </div>
+                <button type="button" class="btn-q-close" (click)="closeMobileQuestionnaire()" aria-label="Close preferences">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <!-- 1. BUY -> PLOTS | COMMERCIAL ? -->
+              <div class="mobile-q-section">
+                <div class="mobile-q-title">
+                  <span class="q-step-num">1</span>
+                  <span>BUY &rarr; PLOTS | COMMERCIAL ?</span>
+                </div>
+                <div class="mobile-q-toggle-row">
+                  <button 
+                    type="button" 
+                    class="mobile-q-chip chip-flex" 
+                    [class.active]="selectedMobileCategory() === 'plots'"
+                    (click)="setMobileCategory('plots')">
+                    <span class="material-symbols-outlined chip-icon">terrain</span>
+                    <span>Plots</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="mobile-q-chip chip-flex" 
+                    [class.active]="selectedMobileCategory() === 'commercial'"
+                    (click)="setMobileCategory('commercial')">
+                    <span class="material-symbols-outlined chip-icon">domain</span>
+                    <span>Commercial</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. PRICE RANGES ? -->
+              <div class="mobile-q-section">
+                <div class="mobile-q-title">
+                  <span class="q-step-num">2</span>
+                  <span>PRICE RANGES ?</span>
+                </div>
+                <div class="mobile-q-budget-grid">
+                  @for (range of budgetRanges; track range.value) {
+                    <button 
+                      type="button" 
+                      class="mobile-q-chip chip-budget" 
+                      [class.active]="propertyService.selectedBudget() === range.value"
+                      (click)="selectMobileBudget(range.value)">
+                      {{ range.label }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- 3. INVESTMENT | READY TO BUILD ? -->
+              <div class="mobile-q-section">
+                <div class="mobile-q-title">
+                  <span class="q-step-num">3</span>
+                  <span>INVESTMENT | READY TO BUILD ?</span>
+                </div>
+                <div class="mobile-q-toggle-row">
+                  <button 
+                    type="button" 
+                    class="mobile-q-chip chip-flex" 
+                    [class.active]="selectedMobileIntent() === 'investment'"
+                    (click)="setMobileIntent('investment')">
+                    <span class="material-symbols-outlined chip-icon">trending_up</span>
+                    <span>Investment</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="mobile-q-chip chip-flex" 
+                    [class.active]="selectedMobileIntent() === 'ready'"
+                    (click)="setMobileIntent('ready')">
+                    <span class="material-symbols-outlined chip-icon">handyman</span>
+                    <span>Ready to Build</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Matching Properties Snippet if Text Entered -->
+              @if (propertyService.searchQuery() && matchedProperties().length > 0) {
+                <div class="mobile-q-matches">
+                  <div class="mobile-q-matches-header">Matching Properties ({{ matchedProperties().length }})</div>
+                  <div class="mobile-q-matches-list">
+                    @for (prop of matchedProperties().slice(0, 2); track prop.id) {
+                      <div class="mobile-q-match-item" (click)="selectProperty(prop)">
+                        <span class="material-symbols-outlined match-icon">location_on</span>
+                        <div class="match-info">
+                          <span class="match-title">{{ prop.title }}</span>
+                          <span class="match-sub">{{ prop.locality }}, {{ prop.city }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- End Search Button -->
+              <div class="mobile-q-footer">
+                <button type="button" class="btn-mobile-prompt-search" (click)="executeMobileGuidedSearch()">
+                  <span class="material-symbols-outlined search-icon">search</span>
+                  <span>Search Properties</span>
+                </button>
+              </div>
+            </div>
+          }
+
         </div>
       </div>
     </section>
@@ -961,6 +1080,14 @@ export interface PropertyTypeOption {
       background: var(--brand-green-subtle, #e5f7ec);
     }
 
+    /* Desktop Base: Hide Mobile-Only Search Button & Questionnaire */
+    .btn-mobile-input-search {
+      display: none;
+    }
+    .mobile-questionnaire-card {
+      display: none;
+    }
+
     /* Popover Panels Base */
     .mat-dropdown-panel {
       position: absolute;
@@ -981,108 +1108,288 @@ export interface PropertyTypeOption {
       min-width: 340px;
     }
 
-    /* Mobile Responsive Pill Stack */
+    /* Mobile Responsive Pill Stack & Minimalist Underline Options */
     @media (max-width: 768px) {
+      /* Option 2: Minimalist Underline Mode Tabs (Zero Box Borders) */
       .hero-buy-sell-tabs {
         display: flex;
         width: 100%;
         max-width: 100%;
-        gap: 8px;
+        gap: 0;
         margin-top: 0.5rem;
-        margin-bottom: 0.85rem;
+        margin-bottom: 1rem;
         box-sizing: border-box;
         padding: 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1.5px solid #e2e8f0;
       }
       .buy-sell-tab-btn {
         flex: 1 1 0;
         min-width: 0;
         height: 44px;
         padding: 0 4px;
-        border-radius: 10px;
-        font-size: 13px;
+        border-radius: 0;
+        border: none;
+        background: transparent;
+        border-bottom: 3.5px solid transparent;
+        font-size: 13.5px;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 5px;
+        gap: 6px;
         white-space: nowrap;
         box-sizing: border-box;
         text-decoration: none;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        box-shadow: none;
+        color: #64748b;
+        transition: all 0.2s ease;
       }
       .buy-sell-tab-btn .tab-icon {
         font-size: 18px;
+        color: #64748b;
         flex-shrink: 0;
+        transition: color 0.15s ease;
       }
       .buy-sell-tab-btn.active {
-        background: var(--brand-green, #5e8f72);
-        border: 1.5px solid var(--brand-green, #5e8f72);
-        color: #ffffff;
-        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.28);
+        background: transparent;
+        border: none;
+        border-bottom: 3.5px solid var(--brand-green, #5e8f72);
+        color: var(--brand-green, #5e8f72);
+        font-weight: 700;
+        box-shadow: none;
       }
       .buy-sell-tab-btn.active .tab-icon {
-        color: #ffffff;
+        color: var(--brand-green, #5e8f72);
       }
       .buy-sell-tab-btn:not(.active) {
-        background: #ffffff;
-        border: 1.5px solid #cbd5e1;
-        color: #334155;
+        background: transparent;
+        border: none;
+        border-bottom: 3.5px solid transparent;
+        color: #64748b;
+        box-shadow: none;
       }
       .buy-sell-tab-btn:not(.active) .tab-icon {
         color: #64748b;
       }
+      .buy-sell-tab-btn.btn-post-link {
+        background: transparent;
+        border: none;
+        border-bottom: 3.5px solid transparent;
+        color: #64748b;
+        box-shadow: none;
+      }
+      .buy-sell-tab-btn.btn-post-link .tab-icon {
+        color: #64748b;
+      }
+
+      /* Hide Desktop Segments on Mobile */
+      .desktop-segment {
+        display: none !important;
+      }
+
+      /* Mobile Search Bar: Clean single row with Search Button at the end of text area */
       .search-pill-bar {
         flex-direction: column;
-        border-radius: 18px;
-        padding: 0.85rem;
-        gap: 0.625rem;
+        border-radius: 16px;
+        padding: 0.35rem;
+        gap: 0;
         box-sizing: border-box;
-        box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.03);
         border: 1px solid #e2e8f0;
+        background: #ffffff;
       }
-      .pill-segment {
+      .pill-segment.segment-locality {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
         width: 100%;
         border-radius: 12px;
         background: #f8fafc;
         border: 1px solid #f1f5f9;
-        padding: 0.75rem 0.95rem;
+        padding: 0.45rem 0.6rem 0.45rem 0.85rem;
         box-sizing: border-box;
         transition: background 0.15s ease, border-color 0.15s ease;
       }
-      .pill-segment:active {
-        background: #f1f5f9;
-        border-color: #e2e8f0;
+      .pill-segment.segment-locality:active,
+      .pill-segment.segment-locality:focus-within {
+        background: #ffffff;
+        border-color: var(--brand-green, #5e8f72);
       }
-      .segment-trigger {
+      .pill-segment.segment-locality .segment-input-wrap {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+      .pill-segment.segment-locality .pill-input-text {
+        font-size: 13.5px;
+        height: 24px;
+      }
+
+      /* Search Button at the end of the search text area */
+      .btn-mobile-input-search {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        height: 40px;
+        padding: 0 14px;
+        background: var(--brand-green, #5e8f72);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.35);
+        transition: all 0.15s ease;
+        margin-left: 4px;
+      }
+      .btn-mobile-input-search:active {
+        transform: scale(0.97);
+        background: var(--brand-green-hover, #497259);
+      }
+      .btn-mobile-input-search .search-icon {
+        font-size: 18px;
+      }
+
+      /* Mobile Guided Questionnaire Card */
+      .mobile-questionnaire-card {
+        display: block;
+        margin-top: 10px;
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.14), 0 6px 14px rgba(15, 23, 42, 0.05);
+        padding: 1.15rem;
+        box-sizing: border-box;
+        animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 120;
+        position: relative;
+        text-align: left;
+      }
+      .mobile-q-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.65rem;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .mobile-q-headline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .mobile-q-headline .q-icon {
+        font-size: 18px;
+        color: var(--brand-green, #5e8f72);
+      }
+      .btn-q-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: #f1f5f9;
+        color: #64748b;
+        cursor: pointer;
+      }
+      .btn-q-close .material-symbols-outlined {
+        font-size: 18px;
+      }
+      .mobile-q-section {
+        margin-bottom: 1rem;
+      }
+      .mobile-q-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.55rem;
+      }
+      .q-step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--brand-green-subtle, #e5f7ec);
+        color: var(--brand-green, #5e8f72);
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .mobile-q-toggle-row {
+        display: flex;
+        gap: 8px;
         width: 100%;
       }
-      .type-popover-panel,
-      .budget-popover-panel {
-        position: absolute;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        top: calc(100% + 4px) !important;
-        z-index: 150 !important;
+      .mobile-q-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 42px;
+        border-radius: 10px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+        padding: 0 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
       }
-      .pill-divider {
-        display: none;
+      .mobile-q-chip.chip-flex {
+        flex: 1 1 0;
       }
-      .pill-action-wrap {
+      .mobile-q-chip .chip-icon {
+        font-size: 18px;
+        color: #64748b;
+      }
+      .mobile-q-chip.active {
+        background: var(--brand-green, #5e8f72);
+        border-color: var(--brand-green, #5e8f72);
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.3);
+      }
+      .mobile-q-chip.active .chip-icon {
+        color: #ffffff;
+      }
+      .mobile-q-budget-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+      .mobile-q-chip.chip-budget {
+        height: 38px;
+        font-size: 11.5px;
+        padding: 0 4px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .mobile-q-footer {
+        margin-top: 1.25rem;
+      }
+      .btn-mobile-prompt-search {
         width: 100%;
-        margin-left: 0;
-        margin-top: 0.35rem;
-        display: block;
-      }
-      .btn-pill-search {
-        width: 100% !important;
-        min-width: 100%;
         height: 48px;
         display: flex;
         align-items: center;
@@ -1092,40 +1399,82 @@ export interface PropertyTypeOption {
         color: #ffffff;
         border: none;
         border-radius: 12px;
+        font-family: 'Montserrat', sans-serif;
         font-size: 14.5px;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        box-shadow: 0 4px 14px rgba(94, 143, 114, 0.35);
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        margin: 0;
-        padding: 0 1rem;
+        box-shadow: 0 4px 14px rgba(94, 143, 114, 0.4);
+        transition: all 0.15s ease;
       }
-      .btn-pill-search .search-btn-icon {
-        font-size: 20px;
-        color: #ffffff;
-      }
-      .btn-pill-search:hover,
-      .btn-pill-search:active {
+      .btn-mobile-prompt-search:active {
+        transform: scale(0.98);
         background: var(--brand-green-hover, #497259);
-        color: #ffffff;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(94, 143, 114, 0.4);
+      }
+      .btn-mobile-prompt-search .search-icon {
+        font-size: 20px;
+      }
+      .mobile-q-matches {
+        margin-top: 0.75rem;
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid #e2e8f0;
+      }
+      .mobile-q-matches-header {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
+      .mobile-q-match-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.35rem 0;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .mobile-q-match-item:last-child {
+        border-bottom: none;
+      }
+      .mobile-q-match-item .match-icon {
+        font-size: 16px;
+        color: var(--brand-green, #5e8f72);
+      }
+      .mobile-q-match-item .match-info {
+        display: flex;
+        flex-direction: column;
+      }
+      .mobile-q-match-item .match-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .mobile-q-match-item .match-sub {
+        font-size: 10.5px;
+        color: #64748b;
       }
     }
 
     @media (max-width: 380px) {
-      .hero-buy-sell-tabs {
-        gap: 6px;
-      }
       .buy-sell-tab-btn {
-        font-size: 12px;
+        font-size: 12.5px;
         gap: 4px;
-        padding: 0 2px;
         height: 40px;
       }
       .buy-sell-tab-btn .tab-icon {
         font-size: 16px;
+      }
+      .btn-mobile-input-search {
+        padding: 0 10px;
+        font-size: 12px;
+      }
+      .btn-mobile-input-search .search-text-mobile {
+        display: none;
+      }
+      .mobile-q-chip.chip-budget {
+        font-size: 10.5px;
       }
     }
 
@@ -1699,14 +2048,21 @@ export class HeroSearchComponent implements OnInit {
   // Hero Top Mode Tabs (Buy | Post | Commercial)
   readonly activeHeroTab = signal<'buy' | 'commercial'>('buy');
 
+  // Mobile Guided Questionnaire State (BUY -> PLOTS | COMMERCIAL, PRICE RANGES, INVESTMENT | READY TO BUILD)
+  readonly isMobileQuestionnaireOpen = signal<boolean>(false);
+  readonly selectedMobileCategory = signal<'plots' | 'commercial'>('plots');
+  readonly selectedMobileIntent = signal<'investment' | 'ready' | 'all'>('all');
+
   setHeroTab(mode: 'buy' | 'commercial'): void {
     this.activeHeroTab.set(mode);
     if (mode === 'commercial') {
+      this.selectedMobileCategory.set('commercial');
       this.selectedTypes.set(['Commercial Spaces']);
       this.propertyService.selectedPropertyType.set('Commercial Spaces');
       this.propertyService.setCategoryFilter('commercial');
       this.activeRibbonTab.set('commercial');
     } else {
+      this.selectedMobileCategory.set('plots');
       this.selectedTypes.set([]);
       this.propertyService.selectedPropertyType.set('all');
       this.propertyService.setCategoryFilter('all');
@@ -1861,7 +2217,60 @@ export class HeroSearchComponent implements OnInit {
 
   // Location Autocomplete & Search Focus Routing Actions
   onSearchInputFocus(): void {
-    this.openLocationSuggest();
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.isMobileQuestionnaireOpen.set(true);
+      this.isLocationSuggestOpen.set(false);
+    } else {
+      this.openLocationSuggest();
+    }
+  }
+
+  onSearchInputClick(event: MouseEvent): void {
+    event.stopPropagation();
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.isMobileQuestionnaireOpen.set(true);
+      this.isLocationSuggestOpen.set(false);
+    } else {
+      this.openLocationSuggest();
+    }
+  }
+
+  closeMobileQuestionnaire(): void {
+    this.isMobileQuestionnaireOpen.set(false);
+  }
+
+  setMobileCategory(cat: 'plots' | 'commercial'): void {
+    this.selectedMobileCategory.set(cat);
+    if (cat === 'commercial') {
+      this.selectedTypes.set(['Commercial Spaces']);
+      this.propertyService.selectedPropertyType.set('Commercial Spaces');
+      this.propertyService.setCategoryFilter('commercial');
+      this.activeHeroTab.set('commercial');
+    } else {
+      this.selectedTypes.set(['Gated CMDA Plots']);
+      this.propertyService.selectedPropertyType.set('Gated CMDA Plots');
+      this.propertyService.setCategoryFilter('plots');
+      this.activeHeroTab.set('buy');
+    }
+  }
+
+  selectMobileBudget(budget: string): void {
+    this.propertyService.selectedBudget.set(budget);
+  }
+
+  setMobileIntent(intent: 'investment' | 'ready'): void {
+    if (this.selectedMobileIntent() === intent) {
+      this.selectedMobileIntent.set('all');
+      this.selectedStatus.set('all');
+    } else {
+      this.selectedMobileIntent.set(intent);
+      this.selectedStatus.set(intent);
+    }
+  }
+
+  executeMobileGuidedSearch(): void {
+    this.isMobileQuestionnaireOpen.set(false);
+    this.executeSearch();
   }
 
   openLocationSuggest(): void {
@@ -2073,8 +2482,13 @@ export class HeroSearchComponent implements OnInit {
     this.customMaxBudget.set('any');
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event?: MouseEvent): void {
+    const target = event?.target as HTMLElement;
+    if (target?.closest('.mobile-questionnaire-card') || target?.closest('.segment-locality')) {
+      return;
+    }
+    this.isMobileQuestionnaireOpen.set(false);
     this.isLocationSuggestOpen.set(false);
     this.isTypeDropdownOpen.set(false);
     this.isBudgetDropdownOpen.set(false);
@@ -2082,6 +2496,7 @@ export class HeroSearchComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    this.isMobileQuestionnaireOpen.set(false);
     this.isLocationSuggestOpen.set(false);
     this.isTypeDropdownOpen.set(false);
     this.isBudgetDropdownOpen.set(false);
@@ -2089,6 +2504,7 @@ export class HeroSearchComponent implements OnInit {
 
   // Execute Search -> Navigates to /search with rich query parameters
   executeSearch(): void {
+    this.isMobileQuestionnaireOpen.set(false);
     const rawBudget = this.propertyService.selectedBudget();
     let budgetParam: string | null = null;
     if (rawBudget.includes('< ₹50') || rawBudget.includes('25L')) budgetParam = 'under-50l';
