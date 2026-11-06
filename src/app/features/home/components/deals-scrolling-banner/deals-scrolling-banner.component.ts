@@ -232,7 +232,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
     /* Billboard Shell docked directly below header */
     .flash-billboard {
       position: relative;
-      border-radius: 3px !important;
+      border-radius: 0 0 6px 6px !important;
       border: 1px solid var(--hairline-border, #e2e8f0);
       border-top: none;
       overflow: hidden;
@@ -727,7 +727,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
         margin-top: 0;
         border-left: none;
         border-right: none;
-        border-radius: 0 !important;
+        border-radius: 0 0 6px 6px !important;
         cursor: pointer;
       }
       .flash-panoramic-body {
