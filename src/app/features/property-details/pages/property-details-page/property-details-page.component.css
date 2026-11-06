@@ -4549,11 +4549,11 @@
     font-size: 11.5px !important;
   }
 
-  /* 10. Tab 3 (Connectivity): Borderless Alternating Mild BG Benchmarks */
+  /* 10. Tab 3 (Connectivity): Borderless Icon-Matched Mild BG Benchmarks */
   .transit-matrix-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    gap: 8px !important;
     margin-top: 0.25rem !important;
   }
 
@@ -4561,21 +4561,59 @@
     flex-direction: row !important;
     align-items: flex-start !important;
     gap: 10px !important;
-    padding: 9px 10px !important;
-    background: #ffffff !important;
-    border-radius: 6px !important;
-  }
-
-  .connected-workspace-window .transit-card:nth-child(even) {
+    padding: 10px !important;
     background: #f8fafc !important;
+    border-radius: 8px !important;
   }
 
-  .connected-workspace-window .transit-card.highlight-corridor-card {
+  .connected-workspace-window .transit-card.highlight-corridor-card,
+  .connected-workspace-window .transit-card:nth-child(1),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.corridor) {
     grid-column: 1 / -1 !important;
     flex-direction: row !important;
     align-items: flex-start !important;
     gap: 10px !important;
-    background: #f8fafc !important;
+    background: #f0fdfa !important; /* Mild Teal matching #0d9488 */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(2),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.highway) {
+    background: #eff6ff !important; /* Mild Cobalt Blue matching #2563eb */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(3),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.train) {
+    background: #f5f3ff !important; /* Mild Violet matching #7c3aed */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(4),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.bus) {
+    background: #f0fdf4 !important; /* Mild Green matching #16a34a */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(5),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.airport) {
+    background: #f0f9ff !important; /* Mild Sky Blue matching #0284c7 */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(6),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.fuel) {
+    background: #fffbeb !important; /* Mild Amber matching #d97706 */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(7),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.school) {
+    background: #eef2ff !important; /* Mild Indigo matching #4f46e5 */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(8),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.hospital) {
+    background: #fff1f2 !important; /* Mild Rose matching #e11d48 */
+  }
+
+  .connected-workspace-window .transit-card:nth-child(9),
+  .connected-workspace-window .transit-card:has(.transit-icon-box.safety) {
+    background: #ecfeff !important; /* Mild Cyan matching #0891b2 */
   }
 
   .transit-icon-box {
