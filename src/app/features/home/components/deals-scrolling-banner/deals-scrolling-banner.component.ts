@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
 
@@ -13,7 +13,8 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       <div 
         class="flash-billboard" 
         (mouseenter)="pauseAutoSlide()" 
-        (mouseleave)="resumeAutoSlide()">
+        (mouseleave)="resumeAutoSlide()"
+        (click)="onBannerClick($event)">
 
         <!-- Backdrop: Plots Imagery with Cinematic Dark Scrim (Toggleable via bgMode) -->
         <div class="flash-backdrop-wrapper">
@@ -82,7 +83,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
                   Direct liquidation mandates from motivated sellers. 100% legal audit by High Court advocates &amp; ready for 48-hr deed registration.
                 </p>
                 <div class="banner-cta-row">
-                  <a routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }" class="btn-banner-action">
+                  <a routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }" (click)="$event.stopPropagation()" class="btn-banner-action">
                     <span>Explore Verified Deals</span>
                     <span class="material-symbols-outlined cta-arrow">arrow_forward</span>
                   </a>
@@ -91,7 +92,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
 
               <!-- Right Visual: Extended Plot Showcase Card -->
               <div class="col-property-card">
-                <a routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }" class="banner-property-card" title="Explore Verified CMDA Plots">
+                <a [routerLink]="['/property', 'prop-grand-crest']" (click)="$event.stopPropagation()" class="banner-property-card" title="Grand Crest Plots - Property Details">
                   <div class="bpc-img-wrap">
                     <img [src]="plotImage" alt="CMDA Demarcated Villa Plot" class="bpc-img" loading="lazy" decoding="async" />
                     <span class="bpc-badge bpc-badge-plot">
@@ -139,7 +140,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
                   Distress liquidations strictly discounted below government circle rates. High rental yield &amp; bank NOC guaranteed.
                 </p>
                 <div class="banner-cta-row">
-                  <a routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" class="btn-banner-action">
+                  <a routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" (click)="$event.stopPropagation()" class="btn-banner-action">
                     <span>Explore Distress Deals</span>
                     <span class="material-symbols-outlined cta-arrow">arrow_forward</span>
                   </a>
@@ -148,7 +149,7 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
 
               <!-- Right Visual: Extended Flat Showcase Card -->
               <div class="col-property-card">
-                <a routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" class="banner-property-card" title="Explore Verified Distress Flats">
+                <a [routerLink]="['/property', 'prop-marina-horizon']" (click)="$event.stopPropagation()" class="banner-property-card" title="Marina Horizon - Property Details">
                   <div class="bpc-img-wrap">
                     <img [src]="flatImage" alt="Luxury Modern Residential Flat" class="bpc-img" loading="lazy" decoding="async" />
                     <span class="bpc-badge bpc-badge-flat">
@@ -185,13 +186,13 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
             type="button" 
             class="slide-dot" 
             [class.active]="activeSlide() === 0" 
-            (click)="setSlide(0)" 
+            (click)="$event.stopPropagation(); setSlide(0)" 
             aria-label="Slide 1"></button>
           <button 
             type="button" 
             class="slide-dot" 
             [class.active]="activeSlide() === 1" 
-            (click)="setSlide(1)" 
+            (click)="$event.stopPropagation(); setSlide(1)" 
             aria-label="Slide 2"></button>
         </div>
 
@@ -707,24 +708,40 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       100% { transform: scaleX(1); }
     }
 
-    /* Mobile adjustments (Web screens >= 1024px unaffected) */
+    /* Mobile adjustments: strictly 120px tall on screens <= 1023px (Web screens >= 1024px unaffected) */
     @media (max-width: 1023px) {
       .flash-billboard {
-        min-height: auto;
-        margin-top: -20px;
+        height: 120px;
+        min-height: 120px;
+        max-height: 120px;
+        margin-top: 0;
+        cursor: pointer;
       }
       .flash-panoramic-body {
-        padding: 1rem 1rem 1.25rem;
+        padding: 8px 12px 10px;
         flex-direction: column;
+        justify-content: center;
         align-items: stretch;
+        gap: 0;
+        height: 100%;
+        box-sizing: border-box;
       }
       .slides-deck {
-        min-height: auto;
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        align-items: stretch;
       }
       .slide-content-pane {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 6px;
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        width: 100%;
         transform: none !important;
       }
       .slide-content-pane:not(.pane-active) {
@@ -732,87 +749,187 @@ export type BannerBgMode = 'plots' | 'flats' | 'alternating' | 'gradient';
       }
       .col-narrative {
         width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0;
+        margin: 0;
+      }
+      .banner-eyebrow,
+      .desc-200,
+      .banner-cta-row {
+        display: none !important;
       }
       .title-200 {
-        font-size: 1.25rem;
-        white-space: normal;
-        line-height: 1.3;
-        overflow: visible;
-        text-overflow: clip;
-      }
-      .desc-200 {
-        font-size: 13px;
-        line-height: 1.5;
-        margin-top: 0.25rem;
+        font-size: 13.5px;
+        font-weight: 600;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #ffffff;
+        margin: 0;
+        padding-right: 46px; /* Room for slide dots positioned top-right */
       }
       .col-property-card {
         display: flex;
         width: 100%;
-        margin-top: 0.25rem;
+        height: 58px;
+        margin: 0;
       }
       .banner-property-card {
-        height: 64px;
+        height: 58px;
+        width: 100%;
         max-width: 100%;
         flex-direction: row;
         align-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.16);
         border-radius: 6px;
-        background: rgba(15, 23, 42, 0.85);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        background: #0d1726;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        overflow: hidden;
+        box-sizing: border-box;
       }
       .bpc-img-wrap {
-        width: 80px;
+        width: 72px;
         height: 100%;
         flex-shrink: 0;
+        background: rgba(15, 23, 42, 0.6);
+      }
+      .bpc-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
       .bpc-badge,
       .bpc-tag-verified,
       .bpc-tag-discount {
-        display: none;
+        display: none !important;
       }
       .bpc-info {
-        padding: 6px 12px;
+        padding: 0 12px 0 10px;
         border-top: none;
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
         background: transparent;
+        display: flex;
+        flex-direction: column;
         justify-content: center;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+      }
+      .bpc-title-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
       }
       .bpc-title {
-        font-size: 12.5px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
       }
       .bpc-price {
-        font-size: 13px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #ffffff;
+        white-space: nowrap;
+        line-height: 1.2;
+        flex-shrink: 0;
       }
       .bpc-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 11px;
+        line-height: 1.2;
+      }
+      .bpc-loc {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #cbd5e1;
         font-size: 11px;
       }
+      .bpc-loc .material-symbols-outlined {
+        font-size: 13px;
+        color: var(--brand-green, #5e8f72);
+      }
+      .bpc-sqft {
+        font-size: 11px;
+        font-weight: 500;
+        color: #94a3b8;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
       .banner-slide-dots {
-        bottom: 8px;
-        right: 1rem;
+        position: absolute;
+        top: 9px;
+        right: 12px;
+        bottom: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        z-index: 10;
+      }
+      .slide-dot {
+        width: 6px;
+        height: 6px;
+      }
+      .slide-dot.active {
+        width: 14px;
       }
     }
 
     @media (max-width: 480px) {
       .flash-panoramic-body {
-        padding: 0.875rem 0.875rem 1.15rem;
+        padding: 7px 10px 9px;
       }
       .title-200 {
-        font-size: 1.15rem;
+        font-size: 12.5px;
+        padding-right: 42px;
       }
-      .desc-200 {
-        font-size: 12px;
-        -webkit-line-clamp: 2;
+      .col-property-card {
+        height: 56px;
       }
       .banner-property-card {
-        height: 58px;
+        height: 56px;
       }
       .bpc-img-wrap {
-        width: 70px;
+        width: 66px;
+      }
+      .bpc-title {
+        font-size: 12px;
+      }
+      .bpc-price {
+        font-size: 13px;
+      }
+      .bpc-loc,
+      .bpc-sqft {
+        font-size: 10.5px;
+      }
+      .banner-slide-dots {
+        top: 8px;
+        right: 10px;
       }
     }
   `]
 })
 export class DealsScrollingBannerComponent implements OnInit, OnDestroy {
+  private readonly router = inject(Router);
+
   readonly activeSlide = signal<number>(0);
 
   /**
@@ -859,6 +976,15 @@ export class DealsScrollingBannerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearSlideTimer();
+  }
+
+  onBannerClick(event?: MouseEvent): void {
+    const target = event?.target as HTMLElement;
+    if (target?.closest('.slide-dot') || target?.closest('.btn-banner-action')) {
+      return;
+    }
+    const propId = this.activeSlide() === 0 ? 'prop-grand-crest' : 'prop-marina-horizon';
+    this.router.navigate(['/property', propId]);
   }
 
   setSlide(index: number): void {

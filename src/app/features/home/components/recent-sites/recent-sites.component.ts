@@ -422,9 +422,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       padding: 4px 10px;
       border-radius: 3px !important;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 500;
       letter-spacing: 0.05em;
       text-transform: uppercase;
+      line-height:18px;
     }
 
     .badge-sparkle {

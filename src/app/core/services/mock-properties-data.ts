@@ -206,5 +206,101 @@ export const MOCK_50_PROPERTIES: Property[] = [
                 "a": "Yes, SECURA is pre-approved for immediate plot loans and construction composite loans by leading nationalized and private banks."
             }
         ]
+    },
+    {
+        "id": "prop-grand-crest",
+        "title": "Grand Crest Plots",
+        "propertyType": "Gated CMDA Plots",
+        "locality": "Vandalur",
+        "city": "Chennai",
+        "cityKey": "chennai",
+        "price": "₹42.0 Lakhs",
+        "pricePerSqFt": "₹2,333 /sq.ft",
+        "sqft": "1,800 sq.ft",
+        "bhkBadge": "CMDA Demarcated Plots",
+        "facingOrView": "North & East Facing • Vandalur Reserve",
+        "imageUrl": "plot-banner.jpg",
+        "badges": {
+            "rera": "TNRERA/21/LO/1042/2025",
+            "brokerage": "0% Direct SRO Deed",
+            "points": 4,
+            "specialTag": "Direct Mandate Liquidation"
+        },
+        "highlights": [
+            "Demarcated residential villa plots with CMDA sanction ready for 48-hr registration",
+            "100% legal audit verified by High Court advocate panel with clear revenue patta",
+            "Blacktop internal avenues, underground stormwater drains and street lighting",
+            "Direct connectivity to Outer Ring Road, GST Road and Kilambakkam Bus Terminus",
+            "Sweet ground water table at 25 ft and compact red gravel soil base",
+            "Bank NOC cleared with spot sanction approvals from leading banks"
+        ],
+        "mediaPoints": 4,
+        "isMediaUnlocked": true,
+        "isShortlisted": false,
+        "freePhotos": [
+            "plot-banner.jpg"
+        ],
+        "premiumMedia": [],
+        "developer": {
+            "name": "Grand Crest Estates",
+            "establishedYear": "2012",
+            "projectsCompleted": "18 Sanctioned Layouts",
+            "deliveredSqFt": "4.5 Million sq.ft Delivered",
+            "onTimeTrack": "99.4% On-Time Registration Track",
+            "aboutText": "Grand Crest Estates is a specialized land development firm curating clear-title CMDA residential layouts along Chennai's prime suburban growth corridors.",
+            "corporateOffice": "Grand Crest Hub, Vandalur-Kelambakkam High Road, Chennai"
+        },
+        "possessionDate": "Immediate Registration & Patta Handover",
+        "projectStatus": "Ready to Construct",
+        "totalLandParcel": "3.5 Acres Sanctioned Layout",
+        "totalUnits": "48 Demarcated Plots"
+    },
+    {
+        "id": "prop-marina-horizon",
+        "title": "Marina Horizon",
+        "propertyType": "Apartments & Flats",
+        "locality": "OMR",
+        "city": "Chennai",
+        "cityKey": "chennai",
+        "price": "₹1.15 Cr",
+        "pricePerSqFt": "₹6,969 /sq.ft",
+        "sqft": "1,650 sq.ft",
+        "bhkBadge": "3 BHK Sea Breeze Flat",
+        "facingOrView": "East Facing • Sea Horizon View",
+        "imageUrl": "flat-banner.jpg",
+        "badges": {
+            "rera": "TNRERA/01/PR/8842/2024",
+            "brokerage": "0% Direct SRO Deed",
+            "points": 4,
+            "specialTag": "-28% Distress Liquidation"
+        },
+        "highlights": [
+            "Premium 3 BHK sea-facing residence strictly discounted 28% below SRO circle rates",
+            "Clear freehold title with complete builder NOC and occupancy certificate in place",
+            "Italian marble finish, expansive double-glazed glass balconies & automated lighting",
+            "High rental yield location right in the heart of OMR IT corridor, 5 mins from TIDEL Park",
+            "Infinity rooftop swimming pool, gymnasium, 2 covered car parking bays and 24/7 power backup",
+            "Immediate registration with direct owner liquidation mandate"
+        ],
+        "mediaPoints": 4,
+        "isMediaUnlocked": true,
+        "isShortlisted": false,
+        "freePhotos": [
+            "flat-banner.jpg"
+        ],
+        "premiumMedia": [],
+        "developer": {
+            "name": "Horizon Luxury Living",
+            "establishedYear": "2008",
+            "projectsCompleted": "12 High-Rise Developments",
+            "deliveredSqFt": "6.8 Million sq.ft Delivered",
+            "onTimeTrack": "98.7% On-Time Delivery Track",
+            "aboutText": "Horizon Luxury Living is known for architectural coastal residences and luxury high-rises along OMR and ECR with institutional grade finishes.",
+            "corporateOffice": "Horizon Towers, Rajiv Gandhi Salai (OMR), Chennai"
+        },
+        "possessionDate": "Ready to Move • Immediate SRO Registry",
+        "projectStatus": "Ready to Move",
+        "totalLandParcel": "2.2 Acres Tower Community",
+        "totalUnits": "120 Luxury Residences"
     }
 ];
