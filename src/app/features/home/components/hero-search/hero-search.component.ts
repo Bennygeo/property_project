@@ -68,15 +68,13 @@ export interface PropertyTypeOption {
               [class.active]="activeHeroTab() === 'buy'" 
               (click)="setHeroTab('buy')" 
               title="Search and explore verified properties to buy">
-              <span class="material-symbols-outlined tab-icon">apartment</span>
               <span>Buy</span>
             </button>
             <a 
               routerLink="/post-property" 
               class="buy-sell-tab-btn btn-post-link" 
               title="Post your property">
-              <span class="material-symbols-outlined tab-icon">add_home_work</span>
-              <span>Post</span>
+              <span>Sell</span>
             </a>
             <button 
               type="button" 
@@ -84,7 +82,6 @@ export interface PropertyTypeOption {
               [class.active]="activeHeroTab() === 'commercial'" 
               (click)="setHeroTab('commercial')" 
               title="Explore commercial plots and retail spaces">
-              <span class="material-symbols-outlined tab-icon">domain</span>
               <span>Commercial</span>
             </button>
           </div>
@@ -615,11 +612,11 @@ export interface PropertyTypeOption {
       margin-top: 3.5rem;
     }
 
-    /* Buy / Post / Commercial Mode Tabs (Isolated Independent Buttons) */
+    /* Buy / Sell / Commercial Mode Tabs (Right-side Separator Style without Icons) */
     .hero-buy-sell-tabs {
       display: inline-flex;
       align-items: center;
-      gap: 0.625rem;
+      gap: 0;
       background: transparent;
       padding: 0;
       border: none;
@@ -631,67 +628,55 @@ export interface PropertyTypeOption {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1.25rem;
-      border-radius: 6px;
+      padding: 0.45rem 1.25rem;
+      border-radius: 0;
       font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
       font-weight: 500;
       color: #334155;
       text-decoration: none;
-      border: 1.5px solid #cbd5e1;
+      border: none;
+      border-right: 1.5px solid #cbd5e1;
       background: #ffffff;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      box-shadow: none;
       user-select: none;
       outline: none;
     }
 
-    .buy-sell-tab-btn .tab-icon {
-      font-size: 18px;
-      color: #64748b;
-      line-height: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.15s ease;
+    .hero-buy-sell-tabs > :last-child,
+    .buy-sell-tab-btn:last-child {
+      border: none !important;
+      border-right: none !important;
     }
 
     .buy-sell-tab-btn:hover {
       background: #f8fafc;
-      border-color: #94a3b8;
       color: #0f172a;
-    }
-
-    .buy-sell-tab-btn:hover .tab-icon {
-      color: #334155;
     }
 
     .buy-sell-tab-btn.active {
       background: var(--brand-green, #5e8f72);
-      border-color: var(--brand-green, #5e8f72);
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(94, 143, 114, 0.25);
+      font-weight: 600;
+      box-shadow: none;
     }
 
-    .buy-sell-tab-btn.active .tab-icon {
+    .buy-sell-tab-btn.active:hover {
+      background: var(--brand-green, #5e8f72);
       color: #ffffff;
     }
 
     .buy-sell-tab-btn.btn-post-link {
       background: #ffffff;
-      border: 1.5px solid #cbd5e1;
+      border: none;
+      border-right: 1.5px solid #cbd5e1;
       color: #334155;
-    }
-
-    .buy-sell-tab-btn.btn-post-link .tab-icon {
-      color: #64748b;
     }
 
     .buy-sell-tab-btn.btn-post-link:hover {
       background: #f8fafc;
-      border-color: #94a3b8;
       color: #0f172a;
     }
 
@@ -1152,7 +1137,7 @@ export interface PropertyTypeOption {
       .buy-sell-tab-btn.active {
         background: transparent;
         border: none;
-        border-bottom: 3.5px solid var(--brand-green, #5e8f72);
+        border-bottom: 3.5px solid var(--brand-green, #5e8f72) !important;
         color: var(--brand-green, #5e8f72);
         font-weight: 700;
         box-shadow: none;

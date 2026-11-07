@@ -259,7 +259,7 @@ export class PropertyService {
    */
   public loadPropertiesFromApi(params?: LoadPropertiesParams): void {
     const offset = params?.offset ?? 0;
-    const limit = params?.limit ?? (offset === 0 ? 20 : 10);
+    const limit = params?.limit ?? (offset === 0 ? 20 : 8);
     const append = params?.append ?? (offset > 0);
 
     const qParams = new URLSearchParams();
@@ -292,11 +292,6 @@ export class PropertyService {
     };
 
     (tryGet(environment.apiUrl + '/properties/list.php').pipe(
-      catchError(() => tryGet('/P_demo_5/backend/api/properties/list.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/properties/list.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/properties/list.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/properties/list.php')),
-      catchError(() => tryGet('/p_demo_3/backend/api/properties/list.php')),
       catchError(() => tryGet('/api/properties/list.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/properties/list.php')),
       catchError(err => {
@@ -462,9 +457,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: any }>(baseUrl + '?' + qs);
     return (tryGet(environment.apiUrl + '/geo/suggest.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/suggest.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/suggest.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/suggest.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/suggest.php')),
       catchError(() => tryGet('/api/geo/suggest.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/suggest.php')),
       catchError(err => {
@@ -493,9 +485,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; suggestions: any[] }>(baseUrl + '?' + qs);
     return (tryGet(environment.apiUrl + '/geo/places.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/places.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/places.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/places.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/places.php')),
       catchError(() => tryGet('/api/geo/places.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/places.php')),
       catchError(err => {
@@ -605,9 +594,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: any }>(baseUrl + '?action=details&placeId=' + encodeURIComponent(placeId));
     return (tryGet(environment.apiUrl + '/geo/places.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/places.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/places.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/places.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/places.php')),
       catchError(() => tryGet('/api/geo/places.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/places.php')),
       catchError(() => of({ success: false, data: null }))
@@ -632,9 +618,6 @@ export class PropertyService {
 
     return (tryGet(environment.apiUrl + '/geo/nearby.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/nearby.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/nearby.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/nearby.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/nearby.php')),
       catchError(() => tryGet('/api/geo/nearby.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/nearby.php')),
       catchError(err => of({ success: false, nearbyLocalities: [], nearbyProperties: [] }))
@@ -673,9 +656,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<DistrictsResponse>(baseUrl);
     return (tryGet(environment.apiUrl + '/geo/districts.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/districts.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/districts.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/districts.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/districts.php')),
       catchError(() => tryGet('/api/geo/districts.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/districts.php')),
       catchError(() => of({ success: false, mainHubs: [], regionalGroups: [], allDistricts: [] }))
@@ -701,9 +681,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: { corridors: any[] } }>(baseUrl);
     return (tryGet(environment.apiUrl + '/geo/corridors.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/corridors.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/corridors.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/corridors.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/corridors.php')),
       catchError(() => tryGet('/api/geo/corridors.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/corridors.php')),
       catchError(() => of({ success: false, data: { corridors: [] } }))
@@ -724,9 +701,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: any }>(baseUrl);
     return (tryGet(environment.apiUrl + '/builders/list.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/builders/list.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/builders/list.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/builders/list.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/builders/list.php')),
       catchError(() => tryGet('/api/builders/list.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/builders/list.php')),
       catchError(err => {
@@ -755,9 +729,6 @@ export class PropertyService {
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: any }>(baseUrl + '?name=' + q);
     return (tryGet(environment.apiUrl + '/builders/details.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/builders/details.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/builders/details.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/builders/details.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/builders/details.php')),
       catchError(() => tryGet('/api/builders/details.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/builders/details.php')),
       catchError(err => {
@@ -937,10 +908,6 @@ export class PropertyService {
 
     return (tryPost(`${environment.apiUrl}/properties/create.php`).pipe(
       catchError(() => tryPost('/P_demo_5/backend/api/properties/create.php')),
-      catchError(() => tryPost('/p_demo_5/backend/api/properties/create.php')),
-      catchError(() => tryPost('/P_demo_4/backend/api/properties/create.php')),
-      catchError(() => tryPost('/p_demo_4/backend/api/properties/create.php')),
-      catchError(() => tryPost('/p_demo_3/backend/api/properties/create.php')),
       catchError(() => tryPost('/api/properties/create.php')),
       catchError(() => tryPost(`${environment.apacheApiUrl}/properties/create.php`)),
       map(res => {
@@ -970,10 +937,6 @@ export class PropertyService {
 
     return (tryPost(`${environment.apiUrl}/properties/upload.php`).pipe(
       catchError(() => tryPost('/P_demo_5/backend/api/properties/upload.php')),
-      catchError(() => tryPost('/p_demo_5/backend/api/properties/upload.php')),
-      catchError(() => tryPost('/P_demo_4/backend/api/properties/upload.php')),
-      catchError(() => tryPost('/p_demo_4/backend/api/properties/upload.php')),
-      catchError(() => tryPost('/p_demo_3/backend/api/properties/upload.php')),
       catchError(() => tryPost('/api/properties/upload.php')),
       catchError(() => tryPost(`${environment.apacheApiUrl}/properties/upload.php`)),
       map(res => {
@@ -1000,10 +963,6 @@ export class PropertyService {
 
     return (tryGet(`${environment.apiUrl}/properties/my-properties.php?user_id=${userId}`).pipe(
       catchError(() => tryGet(`/P_demo_5/backend/api/properties/my-properties.php?user_id=${userId}`)),
-      catchError(() => tryGet(`/p_demo_5/backend/api/properties/my-properties.php?user_id=${userId}`)),
-      catchError(() => tryGet(`/P_demo_4/backend/api/properties/my-properties.php?user_id=${userId}`)),
-      catchError(() => tryGet(`/p_demo_4/backend/api/properties/my-properties.php?user_id=${userId}`)),
-      catchError(() => tryGet(`/p_demo_3/backend/api/properties/my-properties.php?user_id=${userId}`)),
       catchError(() => tryGet(`/api/properties/my-properties.php?user_id=${userId}`)),
       map(res => res?.success && res?.data?.properties ? res.data.properties : []),
       catchError(() => of([]))
@@ -1039,10 +998,6 @@ export class PropertyService {
 
     return tryPost(`${environment.apiUrl}/admin/bulk-upload.php`).pipe(
       catchError(() => tryPost('/P_demo_5/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/p_demo_5/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/P_demo_4/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/p_demo_4/backend/api/admin/bulk-upload.php')),
-      catchError(() => tryPost('/p_demo_3/backend/api/admin/bulk-upload.php')),
       catchError(() => tryPost('/api/admin/bulk-upload.php')),
       catchError(() => tryPost(`${environment.apacheApiUrl}/admin/bulk-upload.php`)),
       tap(res => {
@@ -1062,10 +1017,6 @@ export class PropertyService {
 
     return tryGet(`${environment.apiUrl}/geo/reverse.php`).pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/reverse.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/geo/reverse.php')),
-      catchError(() => tryGet('/P_demo_4/backend/api/geo/reverse.php')),
-      catchError(() => tryGet('/p_demo_4/backend/api/geo/reverse.php')),
-      catchError(() => tryGet('/p_demo_3/backend/api/geo/reverse.php')),
       catchError(() => tryGet('/api/geo/reverse.php')),
       catchError(() => tryGet(`${environment.apacheApiUrl}/geo/reverse.php`)),
       catchError(() => {

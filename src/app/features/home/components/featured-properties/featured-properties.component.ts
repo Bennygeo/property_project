@@ -533,7 +533,7 @@ export class FeaturedPropertiesComponent implements OnInit {
 
   // Strictly load and display only 20 properties on Home page
   readonly displayedProperties = computed(() => {
-    return this.propertyService.properties().slice(0, 20);
+    return this.propertyService.properties().slice(0, 8);
   });
 
   getSearchQueryParams(): Record<string, string> {
@@ -548,7 +548,7 @@ export class FeaturedPropertiesComponent implements OnInit {
     this.propertyService.setCategoryFilter(cat);
     this.propertyService.loadPropertiesFromApi({
       offset: 0,
-      limit: 20,
+      limit: 8,
       append: false,
       propertyType: cat !== 'all' ? cat : undefined
     });
@@ -557,7 +557,7 @@ export class FeaturedPropertiesComponent implements OnInit {
   ngOnInit(): void {
     this.propertyService.loadPropertiesFromApi({
       offset: 0,
-      limit: 20,
+      limit: 8,
       append: false
     });
   }

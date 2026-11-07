@@ -54,8 +54,8 @@ export class DevelopersPageComponent implements OnInit {
     }
 
     if (q) {
-      list = list.filter(d => 
-        d.name.toLowerCase().includes(q) || 
+      list = list.filter(d =>
+        d.name.toLowerCase().includes(q) ||
         d.districts?.some(di => di.toLowerCase().includes(q))
       );
     }

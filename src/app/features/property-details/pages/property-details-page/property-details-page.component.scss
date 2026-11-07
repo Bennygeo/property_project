@@ -235,7 +235,7 @@
   background: transparent;
   box-shadow: none !important;
 
-  > *:last-child {
+  >*:last-child {
     border-bottom: none !important;
   }
 
@@ -1141,11 +1141,25 @@
       padding-right: 14px;
     }
 
-    &.step-1 { background: #d26e63; }
-    &.step-2 { background: #dc9642; }
-    &.step-3 { background: #76a34c; }
-    &.step-4 { background: #47a4b8; }
-    &.step-5 { background: #204b5c; }
+    &.step-1 {
+      background: #d26e63;
+    }
+
+    &.step-2 {
+      background: #dc9642;
+    }
+
+    &.step-3 {
+      background: #76a34c;
+    }
+
+    &.step-4 {
+      background: #47a4b8;
+    }
+
+    &.step-5 {
+      background: #204b5c;
+    }
 
     @media (max-width: 680px) {
       clip-path: none !important;
@@ -1539,14 +1553,37 @@
   }
 
   /* Semantic Theme Colors for Infrastructure */
-  .theme-road .infra-icon-emblem span { color: #2563eb; }
-  .theme-power .infra-icon-emblem span { color: #d97706; }
-  .theme-water .infra-icon-emblem span { color: #0284c7; }
-  .theme-drainage .infra-icon-emblem span { color: #0891b2; }
-  .theme-light .infra-icon-emblem span { color: #ca8a04; }
-  .theme-security .infra-icon-emblem span { color: #4f46e5; }
-  .theme-park .infra-icon-emblem span { color: #16a34a; }
-  .theme-maintenance .infra-icon-emblem span { color: #0d9488; }
+  .theme-road .infra-icon-emblem span {
+    color: #2563eb;
+  }
+
+  .theme-power .infra-icon-emblem span {
+    color: #d97706;
+  }
+
+  .theme-water .infra-icon-emblem span {
+    color: #0284c7;
+  }
+
+  .theme-drainage .infra-icon-emblem span {
+    color: #0891b2;
+  }
+
+  .theme-light .infra-icon-emblem span {
+    color: #ca8a04;
+  }
+
+  .theme-security .infra-icon-emblem span {
+    color: #4f46e5;
+  }
+
+  .theme-park .infra-icon-emblem span {
+    color: #16a34a;
+  }
+
+  .theme-maintenance .infra-icon-emblem span {
+    color: #0d9488;
+  }
 
   .infra-pill,
   .pill-dot {
@@ -1879,15 +1916,41 @@
       display: block;
     }
 
-    &.corridor span { color: #0d9488; }
-    &.highway span { color: #2563eb; }
-    &.train span { color: #7c3aed; }
-    &.bus span { color: #16a34a; }
-    &.airport span { color: #0284c7; }
-    &.fuel span { color: #d97706; }
-    &.school span { color: #4f46e5; }
-    &.hospital span { color: #e11d48; }
-    &.safety span { color: #0891b2; }
+    &.corridor span {
+      color: #0d9488;
+    }
+
+    &.highway span {
+      color: #2563eb;
+    }
+
+    &.train span {
+      color: #7c3aed;
+    }
+
+    &.bus span {
+      color: #16a34a;
+    }
+
+    &.airport span {
+      color: #0284c7;
+    }
+
+    &.fuel span {
+      color: #d97706;
+    }
+
+    &.school span {
+      color: #4f46e5;
+    }
+
+    &.hospital span {
+      color: #e11d48;
+    }
+
+    &.safety span {
+      color: #0891b2;
+    }
   }
 
   .transit-info {
@@ -2128,6 +2191,7 @@
     opacity: 0;
     transform: translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2990,10 +3054,13 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.4;
     transform: scale(0.85);
@@ -3011,6 +3078,7 @@
 }
 
 @media (max-width: 768px) {
+
   /* 1. Page Container & Spacing */
   .hanu-property-page {
     padding: 1.25rem 1rem 3.5rem !important;
