@@ -204,7 +204,7 @@
    3. MAIN DOSSIER PAGE & WORKSPACE TWO-COLUMN LAYOUT
    -------------------------------------------------------------------------- */
 .hanu-property-page {
-  padding: 2.75rem 1.5rem 3.5rem;
+  padding: 1.75rem 1.5rem 3.5rem;
   background: #ffffff;
 }
 
@@ -438,111 +438,114 @@
       width: 100%;
     }
   }
+}
 
-  .header-price-card {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+/* --------------------------------------------------------------------------
+   SHARED HEADER & SIDEBAR DOCKED PRICING & QUICK ACTIONS
+   -------------------------------------------------------------------------- */
+.header-price-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-price-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hanu-main-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.hanu-unit-price {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.header-actions-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-hdr-site-visit {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  background: var(--brand-green, #5e8f72);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background 0.15s ease, transform 0.1s ease;
+  letter-spacing: 0.01em;
+
+  &:hover {
+    background: var(--brand-green-hover, #497259);
   }
 
-  .header-price-main {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .hanu-main-price {
+  span.material-symbols-outlined {
     font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-
-  .hanu-unit-price {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: #64748b;
-  }
-
-  .header-actions-deck {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .btn-hdr-site-visit {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 11px 16px;
-    background: var(--brand-green, #5e8f72);
     color: #ffffff;
-    font-size: 13.5px;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: background 0.15s ease, transform 0.1s ease;
-    letter-spacing: 0.01em;
+  }
+}
 
-    &:hover {
-      background: var(--brand-green-hover, #497259);
-    }
+.hdr-utility-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-hdr-utility {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: #f1f5f9;
+  color: #334155;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  &.shortlisted {
+    color: #e11d48;
+    background: #ffe4e6;
+    border: none;
 
     span.material-symbols-outlined {
-      font-size: 16px;
-      color: #ffffff;
-    }
-  }
-
-  .hdr-utility-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .btn-hdr-utility {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 9px 12px;
-    background: #f1f5f9;
-    color: #334155;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: none !important;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-
-    &.shortlisted {
       color: #e11d48;
-      background: #ffe4e6;
-      border: none;
-
-      span.material-symbols-outlined {
-        color: #e11d48;
-        font-variation-settings: 'FILL' 1;
-      }
+      font-variation-settings: 'FILL' 1;
     }
+  }
 
-    span.material-symbols-outlined {
-      font-size: 17px;
-      color: inherit;
-    }
+  span.material-symbols-outlined {
+    font-size: 17px;
+    color: inherit;
   }
 }
 
