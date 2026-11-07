@@ -628,11 +628,14 @@ export interface PropertyTypeOption {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.5rem 1.35rem;
+      height: 38px;
+      min-height: 38px;
+      padding: 0 1.35rem;
       border-radius: 6px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13.5px;
       font-weight: 500;
+      line-height: 1;
       color: #334155;
       text-decoration: none;
       border: 1.5px solid #cbd5e1;
@@ -643,6 +646,9 @@ export interface PropertyTypeOption {
       user-select: none;
       outline: none;
       box-sizing: border-box;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
     }
 
     .buy-sell-tab-btn:hover {
@@ -658,7 +664,9 @@ export interface PropertyTypeOption {
       color: #0f172a;
       font-weight: 600;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      padding-bottom: calc(0.5rem - 2px);
+      height: 38px;
+      min-height: 38px;
+      padding: 0 1.35rem;
     }
 
     .buy-sell-tab-btn.active:hover {
@@ -670,6 +678,9 @@ export interface PropertyTypeOption {
       background: #ffffff;
       border: 1.5px solid #cbd5e1;
       color: #334155;
+      height: 38px;
+      min-height: 38px;
+      padding: 0 1.35rem;
     }
 
     .buy-sell-tab-btn.btn-post-link:hover {
