@@ -48,7 +48,7 @@ export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_tran
     VirtualPropertyPresenterComponent
   ],
   templateUrl: './property-details-page.component.html',
-  styleUrls: ['./property-details-page.component.css']
+  styleUrls: ['./property-details-page.component.scss']
 })
 export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly showFloatingWa = signal<boolean>(false);
