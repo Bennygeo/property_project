@@ -612,67 +612,69 @@ export interface PropertyTypeOption {
       margin-top: 3.5rem;
     }
 
-    /* Buy / Sell / Commercial Mode Buttons (Style D: Bottom Green Accent Indicator, Zero Box Borders) */
+    /* Buy / Sell / Commercial Mode Buttons (Style D: Box Border + Bottom Green Accent Indicator) */
     .hero-buy-sell-tabs {
       display: inline-flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 0.625rem;
       background: transparent;
       padding: 0;
       border: none;
       box-shadow: none;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
 
     .buy-sell-tab-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.5rem 1rem;
-      border-radius: 0;
+      padding: 0.5rem 1.35rem;
+      border-radius: 6px;
       font-family: 'Montserrat', sans-serif;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 500;
-      color: #64748b;
+      color: #334155;
       text-decoration: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      background: transparent;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       user-select: none;
       outline: none;
+      box-sizing: border-box;
     }
 
     .buy-sell-tab-btn:hover {
-      background: transparent;
+      background: #f8fafc;
+      border-color: #94a3b8;
       color: #0f172a;
     }
 
     .buy-sell-tab-btn.active {
-      background: transparent;
-      border: none;
-      border-bottom: 3px solid var(--brand-green, #5e8f72);
-      color: var(--brand-green, #5e8f72);
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-bottom: 3.5px solid var(--brand-green, #5e8f72);
+      color: #0f172a;
       font-weight: 600;
-      box-shadow: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      padding-bottom: calc(0.5rem - 2px);
     }
 
     .buy-sell-tab-btn.active:hover {
-      background: transparent;
-      color: var(--brand-green, #5e8f72);
+      background: #ffffff;
+      color: #0f172a;
     }
 
     .buy-sell-tab-btn.btn-post-link {
-      background: transparent;
-      border: none;
-      border-bottom: 3px solid transparent;
-      color: #64748b;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: #334155;
     }
 
     .buy-sell-tab-btn.btn-post-link:hover {
-      background: transparent;
+      background: #f8fafc;
+      border-color: #94a3b8;
       color: #0f172a;
     }
 
@@ -967,7 +969,7 @@ export interface PropertyTypeOption {
 
     .segment-value {
       font-size: 0.88rem;
-      font-weight: 600;
+      font-weight: 500;
       color: #0f172a;
       white-space: nowrap;
       overflow: hidden;
