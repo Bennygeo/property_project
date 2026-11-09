@@ -261,7 +261,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
-    align-items: end;
+    align-items: flex-start;
 
     @media (min-width: 1024px) {
       flex-direction: column;
@@ -2036,7 +2036,7 @@
   }
 
   .narrative-lead {
-    font-size: 14.5px;
+    font-size: 13px;
     line-height: 1.7;
     color: #334155;
     margin: 0;

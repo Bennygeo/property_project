@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { LocationService } from '../../../../core/services/location.service';
 
 @Component({
   selector: 'app-header',
@@ -23,6 +24,22 @@ import { AuthService } from '../../../../core/services/auth.service';
               class="brand-logo" 
               src="logo.svg">
           </a>
+
+          <!-- Tamil Nadu District Switcher Pill -->
+          <button 
+            type="button" 
+            class="header-district-pill" 
+            (click)="locationService.openDistrictModal()" 
+            [title]="'Location: ' + locationService.selectedDistrict() + ', Tamil Nadu. Click to switch district.'">
+            <span class="material-symbols-outlined loc-pin-icon" [class.detecting]="locationService.isDetecting()">
+              {{ locationService.isDetecting() ? 'progress_activity' : 'location_on' }}
+            </span>
+            <div class="loc-text-col">
+              <span class="loc-state-label">Tamil Nadu</span>
+              <span class="loc-district-name">{{ locationService.selectedDistrict() }}</span>
+            </div>
+            <span class="material-symbols-outlined loc-caret">expand_more</span>
+          </button>
         </div>
 
         <!-- Navigation Links -->
@@ -147,26 +164,22 @@ import { AuthService } from '../../../../core/services/auth.service';
                 </button>
               }
 
-              <!-- City Jurisdiction Picker in Drawer -->
+              <!-- City Jurisdiction / District Picker in Drawer -->
               <div class="drawer-section">
-                <span class="drawer-section-title">Cadastral Jurisdiction</span>
-                <div class="drawer-cities-list">
-                  @for (city of cities; track city.value) {
-                    <button 
-                      type="button" 
-                      class="drawer-city-chip" 
-                      [class.active]="propertyService.selectedCity() === city.value"
-                      (click)="selectCity(city.value); closeMobileMenu()">
-                      <div class="city-texts">
-                        <span class="city-title">{{ city.label }}</span>
-                        <span class="city-sub">{{ city.sub }}</span>
-                      </div>
-                      @if (propertyService.selectedCity() === city.value) {
-                        <span class="material-symbols-outlined check-icon">check</span>
-                      }
-                    </button>
-                  }
-                </div>
+                <span class="drawer-section-title">Tamil Nadu District</span>
+                <button 
+                  type="button" 
+                  class="drawer-district-card" 
+                  (click)="locationService.openDistrictModal(); closeMobileMenu()">
+                  <div class="drawer-district-left">
+                    <span class="material-symbols-outlined">location_on</span>
+                    <div class="drawer-district-text">
+                      <span class="drawer-dist-name">{{ locationService.selectedDistrict() }}</span>
+                      <span class="drawer-dist-sub">Serving 38 districts • Tap to switch</span>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined drawer-arrow">chevron_right</span>
+                </button>
               </div>
 
               <!-- Main Navigation Links in Drawer -->
@@ -274,8 +287,139 @@ import { AuthService } from '../../../../core/services/auth.service';
     .header-brand-group {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 1rem;
       flex-shrink: 0;
+    }
+    .header-district-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px 4px 8px;
+      height: 36px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      color: #1e293b;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      box-sizing: border-box;
+
+      &:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .loc-pin-icon {
+        font-size: 17px;
+        color: #16a34a;
+
+        &.detecting {
+          animation: spin 1s linear infinite;
+          color: #0284c7;
+        }
+      }
+
+      .loc-text-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        line-height: 1.1;
+      }
+
+      .loc-state-label {
+        font-size: 9px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .loc-district-name {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #0f172a;
+        max-width: 95px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        @media (min-width: 640px) {
+          max-width: 140px;
+        }
+      }
+
+      .loc-caret {
+        font-size: 16px;
+        color: #64748b;
+        margin-left: -2px;
+      }
+
+      @media (max-width: 480px) {
+        padding: 4px 8px;
+        height: 32px;
+        .loc-state-label {
+          display: none;
+        }
+        .loc-district-name {
+          max-width: 75px;
+          font-size: 11.5px;
+        }
+      }
+    }
+
+    .drawer-district-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      box-sizing: border-box;
+
+      &:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+      }
+
+      .drawer-district-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .material-symbols-outlined {
+          font-size: 20px;
+          color: #16a34a;
+        }
+      }
+
+      .drawer-district-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .drawer-dist-name {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .drawer-dist-sub {
+        font-size: 11px;
+        color: #64748b;
+      }
+
+      .drawer-arrow {
+        font-size: 18px;
+        color: #94a3b8;
+      }
     }
     .brand-link {
       display: flex;
@@ -1132,6 +1276,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
+  readonly locationService = inject(LocationService);
 
   readonly isCityDropdownOpen = signal<boolean>(false);
   readonly isMobileMenuOpen = signal<boolean>(false);
