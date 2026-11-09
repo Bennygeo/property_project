@@ -612,7 +612,7 @@ export interface PropertyTypeOption {
       margin-top: 3.5rem;
     }
 
-    /* Buy / Sell / Commercial Mode Tabs (Unified Pill Capsule with Internal Dividers) */
+    /* Buy / Sell / Commercial Mode Tabs (Unified Pill Capsule with Inset Hairline Dividers) */
     .hero-buy-sell-tabs {
       display: inline-flex;
       align-items: center;
@@ -630,6 +630,7 @@ export interface PropertyTypeOption {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      position: relative;
       height: 38px;
       min-height: 38px;
       padding: 0 1.5rem;
@@ -641,7 +642,6 @@ export interface PropertyTypeOption {
       color: #334155;
       text-decoration: none;
       border: none;
-      border-right: 1.5px solid #cbd5e1;
       background: #ffffff;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -654,9 +654,18 @@ export interface PropertyTypeOption {
       -webkit-appearance: none;
     }
 
-    .hero-buy-sell-tabs > :last-child,
-    .buy-sell-tab-btn:last-child {
-      border-right: none !important;
+    /* Inset Hairline Separator (Like search bar pill-divider, not fully covered) */
+    .buy-sell-tab-btn:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 20px;
+      background: #cbd5e1;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
     }
 
     .buy-sell-tab-btn:hover:not(.active) {
@@ -669,6 +678,11 @@ export interface PropertyTypeOption {
       color: #ffffff;
       font-weight: 600;
       box-shadow: none;
+    }
+
+    .buy-sell-tab-btn.active::after,
+    .buy-sell-tab-btn:has(+ .active)::after {
+      opacity: 0;
     }
 
     .buy-sell-tab-btn.active:hover {
