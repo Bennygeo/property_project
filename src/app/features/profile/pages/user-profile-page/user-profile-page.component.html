@@ -411,47 +411,7 @@
           @if (getShortlistedProperties().length > 0) {
           <div class="shortlists-grid">
             @for (prop of getShortlistedProperties(); track prop.id) {
-            <div class="shortlist-property-card">
-              <div class="card-media-wrapper">
-                <img [src]="prop.imageUrl" [alt]="prop.title" class="prop-thumb" loading="lazy" decoding="async" />
-                <span class="prop-tag-badge">{{ prop.propertyType }}</span>
-                <button type="button" class="btn-remove-favourite" (click)="removeFromShortlist(prop.id, $event)"
-                  title="Remove from saved shortlist">
-                  <span class="material-symbols-outlined">heart_minus</span>
-                </button>
-              </div>
-
-              <div class="card-body">
-                <div class="prop-pricing-row">
-                  <span class="price-val">{{ prop.price }}</span>
-                  <span class="price-rate">{{ prop.pricePerSqFt }}</span>
-                </div>
-
-                <h3 class="prop-title" [routerLink]="['/property', prop.id]">{{ prop.title }}</h3>
-
-                <div class="prop-location">
-                  <span class="material-symbols-outlined">location_on</span>
-                  <span>{{ prop.locality }}, {{ prop.city }}</span>
-                </div>
-
-                <div class="prop-specs-pills">
-                  <span class="spec-pill">{{ prop.bhkBadge }}</span>
-                  <span class="spec-pill">{{ prop.sqft }}</span>
-                  <span class="spec-pill">{{ prop.facingOrView }}</span>
-                </div>
-
-                <div class="prop-actions-row">
-                  <button type="button" class="btn-card-tour" (click)="onWatchTour(prop.id)">
-                    <span class="material-symbols-outlined">smart_display</span>
-                    <span>Virtual Tour</span>
-                  </button>
-                  <a [routerLink]="['/property', prop.id]" class="btn-card-dossier">
-                    <span>View Dossier</span>
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                  </a>
-                </div>
-              </div>
-            </div>
+              <app-property-card [property]="prop" [showCompare]="true" />
             }
           </div>
           } @else {

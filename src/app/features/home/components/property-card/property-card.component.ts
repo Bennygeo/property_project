@@ -216,11 +216,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .card-badge-rera {
-      width: 52px;
-      height: 52px;
+      width: auto;
+      height: 42px;
       object-fit: contain;
       background: rgba(255, 255, 255, 0.6);
-      border-radius: 0;
+      border-radius: 3px;
       padding: 3px;
       box-sizing: border-box;
       transition: transform 0.15s ease;
@@ -230,7 +230,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
 
     .card-badge-no-brokerage {
-        height: 52px;
+        height: 42px;
         width: auto;
         /* max-width: 85px; */
         object-fit: contain;
@@ -240,6 +240,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
         display: block;
         background: #ffffff77;
         padding: 3px;
+        border-radius:3px;
     }
     /* Badges Overlay (Bottom-left of image) */
     .badges-overlay {

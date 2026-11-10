@@ -322,9 +322,13 @@ export class AuthService {
    */
   public loadProfile(userId?: number): Observable<UserProfileResponse | null> {
     const id = userId || this.currentUser()?.id || 1;
-    const url = `${environment.apiUrl}/auth/profile.php?userId=${id}`;
+    const tryGet = (baseUrl: string) =>
+      this.http.get<{ success: boolean; data: UserProfileResponse }>(`${baseUrl}?userId=${id}`);
 
-    return this.http.get<{ success: boolean; data: UserProfileResponse }>(url).pipe(
+    return tryGet(`${environment.apiUrl}/auth/profile.php`).pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/auth/profile.php')),
+      catchError(() => tryGet('/api/auth/profile.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/auth/profile.php`)),
       map(res => res && res.success ? res.data : null),
       catchError(err => {
         console.warn('Could not load profile from MySQL, using fallback state', err);

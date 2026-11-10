@@ -120,6 +120,40 @@ function enrichInitialGps(props: Property[]): Property[] {
 }
 
 const SHORTLIST_STORAGE_KEY = 'fap_user_shortlists';
+const SHORTLIST_DOSSIERS_KEY = 'fap_user_shortlist_dossiers';
+
+function formatShortlistApiToProperty(raw: any): Property {
+  const pId = String(raw.id || raw.propertyId || '').trim();
+  const rawPrice = raw.price || '0';
+  const img = raw.imageUrl || raw.main_image_url || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
+  return {
+    id: pId,
+    title: raw.title || 'Verified Plotted Development',
+    propertyType: (raw.propertyType || raw.property_type || 'Gated CMDA Plots') as PropertyType,
+    locality: raw.locality || raw.locality_name || 'Kanyakumari',
+    city: raw.city || raw.city_name || 'Kanyakumari',
+    cityKey: 'chennai',
+    price: formatPriceIndian(rawPrice),
+    pricePerSqFt: raw.pricePerSqFt || (raw.price_per_sqft ? `₹ ${raw.price_per_sqft}/sq.ft` : '₹ 4,500/sq.ft'),
+    sqft: raw.sqft || '800 sq.ft (1.84 Cents)',
+    bhkBadge: raw.bhkBadge || raw.bhk_badge || '1.84 Cents Plot',
+    facingOrView: raw.facingOrView || raw.facing_or_view || 'East Facing',
+    imageUrl: img,
+    badges: {
+      rera: raw.rera || 'TNRERA Approved',
+      brokerage: '0% Brokerage',
+      points: 4,
+      specialTag: raw.specialTag || 'Cadastral Verified'
+    },
+    highlights: raw.highlights || ['DTCP / CMDA Approved', 'Clear Title', 'Immediate Registration'],
+    mediaPoints: 4,
+    isMediaUnlocked: false,
+    isShortlisted: true,
+    freePhotos: [img],
+    premiumMedia: raw.premiumMedia || [],
+    whatsappUrl: `https://wa.me/919444100000?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (raw.title || pId))}`
+  };
+}
 
 @Injectable({
   providedIn: 'root'
@@ -140,6 +174,7 @@ export class PropertyService {
 
   // Persistent Shortlists Set (Synchronized with localStorage & MySQL backend)
   public readonly shortlistedPropertyIds = signal<Set<string>>(this.loadShortlistsFromStorage());
+  public readonly shortlistedProperties = signal<Property[]>(this.loadShortlistDossiersFromStorage());
 
   // Master property list initialized with 50+ mock properties directly from database (10L to 3Cr)
   private readonly _properties = signal<Property[]>(enrichInitialGps(MOCK_50_PROPERTIES));
@@ -264,6 +299,43 @@ export class PropertyService {
     }
   }
 
+  private loadShortlistDossiersFromStorage(): Property[] {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return [];
+    }
+    try {
+      const raw = localStorage.getItem(SHORTLIST_DOSSIERS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.map(item => formatShortlistApiToProperty(item));
+        }
+      }
+    } catch (err) {
+      console.warn('[PropertyService] Error reading shortlist dossiers from storage:', err);
+    }
+    return [];
+  }
+
+  private saveShortlistDossiersToStorage(props: Property[]): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      localStorage.setItem(SHORTLIST_DOSSIERS_KEY, JSON.stringify(props));
+    } catch (err) {
+      console.warn('[PropertyService] Error saving shortlist dossiers to storage:', err);
+    }
+  }
+
+  public getShortlistedPropertiesList(): Property[] {
+    const dossiers = this.shortlistedProperties();
+    if (dossiers.length > 0) {
+      return dossiers;
+    }
+    const ids = this.shortlistedPropertyIds();
+    if (ids.size === 0) return [];
+    return this._properties().filter(p => this.isShortlisted(p.id));
+  }
+
   public syncShortlistedStateInProperties(): void {
     this._properties.update(list =>
       list.map(p => ({
@@ -293,7 +365,7 @@ export class PropertyService {
       const sep = baseUrl.includes('?') ? '&' : '?';
       return this.http.get<{
         success: boolean;
-        data: { propertyIds: string[]; purgedPropertyIds?: string[] };
+        data: { propertyIds: string[]; purgedPropertyIds?: string[]; shortlists?: any[] };
       }>(`${baseUrl}${sep}${qParams.toString()}`);
     };
 
@@ -309,6 +381,7 @@ export class PropertyService {
       if (res && res.success && res.data) {
         const validBackendIds: string[] = Array.isArray(res.data.propertyIds) ? res.data.propertyIds : [];
         const purgedIds: string[] = Array.isArray(res.data.purgedPropertyIds) ? res.data.purgedPropertyIds : [];
+        const rawShortlists: any[] = Array.isArray(res.data.shortlists) ? res.data.shortlists : [];
 
         const updatedSet = new Set<string>(this.shortlistedPropertyIds());
 
@@ -331,6 +404,16 @@ export class PropertyService {
         this.shortlistedPropertyIds.set(updatedSet);
         this.saveShortlistsToStorage(updatedSet);
         this.syncShortlistedStateInProperties();
+
+        // 4. Update full shortlist dossiers
+        if (rawShortlists.length > 0) {
+          const formatted = rawShortlists.map((r: any) => formatShortlistApiToProperty(r));
+          this.shortlistedProperties.set(formatted);
+          this.saveShortlistDossiersToStorage(formatted);
+        } else if (updatedSet.size === 0) {
+          this.shortlistedProperties.set([]);
+          this.saveShortlistDossiersToStorage([]);
+        }
       }
     });
   }
@@ -354,8 +437,24 @@ export class PropertyService {
 
     if (nextState) {
       currentSet.add(trimmedId);
+      const candidate = this._properties().find(p => p.id === trimmedId) ||
+                        MOCK_50_PROPERTIES.find(p => p.id === trimmedId);
+      if (candidate) {
+        const newDossier = { ...candidate, isShortlisted: true };
+        const updatedDossiers = [
+          newDossier,
+          ...this.shortlistedProperties().filter(p => p.id.trim().toUpperCase() !== trimmedId.toUpperCase())
+        ];
+        this.shortlistedProperties.set(updatedDossiers);
+        this.saveShortlistDossiersToStorage(updatedDossiers);
+      }
     } else if (existingMatch) {
       currentSet.delete(existingMatch);
+      const remainingDossiers = this.shortlistedProperties().filter(
+        p => p.id.trim().toUpperCase() !== trimmedId.toUpperCase()
+      );
+      this.shortlistedProperties.set(remainingDossiers);
+      this.saveShortlistDossiersToStorage(remainingDossiers);
     }
 
     // Optimistically update signals and persistent local storage
