@@ -438,7 +438,7 @@ export class PropertyService {
     if (nextState) {
       currentSet.add(trimmedId);
       const candidate = this._properties().find(p => p.id === trimmedId) ||
-                        MOCK_50_PROPERTIES.find(p => p.id === trimmedId);
+        MOCK_50_PROPERTIES.find(p => p.id === trimmedId);
       if (candidate) {
         const newDossier = { ...candidate, isShortlisted: true };
         const updatedDossiers = [

@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { WalletService } from '../../../../core/services/wallet.service';
+import { SubscriptionService } from '../../../../core/services/subscription.service';
 import { PropertyService } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -13,26 +14,26 @@ import { PropertyMediaModalComponent } from '../../../home/components/property-m
 import { TopupDialogComponent } from '../../../home/components/topup-dialog/topup-dialog.component';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { PropertyCardComponent } from '../../../home/components/property-card/property-card.component';
-import { 
-  UserProfileResponse, 
-  ScheduledVisit, 
-  UnlockedMediaItem, 
-  WalletLedgerItem, 
+import {
+  UserProfileResponse,
+  ScheduledVisit,
+  UnlockedMediaItem,
+  WalletLedgerItem,
   ShortlistedItem,
   ViewHistoryItem,
   BrochureDownloadItem
 } from '../../../../core/models/user.model';
 import { Property, PropertyType } from '../../../../core/models/property.model';
 
-export type ProfileDashboardSection = 
-  | 'profile' 
+export type ProfileDashboardSection =
+  | 'profile'
   | 'my_properties'
-  | 'favourites' 
-  | 'views' 
-  | 'transactions' 
-  | 'visits' 
-  | 'brochures' 
-  | 'preferences' 
+  | 'favourites'
+  | 'views'
+  | 'transactions'
+  | 'visits'
+  | 'brochures'
+  | 'preferences'
   | 'danger';
 
 @Component({
@@ -56,6 +57,7 @@ export type ProfileDashboardSection =
 export class UserProfilePageComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly walletService = inject(WalletService);
+  readonly subscriptionService = inject(SubscriptionService);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
   readonly router = inject(Router);
@@ -291,100 +293,100 @@ export class UserProfilePageComponent implements OnInit {
     const profileShortlists = this.profileData()?.shortlists;
     if (profileShortlists && Array.isArray(profileShortlists)) {
       for (const ps of profileShortlists) {
-        const pId = String(ps.propertyId || ps.id || '').trim();
-        const upper = pId.toUpperCase();
-        if ((ids.size === 0 || this.propertyService.isShortlisted(pId)) && !map.has(upper)) {
-          map.set(upper, {
-            id: pId,
-            title: ps.title || 'Verified Plotted Development',
-            propertyType: (ps.propertyType || 'Gated CMDA Plots') as PropertyType,
-            locality: ps.locality || 'Kanyakumari',
-            city: ps.city || 'Kanyakumari',
-            cityKey: 'chennai',
-            price: ps.price,
-            pricePerSqFt: ps.pricePerSqFt || '₹ 4,500/sq.ft',
-            sqft: ps.sqft || '800 sq.ft (1.84 Cents)',
-            bhkBadge: ps.bhkBadge || '1.84 Cents Plot',
-            facingOrView: ps.facingOrView || 'West Facing',
-            imageUrl: ps.imageUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
-            badges: {
-              rera: 'TNRERA Approved',
-              brokerage: '0% Brokerage',
-              points: 4,
-              specialTag: 'Cadastral Verified'
-            },
-            highlights: ['DTCP / CMDA Approved', 'Clear Title', 'Immediate Registration'],
-            mediaPoints: 4,
-            isMediaUnlocked: false,
-            isShortlisted: true,
+            const pId = String(ps.propertyId || ps.id || '').trim();
+            const upper = pId.toUpperCase();
+            if((ids.size === 0 || this.propertyService.isShortlisted(pId)) && !map.has(upper)) {
+            map.set(upper, {
+              id: pId,
+              title: ps.title || 'Verified Plotted Development',
+              propertyType: (ps.propertyType || 'Gated CMDA Plots') as PropertyType,
+              locality: ps.locality || 'Kanyakumari',
+              city: ps.city || 'Kanyakumari',
+              cityKey: 'chennai',
+              price: ps.price,
+              pricePerSqFt: ps.pricePerSqFt || '₹ 4,500/sq.ft',
+              sqft: ps.sqft || '800 sq.ft (1.84 Cents)',
+              bhkBadge: ps.bhkBadge || '1.84 Cents Plot',
+              facingOrView: ps.facingOrView || 'West Facing',
+              imageUrl: ps.imageUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+              badges: {
+                rera: 'TNRERA Approved',
+                brokerage: '0% Brokerage',
+                points: 4,
+                specialTag: 'Cadastral Verified'
+              },
+              highlights: ['DTCP / CMDA Approved', 'Clear Title', 'Immediate Registration'],
+              mediaPoints: 4,
+              isMediaUnlocked: false,
+              isShortlisted: true,
             freePhotos: [ps.imageUrl],
-            premiumMedia: [],
-            whatsappUrl: `https://wa.me/919444100000?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (ps.title || pId))}`
-          } as Property);
+              premiumMedia: [],
+              whatsappUrl: `https://wa.me/919444100000?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (ps.title || pId))}`
+            } as Property);
+          }
         }
+      }
+
+      // 3. Include matching properties from allProperties
+      if (ids.size > 0) {
+        const all = this.propertyService.allProperties();
+        for (const p of all) {
+          if (this.propertyService.isShortlisted(p.id) && !map.has(p.id.trim().toUpperCase())) {
+            map.set(p.id.trim().toUpperCase(), { ...p, isShortlisted: true });
+          }
+        }
+      }
+
+      return Array.from(map.values());
+    }
+
+    // Viewed Properties
+    getViewedItems(): ViewHistoryItem[] {
+      return this.profileData()?.viewHistory || [];
+    }
+
+    // Scheduled Visits
+    getVisits(): ScheduledVisit[] {
+      return this.profileData()?.visits || [];
+    }
+
+    // Unlocked 4K Media
+    getUnlocks(): UnlockedMediaItem[] {
+      return this.profileData()?.unlocks || [];
+    }
+
+    // Transactions Ledger
+    getTransactions(): WalletLedgerItem[] {
+      return this.profileData()?.transactions || [];
+    }
+
+    // Regulatory Brochures
+    getBrochures(): BrochureDownloadItem[] {
+      return this.profileData()?.brochures || [];
+    }
+
+    onWatchTour(propertyId: string): void {
+      const prop = this.propertyService.getPropertyById(propertyId);
+      if(prop) {
+        this.propertyService.openMediaModal(prop, 'premium');
+      } else {
+        this.router.navigate(['/property', propertyId]);
       }
     }
 
-    // 3. Include matching properties from allProperties
-    if (ids.size > 0) {
-      const all = this.propertyService.allProperties();
-      for (const p of all) {
-        if (this.propertyService.isShortlisted(p.id) && !map.has(p.id.trim().toUpperCase())) {
-          map.set(p.id.trim().toUpperCase(), { ...p, isShortlisted: true });
-        }
-      }
+    removeFromShortlist(propertyId: string, event: Event): void {
+      event.stopPropagation();
+      this.propertyService.toggleShortlist(propertyId);
+      this.notificationService.show({
+        type: 'info',
+        title: 'Removed from Shortlist',
+        message: 'Property has been removed from your saved list.',
+        icon: 'bookmark_remove'
+      });
     }
 
-    return Array.from(map.values());
-  }
-
-  // Viewed Properties
-  getViewedItems(): ViewHistoryItem[] {
-    return this.profileData()?.viewHistory || [];
-  }
-
-  // Scheduled Visits
-  getVisits(): ScheduledVisit[] {
-    return this.profileData()?.visits || [];
-  }
-
-  // Unlocked 4K Media
-  getUnlocks(): UnlockedMediaItem[] {
-    return this.profileData()?.unlocks || [];
-  }
-
-  // Transactions Ledger
-  getTransactions(): WalletLedgerItem[] {
-    return this.profileData()?.transactions || [];
-  }
-
-  // Regulatory Brochures
-  getBrochures(): BrochureDownloadItem[] {
-    return this.profileData()?.brochures || [];
-  }
-
-  onWatchTour(propertyId: string): void {
-    const prop = this.propertyService.getPropertyById(propertyId);
-    if (prop) {
-      this.propertyService.openMediaModal(prop, 'premium');
-    } else {
-      this.router.navigate(['/property', propertyId]);
+    onSignOut(): void {
+      this.authService.logout();
+      this.router.navigate(['/']);
     }
   }
-
-  removeFromShortlist(propertyId: string, event: Event): void {
-    event.stopPropagation();
-    this.propertyService.toggleShortlist(propertyId);
-    this.notificationService.show({
-      type: 'info',
-      title: 'Removed from Shortlist',
-      message: 'Property has been removed from your saved list.',
-      icon: 'bookmark_remove'
-    });
-  }
-
-  onSignOut(): void {
-    this.authService.logout();
-    this.router.navigate(['/']);
-  }
-}

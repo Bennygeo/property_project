@@ -47,6 +47,7 @@ import { LocationService } from '../../../../core/services/location.service';
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }">Plots &amp; Land</a>
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }">Commercial</a>
           <a class="nav-link" routerLink="/developers">Developers</a>
+          <a class="nav-link" routerLink="/subscriptions">Membership Plans</a>
           <a class="nav-link" routerLink="/search">Search Registry</a>
         </nav>
 
@@ -93,6 +94,10 @@ import { LocationService } from '../../../../core/services/location.service';
                     <a routerLink="/profile" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined">dashboard</span>
                       <span>My Dashboard</span>
+                    </a>
+                    <a routerLink="/subscriptions" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
+                      <span class="material-symbols-outlined text-green">card_membership</span>
+                      <span>Membership &amp; Credits</span>
                     </a>
                     <a [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined">favorite</span>
@@ -209,6 +214,10 @@ import { LocationService } from '../../../../core/services/location.service';
                   <a class="drawer-nav-item" routerLink="/developers" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined">domain_add</span>
                     <span>Verified Developers</span>
+                  </a>
+                  <a class="drawer-nav-item" routerLink="/subscriptions" (click)="closeMobileMenu()">
+                    <span class="material-symbols-outlined text-green">card_membership</span>
+                    <span>Membership &amp; Plans</span>
                   </a>
                   <a class="drawer-nav-item" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined text-red">favorite</span>

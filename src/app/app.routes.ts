@@ -37,6 +37,21 @@ export const routes: Routes = [
     title: 'Investor Dashboard & Profile — Find a Plot Verified Registry'
   },
   {
+    path: 'subscriptions',
+    loadComponent: () => import('./features/subscriptions/pages/subscription-page/subscription-page.component').then(m => m.SubscriptionPageComponent),
+    title: 'Membership & Advisory Subscriptions — Find a Plot'
+  },
+  {
+    path: 'membership',
+    redirectTo: 'subscriptions',
+    pathMatch: 'full'
+  },
+  {
+    path: 'plans',
+    redirectTo: 'subscriptions',
+    pathMatch: 'full'
+  },
+  {
     path: 'admin/login',
     loadComponent: () => import('./features/admin/pages/admin-login/admin-login.component').then(m => m.AdminLoginComponent),
     title: 'Administrative Sign In — Find a Plot Compliance Portal'

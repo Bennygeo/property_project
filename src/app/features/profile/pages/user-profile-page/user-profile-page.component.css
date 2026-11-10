@@ -212,6 +212,79 @@
   gap: 0.75rem;
 }
 
+.membership-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--brand-green-subtle);
+  border: 1px solid var(--brand-green);
+  border-radius: 8px;
+  padding: 5px 10px 5px 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.membership-pill:hover {
+  background: #ffffff;
+  border-color: var(--brand-green-hover);
+  box-shadow: 0 2px 6px rgba(94, 143, 114, 0.15);
+}
+
+.membership-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--brand-green);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.membership-icon-circle .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.membership-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.membership-plan {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-teal);
+  line-height: 1.15;
+}
+
+.membership-credits {
+  font-size: 10px;
+  color: var(--brand-green-dark);
+  font-weight: 500;
+}
+
+.btn-upgrade-mini {
+  background: var(--brand-teal);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sidebar-nav-item .plan-badge {
+  background: var(--brand-green-subtle);
+  color: var(--brand-green-dark);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--brand-green);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
 .wallet-pill {
   display: flex;
   align-items: center;

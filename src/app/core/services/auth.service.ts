@@ -79,7 +79,7 @@ export class AuthService {
       const mem = (navigator as any).deviceMemory || 8;
       const platform = (navigator as any).platform || '';
       const raw = `${screenRes}|${tz}|${cores}|${mem}|${platform}`;
-      
+
       let hash = 0;
       for (let i = 0; i < raw.length; i++) {
         const char = raw.charCodeAt(i);
@@ -113,7 +113,7 @@ export class AuthService {
           this.guestViewedPropertyIds.set(merged);
           try {
             localStorage.setItem(GUEST_VIEWS_STORAGE_KEY, JSON.stringify(merged));
-          } catch {}
+          } catch { }
           return merged;
         }
         return this.guestViewedPropertyIds();
@@ -174,7 +174,7 @@ export class AuthService {
         this.guestViewedPropertyIds.set(res.data.viewedPropertyIds);
         try {
           localStorage.setItem(GUEST_VIEWS_STORAGE_KEY, JSON.stringify(res.data.viewedPropertyIds));
-        } catch {}
+        } catch { }
       }
     });
   }
@@ -211,7 +211,7 @@ export class AuthService {
       if (storedPoints !== null && !isNaN(Number(storedPoints))) {
         points = Number(storedPoints);
       }
-    } catch {}
+    } catch { }
 
     const demoUser: User = {
       id: 1,

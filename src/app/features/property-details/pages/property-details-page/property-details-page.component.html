@@ -7,6 +7,25 @@
 
   @if (property(); as prop) {
   <!-- 1. GUEST PREVIEW BANNER (Shown for 1 allowed free guest view) -->
+  @if (isEntitlementExhausted()) {
+  <div class="entitlement-limit-banner">
+    <div class="max-w-content entitlement-banner-inner">
+      <div class="entitlement-pill-left">
+        <span class="entitlement-badge-chip">MEMBERSHIP QUOTA REACHED</span>
+        <span class="entitlement-banner-text">
+          {{ entitlementExhaustedMessage() || 'You have used your project view credits for your current tier.' }}
+        </span>
+      </div>
+      <div class="entitlement-banner-actions">
+        <a routerLink="/subscriptions" class="btn-banner-upgrade">
+          <span class="material-symbols-outlined">card_membership</span>
+          <span>Upgrade Membership (From ₹750)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  }
+
   @if (isFirstGuestPreview()) {
   <div class="guest-preview-banner">
     <div class="max-w-content preview-banner-inner">

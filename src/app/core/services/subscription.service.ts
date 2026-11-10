@@ -1,0 +1,473 @@
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import { AuthService } from './auth.service';
+import { NotificationService } from './notification.service';
+import { environment } from '../../../environments/environment';
+import { 
+  SubscriptionPlan, 
+  UserSubscription, 
+  UserEntitlements, 
+  SubscriptionInvoice,
+  EntitlementConsumptionResult 
+} from '../models/subscription.model';
+
+declare global {
+  interface Window {
+    Razorpay?: any;
+  }
+}
+
+const STORAGE_ACTIVE_PLAN_KEY = 'fap_user_active_plan';
+const STORAGE_ENTITLEMENTS_KEY = 'fap_user_entitlements';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SubscriptionService {
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
+
+  public readonly plans = signal<SubscriptionPlan[]>([]);
+  public readonly currentSubscription = signal<UserSubscription | null>(this.loadStoredSubscription());
+  public readonly entitlements = signal<UserEntitlements | null>(this.loadStoredEntitlements());
+  public readonly unlockedProjectIds = signal<Set<string>>(new Set<string>());
+  public readonly invoices = signal<SubscriptionInvoice[]>([]);
+  public readonly daysRemaining = signal<number>(0);
+  public readonly isLoading = signal<boolean>(false);
+  public readonly isProcessingPayment = signal<boolean>(false);
+
+  public readonly activePlanId = computed<string>(() => {
+    return this.entitlements()?.planId || this.currentSubscription()?.planId || 'explorer';
+  });
+
+  public readonly activePlanName = computed<string>(() => {
+    const plan = this.plans().find(p => p.id === this.activePlanId());
+    return plan ? plan.name : (this.activePlanId() === 'explorer' ? 'Explorer' : 'Member');
+  });
+
+  public readonly isPaidSubscriber = computed<boolean>(() => {
+    const pid = this.activePlanId();
+    return pid !== 'explorer' && (this.daysRemaining() > 0 || !this.currentSubscription()?.expiresAt);
+  });
+
+  constructor() {
+    this.fetchPlans();
+    this.fetchCurrentSubscription();
+  }
+
+  private loadStoredSubscription(): UserSubscription | null {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = localStorage.getItem(STORAGE_ACTIVE_PLAN_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private loadStoredEntitlements(): UserEntitlements | null {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = localStorage.getItem(STORAGE_ENTITLEMENTS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private saveStoredSubscription(sub: UserSubscription | null): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      if (sub) {
+        localStorage.setItem(STORAGE_ACTIVE_PLAN_KEY, JSON.stringify(sub));
+      } else {
+        localStorage.removeItem(STORAGE_ACTIVE_PLAN_KEY);
+      }
+    } catch {}
+  }
+
+  private saveStoredEntitlements(ent: UserEntitlements | null): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      if (ent) {
+        localStorage.setItem(STORAGE_ENTITLEMENTS_KEY, JSON.stringify(ent));
+      } else {
+        localStorage.removeItem(STORAGE_ENTITLEMENTS_KEY);
+      }
+    } catch {}
+  }
+
+  private getEffectiveUserId(): number {
+    const user = this.authService.currentUser();
+    return (user && user.id > 0) ? user.id : 1;
+  }
+
+  /**
+   * Fetch 4-tier plans from backend
+   */
+  public fetchPlans(): Observable<SubscriptionPlan[]> {
+    const tryGet = (baseUrl: string) => 
+      this.http.get<{ success: boolean; data: { plans: SubscriptionPlan[] } }>(baseUrl);
+
+    return tryGet(`${environment.apiUrl}/subscriptions/plans.php`).pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/subscriptions/plans.php')),
+      catchError(() => tryGet('/api/subscriptions/plans.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/subscriptions/plans.php`)),
+      map(res => (res && res.success && res.data?.plans) ? res.data.plans : []),
+      tap(planList => {
+        if (planList && planList.length > 0) {
+          this.plans.set(planList);
+        }
+      }),
+      catchError(err => {
+        console.warn('[SubscriptionService] Could not load plans from backend:', err);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Fetch current subscription and real-time entitlements
+   */
+  public fetchCurrentSubscription(userId?: number): Observable<any> {
+    const uid = userId || this.getEffectiveUserId();
+    const tryGet = (baseUrl: string) => 
+      this.http.get<{ 
+        success: boolean; 
+        data: { 
+          hasActiveSubscription: boolean;
+          subscription: UserSubscription | null;
+          daysRemaining: number;
+          entitlements: UserEntitlements;
+          unlockedProjectIds: string[];
+          invoices: SubscriptionInvoice[];
+        } 
+      }>(`${baseUrl}?userId=${uid}`);
+
+    return tryGet(`${environment.apiUrl}/subscriptions/current.php`).pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/subscriptions/current.php')),
+      catchError(() => tryGet('/api/subscriptions/current.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/subscriptions/current.php`)),
+      map(res => (res && res.success) ? res.data : null),
+      tap(data => {
+        if (data) {
+          this.currentSubscription.set(data.subscription);
+          this.saveStoredSubscription(data.subscription);
+
+          this.entitlements.set(data.entitlements);
+          this.saveStoredEntitlements(data.entitlements);
+
+          this.daysRemaining.set(data.daysRemaining);
+          this.invoices.set(data.invoices || []);
+
+          if (Array.isArray(data.unlockedProjectIds)) {
+            this.unlockedProjectIds.set(new Set(data.unlockedProjectIds.map(id => id.trim().toUpperCase())));
+          }
+        }
+      }),
+      catchError(err => {
+        console.warn('[SubscriptionService] Failed to fetch current subscription:', err);
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Consume entitlement (e.g. project view, comparison, advisory session, site visit)
+   */
+  public consumeEntitlement(
+    action: 'project_view' | 'comparison' | 'advisory_session' | 'site_visit', 
+    propertyId?: string
+  ): Observable<EntitlementConsumptionResult> {
+    const uid = this.getEffectiveUserId();
+    const payload = {
+      userId: uid,
+      action,
+      propertyId: propertyId ? propertyId.trim() : undefined
+    };
+
+    const tryPost = (baseUrl: string) => 
+      this.http.post<{ success: boolean; data: EntitlementConsumptionResult; error?: string }>(baseUrl, payload);
+
+    return tryPost(`${environment.apiUrl}/subscriptions/consume-entitlement.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/subscriptions/consume-entitlement.php')),
+      catchError(() => tryPost('/api/subscriptions/consume-entitlement.php')),
+      catchError(() => tryPost(`${environment.apacheApiUrl}/subscriptions/consume-entitlement.php`)),
+      map(res => {
+        if (res && res.success && res.data) {
+          return res.data;
+        }
+        return { allowed: true };
+      }),
+      tap(res => {
+        if (res && res.allowed) {
+          if (propertyId && !res.isRepeatView) {
+            this.unlockedProjectIds.update(set => {
+              const next = new Set(set);
+              next.add(propertyId.trim().toUpperCase());
+              return next;
+            });
+          }
+          // Update cached entitlements
+          this.entitlements.update(ent => {
+            if (!ent) return ent;
+            if (action === 'project_view' && !res.isRepeatView) {
+              const used = res.projectViewsUsed ?? (ent.projectViewsUsed + 1);
+              return { ...ent, projectViewsUsed: used, projectViewsRemaining: Math.max(0, ent.projectViewLimit - used) };
+            }
+            if (action === 'comparison') {
+              const used = res.comparisonsUsed ?? (ent.comparisonsUsed + 1);
+              return { ...ent, comparisonsUsed: used, comparisonsRemaining: Math.max(0, ent.comparisonLimit - used) };
+            }
+            if (action === 'advisory_session') {
+              const used = res.advisorySessionsUsed ?? (ent.advisorySessionsUsed + 1);
+              return { ...ent, advisorySessionsUsed: used, advisorySessionsRemaining: Math.max(0, ent.advisorySessionLimit - used) };
+            }
+            if (action === 'site_visit') {
+              const used = res.siteVisitsUsed ?? (ent.siteVisitsUsed + 1);
+              return { ...ent, siteVisitsUsed: used, siteVisitsRemaining: Math.max(0, ent.siteVisitLimit - used) };
+            }
+            return ent;
+          });
+          this.saveStoredEntitlements(this.entitlements());
+        }
+      }),
+      catchError(err => {
+        const errorData = err?.error?.data || {};
+        return of({
+          allowed: false,
+          limitReached: true,
+          upgradeRequired: true,
+          message: err?.error?.error || 'Entitlement limit reached'
+        });
+      })
+    );
+  }
+
+  /**
+   * Check if a property is already unlocked (free repeat view)
+   */
+  public isProjectUnlocked(propertyId: string): boolean {
+    if (!propertyId) return false;
+    return this.unlockedProjectIds().has(propertyId.trim().toUpperCase());
+  }
+
+  /**
+   * Subscribe to a plan using Razorpay Gateway with webhook/HMAC signature verification
+   */
+  public subscribeToPlan(plan: SubscriptionPlan): void {
+    const uid = this.getEffectiveUserId();
+    const user = this.authService.currentUser();
+    this.isProcessingPayment.set(true);
+
+    // 1. Create order on backend
+    const tryCreateOrder = (baseUrl: string) => 
+      this.http.post<{ success: boolean; data: any }>(baseUrl, {
+        planId: plan.id,
+        userId: uid
+      });
+
+    (tryCreateOrder(`${environment.apiUrl}/subscriptions/create-order.php`).pipe(
+      catchError(() => tryCreateOrder('/p_demo_5/backend/api/subscriptions/create-order.php')),
+      catchError(() => tryCreateOrder('/api/subscriptions/create-order.php')),
+      catchError(() => tryCreateOrder(`${environment.apacheApiUrl}/subscriptions/create-order.php`))
+    ) as Observable<any>).subscribe({
+      next: (res) => {
+        if (!res || !res.success || !res.data) {
+          this.isProcessingPayment.set(false);
+          this.notificationService.show({
+            type: 'error',
+            title: 'Order Generation Failed',
+            message: 'Unable to initiate subscription order with backend.',
+            icon: 'error'
+          });
+          return;
+        }
+
+        const orderData = res.data;
+
+        // If free Explorer plan, already activated on backend
+        if (orderData.isFreePlan) {
+          this.isProcessingPayment.set(false);
+          this.fetchCurrentSubscription();
+          this.notificationService.show({
+            type: 'success',
+            title: 'Explorer Plan Activated',
+            message: 'You now have complimentary access to 2 project dossiers and 1 advisory session.',
+            icon: 'verified'
+          });
+          return;
+        }
+
+        // Open Razorpay Checkout Modal
+        this.openRazorpayCheckout(plan, orderData, user);
+      },
+      error: (err) => {
+        this.isProcessingPayment.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Subscription Error',
+          message: err?.error?.error || 'Could not start payment session.',
+          icon: 'payment'
+        });
+      }
+    });
+  }
+
+  private openRazorpayCheckout(plan: SubscriptionPlan, orderData: any, user: any): void {
+    const uid = this.getEffectiveUserId();
+    const keyId = orderData.keyId || 'rzp_test_51MockMannidam';
+    const amountPaise = orderData.amountPaise || (plan.priceInr * 100);
+
+    const completeVerification = (razorpayPaymentId: string, razorpayOrderId: string, signature: string) => {
+      const payload = {
+        userId: uid,
+        planId: plan.id,
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: razorpayPaymentId,
+        razorpay_signature: signature
+      };
+
+      const tryVerify = (baseUrl: string) => 
+        this.http.post<{ success: boolean; data: any; message: string }>(baseUrl, payload);
+
+      (tryVerify(`${environment.apiUrl}/subscriptions/verify-payment.php`).pipe(
+        catchError(() => tryVerify('/p_demo_5/backend/api/subscriptions/verify-payment.php')),
+        catchError(() => tryVerify('/api/subscriptions/verify-payment.php')),
+        catchError(() => tryVerify(`${environment.apacheApiUrl}/subscriptions/verify-payment.php`))
+      ) as Observable<any>).subscribe({
+        next: (vRes) => {
+          this.isProcessingPayment.set(false);
+          if (vRes && vRes.success) {
+            this.fetchCurrentSubscription();
+            this.notificationService.show({
+              type: 'success',
+              title: `${plan.name} Subscribed!`,
+              message: `Payment verified. GST Invoice ${vRes.data?.invoiceNumber} generated.`,
+              icon: 'verified'
+            });
+          } else {
+            this.notificationService.show({
+              type: 'warning',
+              title: 'Verification Incomplete',
+              message: 'Payment received. Awaiting webhook confirmation.',
+              icon: 'hourglass_empty'
+            });
+          }
+        },
+        error: (err) => {
+          this.isProcessingPayment.set(false);
+          this.notificationService.show({
+            type: 'error',
+            title: 'Verification Failed',
+            message: err?.error?.error || 'Signature check failed. Contact support.',
+            icon: 'gpp_bad'
+          });
+        }
+      });
+    };
+
+    if (typeof window !== 'undefined' && window.Razorpay) {
+      const options = {
+        key: keyId,
+        amount: amountPaise,
+        currency: 'INR',
+        name: 'FindAPlot.in',
+        description: `${plan.name} (${plan.durationDays} Days Membership)`,
+        image: 'logo.svg',
+        order_id: orderData.orderId,
+        handler: (response: any) => {
+          completeVerification(
+            response.razorpay_payment_id,
+            response.razorpay_order_id || orderData.orderId,
+            response.razorpay_signature || 'sig_test_' + Date.now()
+          );
+        },
+        prefill: {
+          name: user?.name || 'Verified Investor',
+          email: user?.email || 'investor@findaplot.in',
+          contact: user?.phone || '+91 94441 00000'
+        },
+        theme: {
+          color: '#5e8f72' // PRD Theme color
+        },
+        modal: {
+          ondismiss: () => {
+            this.isProcessingPayment.set(false);
+            this.notificationService.show({
+              type: 'info',
+              title: 'Checkout Dismissed',
+              message: 'Payment cancelled. Your subscription was not activated.',
+              icon: 'payment'
+            });
+          }
+        }
+      };
+
+      try {
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', () => {
+          this.isProcessingPayment.set(false);
+        });
+        rzp.open();
+        return;
+      } catch (err) {
+        console.warn('Razorpay SDK runtime issue, using sandbox direct simulation:', err);
+      }
+    }
+
+    // Sandbox / Test fallback simulator (when Razorpay SDK is not injected)
+    const mockPaymentId = 'pay_test_' + substr(Math.random().toString(36).substring(2, 10), 0, 10);
+    const mockSig = 'sig_test_' + Date.now();
+    completeVerification(mockPaymentId, orderData.orderId, mockSig);
+  }
+
+  /**
+   * Open GST Tax Invoice in new window
+   */
+  public viewInvoice(invoiceNumber: string): void {
+    const url = `${environment.apiUrl}/subscriptions/invoice.php?invoiceNumber=${encodeURIComponent(invoiceNumber)}`;
+    window.open(url, '_blank');
+  }
+
+  /**
+   * Request refund for an invoice
+   */
+  public requestRefund(invoiceId: number, reason: string): Observable<boolean> {
+    const uid = this.getEffectiveUserId();
+    const tryPost = (baseUrl: string) => 
+      this.http.post<{ success: boolean; message: string }>(baseUrl, {
+        userId: uid,
+        invoiceId,
+        reason
+      });
+
+    return (tryPost(`${environment.apiUrl}/subscriptions/refund.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/subscriptions/refund.php')),
+      catchError(() => tryPost('/api/subscriptions/refund.php')),
+      catchError(() => tryPost(`${environment.apacheApiUrl}/subscriptions/refund.php`))
+    ) as Observable<any>).pipe(
+      map(res => !!(res && res.success)),
+      tap(ok => {
+        if (ok) {
+          this.fetchCurrentSubscription();
+          this.notificationService.show({
+            type: 'success',
+            title: 'Refund Processed',
+            message: 'Your refund has been registered and plan reverted to Explorer.',
+            icon: 'currency_exchange'
+          });
+        }
+      })
+    );
+  }
+}
+
+function substr(str: string, start: number, len: number): string {
+  return str.substring(start, start + len);
+}

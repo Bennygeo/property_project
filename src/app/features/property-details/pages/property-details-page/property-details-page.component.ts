@@ -14,6 +14,7 @@ import {
 } from '../../../../core/models/property.model';
 import { PropertyService, NearbyLocality } from '../../../../core/services/property.service';
 import { WalletService } from '../../../../core/services/wallet.service';
+import { SubscriptionService } from '../../../../core/services/subscription.service';
 import { MetroService } from '../../../../core/services/metro.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -71,10 +72,14 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   private readonly sanitizer = inject(DomSanitizer);
   readonly propertyService = inject(PropertyService);
   readonly walletService = inject(WalletService);
+  readonly subscriptionService = inject(SubscriptionService);
   readonly metroService = inject(MetroService);
   readonly notificationService = inject(NotificationService);
   readonly authService = inject(AuthService);
   readonly userBehaviorService = inject(UserBehaviorService);
+
+  readonly isEntitlementExhausted = signal<boolean>(false);
+  readonly entitlementExhaustedMessage = signal<string>('');
 
   readonly propertyId = signal<string>('');
   readonly fetchedProperty = signal<Property | null>(null);
@@ -355,6 +360,22 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         if (this.authService.isLoggedIn()) {
           // Record browsing history in MySQL & localStorage for logged in user
           this.authService.recordPropertyView(id).subscribe();
+
+          // PRD M06 Entitlement Engine: consume project view credit (0 credits burned on repeat views)
+          this.subscriptionService.consumeEntitlement('project_view', id).subscribe(res => {
+            if (res && res.allowed === false) {
+              this.isEntitlementExhausted.set(true);
+              this.entitlementExhaustedMessage.set(res.message || 'You have reached your project view limit.');
+              this.notificationService.show({
+                type: 'warning',
+                title: 'Membership Quota Reached',
+                message: res.message || 'Upgrade your plan to unlock more project dossiers and advisory sessions.',
+                icon: 'lock'
+              });
+            } else {
+              this.isEntitlementExhausted.set(false);
+            }
+          });
         } else {
           // Guest visitor flow - verify against server IP/device records across browsers
           this.authService.syncGuestViews().subscribe(() => {

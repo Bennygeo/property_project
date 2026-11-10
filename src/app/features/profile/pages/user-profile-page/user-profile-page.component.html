@@ -51,6 +51,24 @@
 
       <!-- Quick Balance & Action Pills -->
       <div class="strip-quick-actions">
+        <a class="membership-pill" routerLink="/subscriptions"
+          title="Click to view Membership Plans & Advisory Credits">
+          <div class="membership-icon-circle">
+            <span class="material-symbols-outlined">card_membership</span>
+          </div>
+          <div class="membership-text">
+            <span class="membership-plan">{{ subscriptionService.activePlanName() }}</span>
+            <span class="membership-credits">
+              @if (subscriptionService.entitlements()) {
+                {{ (subscriptionService.entitlements()!.projectViewLimit - subscriptionService.entitlements()!.projectViewsUsed) > 0 ? (subscriptionService.entitlements()!.projectViewLimit - subscriptionService.entitlements()!.projectViewsUsed) + ' Views Left' : 'Renew / Upgrade' }}
+              } @else {
+                Active Tier
+              }
+            </span>
+          </div>
+          <span class="btn-upgrade-mini">Plans</span>
+        </a>
+
         <div class="wallet-pill" (click)="walletService.navigateToWallet()"
           title="Click to view full Wallet &amp; Payment Options">
           <div class="wallet-icon-circle">
@@ -125,6 +143,12 @@
             }
           </button>
 
+          <a routerLink="/subscriptions" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon">card_membership</span>
+            <span class="nav-title">Membership &amp; Plans</span>
+            <span class="nav-badge plan-badge">{{ subscriptionService.activePlanName() }}</span>
+          </a>
+
           <a routerLink="/wallet" class="sidebar-nav-item">
             <span class="material-symbols-outlined nav-icon">account_balance_wallet</span>
             <span class="nav-title">Media Wallet &amp; Recharge</span>
@@ -174,7 +198,7 @@
         <div class="sidebar-support-card">
           <div class="support-header">
             <span class="material-symbols-outlined">support_agent</span>
-            <span>Concierge Desk</span>
+            <span>Help Desk</span>
           </div>
           <p class="support-text">Need assistance verifying a title deed or arranging site transport?</p>
           <a href="tel:+919444100000" class="btn-support-call">
@@ -312,7 +336,8 @@
             @for (prop of myProperties(); track prop.id) {
             <div class="user-prop-card">
               <div class="user-prop-thumb-wrap">
-                <img [src]="prop.mainImageUrl" [alt]="prop.title" class="user-prop-thumb" loading="lazy" decoding="async" />
+                <img [src]="prop.mainImageUrl" [alt]="prop.title" class="user-prop-thumb" loading="lazy"
+                  decoding="async" />
                 <span class="prop-cat-badge">{{ prop.propertyType }}</span>
               </div>
 
@@ -411,7 +436,7 @@
           @if (getShortlistedProperties().length > 0) {
           <div class="shortlists-grid">
             @for (prop of getShortlistedProperties(); track prop.id) {
-              <app-property-card [property]="prop" [showCompare]="true" />
+            <app-property-card [property]="prop" [showCompare]="true" />
             }
           </div>
           } @else {
@@ -772,7 +797,7 @@
                 <span class="material-symbols-outlined">chat</span>
               </div>
               <div class="pref-text">
-                <h4 class="pref-title">WhatsApp Concierge Updates</h4>
+                <h4 class="pref-title">WhatsApp Updates</h4>
                 <p class="pref-desc">Receive instant verification updates, site visit confirmations, and GPS locations
                   directly to your mobile.</p>
               </div>
