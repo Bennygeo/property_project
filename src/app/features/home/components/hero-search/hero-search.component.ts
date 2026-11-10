@@ -327,34 +327,48 @@ export interface PropertyTypeOption {
                     }
                   </div>
 
-                  <div class="custom-minmax-section">
-                    <span class="minmax-title">Custom Range (Min – Max)</span>
-                    <div class="minmax-row">
-                      <div class="minmax-field">
-                        <label>Min</label>
-                        <select [value]="customMinBudget()" (change)="onMinBudgetChange($any($event.target).value)">
-                          <option value="any">Min Price</option>
-                          <option value="25l">₹25 Lakh</option>
-                          <option value="50l">₹50 Lakh</option>
-                          <option value="1cr">₹1.00 Cr</option>
-                          <option value="2cr">₹2.00 Cr</option>
-                          <option value="3cr">₹3.00 Cr</option>
-                          <option value="5cr">₹5.00 Cr</option>
-                        </select>
-                      </div>
-                      <span class="minmax-divider">to</span>
-                      <div class="minmax-field">
-                        <label>Max</label>
-                        <select [value]="customMaxBudget()" (change)="onMaxBudgetChange($any($event.target).value)">
-                          <option value="any">Max Price</option>
-                          <option value="50l">₹50 Lakh</option>
-                          <option value="1cr">₹1.00 Cr</option>
-                          <option value="1.5cr">₹1.50 Cr</option>
-                          <option value="3cr">₹3.00 Cr</option>
-                          <option value="5cr">₹5.00 Cr</option>
-                          <option value="10cr">₹10.00 Cr+</option>
-                        </select>
-                      </div>
+                  <!-- Custom Budget Range Slider (Identical to Search Component) -->
+                  <div class="custom-slider-section" [class.is-active]="isCustomBudgetActive()">
+                    <div class="slider-header-row">
+                      <span class="slider-label">Custom Range</span>
+                      <span class="slider-range-val">
+                        {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ? formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
+                      </span>
+                    </div>
+
+                    <div class="range-slider-wrapper">
+                      <div class="range-slider-track"></div>
+                      <div class="range-slider-fill" 
+                        [style.left.%]="sliderMinPercent()" 
+                        [style.width.%]="sliderWidthPercent()"></div>
+                      <input 
+                        type="range" 
+                        class="range-slider-input range-input-min" 
+                        [min]="MIN_BUDGET_LIMIT" 
+                        [max]="MAX_BUDGET_LIMIT" 
+                        [step]="BUDGET_STEP"
+                        [value]="customBudgetMin()" 
+                        (input)="onMinSliderChange($event)"
+                        (click)="$event.stopPropagation()"
+                        aria-label="Minimum budget slider" />
+                      <input 
+                        type="range" 
+                        class="range-slider-input range-input-max" 
+                        [min]="MIN_BUDGET_LIMIT" 
+                        [max]="MAX_BUDGET_LIMIT" 
+                        [step]="BUDGET_STEP"
+                        [value]="customBudgetMax()" 
+                        (input)="onMaxSliderChange($event)"
+                        (click)="$event.stopPropagation()"
+                        aria-label="Maximum budget slider" />
+                    </div>
+
+                    <div class="slider-ticks-row">
+                      <span>₹0</span>
+                      <span>₹1 Cr</span>
+                      <span>₹2 Cr</span>
+                      <span>₹5 Cr</span>
+                      <span>₹10 Cr+</span>
                     </div>
                   </div>
 
@@ -426,11 +440,56 @@ export interface PropertyTypeOption {
                     <button 
                       type="button" 
                       class="mobile-q-chip chip-budget" 
-                      [class.active]="propertyService.selectedBudget() === range.value"
+                      [class.active]="propertyService.selectedBudget() === range.value && !isCustomBudgetActive()"
                       (click)="selectMobileBudget(range.value)">
                       {{ range.label }}
                     </button>
                   }
+                </div>
+
+                <!-- Mobile Custom Budget Range Slider -->
+                <div class="mobile-slider-box" [class.is-active]="isCustomBudgetActive()">
+                  <div class="slider-header-row">
+                    <span class="slider-label">Custom Range</span>
+                    <span class="slider-range-val">
+                      {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ? formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
+                    </span>
+                  </div>
+
+                  <div class="range-slider-wrapper">
+                    <div class="range-slider-track"></div>
+                    <div class="range-slider-fill" 
+                      [style.left.%]="sliderMinPercent()" 
+                      [style.width.%]="sliderWidthPercent()"></div>
+                    <input 
+                      type="range" 
+                      class="range-slider-input range-input-min" 
+                      [min]="MIN_BUDGET_LIMIT" 
+                      [max]="MAX_BUDGET_LIMIT" 
+                      [step]="BUDGET_STEP"
+                      [value]="customBudgetMin()" 
+                      (input)="onMinSliderChange($event)"
+                      (click)="$event.stopPropagation()"
+                      aria-label="Mobile minimum budget slider" />
+                    <input 
+                      type="range" 
+                      class="range-slider-input range-input-max" 
+                      [min]="MIN_BUDGET_LIMIT" 
+                      [max]="MAX_BUDGET_LIMIT" 
+                      [step]="BUDGET_STEP"
+                      [value]="customBudgetMax()" 
+                      (input)="onMaxSliderChange($event)"
+                      (click)="$event.stopPropagation()"
+                      aria-label="Mobile maximum budget slider" />
+                  </div>
+
+                  <div class="slider-ticks-row">
+                    <span>₹0</span>
+                    <span>₹1 Cr</span>
+                    <span>₹2 Cr</span>
+                    <span>₹5 Cr</span>
+                    <span>₹10 Cr+</span>
+                  </div>
                 </div>
               </div>
 
@@ -1947,53 +2006,125 @@ export interface PropertyTypeOption {
       font-weight: 500;
     }
 
-    /* Custom Min-Max Section */
-    .custom-minmax-section {
-      padding-top: 0.625rem;
-      border-top: 1px solid #f1f5f9;
-    }
-    .minmax-title {
-      font-size: 10px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-slate-500);
-      margin-bottom: 0.375rem;
-      display: block;
-    }
-    .minmax-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .minmax-field {
-      flex: 1;
+    /* Custom Range Slider inside Budget Popover & Mobile */
+    .custom-slider-section,
+    .mobile-slider-box {
+      margin-top: 0.65rem;
+      padding: 0.65rem 0.55rem 0.5rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
     }
-    .minmax-field label {
-      font-size: 9px;
-      font-weight: 500;
-      color: var(--text-slate-400);
+    .custom-slider-section.is-active,
+    .mobile-slider-box.is-active {
+      background: var(--brand-green-subtle, #e5f7ec);
+      border-color: var(--brand-green, #5e8f72);
+    }
+    .slider-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .slider-label {
+      font-size: 10px;
+      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
     }
-    .minmax-field select {
+    .custom-slider-section.is-active .slider-label,
+    .mobile-slider-box.is-active .slider-label {
+      color: #2c4938;
+    }
+    .slider-range-val {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0f3b4a;
+      letter-spacing: -0.01em;
+    }
+    .custom-slider-section.is-active .slider-range-val,
+    .mobile-slider-box.is-active .slider-range-val {
+      color: #2c4938;
+    }
+    .range-slider-wrapper {
+      position: relative;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      margin: 0.15rem 0;
+    }
+    .range-slider-track {
+      position: absolute;
       width: 100%;
-      height: 32px;
-      border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 0 4px;
-      color: var(--text-slate-800);
-      outline: none;
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 4px;
     }
-    .minmax-divider {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-top: 12px;
+    .range-slider-fill {
+      position: absolute;
+      height: 4px;
+      background: #5e8f72;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .range-slider-input {
+      position: absolute;
+      width: 100%;
+      height: 18px;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
+      background: none;
+      pointer-events: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .range-slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      pointer-events: auto;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #0f3b4a;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.1s ease;
+    }
+    .range-slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      border-color: #5e8f72;
+    }
+    .range-slider-input::-webkit-slider-thumb:active {
+      transform: scale(1.25);
+      background: #5e8f72;
+      border-color: #2c4938;
+    }
+    .range-slider-input::-moz-range-thumb {
+      pointer-events: auto;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #0f3b4a;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+    .slider-ticks-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9.5px;
+      color: #64748b;
+      font-weight: 500;
+      padding: 0 1px;
     }
 
     /* Field 4 CTA Button */
@@ -2093,7 +2224,27 @@ export class HeroSearchComponent implements OnInit {
   readonly selectedTypes = signal<string[]>([]);
   readonly isTypeDropdownOpen = signal<boolean>(false);
 
-  // 4. Budget Selector
+  // 4. Budget Selector & Custom Range Slider Configuration
+  readonly MIN_BUDGET_LIMIT = 0;
+  readonly MAX_BUDGET_LIMIT = 100000000; // ₹10 Crores
+  readonly BUDGET_STEP = 500000; // ₹5 Lakhs step
+
+  readonly customBudgetMin = signal<number>(0);
+  readonly customBudgetMax = signal<number>(100000000);
+  readonly isCustomBudgetActive = signal<boolean>(false);
+
+  readonly sliderMinPercent = computed<number>(() => {
+    const min = this.customBudgetMin();
+    return Math.max(0, Math.min(100, (min / this.MAX_BUDGET_LIMIT) * 100));
+  });
+
+  readonly sliderWidthPercent = computed<number>(() => {
+    const min = this.customBudgetMin();
+    const max = this.customBudgetMax();
+    const pct = ((max - min) / this.MAX_BUDGET_LIMIT) * 100;
+    return Math.max(0, Math.min(100, pct));
+  });
+
   readonly budgetRanges = [
     { value: 'Select Budget', label: 'Any Budget' },
     { value: '< ₹50 Lakh', label: '< ₹50 Lakh' },
@@ -2102,8 +2253,6 @@ export class HeroSearchComponent implements OnInit {
     { value: '₹3.0 – 5.0 Cr', label: '₹3.0 – 5.0 Cr' },
     { value: '₹5.0 Cr+', label: '₹5.0 Cr+' }
   ];
-  readonly customMinBudget = signal<string>('any');
-  readonly customMaxBudget = signal<string>('any');
   readonly isBudgetDropdownOpen = signal<boolean>(false);
 
   // 5. Trending & Auto-Suggest
@@ -2256,6 +2405,8 @@ export class HeroSearchComponent implements OnInit {
 
   selectMobileBudget(budget: string): void {
     this.propertyService.selectedBudget.set(budget);
+    this.isCustomBudgetActive.set(false);
+    this.syncPresetToSlider(budget);
   }
 
   setMobileIntent(intent: 'investment' | 'ready'): void {
@@ -2450,36 +2601,82 @@ export class HeroSearchComponent implements OnInit {
     }
   }
 
+  formatBudgetInr(val: number): string {
+    if (val <= 0) return '₹0';
+    if (val >= 10000000) {
+      const cr = val / 10000000;
+      return Number.isInteger(cr) ? `₹${cr} Cr` : `₹${cr.toFixed(1)} Cr`;
+    }
+    const lk = val / 100000;
+    return Number.isInteger(lk) ? `₹${lk}L` : `₹${lk.toFixed(1)}L`;
+  }
+
+  onMinSliderChange(event: Event): void {
+    const val = Number((event.target as HTMLInputElement).value);
+    const max = this.customBudgetMax();
+    const step = this.BUDGET_STEP;
+    const newMin = Math.min(val, max - step);
+    this.customBudgetMin.set(newMin);
+    this.isCustomBudgetActive.set(true);
+    this.syncCustomBudgetLabel();
+  }
+
+  onMaxSliderChange(event: Event): void {
+    const val = Number((event.target as HTMLInputElement).value);
+    const min = this.customBudgetMin();
+    const step = this.BUDGET_STEP;
+    const newMax = Math.max(val, min + step);
+    this.customBudgetMax.set(newMax);
+    this.isCustomBudgetActive.set(true);
+    this.syncCustomBudgetLabel();
+  }
+
+  private syncCustomBudgetLabel(): void {
+    const minLabel = this.formatBudgetInr(this.customBudgetMin());
+    const maxVal = this.customBudgetMax();
+    const maxLabel = maxVal >= this.MAX_BUDGET_LIMIT ? this.formatBudgetInr(maxVal) + '+' : this.formatBudgetInr(maxVal);
+    this.propertyService.selectedBudget.set(`${minLabel} – ${maxLabel}`);
+  }
+
   selectBudget(val: string): void {
     this.propertyService.selectedBudget.set(val);
+    this.isCustomBudgetActive.set(false);
+    this.syncPresetToSlider(val);
     this.isBudgetDropdownOpen.set(false);
   }
 
-  onMinBudgetChange(val: string): void {
-    this.customMinBudget.set(val);
-  }
-
-  onMaxBudgetChange(val: string): void {
-    this.customMaxBudget.set(val);
+  syncPresetToSlider(val: string): void {
+    if (val === 'Select Budget' || val === 'Any Budget') {
+      this.customBudgetMin.set(0);
+      this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    } else if (val.includes('< ₹50') || val === 'under-50l') {
+      this.customBudgetMin.set(0);
+      this.customBudgetMax.set(5000000);
+    } else if (val.includes('50L – 1.5') || val.includes('50L – 1 Cr')) {
+      this.customBudgetMin.set(5000000);
+      this.customBudgetMax.set(15000000);
+    } else if (val.includes('1.5 – 3.0') || val.includes('1 Cr – 2 Cr')) {
+      this.customBudgetMin.set(15000000);
+      this.customBudgetMax.set(30000000);
+    } else if (val.includes('3.0 – 5.0') || val.includes('2 Cr – 5 Cr')) {
+      this.customBudgetMin.set(30000000);
+      this.customBudgetMax.set(50000000);
+    } else if (val.includes('5.0 Cr+') || val.includes('5 Cr+')) {
+      this.customBudgetMin.set(50000000);
+      this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    }
   }
 
   applyCustomBudget(): void {
-    const min = this.customMinBudget();
-    const max = this.customMaxBudget();
-    if (min === 'any' && max === 'any') {
-      this.propertyService.selectedBudget.set('Select Budget');
-    } else {
-      const minLabel = min !== 'any' ? `Min ₹${min.toUpperCase()}` : '';
-      const maxLabel = max !== 'any' ? `Max ₹${max.toUpperCase()}` : '';
-      this.propertyService.selectedBudget.set([minLabel, maxLabel].filter(Boolean).join(' – '));
-    }
+    this.syncCustomBudgetLabel();
     this.isBudgetDropdownOpen.set(false);
   }
 
   resetBudget(): void {
     this.propertyService.selectedBudget.set('Select Budget');
-    this.customMinBudget.set('any');
-    this.customMaxBudget.set('any');
+    this.isCustomBudgetActive.set(false);
+    this.customBudgetMin.set(0);
+    this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
   }
 
   @HostListener('document:click', ['$event'])
@@ -2507,11 +2704,19 @@ export class HeroSearchComponent implements OnInit {
     this.isMobileQuestionnaireOpen.set(false);
     const rawBudget = this.propertyService.selectedBudget();
     let budgetParam: string | null = null;
-    if (rawBudget.includes('< ₹50') || rawBudget.includes('25L')) budgetParam = 'under-50l';
-    else if (rawBudget.includes('50L – 1.5') || rawBudget.includes('50L')) budgetParam = '50l-1.5cr';
-    else if (rawBudget.includes('1.5 – 3.0')) budgetParam = '1.5cr-3cr';
-    else if (rawBudget.includes('3.0 – 5.0')) budgetParam = '3cr-5cr';
-    else if (rawBudget.includes('5.0 Cr+') || rawBudget.includes('10CR')) budgetParam = 'above-5cr';
+    let minBudgetParam: number | null = null;
+    let maxBudgetParam: number | null = null;
+
+    if (this.isCustomBudgetActive()) {
+      minBudgetParam = this.customBudgetMin();
+      maxBudgetParam = this.customBudgetMax();
+    } else {
+      if (rawBudget.includes('< ₹50') || rawBudget.includes('25L')) budgetParam = 'under-50l';
+      else if (rawBudget.includes('50L – 1.5') || rawBudget.includes('50L')) budgetParam = '50l-1cr';
+      else if (rawBudget.includes('1.5 – 3.0')) budgetParam = '1.5cr-3cr';
+      else if (rawBudget.includes('3.0 – 5.0')) budgetParam = '2cr-5cr';
+      else if (rawBudget.includes('5.0 Cr+') || rawBudget.includes('10CR')) budgetParam = 'above-5cr';
+    }
 
     const typesParam = this.selectedTypes().length > 0 ? this.selectedTypes().join(',') : null;
 
@@ -2520,6 +2725,8 @@ export class HeroSearchComponent implements OnInit {
         q: this.propertyService.searchQuery() || null,
         type: typesParam,
         budget: budgetParam,
+        minBudget: minBudgetParam,
+        maxBudget: maxBudgetParam,
         status: this.selectedStatus() !== 'all' ? this.selectedStatus() : null,
         ready: this.selectedStatus() === 'ready' ? 'true' : null
       }

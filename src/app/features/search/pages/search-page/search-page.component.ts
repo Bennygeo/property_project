@@ -710,8 +710,15 @@ export class SearchPageComponent implements OnInit {
       if (params['developer']) {
         this.selectedDeveloper.set(params['developer']);
       }
-      if (params['budget']) {
-        this.selectedBudget.set(params['budget']);
+      if (params['minBudget'] || params['maxBudget']) {
+        const minVal = Number(params['minBudget']) || 0;
+        const maxVal = Number(params['maxBudget']) || this.MAX_BUDGET_LIMIT;
+        this.customBudgetMin.set(minVal);
+        this.customBudgetMax.set(maxVal);
+        this.isCustomBudgetActive.set(true);
+        this.selectedBudget.set('custom');
+      } else if (params['budget']) {
+        this.setBudget(params['budget']);
       }
       if (params['bhk']) {
         this.selectedBhk.set(params['bhk']);
