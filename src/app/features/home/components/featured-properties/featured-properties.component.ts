@@ -92,11 +92,11 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
         <div class="search-insist-banner">
           <div class="insist-left">
             <div class="insist-badge">
-              <span>20 Curated Highlights Shown</span>
+              <span>Top 8 Highlights in {{ locationService.selectedDistrict() }}</span>
             </div>
             <h3 class="insist-title">Looking for specific localities, budgets, or plot directions?</h3>
             <p class="insist-desc">
-              The Home page displays a curated sample of 20 featured plots. Head to our comprehensive Search Engine to filter by price/sq.ft, DTCP/RERA sanctions, direction, and live satellite coordinates.
+              The Home page displays a curated sample of 8 featured properties in {{ locationService.selectedDistrict() }}. Head to our comprehensive Search Engine to filter by price/sq.ft, DTCP/RERA sanctions, direction, and live satellite coordinates.
             </p>
           </div>
           <div class="insist-right">
@@ -653,9 +653,9 @@ export class FeaturedPropertiesComponent {
 
   readonly isAllTamilNaduView = signal<boolean>(false);
 
-  // Up to 12 curated featured properties for the selected district
+  // Strictly capped to at most 8 properties on the Home page
   readonly displayedProperties = computed(() => {
-    return this.propertyService.properties().slice(0, 12);
+    return this.propertyService.properties().slice(0, 8);
   });
 
   constructor() {
@@ -667,7 +667,7 @@ export class FeaturedPropertiesComponent {
 
       this.propertyService.loadPropertiesFromApi({
         offset: 0,
-        limit: 12,
+        limit: 8,
         append: false,
         district: isAll ? undefined : (district && district !== 'all' ? district : undefined),
         propertyType: cat !== 'all' ? cat : undefined
@@ -696,7 +696,7 @@ export class FeaturedPropertiesComponent {
     this.isAllTamilNaduView.set(true);
     this.propertyService.loadPropertiesFromApi({
       offset: 0,
-      limit: 12,
+      limit: 8,
       append: false,
       propertyType: this.propertyService.activeCategoryFilter() !== 'all' ? this.propertyService.activeCategoryFilter() : undefined
     });
