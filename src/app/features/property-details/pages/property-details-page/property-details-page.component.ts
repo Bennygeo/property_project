@@ -78,6 +78,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
   readonly propertyId = signal<string>('');
   readonly fetchedProperty = signal<Property | null>(null);
+  readonly isLoading = signal<boolean>(true);
   readonly nearbyLocalities = signal<NearbyLocality[]>([]);
   readonly nearbyProperties = signal<Property[]>([]);
   readonly property = computed<Property | null>(() => {
@@ -85,7 +86,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     if (!p) {
       const id = this.propertyId();
       if (!id) return null;
-      p = this.propertyService.getPropertyById(id) || this.propertyService.allProperties()[0] || null;
+      p = this.propertyService.getPropertyById(id) || null;
     }
     if (!p) return null;
     return {
@@ -368,18 +369,25 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         }
 
         // Fetch real-time dossier from MySQL backend
-        this.propertyService.fetchPropertyDetails(id).subscribe(prop => {
-          if (prop) {
-            this.fetchedProperty.set(prop);
-          }
-          const resolved = prop || this.propertyService.getPropertyById(id);
-          if (resolved) {
-            this.userBehaviorService.trackPropertyView(resolved);
-            const priceNum = parsePriceToNumber(resolved.price);
-            if (priceNum > 0) {
-              this.loanAmount.set(Math.round(priceNum * 0.8));
+        this.isLoading.set(true);
+        this.propertyService.fetchPropertyDetails(id).subscribe({
+          next: (prop) => {
+            this.isLoading.set(false);
+            if (prop) {
+              this.fetchedProperty.set(prop);
             }
-            this.loadNearbyLocalities(resolved);
+            const resolved = prop || this.propertyService.getPropertyById(id);
+            if (resolved) {
+              this.userBehaviorService.trackPropertyView(resolved);
+              const priceNum = parsePriceToNumber(resolved.price);
+              if (priceNum > 0) {
+                this.loanAmount.set(Math.round(priceNum * 0.8));
+              }
+              this.loadNearbyLocalities(resolved);
+            }
+          },
+          error: () => {
+            this.isLoading.set(false);
           }
         });
       }

@@ -230,7 +230,11 @@ export class PropertyService {
 
   public isShortlisted(propertyId: string): boolean {
     if (!propertyId) return false;
-    return this.shortlistedPropertyIds().has(propertyId);
+    const target = propertyId.trim().toUpperCase();
+    for (const id of this.shortlistedPropertyIds()) {
+      if (id && id.trim().toUpperCase() === target) return true;
+    }
+    return false;
   }
 
   private loadShortlistsFromStorage(): Set<string> {
@@ -261,11 +265,10 @@ export class PropertyService {
   }
 
   public syncShortlistedStateInProperties(): void {
-    const ids = this.shortlistedPropertyIds();
     this._properties.update(list =>
       list.map(p => ({
         ...p,
-        isShortlisted: ids.has(p.id)
+        isShortlisted: this.isShortlisted(p.id)
       }))
     );
   }
@@ -295,6 +298,7 @@ export class PropertyService {
     };
 
     (tryGet(environment.apiUrl + '/properties/shortlist.php').pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/properties/shortlist.php')),
       catchError(() => tryGet('/api/properties/shortlist.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/properties/shortlist.php')),
       catchError(err => {
@@ -310,7 +314,12 @@ export class PropertyService {
 
         // 1. Prune any property that was deleted by admin from database
         for (const pid of purgedIds) {
-          updatedSet.delete(pid);
+          const upperPid = pid.trim().toUpperCase();
+          for (const item of Array.from(updatedSet)) {
+            if (item.trim().toUpperCase() === upperPid) {
+              updatedSet.delete(item);
+            }
+          }
         }
 
         // 2. Add all confirmed valid properties
@@ -329,15 +338,24 @@ export class PropertyService {
   toggleShortlist(propertyId: string, userId?: number): void {
     if (!propertyId) return;
 
+    const trimmedId = propertyId.trim();
     const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
     const currentSet = new Set(this.shortlistedPropertyIds());
-    const isCurrentlyShortlisted = currentSet.has(propertyId);
-    const nextState = !isCurrentlyShortlisted;
+
+    let existingMatch: string | null = null;
+    for (const id of currentSet) {
+      if (id && id.trim().toUpperCase() === trimmedId.toUpperCase()) {
+        existingMatch = id;
+        break;
+      }
+    }
+
+    const nextState = !existingMatch;
 
     if (nextState) {
-      currentSet.add(propertyId);
-    } else {
-      currentSet.delete(propertyId);
+      currentSet.add(trimmedId);
+    } else if (existingMatch) {
+      currentSet.delete(existingMatch);
     }
 
     // Optimistically update signals and persistent local storage
@@ -346,7 +364,7 @@ export class PropertyService {
     this.syncShortlistedStateInProperties();
 
     // Find property title for user feedback
-    const prop = this._properties().find(p => p.id === propertyId) || MOCK_50_PROPERTIES.find(p => p.id === propertyId);
+    const prop = this._properties().find(p => p.id === trimmedId) || MOCK_50_PROPERTIES.find(p => p.id === trimmedId);
     const title = prop?.title || 'Property';
 
     this.notificationService.show({
@@ -358,7 +376,7 @@ export class PropertyService {
 
     // Synchronize with MySQL database endpoint
     const payload = {
-      propertyId: propertyId,
+      propertyId: trimmedId,
       action: nextState ? 'add' : 'remove',
       userId: effectiveUserId
     };
@@ -367,13 +385,18 @@ export class PropertyService {
       this.http.post<{ success: boolean; data: any }>(baseUrl, payload);
 
     (tryPost(environment.apiUrl + '/properties/shortlist.php').pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/properties/shortlist.php')),
       catchError(() => tryPost('/api/properties/shortlist.php')),
       catchError(() => tryPost(environment.apacheApiUrl + '/properties/shortlist.php')),
       catchError(err => {
         // If property was deleted from database by admin (404), remove it immediately from shortlisted Set
         if (err?.status === 404) {
           const purged = new Set(this.shortlistedPropertyIds());
-          purged.delete(propertyId);
+          for (const item of Array.from(purged)) {
+            if (item.trim().toUpperCase() === trimmedId.toUpperCase()) {
+              purged.delete(item);
+            }
+          }
           this.shortlistedPropertyIds.set(purged);
           this.saveShortlistsToStorage(purged);
           this.syncShortlistedStateInProperties();

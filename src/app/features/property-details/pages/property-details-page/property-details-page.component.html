@@ -59,9 +59,9 @@
               <button type="button" class="btn-mob-icon" (click)="shareProperty()" aria-label="Share Property">
                 <span class="material-symbols-outlined">share</span>
               </button>
-              <button type="button" class="btn-mob-icon" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
+              <button type="button" class="btn-mob-icon" [class.shortlisted]="propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)" aria-label="Shortlist Property">
-                <span class="material-symbols-outlined">{{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}</span>
+                <span class="material-symbols-outlined">{{ propertyService.isShortlisted(prop.id) ? 'favorite' : 'favorite_border' }}</span>
               </button>
             </div>
           </div>
@@ -160,13 +160,13 @@
                 <span>Share</span>
               </button>
 
-              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
+              <button type="button" class="btn-hdr-utility" [class.shortlisted]="propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)"
-                [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Add to shortlist'">
+                [title]="propertyService.isShortlisted(prop.id) ? 'Remove from shortlist' : 'Add to shortlist'">
                 <span class="material-symbols-outlined">
-                  {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
+                  {{ propertyService.isShortlisted(prop.id) ? 'favorite' : 'favorite_border' }}
                 </span>
-                <span>{{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Shortlisted' : 'Shortlist' }}</span>
+                <span>{{ propertyService.isShortlisted(prop.id) ? 'Shortlisted' : 'Shortlist' }}</span>
               </button>
             </div>
           </div>
@@ -1260,13 +1260,13 @@
                 <span>Share</span>
               </button>
 
-              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
+              <button type="button" class="btn-hdr-utility" [class.shortlisted]="propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)"
-                [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Add to shortlist'">
+                [title]="propertyService.isShortlisted(prop.id) ? 'Remove from shortlist' : 'Add to shortlist'">
                 <span class="material-symbols-outlined">
-                  {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
+                  {{ propertyService.isShortlisted(prop.id) ? 'favorite' : 'favorite_border' }}
                 </span>
-                <span>{{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Shortlisted' : 'Shortlist' }}</span>
+                <span>{{ propertyService.isShortlisted(prop.id) ? 'Shortlisted' : 'Shortlist' }}</span>
               </button>
             </div>
           </div>
@@ -1396,6 +1396,13 @@
       </div>
     </div>
 
+  </div>
+  } @else if (isLoading()) {
+  <!-- LOADING DOSSIER SKELETON / SPINNER STATE -->
+  <div class="max-w-content not-found-box py-24 text-center">
+    <div class="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+    <h3 style="margin-top: 1rem; font-size: 1.125rem; font-weight: 600; color: #334155;">Retrieving verified property dossier...</h3>
+    <p style="color: #64748b; font-size: 0.875rem;">Loading Cadastral & RERA documents from Find a Plot registry</p>
   </div>
   } @else {
   <!-- PROPERTY NOT FOUND STATE -->

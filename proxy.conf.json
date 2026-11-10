@@ -13,6 +13,22 @@
     "secure": false,
     "changeOrigin": true
   },
+  "/p_demo_5/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/p_demo_5/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/P_demo_5/backend": {
+    "target": "http://localhost:8000",
+    "pathRewrite": {
+      "^/P_demo_5/backend": ""
+    },
+    "secure": false,
+    "changeOrigin": true
+  },
   "/P_demo_4/backend": {
     "target": "http://localhost:8000",
     "pathRewrite": {
