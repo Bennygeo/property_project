@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
+import { LocationService } from '../../../../core/services/location.service';
 import { PropertyCardComponent } from '../property-card/property-card.component';
 
 @Component({
@@ -13,16 +14,24 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       <!-- Section Header -->
       <div class="section-header-row">
         <div class="header-left">
-          <h2 class="section-title">Featured Verified Properties</h2>
+          <div class="section-location-badge">
+            <span class="material-symbols-outlined loc-badge-pin">location_on</span>
+            <span class="loc-badge-text">{{ locationService.selectedDistrict() }}, Tamil Nadu</span>
+            <button type="button" class="btn-change-district-inline" (click)="locationService.openDistrictModal()" title="Change Tamil Nadu District">
+              <span>Change</span>
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+          </div>
+          <h2 class="section-title">Featured Verified Properties in {{ locationService.selectedDistrict() }}</h2>
           <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="section-subtitle">
-            Audited legal titles, genuine owner contacts, and verified site dimensions.
+            Audited legal titles, RERA/DTCP layouts, and verified plots in {{ locationService.selectedDistrict() }}.
           </p>
         </div>
         <div class="header-right">
-          <span class="meta-count">Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() || propertyService.properties().length }}</span>
+          <span class="meta-count">Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() || displayedProperties().length }} in {{ locationService.selectedDistrict() }}</span>
           <a class="meta-link" routerLink="/search" [queryParams]="getSearchQueryParams()">
-            <span>Search all properties</span>
+            <span>Search all in {{ locationService.selectedDistrict() }}</span>
             <span class="material-symbols-outlined link-arrow">arrow_forward</span>
           </a>
         </div>
@@ -102,14 +111,24 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           <div class="empty-icon-wrap">
             <span class="material-symbols-outlined empty-icon">domain_disabled</span>
           </div>
-          <h3 class="empty-title">No properties match your current filter</h3>
+          <h3 class="empty-title">No properties match your filter in {{ locationService.selectedDistrict() }}</h3>
           <p class="empty-desc">
-            Try adjusting your asset class filter or clear the current search query.
+            Try adjusting your asset class filter, or switch to another Tamil Nadu district.
           </p>
-          <button type="button" class="btn-reset-search" (click)="resetSearch()">
-            <span class="material-symbols-outlined">restart_alt</span>
-            <span>Reset Filters</span>
-          </button>
+          <div class="empty-actions-row">
+            <button type="button" class="btn-action-switch" (click)="locationService.openDistrictModal()">
+              <span class="material-symbols-outlined">location_on</span>
+              <span>Change District</span>
+            </button>
+            <button type="button" class="btn-reset-search" (click)="resetSearch()">
+              <span class="material-symbols-outlined">restart_alt</span>
+              <span>Reset Filters</span>
+            </button>
+            <button type="button" class="btn-action-all" (click)="loadAllTamilNadu()">
+              <span class="material-symbols-outlined">explore</span>
+              <span>View All Tamil Nadu Plots</span>
+            </button>
+          </div>
         </div>
       }
     </section>
@@ -148,6 +167,50 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
+    }
+
+    .section-location-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 0.25rem;
+      width: fit-content;
+    }
+
+    .loc-badge-pin {
+      font-size: 16px;
+      color: #16a34a;
+    }
+
+    .loc-badge-text {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-change-district-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      .material-symbols-outlined {
+        font-size: 14px;
+      }
     }
 
     .section-badge {
@@ -526,43 +589,121 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       font-size: 11px;
       color: #94a3b8;
     }
+
+    .empty-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-action-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      background: var(--brand-green, #5e8f72);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: var(--brand-green-hover, #497259);
+      }
+
+      .material-symbols-outlined {
+        font-size: 17px;
+      }
+    }
+
+    .btn-action-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+
+      .material-symbols-outlined {
+        font-size: 17px;
+      }
+    }
   `]
 })
-export class FeaturedPropertiesComponent implements OnInit {
+export class FeaturedPropertiesComponent {
   readonly propertyService = inject(PropertyService);
+  readonly locationService = inject(LocationService);
 
-  // Strictly load and display only 20 properties on Home page
+  readonly isAllTamilNaduView = signal<boolean>(false);
+
+  // Up to 12 curated featured properties for the selected district
   readonly displayedProperties = computed(() => {
-    return this.propertyService.properties().slice(0, 8);
+    return this.propertyService.properties().slice(0, 12);
   });
 
+  constructor() {
+    // Automatically query and refresh properties whenever the selected district or category filter changes
+    effect(() => {
+      const district = this.locationService.selectedDistrict();
+      const cat = this.propertyService.activeCategoryFilter();
+      const isAll = this.isAllTamilNaduView();
+
+      this.propertyService.loadPropertiesFromApi({
+        offset: 0,
+        limit: 12,
+        append: false,
+        district: isAll ? undefined : (district && district !== 'all' ? district : undefined),
+        propertyType: cat !== 'all' ? cat : undefined
+      });
+    });
+  }
+
   getSearchQueryParams(): Record<string, string> {
+    const params: Record<string, string> = {};
+    const district = this.locationService.selectedDistrict();
+    if (!this.isAllTamilNaduView() && district && district !== 'all') {
+      params['district'] = district;
+    }
     const cat = this.propertyService.activeCategoryFilter();
     if (cat && cat !== 'all') {
-      return { type: cat };
+      params['type'] = cat;
     }
-    return {};
+    return params;
   }
 
   setCategory(cat: string): void {
     this.propertyService.setCategoryFilter(cat);
-    this.propertyService.loadPropertiesFromApi({
-      offset: 0,
-      limit: 8,
-      append: false,
-      propertyType: cat !== 'all' ? cat : undefined
-    });
   }
 
-  ngOnInit(): void {
+  loadAllTamilNadu(): void {
+    this.isAllTamilNaduView.set(true);
     this.propertyService.loadPropertiesFromApi({
       offset: 0,
-      limit: 8,
-      append: false
+      limit: 12,
+      append: false,
+      propertyType: this.propertyService.activeCategoryFilter() !== 'all' ? this.propertyService.activeCategoryFilter() : undefined
     });
   }
 
   resetSearch(): void {
+    this.isAllTamilNaduView.set(false);
     this.propertyService.searchQuery.set('');
     this.setCategory('all');
   }
