@@ -130,8 +130,8 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     }
 
     .modal-heading {
-      font-size: 1rem;
-      font-weight: 600;
+      font-size: 0.9rem;
+      font-weight: 500;
       color: #0f172a;
       letter-spacing: -0.02em;
       margin: 0;
@@ -265,7 +265,7 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     }
 
     .purpose-tagline {
-      font-size: 11.5px;
+      font-size: 11px;
       color: #64748b;
       margin: 0;
       line-height: 1.35;
@@ -285,8 +285,8 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     .btn-skip {
       background: transparent;
       border: none;
-      font-size: 12.5px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       color: #64748b;
       cursor: pointer;
       padding: 5px 8px;
@@ -304,8 +304,8 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
       justify-content: center;
       background: #5e8f72;
       color: #ffffff;
-      font-size: 12.5px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       padding: 8px 18px;
       border-radius: 8px;
       border: none;
@@ -331,7 +331,7 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
         gap: 0.85rem;
       }
       .modal-heading {
-        font-size: 1.15rem;
+        font-size: 1rem;
       }
     }
   `]

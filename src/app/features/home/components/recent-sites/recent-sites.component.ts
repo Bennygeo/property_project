@@ -527,7 +527,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
     @media (min-width: 640px) {
       .site-title {
-        font-size: 1rem;
+        font-size: 0.9rem;
       }
     }
 

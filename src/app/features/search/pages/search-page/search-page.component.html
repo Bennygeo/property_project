@@ -410,10 +410,62 @@
             </label>
             <div class="budget-grid">
               @for (b of budgetOptions; track b.value) {
-              <button type="button" class="budget-pill" [class.selected]="selectedBudget() === b.value"
+              <button type="button" class="budget-pill" [class.selected]="selectedBudget() === b.value && !isCustomBudgetActive()"
                 (click)="setBudget(b.value)">
                 {{ b.label }}
               </button>
+              }
+            </div>
+
+            <!-- Custom Budget Range Slider -->
+            <div class="budget-slider-box" [class.is-active]="isCustomBudgetActive()">
+              <div class="slider-header-row">
+                <span class="slider-label">Custom Range</span>
+                <span class="slider-range-val">
+                  {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ? formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
+                </span>
+              </div>
+
+              <div class="range-slider-wrapper">
+                <div class="range-slider-track"></div>
+                <div class="range-slider-fill" 
+                  [style.left.%]="sliderMinPercent()" 
+                  [style.width.%]="sliderWidthPercent()"></div>
+                <input 
+                  type="range" 
+                  class="range-slider-input range-input-min" 
+                  [min]="MIN_BUDGET_LIMIT" 
+                  [max]="MAX_BUDGET_LIMIT" 
+                  [step]="BUDGET_STEP"
+                  [value]="customBudgetMin()" 
+                  (input)="onMinSliderChange($event)"
+                  aria-label="Minimum budget slider" />
+                <input 
+                  type="range" 
+                  class="range-slider-input range-input-max" 
+                  [min]="MIN_BUDGET_LIMIT" 
+                  [max]="MAX_BUDGET_LIMIT" 
+                  [step]="BUDGET_STEP"
+                  [value]="customBudgetMax()" 
+                  (input)="onMaxSliderChange($event)"
+                  aria-label="Maximum budget slider" />
+              </div>
+
+              <div class="slider-ticks-row">
+                <span>₹0</span>
+                <span>₹1 Cr</span>
+                <span>₹2 Cr</span>
+                <span>₹5 Cr</span>
+                <span>₹10 Cr+</span>
+              </div>
+
+              @if (isCustomBudgetActive()) {
+              <div class="slider-reset-row">
+                <button type="button" class="btn-reset-slider" (click)="resetCustomBudget()">
+                  <span class="material-symbols-outlined reset-ico">restart_alt</span>
+                  <span>Clear Custom Range</span>
+                </button>
+              </div>
               }
             </div>
           </div>

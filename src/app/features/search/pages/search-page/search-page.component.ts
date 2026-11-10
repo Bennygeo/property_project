@@ -284,6 +284,27 @@ export class SearchPageComponent implements OnInit {
   readonly selectedDeveloper = signal<string>('all');
   readonly selectedBudget = signal<string>('all');
   readonly selectedBhk = signal<string>('all');
+
+  // Custom Budget Range Slider Configuration
+  readonly MIN_BUDGET_LIMIT = 0;
+  readonly MAX_BUDGET_LIMIT = 100000000; // ₹10 Crores
+  readonly BUDGET_STEP = 500000; // ₹5 Lakhs step
+
+  readonly customBudgetMin = signal<number>(0);
+  readonly customBudgetMax = signal<number>(100000000);
+  readonly isCustomBudgetActive = signal<boolean>(false);
+
+  readonly sliderMinPercent = computed<number>(() => {
+    const min = this.customBudgetMin();
+    return Math.max(0, Math.min(100, (min / this.MAX_BUDGET_LIMIT) * 100));
+  });
+
+  readonly sliderWidthPercent = computed<number>(() => {
+    const min = this.customBudgetMin();
+    const max = this.customBudgetMax();
+    const pct = ((max - min) / this.MAX_BUDGET_LIMIT) * 100;
+    return Math.max(0, Math.min(100, pct));
+  });
   readonly sortBy = signal<string>('featured');
   readonly viewMode = signal<'grid' | 'list'>('grid');
 
@@ -437,7 +458,7 @@ export class SearchPageComponent implements OnInit {
     if (this.selectedType() !== 'all') count++;
     if (this.selectedDeveloper() !== 'all') count++;
     count += this.selectedLocalities().length;
-    if (this.selectedBudget() !== 'all') count++;
+    if (this.selectedBudget() !== 'all' || this.isCustomBudgetActive()) count++;
     if (this.selectedBhk() !== 'all') count++;
     if (this.cmdaOnly()) count++;
     if (this.directOwnerOnly()) count++;
@@ -461,8 +482,17 @@ export class SearchPageComponent implements OnInit {
 
     // Helper to evaluate facet toggles
     const matchesFacets = (p: Property): boolean => {
-      // 1. Budget Bracket Filter
-      if (budget !== 'all') {
+      // 1. Budget Bracket Filter (Presets or Custom Range Slider)
+      if (this.isCustomBudgetActive() || budget === 'custom') {
+        const priceNum = parsePriceToNumber(p.price);
+        if (priceNum > 0) {
+          const min = this.customBudgetMin();
+          const max = this.customBudgetMax();
+          if (priceNum < min || (max < this.MAX_BUDGET_LIMIT && priceNum > max)) {
+            return false;
+          }
+        }
+      } else if (budget !== 'all') {
         const priceNum = parsePriceToNumber(p.price);
         if (budget === 'under-50l' && priceNum >= 5000000) return false;
         if ((budget === '50l-1cr' || budget === '50l-1.5cr') && (priceNum < 5000000 || priceNum > 15000000)) return false;
@@ -899,6 +929,67 @@ export class SearchPageComponent implements OnInit {
 
   setBudget(budget: string): void {
     this.selectedBudget.set(budget);
+    this.isCustomBudgetActive.set(false);
+    if (budget === 'all') {
+      this.customBudgetMin.set(0);
+      this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    } else if (budget === 'under-50l') {
+      this.customBudgetMin.set(0);
+      this.customBudgetMax.set(5000000);
+    } else if (budget === '50l-1cr') {
+      this.customBudgetMin.set(5000000);
+      this.customBudgetMax.set(10000000);
+    } else if (budget === '1cr-2cr') {
+      this.customBudgetMin.set(10000000);
+      this.customBudgetMax.set(20000000);
+    } else if (budget === '2cr-5cr') {
+      this.customBudgetMin.set(20000000);
+      this.customBudgetMax.set(50000000);
+    } else if (budget === 'above-5cr') {
+      this.customBudgetMin.set(50000000);
+      this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    }
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+  }
+
+  formatBudgetInr(val: number): string {
+    if (val <= 0) return '₹0';
+    if (val >= 10000000) {
+      const cr = val / 10000000;
+      return Number.isInteger(cr) ? `₹${cr} Cr` : `₹${cr.toFixed(1)} Cr`;
+    }
+    const lk = val / 100000;
+    return Number.isInteger(lk) ? `₹${lk}L` : `₹${lk.toFixed(1)}L`;
+  }
+
+  onMinSliderChange(event: Event): void {
+    const val = Number((event.target as HTMLInputElement).value);
+    const max = this.customBudgetMax();
+    const step = this.BUDGET_STEP;
+    const newMin = Math.min(val, max - step);
+    this.customBudgetMin.set(newMin);
+    this.isCustomBudgetActive.set(true);
+    this.selectedBudget.set('custom');
+    this.displayedCount.set(20);
+  }
+
+  onMaxSliderChange(event: Event): void {
+    const val = Number((event.target as HTMLInputElement).value);
+    const min = this.customBudgetMin();
+    const step = this.BUDGET_STEP;
+    const newMax = Math.max(val, min + step);
+    this.customBudgetMax.set(newMax);
+    this.isCustomBudgetActive.set(true);
+    this.selectedBudget.set('custom');
+    this.displayedCount.set(20);
+  }
+
+  resetCustomBudget(): void {
+    this.isCustomBudgetActive.set(false);
+    this.selectedBudget.set('all');
+    this.customBudgetMin.set(0);
+    this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
     this.displayedCount.set(20);
     this.fetchFilteredFromApi();
   }
@@ -993,6 +1084,9 @@ export class SearchPageComponent implements OnInit {
     this.rawSearchInput.set('');
     this.builderSearchQuery.set('');
     this.selectedBudget.set('all');
+    this.isCustomBudgetActive.set(false);
+    this.customBudgetMin.set(0);
+    this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
     this.selectedBhk.set('all');
     this.cmdaOnly.set(false);
     this.directOwnerOnly.set(false);
