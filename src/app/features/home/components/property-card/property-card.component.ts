@@ -103,11 +103,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           <button 
             type="button"
             class="btn-shortlist" 
-            [class.shortlisted]="property.isShortlisted"
-            [attr.aria-label]="property.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'"
+            [class.shortlisted]="property.isShortlisted || propertyService.isShortlisted(property.id)"
+            [attr.aria-label]="(property.isShortlisted || propertyService.isShortlisted(property.id)) ? 'Remove from shortlist' : 'Add to shortlist'"
             (click)="$event.stopPropagation(); propertyService.toggleShortlist(property.id)">
             <span class="material-symbols-outlined">
-              {{ property.isShortlisted ? 'favorite' : 'favorite_border' }}
+              {{ (property.isShortlisted || propertyService.isShortlisted(property.id)) ? 'favorite' : 'favorite_border' }}
             </span>
           </button>
         </div>

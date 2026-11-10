@@ -59,9 +59,9 @@
               <button type="button" class="btn-mob-icon" (click)="shareProperty()" aria-label="Share Property">
                 <span class="material-symbols-outlined">share</span>
               </button>
-              <button type="button" class="btn-mob-icon" [class.shortlisted]="prop.isShortlisted"
+              <button type="button" class="btn-mob-icon" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)" aria-label="Shortlist Property">
-                <span class="material-symbols-outlined">{{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}</span>
+                <span class="material-symbols-outlined">{{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}</span>
               </button>
             </div>
           </div>
@@ -160,13 +160,13 @@
                 <span>Share</span>
               </button>
 
-              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted"
+              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)"
-                [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Add to shortlist'">
                 <span class="material-symbols-outlined">
-                  {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                  {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
                 </span>
-                <span>{{ prop.isShortlisted ? 'Shortlisted' : 'Shortlist' }}</span>
+                <span>{{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Shortlisted' : 'Shortlist' }}</span>
               </button>
             </div>
           </div>
@@ -1260,13 +1260,13 @@
                 <span>Share</span>
               </button>
 
-              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted"
+              <button type="button" class="btn-hdr-utility" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)"
-                [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'">
+                [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Add to shortlist'">
                 <span class="material-symbols-outlined">
-                  {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                  {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
                 </span>
-                <span>{{ prop.isShortlisted ? 'Shortlisted' : 'Shortlist' }}</span>
+                <span>{{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Shortlisted' : 'Shortlist' }}</span>
               </button>
             </div>
           </div>

@@ -81,12 +81,17 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly nearbyLocalities = signal<NearbyLocality[]>([]);
   readonly nearbyProperties = signal<Property[]>([]);
   readonly property = computed<Property | null>(() => {
-    if (this.fetchedProperty()) {
-      return this.fetchedProperty();
+    let p = this.fetchedProperty();
+    if (!p) {
+      const id = this.propertyId();
+      if (!id) return null;
+      p = this.propertyService.getPropertyById(id) || this.propertyService.allProperties()[0] || null;
     }
-    const id = this.propertyId();
-    if (!id) return null;
-    return this.propertyService.getPropertyById(id) || this.propertyService.allProperties()[0] || null;
+    if (!p) return null;
+    return {
+      ...p,
+      isShortlisted: this.propertyService.isShortlisted(p.id)
+    };
   });
 
   readonly gpsAudit = computed<GpsValidationResult>(() => {

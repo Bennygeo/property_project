@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { WalletService } from '../../../../core/services/wallet.service';
@@ -57,6 +57,7 @@ export class UserProfilePageComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
   readonly router = inject(Router);
+  readonly route = inject(ActivatedRoute);
 
   // Active Dashboard Section
   readonly activeSection = signal<ProfileDashboardSection>('profile');
@@ -114,6 +115,16 @@ export class UserProfilePageComponent implements OnInit {
   readonly myPropertiesCount = computed<number>(() => this.myProperties().length);
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      const tab = params['tab'];
+      if (tab === 'favourites' || tab === 'shortlists') {
+        this.activeSection.set('favourites');
+      } else if (tab === 'my_properties') {
+        this.activeSection.set('my_properties');
+      } else if (tab === 'visits') {
+        this.activeSection.set('visits');
+      }
+    });
     this.loadFullProfile();
   }
 
@@ -262,10 +273,43 @@ export class UserProfilePageComponent implements OnInit {
 
   // Shortlisted Properties
   getShortlistedProperties(): Property[] {
+    const ids = this.propertyService.shortlistedPropertyIds();
+    if (ids.size === 0) return [];
+
     const all = this.propertyService.allProperties();
-    const shortlists = all.filter(p => p.isShortlisted);
-    if (shortlists.length > 0) return shortlists;
-    return all.slice(0, 3);
+    const map = new Map<string, Property>();
+
+    for (const p of all) {
+      if (ids.has(p.id)) {
+        map.set(p.id, { ...p, isShortlisted: true });
+      }
+    }
+
+    // Include any shortlist dossiers from MySQL profile response if not in allProperties
+    const profileShortlists = this.profileData()?.shortlists;
+    if (profileShortlists && Array.isArray(profileShortlists)) {
+      for (const ps of profileShortlists) {
+        if (ids.has(ps.propertyId) && !map.has(ps.propertyId)) {
+          map.set(ps.propertyId, {
+            id: ps.propertyId,
+            title: ps.title,
+            locality: ps.locality,
+            city: ps.city,
+            price: ps.price,
+            pricePerSqFt: ps.pricePerSqFt,
+            sqft: ps.sqft,
+            bhkBadge: ps.bhkBadge,
+            facingOrView: ps.facingOrView,
+            imageUrl: ps.imageUrl,
+            propertyType: ps.propertyType,
+            isShortlisted: true,
+            freePhotos: [ps.imageUrl]
+          } as Property);
+        }
+      }
+    }
+
+    return Array.from(map.values());
   }
 
   // Viewed Properties

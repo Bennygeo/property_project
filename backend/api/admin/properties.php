@@ -268,6 +268,57 @@ if ($method === 'POST') {
         ], 'Plot masterplan factsheet and subdivided parcels saved successfully');
     }
 
+    if ($action === 'delete_property') {
+        $propId = trim($input['propertyId'] ?? '');
+        if (empty($propId)) {
+            Response::error('Property ID is required', 400);
+        }
+
+        $adminId   = (int)($input['adminId'] ?? 101);
+        $adminName = trim($input['adminName'] ?? 'Admin');
+
+        // Check if property exists
+        $checkStmt = $db->prepare("SELECT id, title FROM properties WHERE id = ?");
+        $checkStmt->execute([$propId]);
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$existing) {
+            Response::error('Property not found', 404);
+        }
+
+        // Clean up from user_shortlists explicitly (in addition to FK cascade)
+        $cleanShortlists = $db->prepare("DELETE FROM user_shortlists WHERE property_id = ?");
+        $cleanShortlists->execute([$propId]);
+
+        // Delete property (cascades to media, highlights, plots, shortlists)
+        $delStmt = $db->prepare("DELETE FROM properties WHERE id = ?");
+        $delStmt->execute([$propId]);
+
+        // Log audit trail
+        try {
+            $logStmt = $db->prepare("
+                INSERT INTO admin_activity_logs 
+                    (admin_id, admin_name, action_type, property_id, property_title, notes)
+                VALUES 
+                    (:aid, :aname, 'delete_property', :pid, :ptitle, :notes)
+            ");
+            $logStmt->execute([
+                ':aid'    => $adminId,
+                ':aname'  => $adminName,
+                ':pid'    => $propId,
+                ':ptitle' => $existing['title'],
+                ':notes'  => "Deleted property from marketplace and purged all user shortlists."
+            ]);
+        } catch (\Throwable $e) {
+            // Continue
+        }
+
+        Response::success([
+            'propertyId' => $propId,
+            'title'      => $existing['title']
+        ], "Property '{$existing['title']}' permanently deleted and shortlists removed.");
+    }
+
     if ($action === 'update_property') {
         $propId = trim($input['propertyId'] ?? '');
         if (empty($propId)) {

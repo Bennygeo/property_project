@@ -118,6 +118,8 @@ function enrichInitialGps(props: Property[]): Property[] {
   });
 }
 
+const SHORTLIST_STORAGE_KEY = 'fap_user_shortlists';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -133,6 +135,9 @@ export class PropertyService {
   public readonly hasMoreApiProperties = computed(() => {
     return this._properties().length < this.totalApiProperties();
   });
+
+  // Persistent Shortlists Set (Synchronized with localStorage & MySQL backend)
+  public readonly shortlistedPropertyIds = signal<Set<string>>(this.loadShortlistsFromStorage());
 
   // Master property list initialized with 50+ mock properties directly from database (10L to 3Cr)
   private readonly _properties = signal<Property[]>(enrichInitialGps(MOCK_50_PROPERTIES));
@@ -154,9 +159,9 @@ export class PropertyService {
   // Full list of properties
   public readonly allProperties = computed(() => this._properties());
 
-  // Computed shortlist count
+  // Computed shortlist count directly derived from persistent shortlisted IDs Set
   public readonly shortlistCount = computed(() => {
-    return this._properties().filter(p => p.isShortlisted).length;
+    return this.shortlistedPropertyIds().size;
   });
 
   // Filtered properties based on search query / city / tab / quick pill
@@ -209,22 +214,129 @@ export class PropertyService {
     this.activeCategoryFilter.set(filter);
   }
 
-  toggleShortlist(propertyId: string): void {
-    this._properties.update(list =>
-      list.map(p => {
-        if (p.id === propertyId) {
-          const nextState = !p.isShortlisted;
-          this.notificationService.show({
-            type: 'info',
-            title: nextState ? 'Added to Shortlist' : 'Removed from Shortlist',
-            message: `${p.title} has been ${nextState ? 'saved to' : 'removed from'} your shortlisted dossiers.`,
-            icon: nextState ? 'favorite' : 'heart_broken'
-          });
-          return { ...p, isShortlisted: nextState };
+  public isShortlisted(propertyId: string): boolean {
+    if (!propertyId) return false;
+    return this.shortlistedPropertyIds().has(propertyId);
+  }
+
+  private loadShortlistsFromStorage(): Set<string> {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return new Set<string>();
+    }
+    try {
+      const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY) || localStorage.getItem('mannidam_user_shortlists');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return new Set<string>(parsed.filter((id: any) => typeof id === 'string' && id.trim().length > 0));
         }
-        return p;
-      })
+      }
+    } catch (err) {
+      console.warn('[PropertyService] Error reading shortlists from storage:', err);
+    }
+    return new Set<string>();
+  }
+
+  private saveShortlistsToStorage(ids: Set<string>): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      localStorage.setItem(SHORTLIST_STORAGE_KEY, JSON.stringify(Array.from(ids)));
+    } catch (err) {
+      console.warn('[PropertyService] Error saving shortlists to storage:', err);
+    }
+  }
+
+  public syncShortlistedStateInProperties(): void {
+    const ids = this.shortlistedPropertyIds();
+    this._properties.update(list =>
+      list.map(p => ({
+        ...p,
+        isShortlisted: ids.has(p.id)
+      }))
     );
+  }
+
+  /**
+   * Fetch user shortlists from backend database.
+   * If an admin deletes a property from the database, it will automatically
+   * be excluded from the database response and removed from the active shortlists.
+   */
+  public fetchShortlistsFromBackend(userId: number = 1): void {
+    const tryGet = (baseUrl: string) =>
+      this.http.get<{ success: boolean; data: { propertyIds: string[] } }>(`${baseUrl}?userId=${userId}`);
+
+    (tryGet(environment.apiUrl + '/properties/shortlist.php').pipe(
+      catchError(() => tryGet('/api/properties/shortlist.php')),
+      catchError(() => tryGet(environment.apacheApiUrl + '/properties/shortlist.php')),
+      catchError(err => {
+        console.warn('[Shortlist API] Unable to connect to MySQL shortlist endpoint; retaining local cache.', err);
+        return of(null);
+      })
+    ) as Observable<any>).subscribe((res: any) => {
+      if (res && res.success && res.data && Array.isArray(res.data.propertyIds)) {
+        const backendIds: string[] = res.data.propertyIds;
+        const newSet = new Set<string>(backendIds);
+        this.shortlistedPropertyIds.set(newSet);
+        this.saveShortlistsToStorage(newSet);
+        this.syncShortlistedStateInProperties();
+      }
+    });
+  }
+
+  toggleShortlist(propertyId: string, userId: number = 1): void {
+    if (!propertyId) return;
+
+    const currentSet = new Set(this.shortlistedPropertyIds());
+    const isCurrentlyShortlisted = currentSet.has(propertyId);
+    const nextState = !isCurrentlyShortlisted;
+
+    if (nextState) {
+      currentSet.add(propertyId);
+    } else {
+      currentSet.delete(propertyId);
+    }
+
+    // Optimistically update signals and persistent local storage
+    this.shortlistedPropertyIds.set(currentSet);
+    this.saveShortlistsToStorage(currentSet);
+    this.syncShortlistedStateInProperties();
+
+    // Find property title for user feedback
+    const prop = this._properties().find(p => p.id === propertyId) || MOCK_50_PROPERTIES.find(p => p.id === propertyId);
+    const title = prop?.title || 'Property';
+
+    this.notificationService.show({
+      type: 'info',
+      title: nextState ? 'Added to Shortlist' : 'Removed from Shortlist',
+      message: `${title} has been ${nextState ? 'saved to' : 'removed from'} your shortlisted dossiers.`,
+      icon: nextState ? 'favorite' : 'heart_broken'
+    });
+
+    // Synchronize with MySQL database endpoint
+    const payload = {
+      propertyId: propertyId,
+      action: nextState ? 'add' : 'remove',
+      userId: userId
+    };
+
+    const tryPost = (baseUrl: string) =>
+      this.http.post<{ success: boolean; data: any }>(baseUrl, payload);
+
+    (tryPost(environment.apiUrl + '/properties/shortlist.php').pipe(
+      catchError(() => tryPost('/api/properties/shortlist.php')),
+      catchError(() => tryPost(environment.apacheApiUrl + '/properties/shortlist.php')),
+      catchError(err => {
+        // If property was deleted from database by admin (404), remove it immediately from shortlisted Set
+        if (err?.status === 404) {
+          const purged = new Set(this.shortlistedPropertyIds());
+          purged.delete(propertyId);
+          this.shortlistedPropertyIds.set(purged);
+          this.saveShortlistsToStorage(purged);
+          this.syncShortlistedStateInProperties();
+        }
+        return of(null);
+      })
+    ) as Observable<any>).subscribe();
   }
 
   openMediaModal(property: Property, initialTab: 'free' | 'premium' = 'free'): void {
@@ -251,7 +363,9 @@ export class PropertyService {
   }
 
   constructor() {
+    this.syncShortlistedStateInProperties();
     this.loadPropertiesFromApi();
+    this.fetchShortlistsFromBackend();
   }
 
   /**
@@ -349,6 +463,7 @@ export class PropertyService {
             return {
               ...p,
               price: formatPriceIndian(p.price),
+              isShortlisted: this.isShortlisted(p.id),
               imageUrl: resolvedImg,
               freePhotos: resolvedPhotos,
               isGpsValid: isGpsValid,
@@ -386,11 +501,17 @@ export class PropertyService {
             this._properties.update(existing => {
               const existingIds = new Set(existing.map(p => p.id));
               const newOnly = sanitized.filter((p: Property) => !existingIds.has(p.id));
-              const merged = [...existing, ...newOnly];
+              const merged = [...existing, ...newOnly].map(item => ({
+                ...item,
+                isShortlisted: this.isShortlisted(item.id)
+              }));
               return annotateInterPropertyProximity(merged);
             });
           } else {
-            this._properties.set(annotateInterPropertyProximity(sanitized));
+            this._properties.set(annotateInterPropertyProximity(sanitized.map((item: Property) => ({
+              ...item,
+              isShortlisted: this.isShortlisted(item.id)
+            }))));
           }
         } else if (!append) {
           this._properties.set([]);
@@ -422,6 +543,7 @@ export class PropertyService {
             return {
               ...p,
               price: formatPriceIndian(p.price),
+              isShortlisted: this.isShortlisted(p.id),
               imageUrl: resolvedImg,
               freePhotos: resolvedPhotos,
               isGpsValid: isGpsValid,
@@ -777,21 +899,23 @@ export class PropertyService {
         if (res && res.success && res.data) {
           const sqlProp = res.data;
           sqlProp.price = formatPriceIndian(sqlProp.price);
+          sqlProp.isShortlisted = this.isShortlisted(sqlProp.id);
           return sqlProp;
         }
         return null;
       }),
       tap(sqlProp => {
         if (sqlProp) {
+          sqlProp.isShortlisted = this.isShortlisted(sqlProp.id);
           console.info(`[XHR API] Received details dossier from MySQL for ${id}:`, sqlProp);
           this._properties.update(list => {
             const index = list.findIndex(p => p.id === sqlProp.id);
             if (index >= 0) {
               const updated = [...list];
-              updated[index] = { ...list[index], ...sqlProp };
+              updated[index] = { ...list[index], ...sqlProp, isShortlisted: this.isShortlisted(sqlProp.id) };
               return updated;
             }
-            return [sqlProp, ...list];
+            return [{ ...sqlProp, isShortlisted: this.isShortlisted(sqlProp.id) }, ...list];
           });
         }
       }),
@@ -859,7 +983,8 @@ export class PropertyService {
     if (!found) return undefined;
     const formattedFound = {
       ...found,
-      price: formatPriceIndian(found.price)
+      price: formatPriceIndian(found.price),
+      isShortlisted: this.isShortlisted(found.id)
     };
     if (formattedFound.floorPlans || formattedFound.villaDetails || formattedFound.apartmentDetails || formattedFound.plotDetails || formattedFound.cadastralAudit) {
       return formattedFound;

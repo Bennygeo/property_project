@@ -54,8 +54,8 @@ import { LocationService } from '../../../../core/services/location.service';
         <div class="header-actions">
 
           <!-- Shortlist Counter -->
-          <a class="shortlist-btn" href="#featured-section" title="Saved Properties">
-            <span class="material-symbols-outlined text-red">favorite_border</span>
+          <a class="shortlist-btn" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" title="Saved Shortlisted Properties">
+            <span class="material-symbols-outlined text-red">{{ propertyService.shortlistCount() > 0 ? 'favorite' : 'favorite_border' }}</span>
             <span class="hidden-sm">Shortlist</span>
             <span class="shortlist-count">{{ propertyService.shortlistCount() }}</span>
           </a>
@@ -94,7 +94,7 @@ import { LocationService } from '../../../../core/services/location.service';
                       <span class="material-symbols-outlined">dashboard</span>
                       <span>My Dashboard</span>
                     </a>
-                    <a routerLink="/profile" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
+                    <a [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined">favorite</span>
                       <span>Saved Shortlists ({{ propertyService.shortlistCount() }})</span>
                     </a>
@@ -210,7 +210,7 @@ import { LocationService } from '../../../../core/services/location.service';
                     <span class="material-symbols-outlined">domain_add</span>
                     <span>Verified Developers</span>
                   </a>
-                  <a class="drawer-nav-item" href="#featured-section" (click)="closeMobileMenu()">
+                  <a class="drawer-nav-item" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" (click)="closeMobileMenu()">
                     <span class="material-symbols-outlined text-red">favorite</span>
                     <span>Saved Shortlists</span>
                     <span class="pts-badge">{{ propertyService.shortlistCount() }}</span>

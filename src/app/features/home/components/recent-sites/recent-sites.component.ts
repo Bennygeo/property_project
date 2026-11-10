@@ -95,11 +95,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                 <button 
                   type="button" 
                   class="btn-action-icon btn-action-fav" 
-                  [class.is-shortlisted]="prop.isShortlisted"
+                  [class.is-shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
                   (click)="$event.stopPropagation(); propertyService.toggleShortlist(prop.id)"
-                  [title]="prop.isShortlisted ? 'Remove from shortlist' : 'Save site to shortlist'">
+                  [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Save site to shortlist'">
                   <span class="material-symbols-outlined">
-                    {{ prop.isShortlisted ? 'favorite' : 'favorite_border' }}
+                    {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
                   </span>
                 </button>
               </div>

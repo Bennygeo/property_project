@@ -115,6 +115,7 @@ $shortlistsStmt = $db->prepare("
     FROM user_shortlists s
     JOIN properties p ON s.property_id = p.id
     WHERE s.user_id = ?
+      AND (p.status IS NULL OR p.status != 'archived')
     ORDER BY s.created_at DESC
 ");
 $shortlistsStmt->execute([$userId]);
