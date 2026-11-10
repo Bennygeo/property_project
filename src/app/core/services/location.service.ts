@@ -5,6 +5,8 @@ import { NotificationService } from './notification.service';
 export interface TamilNaduDistrict {
   id: string;
   name: string;
+  lat: number;
+  lon: number;
   altNames?: string[];
   region: 'Northern' | 'Western' | 'Central' | 'Southern' | 'Cauvery Delta';
   isPopular?: boolean;
@@ -12,46 +14,70 @@ export interface TamilNaduDistrict {
 
 export const TAMIL_NADU_DISTRICTS: TamilNaduDistrict[] = [
   // Popular Major Real Estate Hubs
-  { id: 'chennai', name: 'Chennai', region: 'Northern', isPopular: true },
-  { id: 'coimbatore', name: 'Coimbatore', region: 'Western', isPopular: true },
-  { id: 'madurai', name: 'Madurai', region: 'Southern', isPopular: true },
-  { id: 'tiruchirappalli', name: 'Tiruchirappalli', altNames: ['Trichy'], region: 'Central', isPopular: true },
-  { id: 'salem', name: 'Salem', region: 'Western', isPopular: true },
-  { id: 'chengalpattu', name: 'Chengalpattu', region: 'Northern', isPopular: true },
-  { id: 'kanchipuram', name: 'Kanchipuram', region: 'Northern', isPopular: true },
-  { id: 'tiruvallur', name: 'Tiruvallur', region: 'Northern', isPopular: true },
-  { id: 'dharmapuri', name: 'Dharmapuri', region: 'Western', isPopular: true },
-  { id: 'tiruppur', name: 'Tiruppur', region: 'Western', isPopular: true },
-  { id: 'erode', name: 'Erode', region: 'Western', isPopular: true },
-  { id: 'vellore', name: 'Vellore', region: 'Northern', isPopular: true },
-  { id: 'tirunelveli', name: 'Tirunelveli', region: 'Southern', isPopular: true },
-  { id: 'thanjavur', name: 'Thanjavur', region: 'Cauvery Delta', isPopular: true },
+  { id: 'chennai', name: 'Chennai', lat: 13.0827, lon: 80.2707, altNames: ['Madras'], region: 'Northern', isPopular: true },
+  { id: 'coimbatore', name: 'Coimbatore', lat: 11.0168, lon: 76.9558, altNames: ['Kovai', 'Pollachi'], region: 'Western', isPopular: true },
+  { id: 'madurai', name: 'Madurai', lat: 9.9252, lon: 78.1198, altNames: ['Usilampatti', 'Melur'], region: 'Southern', isPopular: true },
+  { id: 'tiruchirappalli', name: 'Tiruchirappalli', lat: 10.7905, lon: 78.7047, altNames: ['Trichy', 'Tiruchirapalli', 'Tiruchi', 'Tiruchchirappalli', 'Srirangam'], region: 'Central', isPopular: true },
+  { id: 'salem', name: 'Salem', lat: 11.6643, lon: 78.1460, altNames: ['Attur', 'Mettur'], region: 'Western', isPopular: true },
+  { id: 'chengalpattu', name: 'Chengalpattu', lat: 12.6819, lon: 79.9888, altNames: ['Chengalpet', 'Chingleput', 'Tambaram', 'Pallavaram', 'Chromepet', 'Maraimalai Nagar'], region: 'Northern', isPopular: true },
+  { id: 'kanchipuram', name: 'Kanchipuram', lat: 12.8342, lon: 79.7036, altNames: ['Kancheepuram', 'Conjeevaram', 'Sriperumbudur'], region: 'Northern', isPopular: true },
+  { id: 'tiruvallur', name: 'Tiruvallur', lat: 13.1434, lon: 79.9079, altNames: ['Thiruvallur', 'Avadi', 'Poonamallee', 'Ponneri', 'Gummidipoondi'], region: 'Northern', isPopular: true },
+  { id: 'dharmapuri', name: 'Dharmapuri', lat: 12.1211, lon: 78.1582, altNames: ['Harur', 'Palacode'], region: 'Western', isPopular: true },
+  { id: 'tiruppur', name: 'Tiruppur', lat: 11.1085, lon: 77.3411, altNames: ['Tirupur', 'Avinashi', 'Dharapuram', 'Udumalaipettai'], region: 'Western', isPopular: true },
+  { id: 'erode', name: 'Erode', lat: 11.3410, lon: 77.7172, altNames: ['Perundurai', 'Gobichettipalayam', 'Bhavani'], region: 'Western', isPopular: true },
+  { id: 'vellore', name: 'Vellore', lat: 12.9165, lon: 79.1325, altNames: ['Katpadi', 'Gudiyatham'], region: 'Northern', isPopular: true },
+  { id: 'tirunelveli', name: 'Tirunelveli', lat: 8.7139, lon: 77.7567, altNames: ['Nellai', 'Thirunelveli', 'Palayamkottai', 'Ambasamudram'], region: 'Southern', isPopular: true },
+  { id: 'thanjavur', name: 'Thanjavur', lat: 10.7870, lon: 79.1378, altNames: ['Tanjore', 'Kumbakonam', 'Pattukkottai'], region: 'Cauvery Delta', isPopular: true },
+  { 
+    id: 'kanyakumari', 
+    name: 'Kanyakumari', 
+    lat: 8.0883, 
+    lon: 77.5385, 
+    altNames: [
+      'Kanniyakumari', 
+      'Kanyakumari District', 
+      'Nagercoil', 
+      'Agastheeswaram', 
+      'Agastheswaram', 
+      'Cape Comorin', 
+      'Padmanabhapuram', 
+      'Colachel', 
+      'Kuzhithurai', 
+      'Thuckalay', 
+      'Marthandam', 
+      'Killiyoor', 
+      'Vilavancode', 
+      'Thovalai', 
+      'Kalkulam'
+    ], 
+    region: 'Southern', 
+    isPopular: true 
+  },
 
-  // All Remaining Districts of Tamil Nadu (Total 38 Districts)
-  { id: 'ariyalur', name: 'Ariyalur', region: 'Cauvery Delta' },
-  { id: 'cuddalore', name: 'Cuddalore', region: 'Northern' },
-  { id: 'dindigul', name: 'Dindigul', region: 'Southern' },
-  { id: 'kallakurichi', name: 'Kallakurichi', region: 'Northern' },
-  { id: 'kanyakumari', name: 'Kanyakumari', region: 'Southern' },
-  { id: 'karur', name: 'Karur', region: 'Central' },
-  { id: 'krishnagiri', name: 'Krishnagiri', region: 'Western' },
-  { id: 'mayiladuthurai', name: 'Mayiladuthurai', region: 'Cauvery Delta' },
-  { id: 'nagapattinam', name: 'Nagapattinam', region: 'Cauvery Delta' },
-  { id: 'namakkal', name: 'Namakkal', region: 'Western' },
-  { id: 'nilgiris', name: 'Nilgiris', altNames: ['Ooty', 'Udhagamandalam'], region: 'Western' },
-  { id: 'perambalur', name: 'Perambalur', region: 'Central' },
-  { id: 'pudukkottai', name: 'Pudukkottai', region: 'Central' },
-  { id: 'ramanathapuram', name: 'Ramanathapuram', region: 'Southern' },
-  { id: 'ranipet', name: 'Ranipet', region: 'Northern' },
-  { id: 'sivaganga', name: 'Sivaganga', region: 'Southern' },
-  { id: 'tenkasi', name: 'Tenkasi', region: 'Southern' },
-  { id: 'theni', name: 'Theni', region: 'Southern' },
-  { id: 'thoothukudi', name: 'Thoothukudi', altNames: ['Tuticorin'], region: 'Southern' },
-  { id: 'tirupathur', name: 'Tirupathur', region: 'Northern' },
-  { id: 'tiruvannamalai', name: 'Tiruvannamalai', region: 'Northern' },
-  { id: 'tiruvarur', name: 'Tiruvarur', region: 'Cauvery Delta' },
-  { id: 'viluppuram', name: 'Viluppuram', region: 'Northern' },
-  { id: 'virudhunagar', name: 'Virudhunagar', region: 'Southern' },
+  // Remaining 23 Districts of Tamil Nadu (Total 38 Districts)
+  { id: 'ariyalur', name: 'Ariyalur', lat: 11.1401, lon: 79.0786, altNames: ['Jayankondam'], region: 'Cauvery Delta' },
+  { id: 'cuddalore', name: 'Cuddalore', lat: 11.7480, lon: 79.7714, altNames: ['Chidambaram', 'Panruti', 'Vridhachalam', 'Neyveli'], region: 'Northern' },
+  { id: 'dindigul', name: 'Dindigul', lat: 10.3673, lon: 77.9803, altNames: ['Palani', 'Kodaikanal', 'Oddanchatram'], region: 'Southern' },
+  { id: 'kallakurichi', name: 'Kallakurichi', lat: 11.7384, lon: 78.9639, altNames: ['Kallakkurichi', 'Sankarapuram', 'Ulundurpet'], region: 'Northern' },
+  { id: 'karur', name: 'Karur', lat: 10.9601, lon: 78.0766, altNames: ['Kulithalai'], region: 'Central' },
+  { id: 'krishnagiri', name: 'Krishnagiri', lat: 12.5186, lon: 78.2137, altNames: ['Hosur', 'Pochampalli', 'Denkanikottai'], region: 'Western' },
+  { id: 'mayiladuthurai', name: 'Mayiladuthurai', lat: 11.1075, lon: 79.6524, altNames: ['Mayuram', 'Mayavaram', 'Sirkazhi', 'Tharangambadi'], region: 'Cauvery Delta' },
+  { id: 'nagapattinam', name: 'Nagapattinam', lat: 10.7672, lon: 79.8449, altNames: ['Nagai', 'Nagapatnam', 'Velankanni', 'Vedaranyam'], region: 'Cauvery Delta' },
+  { id: 'namakkal', name: 'Namakkal', lat: 11.2189, lon: 78.1674, altNames: ['Rasipuram', 'Tiruchengode', 'Paramathi Velur'], region: 'Western' },
+  { id: 'nilgiris', name: 'Nilgiris', lat: 11.4102, lon: 76.6950, altNames: ['The Nilgiris', 'Ooty', 'Udhagamandalam', 'Coonoor', 'Kotagiri', 'Gudalur'], region: 'Western' },
+  { id: 'perambalur', name: 'Perambalur', lat: 11.2342, lon: 78.8820, region: 'Central' },
+  { id: 'pudukkottai', name: 'Pudukkottai', lat: 10.3833, lon: 78.8001, altNames: ['Pudukottai', 'Aranthangi'], region: 'Central' },
+  { id: 'ramanathapuram', name: 'Ramanathapuram', lat: 9.3639, lon: 78.8395, altNames: ['Ramnad', 'Rameswaram', 'Paramakudi', 'Kilakarai'], region: 'Southern' },
+  { id: 'ranipet', name: 'Ranipet', lat: 12.9274, lon: 79.3330, altNames: ['Arcot', 'Walajapet', 'Arakkonam', 'Sholinghur'], region: 'Northern' },
+  { id: 'sivaganga', name: 'Sivaganga', lat: 9.8433, lon: 78.4809, altNames: ['Sivagangai', 'Karaikudi', 'Devakottai', 'Manamadurai'], region: 'Southern' },
+  { id: 'tenkasi', name: 'Tenkasi', lat: 8.9594, lon: 77.3150, altNames: ['Courtallam', 'Sankarankovil', 'Kadayanallur'], region: 'Southern' },
+  { id: 'theni', name: 'Theni', lat: 10.0104, lon: 77.4768, altNames: ['Periyakulam', 'Bodinayakanur', 'Cumbum', 'Uthamapalayam'], region: 'Southern' },
+  { id: 'thoothukudi', name: 'Thoothukudi', lat: 8.7642, lon: 78.1348, altNames: ['Tuticorin', 'Thoothukkudi', 'Kovilpatti', 'Tiruchendur', 'Kayalpattinam'], region: 'Southern' },
+  { id: 'tirupathur', name: 'Tirupathur', lat: 12.4925, lon: 78.5678, altNames: ['Tirupattur', 'Thirupattur', 'Thirupathur', 'Vaniyambadi', 'Ambur', 'Natrampalli'], region: 'Northern' },
+  { id: 'tiruvannamalai', name: 'Tiruvannamalai', lat: 12.2253, lon: 79.0747, altNames: ['Thiruvannamalai', 'Arani', 'Polur', 'Chengam', 'Cheyyar'], region: 'Northern' },
+  { id: 'tiruvarur', name: 'Tiruvarur', lat: 10.7725, lon: 79.6365, altNames: ['Thiruvarur', 'Mannargudi', 'Thiruthuraipoondi'], region: 'Cauvery Delta' },
+  { id: 'viluppuram', name: 'Viluppuram', lat: 11.9401, lon: 79.4861, altNames: ['Villupuram', 'Tindivanam', 'Gingee', 'Vanur'], region: 'Northern' },
+  { id: 'virudhunagar', name: 'Virudhunagar', lat: 9.5872, lon: 77.9514, altNames: ['Sivakasi', 'Rajapalayam', 'Aruppukkottai', 'Srivilliputhur', 'Sattur'], region: 'Southern' },
 ];
 
 @Injectable({
@@ -63,6 +89,7 @@ export class LocationService {
 
   private readonly STORAGE_KEY = 'fap_user_district';
   private readonly STORAGE_SOURCE_KEY = 'fap_user_location_source';
+  private readonly STORAGE_MANUAL_FLAG = 'fap_user_district_manual';
 
   /** All 38 Tamil Nadu districts list */
   readonly districts = TAMIL_NADU_DISTRICTS;
@@ -73,7 +100,7 @@ export class LocationService {
   /** Currently selected Tamil Nadu district */
   readonly selectedDistrict = signal<string>(this.getStoredDistrict());
 
-  /** Additional granular detected locality/suburb if resolved from GPS (e.g. Adyar, Saravanampatti) */
+  /** Additional granular detected locality/suburb if resolved from GPS (e.g. Nagercoil, Adyar) */
   readonly detectedLocality = signal<string | null>(null);
 
   /** Detection in progress flag */
@@ -101,16 +128,14 @@ export class LocationService {
   });
 
   constructor() {
-    // If no district is stored yet, auto-attempt gentle geolocation detection on load
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(this.STORAGE_KEY);
-      if (!saved) {
-        // First-time visit: attempt detection gently. If blocked, prompt modal.
-        this.detectLocation({ autoPromptOnBlock: true, silentOnSuccess: true });
-      } else {
-        // Check if browser permission is already denied
-        this.checkPermissionStatus();
+      const isManual = localStorage.getItem(this.STORAGE_MANUAL_FLAG) === 'true';
+      // If user has not explicitly locked a district manually from the dropdown,
+      // run GPS detection so their true physical location (e.g. Kanyakumari) is detected.
+      if (!isManual) {
+        this.detectLocation({ autoPromptOnBlock: false, silentOnSuccess: true });
       }
+      this.checkPermissionStatus();
     }
   }
 
@@ -146,6 +171,39 @@ export class LocationService {
   }
 
   /**
+   * Calculates great-circle distance between two GPS coordinates in kilometers
+   */
+  getHaversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's mean radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  /**
+   * Mathematically finds the nearest Tamil Nadu district to the given GPS coordinates
+   */
+  findNearestDistrict(lat: number, lon: number): TamilNaduDistrict {
+    let nearest = this.districts[0];
+    let minDistance = Infinity;
+
+    for (const d of this.districts) {
+      const dist = this.getHaversineDistanceKm(lat, lon, d.lat, d.lon);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearest = d;
+      }
+    }
+
+    return nearest;
+  }
+
+  /**
    * Detect user location using browser Geolocation API and reverse geocode to Tamil Nadu
    */
   detectLocation(options: { autoPromptOnBlock?: boolean; silentOnSuccess?: boolean } = {}): void {
@@ -169,11 +227,12 @@ export class LocationService {
           next: (res: ReverseGeocodeResult | null) => {
             this.isDetecting.set(false);
             if (res) {
-              const matchedDistrict = this.matchToTamilNaduDistrict(res);
+              const matchedDistrict = this.matchToTamilNaduDistrict(res, latitude, longitude);
               if (matchedDistrict) {
                 this.setDistrict(matchedDistrict.name, 'gps');
-                if (res.locality && res.locality !== matchedDistrict.name) {
-                  this.detectedLocality.set(res.locality);
+                const locality = res.locality || res.city;
+                if (locality && locality.toLowerCase() !== matchedDistrict.name.toLowerCase()) {
+                  this.detectedLocality.set(locality);
                 }
                 if (!options.silentOnSuccess) {
                   this.notificationService.show({
@@ -184,34 +243,37 @@ export class LocationService {
                   }, 4000);
                 }
                 this.closeDistrictModal();
-              } else {
-                // Location is outside Tamil Nadu or not matched
-                if (!options.silentOnSuccess) {
-                  this.notificationService.show({
-                    type: 'info',
-                    title: 'Tamil Nadu Region',
-                    message: 'Find a Plot currently operates in Tamil Nadu. Please select your district.',
-                    icon: 'map'
-                  }, 5000);
-                }
-                this.openDistrictModal();
+                return;
               }
-            } else {
-              // Geocode returned null
-              if (!options.silentOnSuccess) {
-                this.notificationService.show({
-                  type: 'info',
-                  title: 'Select District',
-                  message: 'Please choose your district from Tamil Nadu.',
-                  icon: 'explore'
-                }, 4000);
-              }
-              this.openDistrictModal();
             }
+
+            // Fallback: If reverse geocode is empty or unspecific, use nearest Tamil Nadu district by GPS coordinates
+            const nearest = this.findNearestDistrict(latitude, longitude);
+            this.setDistrict(nearest.name, 'gps');
+            if (!options.silentOnSuccess) {
+              this.notificationService.show({
+                type: 'success',
+                title: 'Location Detected',
+                message: `${nearest.name}, Tamil Nadu`,
+                icon: 'location_on'
+              }, 4000);
+            }
+            this.closeDistrictModal();
           },
           error: () => {
+            // Even if network reverse geocoding endpoint fails, resolve district mathematically via GPS coordinates
             this.isDetecting.set(false);
-            this.openDistrictModal();
+            const nearest = this.findNearestDistrict(latitude, longitude);
+            this.setDistrict(nearest.name, 'gps');
+            if (!options.silentOnSuccess) {
+              this.notificationService.show({
+                type: 'success',
+                title: 'Location Detected',
+                message: `${nearest.name}, Tamil Nadu`,
+                icon: 'location_on'
+              }, 4000);
+            }
+            this.closeDistrictModal();
           }
         });
       },
@@ -229,22 +291,28 @@ export class LocationService {
       {
         enableHighAccuracy: true,
         timeout: 9000,
-        maximumAge: 120000
+        maximumAge: 60000
       }
     );
   }
 
   /**
-   * Matches reverse geocode result to one of the 38 Tamil Nadu districts
+   * Matches reverse geocode result to one of the 38 Tamil Nadu districts.
+   * Uses both text parsing (including dual spellings like Kanniyakumari / Kanyakumari / Nagercoil)
+   * and GPS distance verification.
    */
-  private matchToTamilNaduDistrict(res: ReverseGeocodeResult): TamilNaduDistrict | null {
-    const rawState = (res.state || '').toLowerCase();
+  private matchToTamilNaduDistrict(
+    res: ReverseGeocodeResult, 
+    lat?: number, 
+    lon?: number
+  ): TamilNaduDistrict | null {
     const rawDistrict = (res.district || '').toLowerCase();
     const rawCity = (res.city || '').toLowerCase();
     const rawLocality = (res.locality || '').toLowerCase();
     const rawDisplay = (res.displayName || '').toLowerCase();
+    const rawState = (res.state || '').toLowerCase();
 
-    // Check against all districts
+    // 1. Text matching against district name and comprehensive aliases
     for (const d of this.districts) {
       const dName = d.name.toLowerCase();
       const dId = d.id.toLowerCase();
@@ -264,21 +332,31 @@ export class LocationService {
       }
     }
 
-    // If state is Tamil Nadu or TN, default to Chennai or closest
-    if (rawState.includes('tamil') || rawState.includes('tn')) {
-      return this.districts[0]; // Chennai
+    // 2. If coordinates are provided, find closest Tamil Nadu district by GPS distance
+    if (lat !== undefined && lon !== undefined) {
+      const nearest = this.findNearestDistrict(lat, lon);
+      const distKm = this.getHaversineDistanceKm(lat, lon, nearest.lat, nearest.lon);
+      // If within 180 km of a TN district center, or state indicates Tamil Nadu / India
+      if (distKm <= 180 || rawState.includes('tamil') || rawState.includes('tn') || rawDisplay.includes('tamil nadu')) {
+        return nearest;
+      }
+    }
+
+    // 3. Fallback: if state is Tamil Nadu, return nearest district to coordinates
+    if (lat !== undefined && lon !== undefined) {
+      return this.findNearestDistrict(lat, lon);
     }
 
     return null;
   }
 
   /**
-   * Manually select a Tamil Nadu district
+   * Select a Tamil Nadu district (manual or via GPS)
    */
   setDistrict(districtName: string, source: 'manual' | 'gps' = 'manual'): void {
     const matched = this.districts.find(
       d => d.name.toLowerCase() === districtName.toLowerCase() ||
-           d.altNames?.some(a => a.toLowerCase() === districtName.toLowerCase())
+        d.altNames?.some(a => a.toLowerCase() === districtName.toLowerCase())
     );
 
     const name = matched ? matched.name : districtName;
@@ -292,6 +370,11 @@ export class LocationService {
       try {
         localStorage.setItem(this.STORAGE_KEY, name);
         localStorage.setItem(this.STORAGE_SOURCE_KEY, source);
+        if (source === 'manual') {
+          localStorage.setItem(this.STORAGE_MANUAL_FLAG, 'true');
+        } else {
+          localStorage.removeItem(this.STORAGE_MANUAL_FLAG);
+        }
       } catch (err) {
         console.warn('Could not persist district to localStorage', err);
       }

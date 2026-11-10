@@ -1025,8 +1025,8 @@ export class PropertyService {
           map(data => {
             if (!data || !data.display_name) return null;
             const addr = data.address || {};
-            const loc = addr.suburb || addr.neighbourhood || addr.village || addr.city_district || addr.town || '';
-            const city = addr.city || addr.town || addr.state_district || 'Chennai';
+            const loc = addr.suburb || addr.neighbourhood || addr.village || addr.city_district || addr.town || addr.municipality || '';
+            const city = addr.city || addr.town || addr.municipality || addr.state_district || addr.county || loc || '';
             const compactTitle = [data.name, loc, city, addr.postcode].filter(Boolean).join(', ');
             return {
               displayName: data.display_name,
@@ -1034,7 +1034,7 @@ export class PropertyService {
               name: data.name || loc,
               locality: loc,
               city: city,
-              district: addr.state_district || '',
+              district: addr.state_district || addr.county || addr.district || '',
               state: addr.state || 'Tamil Nadu',
               postcode: addr.postcode || '',
               latitude: lat,
