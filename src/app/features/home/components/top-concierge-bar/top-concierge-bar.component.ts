@@ -63,7 +63,7 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
     .pulse-dot {
       width: 6px;
       height: 6px;
-      border-radius: 9999px;
+      border-radius: 50%;
       background-color: var(--brand-green, #5e8f72);
       animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
@@ -119,8 +119,8 @@ import { VisitorPurposeService } from '../../../../core/services/visitor-purpose
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 2px 10px;
-      border-radius: 9999px;
+      padding: 3px 10px;
+      border-radius: 6px;
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.16);
       color: #f1f5f9;

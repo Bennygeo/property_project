@@ -1,7 +1,14 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { NotificationService } from './notification.service';
 
-export type VisitorPurposeKey = 'build_home' | 'investment' | 'farm_land' | 'other';
+export type VisitorPurposeKey = 
+  | 'build_home' 
+  | 'investment' 
+  | 'premium_plots' 
+  | 'growth_locations' 
+  | 'budget_plots' 
+  | 'large_land' 
+  | 'exploring';
 
 export interface VisitorPurposeOption {
   key: VisitorPurposeKey;
@@ -26,39 +33,66 @@ export class VisitorPurposeService {
   readonly options: VisitorPurposeOption[] = [
     {
       key: 'build_home',
-      title: 'To Build a Home',
-      badge: 'Plots & Homes',
-      tagline: 'Verified plots and CMDA/DTCP layouts for home construction.',
+      title: 'Build a home.',
+      badge: 'Ready to Build',
+      tagline: 'Verified plots and CMDA / DTCP layouts ready for immediate home construction.',
       icon: 'cottage',
-      themeColor: '#b91c1c',
-      lightBg: '#fef2f2'
+      themeColor: '#5e8f72',
+      lightBg: '#e5f7ec'
     },
     {
       key: 'investment',
-      title: 'Investment',
+      title: 'Long-term investment.',
       badge: 'High Growth',
-      tagline: 'High-appreciation corridors and commercial capital growth.',
+      tagline: 'High-appreciation plotted developments and emerging strategic corridors.',
       icon: 'trending_up',
-      themeColor: '#b91c1c',
-      lightBg: '#fef2f2'
+      themeColor: '#0f3b4a',
+      lightBg: '#e8f3f6'
     },
     {
-      key: 'farm_land',
-      title: 'Farm Land',
-      badge: 'Eco Enclaves',
-      tagline: 'Agricultural acreage and managed farmhouse retreats.',
-      icon: 'yard',
-      themeColor: '#b91c1c',
-      lightBg: '#fef2f2'
+      key: 'premium_plots',
+      title: 'Premium residential plots.',
+      badge: 'Gated Luxury',
+      tagline: 'Curated gated communities with clubhouse, wide roads, and elite amenities.',
+      icon: 'workspace_premium',
+      themeColor: '#5e8f72',
+      lightBg: '#e5f7ec'
     },
     {
-      key: 'other',
-      title: 'Other',
-      badge: 'Custom',
-      tagline: 'Video scouting, commercial due diligence, or custom requests.',
-      icon: 'interests',
-      themeColor: '#b91c1c',
-      lightBg: '#fef2f2'
+      key: 'growth_locations',
+      title: 'Emerging growth locations.',
+      badge: 'Future Hubs',
+      tagline: 'Investment pockets near proposed metro corridors, expressways, and industrial corridors.',
+      icon: 'share_location',
+      themeColor: '#0f3b4a',
+      lightBg: '#e8f3f6'
+    },
+    {
+      key: 'budget_plots',
+      title: 'Budget-friendly plots.',
+      badge: 'Affordable Entry',
+      tagline: 'Clear-title approved plots under ₹25–35 Lakhs with high return potential.',
+      icon: 'savings',
+      themeColor: '#5e8f72',
+      lightBg: '#e5f7ec'
+    },
+    {
+      key: 'large_land',
+      title: 'Larger land investments.',
+      badge: 'Acreage & Estates',
+      tagline: 'Multi-ground parcels and agricultural/estate acreage for long-term land banking.',
+      icon: 'terrain',
+      themeColor: '#0f3b4a',
+      lightBg: '#e8f3f6'
+    },
+    {
+      key: 'exploring',
+      title: 'Exploring',
+      badge: 'Market Discovery',
+      tagline: 'Browsing verified plotted developments and market intelligence without immediate commitment.',
+      icon: 'travel_explore',
+      themeColor: '#5e8f72',
+      lightBg: '#e5f7ec'
     }
   ];
 
@@ -77,7 +111,16 @@ export class VisitorPurposeService {
     try {
       if (typeof localStorage !== 'undefined') {
         const val = localStorage.getItem(STORAGE_PURPOSE_KEY);
-        if (val && ['build_home', 'investment', 'farm_land', 'other'].includes(val)) {
+        const validKeys: VisitorPurposeKey[] = [
+          'build_home',
+          'investment',
+          'premium_plots',
+          'growth_locations',
+          'budget_plots',
+          'large_land',
+          'exploring'
+        ];
+        if (val && (validKeys as string[]).includes(val)) {
           return val as VisitorPurposeKey;
         }
       }

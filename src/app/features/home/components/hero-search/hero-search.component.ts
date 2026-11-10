@@ -55,9 +55,9 @@ export interface PropertyTypeOption {
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
         <div class="hero-text-center">
-          <h1 class="hero-headline">Every Plot We Post is RERA Registered</h1>
+          <h1 class="hero-headline">Find Your Perfect Plot Without Visiting Everywhere.</h1>
           <p class="hero-subline">
-            We strictly list government-sanctioned, RERA-approved layouts and verified direct deeds.
+            Explore multiple developers, compare projects, discover emerging locations and shortlist your ideal plot with professional guidance.
           </p>
 
           <!-- Buy / Post / Commercial Mode Tabs -->
