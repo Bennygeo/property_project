@@ -201,6 +201,13 @@
         <span>Bulk Excel Upload</span>
         <span class="tab-badge-studio" style="background:#0284c7;color:#ffffff;">BULK DB</span>
       </button>
+
+      <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'buyer_workspaces'"
+        (click)="setTab('buyer_workspaces')">
+        <span class="material-symbols-outlined text-green">workspace_premium</span>
+        <span>Buyer Workspaces &amp; CRM</span>
+        <span class="tab-badge-studio" style="background:#0f3b4a;color:#ffffff;">PRD CRM</span>
+      </button>
     </div>
 
     <!-- TAB CONTENT 1: REVIEW QUEUE (MAKER-CHECKER ENFORCEMENT) -->
@@ -2813,6 +2820,435 @@
     </section>
     }
 
+    <!-- ========================================== -->
+    <!-- TAB CONTENT 8: BUYER WORKSPACES & CRM HUB  -->
+    <!-- PRD M04 & M09 DEDICATED ADMIN DESK         -->
+    <!-- ========================================== -->
+    @if (activeTab() === 'buyer_workspaces') {
+    <section class="tab-pane-section workspace-admin-section">
+
+      <!-- Hub Banner -->
+      <div class="workspace-header-banner">
+        <div class="banner-title-block">
+          <div class="banner-icon-box">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div>
+            <h2 class="banner-main-title">Buyer Workspaces &amp; CRM Desk</h2>
+            <p class="banner-subtitle">Centralized administrative control for buyer subscriptions, entitlement quotas, site visit escorts, advisory dossiers, and registration legal workflows.</p>
+          </div>
+        </div>
+
+        <div class="workspace-stats-pills">
+          <div class="stat-pill">
+            <span class="stat-num">{{ adminWorkspaces()?.users?.length || 0 }}</span>
+            <span class="stat-lbl">Active Buyers</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">{{ adminWorkspaces()?.allVisits?.length || 0 }}</span>
+            <span class="stat-lbl">Site Visits</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">{{ adminWorkspaces()?.allConsultations?.length || 0 }}</span>
+            <span class="stat-lbl">Consultations</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">{{ adminWorkspaces()?.allBookings?.length || 0 }}</span>
+            <span class="stat-lbl">Plot Bookings</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation & Controls Row -->
+      <div class="workspace-controls-bar">
+        <!-- Sub-tabs -->
+        <div class="workspace-subtabs-nav">
+          <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'membership'"
+            (click)="workspaceSubTab.set('membership')">
+            <span class="material-symbols-outlined">card_membership</span>
+            <span>Membership &amp; Quotas</span>
+            <span class="subtab-badge">{{ adminWorkspaces()?.users?.length || 0 }}</span>
+          </button>
+
+          <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'visits'"
+            (click)="workspaceSubTab.set('visits')">
+            <span class="material-symbols-outlined">event_available</span>
+            <span>Site Visits Escort</span>
+            <span class="subtab-badge">{{ adminWorkspaces()?.allVisits?.length || 0 }}</span>
+          </button>
+
+          <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'consultations'"
+            (click)="workspaceSubTab.set('consultations')">
+            <span class="material-symbols-outlined">support_agent</span>
+            <span>Advisory Consultations</span>
+            <span class="subtab-badge">{{ adminWorkspaces()?.allConsultations?.length || 0 }}</span>
+          </button>
+
+          <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'saved_searches'"
+            (click)="workspaceSubTab.set('saved_searches')">
+            <span class="material-symbols-outlined">saved_search</span>
+            <span>Saved Searches &amp; Alerts</span>
+            <span class="subtab-badge">{{ adminWorkspaces()?.allSearches?.length || 0 }}</span>
+          </button>
+
+          <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'bookings'"
+            (click)="workspaceSubTab.set('bookings')">
+            <span class="material-symbols-outlined">gavel</span>
+            <span>Plot Bookings &amp; SRO</span>
+            <span class="subtab-badge">{{ adminWorkspaces()?.allBookings?.length || 0 }}</span>
+          </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="workspace-search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" [ngModel]="workspaceSearchQuery()" (ngModelChange)="workspaceSearchQuery.set($event)"
+            placeholder="Search buyers, properties, executives..." class="workspace-search-input" />
+          @if (workspaceSearchQuery()) {
+          <button type="button" class="btn-clear-search" (click)="workspaceSearchQuery.set('')">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- SUB-TAB 1: MEMBERSHIP & ENTITLEMENTS -->
+      @if (workspaceSubTab() === 'membership') {
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Buyer Account</th>
+              <th>Contact Details</th>
+              <th>Active Plan Tier</th>
+              <th>Enrolled Date</th>
+              <th>Activity Summary</th>
+              <th class="th-actions">Administrative Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of filteredAdminUsers(); track u.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-cell-avatar">
+                    <span class="material-symbols-outlined">person</span>
+                  </div>
+                  <div>
+                    <span class="user-cell-name">{{ u.name }}</span>
+                    <span class="user-cell-id">UID #{{ u.id }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="contact-cell">
+                  <span><span class="material-symbols-outlined">call</span> {{ u.phone || 'N/A' }}</span>
+                  <span><span class="material-symbols-outlined">mail</span> {{ u.email || 'N/A' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="tier-chip" [class.tier-vip]="u.plan_id === 'vip_concierge'" [class.tier-smart]="u.plan_id === 'smart_buyer'" [class.tier-priority]="u.plan_id === 'priority_buyer'">
+                  {{ u.plan_name }}
+                </span>
+              </td>
+              <td>
+                <span class="date-cell">{{ u.created_at | date:'mediumDate' }}</span>
+              </td>
+              <td>
+                <div class="metrics-mini-list">
+                  <span class="m-pill" title="Site Visits"><span class="material-symbols-outlined">event</span> {{ u.total_visits }}</span>
+                  <span class="m-pill" title="Advisory Consultations"><span class="material-symbols-outlined">support_agent</span> {{ u.total_consultations }}</span>
+                  <span class="m-pill" title="Saved Searches"><span class="material-symbols-outlined">saved_search</span> {{ u.total_saved_searches }}</span>
+                  <span class="m-pill" title="Plot Bookings"><span class="material-symbols-outlined">gavel</span> {{ u.total_bookings }}</span>
+                </div>
+              </td>
+              <td class="td-actions">
+                <button type="button" class="btn-action-outline" (click)="openAdjustCreditsModal(u.id)">
+                  <span class="material-symbols-outlined">add_chart</span>
+                  <span>Adjust Credits</span>
+                </button>
+                <button type="button" class="btn-action-outline" (click)="openAddConsultModal(u.id)">
+                  <span class="material-symbols-outlined">note_add</span>
+                  <span>Log Consult</span>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      <!-- SUB-TAB 2: SITE VISITS MANAGEMENT -->
+      @if (workspaceSubTab() === 'visits') {
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Visit ID</th>
+              <th>Buyer</th>
+              <th>Property &amp; Location</th>
+              <th>Appointment Slot</th>
+              <th>Pickup Location</th>
+              <th>Assigned Escort Executive</th>
+              <th>Status</th>
+              <th class="th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of filteredAdminVisits(); track v.id) {
+            <tr>
+              <td><span class="font-mono text-muted">VISIT-{{ v.id }}</span></td>
+              <td>
+                <div class="user-meta-sub">
+                  <strong>{{ v.user_name || 'Buyer #' + v.user_id }}</strong>
+                  <span class="text-muted-xs">{{ v.user_phone }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="prop-meta-cell">
+                  <a [routerLink]="['/property', v.property_id]" class="prop-link-bold">{{ v.property_title }}</a>
+                  <span class="text-muted-xs"><span class="material-symbols-outlined">location_on</span> {{ v.locality }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="slot-cell">
+                  <span class="font-bold">{{ v.visit_date }}</span>
+                  <span class="text-muted-xs">{{ v.visit_slot }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="pickup-text">{{ v.pickup_location || 'Koyambedu Metro Station' }}</span>
+              </td>
+              <td>
+                <div class="exec-cell">
+                  <span class="exec-name-bold">{{ v.assigned_executive_name || 'Unassigned' }}</span>
+                  <span class="exec-phone-sub">{{ v.assigned_executive_phone }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'" [class.status-requested]="v.status === 'requested'" [class.status-completed]="v.status === 'completed'" [class.status-cancelled]="v.status === 'cancelled'">
+                  {{ v.status | uppercase }}
+                </span>
+              </td>
+              <td class="td-actions">
+                <button type="button" class="btn-action-primary" (click)="openAssignVisitModal(v)">
+                  <span class="material-symbols-outlined">person_add</span>
+                  <span>Assign / Update</span>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      <!-- SUB-TAB 3: ADVISORY CONSULTATIONS DESK -->
+      @if (workspaceSubTab() === 'consultations') {
+      <div class="consultation-desk-wrapper">
+        <div class="desk-action-bar">
+          <span class="desk-title">Buyer Strategy &amp; Cadastral Verification Consultations</span>
+          <button type="button" class="btn-action-primary" (click)="openAddConsultModal(1)">
+            <span class="material-symbols-outlined">add</span>
+            <span>Log New Consultation</span>
+          </button>
+        </div>
+
+        <div class="workspace-table-container">
+          <table class="workspace-table">
+            <thead>
+              <tr>
+                <th>Consult ID</th>
+                <th>Buyer</th>
+                <th>Advisor Specialist</th>
+                <th>Date &amp; Duration</th>
+                <th>Status</th>
+                <th>Advisor Notes &amp; Findings</th>
+                <th>Dossier PDF</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of filteredAdminConsultations(); track c.id) {
+              <tr>
+                <td><span class="font-mono text-muted">CNS-{{ c.id }}</span></td>
+                <td>
+                  <div class="user-meta-sub">
+                    <strong>{{ c.user_name || 'Buyer #' + c.user_id }}</strong>
+                    <span class="text-muted-xs">{{ c.user_phone }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="advisor-admin-cell">
+                    <span class="font-bold">{{ c.advisor_name }}</span>
+                    <span class="text-muted-xs">{{ c.advisor_role }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="slot-cell">
+                    <span>{{ c.consultation_date }}</span>
+                    <span class="text-muted-xs">{{ c.duration_minutes }} Mins</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-chip status-confirmed">{{ c.status | uppercase }}</span>
+                </td>
+                <td>
+                  <p class="notes-preview-cell" [title]="c.advisor_notes">{{ c.advisor_notes }}</p>
+                </td>
+                <td>
+                  @if (c.dossier_pdf_url) {
+                  <a [href]="c.dossier_pdf_url" target="_blank" class="btn-dossier-mini">
+                    <span class="material-symbols-outlined">picture_as_pdf</span>
+                    <span>View PDF</span>
+                  </a>
+                  } @else {
+                  <span class="text-muted-xs">No PDF</span>
+                  }
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      }
+
+      <!-- SUB-TAB 4: SAVED SEARCHES & ALERTS -->
+      @if (workspaceSubTab() === 'saved_searches') {
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Search ID</th>
+              <th>Buyer</th>
+              <th>Search Title &amp; Criteria</th>
+              <th>Active Channels</th>
+              <th>Matching Plots</th>
+              <th>Last Dispatched</th>
+              <th class="th-actions">Trigger Alert</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filteredAdminSearches(); track s.id) {
+            <tr>
+              <td><span class="font-mono text-muted">SRCH-{{ s.id }}</span></td>
+              <td>
+                <div class="user-meta-sub">
+                  <strong>{{ s.user_name || 'Buyer #' + s.user_id }}</strong>
+                  <span class="text-muted-xs">{{ s.user_phone }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="search-name-bold">{{ s.search_name }}</div>
+                <div class="filters-summary-xs">
+                  <span>{{ s.filters.district || 'Any District' }}</span> •
+                  <span>{{ s.filters.locality || 'Any Locality' }}</span> •
+                  <span>Up to ₹{{ (s.filters.budgetMax || 10000000) / 100000 }}L</span>
+                </div>
+              </td>
+              <td>
+                <div class="channels-cell">
+                  <span class="ch-badge" [class.active]="s.email_alerts_enabled">
+                    <span class="material-symbols-outlined">mail</span> Email
+                  </span>
+                  <span class="ch-badge" [class.active]="s.whatsapp_alerts_enabled">
+                    <span class="material-symbols-outlined">chat</span> WhatsApp
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span class="match-badge">{{ s.matches_count }} Plots</span>
+              </td>
+              <td>
+                <span class="text-muted-xs">{{ s.last_notified_at || 'Today' }}</span>
+              </td>
+              <td class="td-actions">
+                <button type="button" class="btn-action-primary" (click)="dispatchAlert(s.id)">
+                  <span class="material-symbols-outlined">send</span>
+                  <span>Dispatch Alert</span>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+      <!-- SUB-TAB 5: PLOT BOOKINGS & REGISTRATION -->
+      @if (workspaceSubTab() === 'bookings') {
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Buyer</th>
+              <th>Property &amp; Plot #</th>
+              <th>Extent</th>
+              <th>Financials</th>
+              <th>Current Stage</th>
+              <th>Assigned Legal Officer</th>
+              <th>Target Registration</th>
+              <th class="th-actions">Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of filteredAdminBookings(); track b.id) {
+            <tr>
+              <td><span class="font-mono text-muted">BKG-{{ b.id }}</span></td>
+              <td>
+                <div class="user-meta-sub">
+                  <strong>{{ b.user_name || 'Buyer #' + b.user_id }}</strong>
+                  <span class="text-muted-xs">{{ b.user_phone }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="prop-meta-cell">
+                  <span class="plot-tag">Plot #{{ b.plot_number }}</span>
+                  <a [routerLink]="['/property', b.property_id]" class="prop-link-bold">{{ b.property_title }}</a>
+                </div>
+              </td>
+              <td>
+                <span class="font-bold">{{ b.plot_extent_sqft | number }} sq.ft</span>
+              </td>
+              <td>
+                <div class="financials-admin-cell">
+                  <span class="text-muted-xs">Total: ₹{{ b.total_price | number }}</span>
+                  <span class="advance-tag">Paid: ₹{{ b.token_advance_paid | number }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="stage-cell">
+                  <span class="stage-badge stage-step-{{ getBookingStepIndex(b.status) }}">
+                    Step {{ getBookingStepIndex(b.status) }}/5: {{ b.status.replace('_', ' ') | uppercase }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="legal-officer-cell">
+                  <span class="font-bold">{{ b.assigned_legal_officer || 'Unassigned' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="text-muted-xs">{{ b.target_registration_date || 'TBD' }}</span>
+              </td>
+              <td class="td-actions">
+                <button type="button" class="btn-action-primary" (click)="openEditBookingModal(b)">
+                  <span class="material-symbols-outlined">edit</span>
+                  <span>Update Stage</span>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+
+    </section>
+    }
+
   </main>
 
   <!-- ========================================== -->
@@ -3536,6 +3972,256 @@
         </div>
       </form>
 
+    </div>
+  </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ASSIGN SITE VISIT & ESCORT COORDINATION           -->
+  <!-- ======================================================== -->
+  @if (isAssignVisitModalOpen() && selectedVisit()) {
+  <div class="modal-backdrop" (click)="closeAssignVisitModal()">
+    <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal-dialog-header">
+        <div class="dialog-titles">
+          <span class="dialog-prop-id">VISIT #{{ selectedVisit()?.id }}</span>
+          <h3 class="dialog-heading">Assign Escort &amp; Update Visit Status</h3>
+        </div>
+        <button type="button" class="btn-close-dialog" (click)="closeAssignVisitModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-dialog-body ws-modal-body">
+        <div class="ws-modal-info-strip">
+          <div><strong>Buyer:</strong> {{ selectedVisit()?.user_name }} ({{ selectedVisit()?.user_phone }})</div>
+          <div><strong>Property:</strong> {{ selectedVisit()?.property_title }}</div>
+          <div><strong>Appointment:</strong> {{ selectedVisit()?.visit_date }} ({{ selectedVisit()?.visit_slot }})</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Visit Status</label>
+            <select class="form-input-field" [ngModel]="editVisitStatus()" (ngModelChange)="editVisitStatus.set($event)">
+              <option value="requested">Requested (Pending Confirmation)</option>
+              <option value="confirmed">Confirmed (Escort Assigned)</option>
+              <option value="completed">Completed (Walkthrough Finished)</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Assigned Executive Name</label>
+            <input type="text" class="form-input-field" [ngModel]="editExecutiveName()" (ngModelChange)="editExecutiveName.set($event)" placeholder="e.g. Ramesh V (Senior Field Officer)" />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Executive Contact Phone</label>
+            <input type="text" class="form-input-field" [ngModel]="editExecutivePhone()" (ngModelChange)="editExecutivePhone.set($event)" placeholder="e.g. +91 94440 12345" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Pickup &amp; Transport Location</label>
+            <input type="text" class="form-input-field" [ngModel]="editPickupLocation()" (ngModelChange)="editPickupLocation.set($event)" placeholder="e.g. Koyambedu Metro Station Gate 2" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Escort / Internal Notes</label>
+            <textarea class="form-input-field textarea-field" rows="2" [ngModel]="editAdminNotes()" (ngModelChange)="editAdminNotes.set($event)" placeholder="Provide instructions for field officer or buyer pickup details..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws-modal-footer">
+        <button type="button" class="btn-ws-cancel" (click)="closeAssignVisitModal()">Cancel</button>
+        <button type="button" class="btn-ws-save" (click)="saveAssignVisit()">
+          <span class="material-symbols-outlined">save</span>
+          <span>Save Visit Assignment</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- MODAL: LOG ADVISORY CONSULTATION & RECOMMENDATIONS       -->
+  <!-- ======================================================== -->
+  @if (isAddConsultModalOpen()) {
+  <div class="modal-backdrop" (click)="closeAddConsultModal()">
+    <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal-dialog-header">
+        <div class="dialog-titles">
+          <span class="dialog-prop-id">ADVISORY DESK</span>
+          <h3 class="dialog-heading">Log Buyer Strategy &amp; Cadastral Consultation</h3>
+        </div>
+        <button type="button" class="btn-close-dialog" (click)="closeAddConsultModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-dialog-body ws-modal-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Buyer User ID</label>
+            <input type="number" class="form-input-field" [ngModel]="consultUserId()" (ngModelChange)="consultUserId.set($event)" />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Senior Advisor Specialist</label>
+            <input type="text" class="form-input-field" [ngModel]="consultAdvisorName()" (ngModelChange)="consultAdvisorName.set($event)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Advisor Role / Specialization</label>
+            <input type="text" class="form-input-field" [ngModel]="consultAdvisorRole()" (ngModelChange)="consultAdvisorRole.set($event)" />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Attached Dossier Document URL / PDF</label>
+            <input type="text" class="form-input-field" [ngModel]="consultDossier()" (ngModelChange)="consultDossier.set($event)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Consultation Findings &amp; Legal Takeaways</label>
+            <textarea class="form-input-field textarea-field" rows="3" [ngModel]="consultNotes()" (ngModelChange)="consultNotes.set($event)" placeholder="Enter advice regarding DTCP master plan, setback requirements, patta transfer timeline..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws-modal-footer">
+        <button type="button" class="btn-ws-cancel" (click)="closeAddConsultModal()">Cancel</button>
+        <button type="button" class="btn-ws-save" (click)="saveConsultation()">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>Commit Consultation Log</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- MODAL: UPDATE PLOT BOOKING & REGISTRATION STAGE          -->
+  <!-- ======================================================== -->
+  @if (isEditBookingModalOpen() && selectedBooking()) {
+  <div class="modal-backdrop" (click)="closeEditBookingModal()">
+    <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal-dialog-header">
+        <div class="dialog-titles">
+          <span class="dialog-prop-id">BOOKING #{{ selectedBooking()?.id }}</span>
+          <h3 class="dialog-heading">Update Plot Registration Workflow</h3>
+        </div>
+        <button type="button" class="btn-close-dialog" (click)="closeEditBookingModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-dialog-body ws-modal-body">
+        <div class="ws-modal-info-strip">
+          <div><strong>Buyer:</strong> {{ selectedBooking()?.user_name }}</div>
+          <div><strong>Property:</strong> {{ selectedBooking()?.property_title }} (Plot #{{ selectedBooking()?.plot_number }})</div>
+          <div><strong>Price:</strong> ₹{{ selectedBooking()?.total_price | number }} | <strong>Advance:</strong> ₹{{ selectedBooking()?.token_advance_paid | number }}</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Registration Workflow Stage</label>
+            <select class="form-input-field" [ngModel]="bookingStatus()" (ngModelChange)="bookingStatus.set($event)">
+              <option value="plot_on_hold">1. Plot on Hold (Initial Reservation)</option>
+              <option value="token_paid">2. Token Paid (Advance Cleared)</option>
+              <option value="document_verification">3. Document Verification (EC / Patta Check)</option>
+              <option value="registration_in_progress">4. Registration in Progress (SRO Slot Booked)</option>
+              <option value="registered_completed">5. Registered / Title Deed Handed Over</option>
+              <option value="cancelled">Cancelled / Refunded</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Assigned Legal &amp; Title Verification Officer</label>
+            <input type="text" class="form-input-field" [ngModel]="bookingLegalOfficer()" (ngModelChange)="bookingLegalOfficer.set($event)" />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Target SRO Registration Date</label>
+            <input type="date" class="form-input-field" [ngModel]="bookingTargetDate()" (ngModelChange)="bookingTargetDate.set($event)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Cadastral / Sub-Registrar Progress Notes</label>
+            <textarea class="form-input-field textarea-field" rows="2" [ngModel]="bookingNotes()" (ngModelChange)="bookingNotes.set($event)" placeholder="Enter legal verification status or sub-registrar appointment details..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws-modal-footer">
+        <button type="button" class="btn-ws-cancel" (click)="closeEditBookingModal()">Cancel</button>
+        <button type="button" class="btn-ws-save" (click)="saveBookingStatus()">
+          <span class="material-symbols-outlined">save</span>
+          <span>Update Registration Stage</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADJUST ENTITLEMENT CREDITS & QUOTAS               -->
+  <!-- ======================================================== -->
+  @if (isAdjustCreditsModalOpen()) {
+  <div class="modal-backdrop" (click)="closeAdjustCreditsModal()">
+    <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal-dialog-header">
+        <div class="dialog-titles">
+          <span class="dialog-prop-id">UID #{{ creditsUserId() }}</span>
+          <h3 class="dialog-heading">Grant Additional Entitlement Quota</h3>
+        </div>
+        <button type="button" class="btn-close-dialog" (click)="closeAdjustCreditsModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-dialog-body ws-modal-body">
+        <p class="ws-modal-subtext">Add verification and access credits directly to buyer account without manual payment billing:</p>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Add Project Views</label>
+            <input type="number" class="form-input-field" [ngModel]="addViews()" (ngModelChange)="addViews.set($event)" min="0" />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Add Comparisons</label>
+            <input type="number" class="form-input-field" [ngModel]="addComparisons()" (ngModelChange)="addComparisons.set($event)" min="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Add Advisory Sessions</label>
+            <input type="number" class="form-input-field" [ngModel]="addAdvisory()" (ngModelChange)="addAdvisory.set($event)" min="0" />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Add Assisted Site Visits</label>
+            <input type="number" class="form-input-field" [ngModel]="addVisits()" (ngModelChange)="addVisits.set($event)" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="ws-modal-footer">
+        <button type="button" class="btn-ws-cancel" (click)="closeAdjustCreditsModal()">Cancel</button>
+        <button type="button" class="btn-ws-save" (click)="saveAdjustCredits()">
+          <span class="material-symbols-outlined">add_task</span>
+          <span>Grant Credits Now</span>
+        </button>
+      </div>
     </div>
   </div>
   }

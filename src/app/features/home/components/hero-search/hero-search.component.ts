@@ -1540,7 +1540,7 @@ export interface PropertyTypeOption {
     /* Trending Auto-Suggest Dropdown */
     .suggest-dropdown-panel {
       position: absolute;
-      top: calc(100% + 6px);
+      top: calc(100% + 8px);
       left: 0;
       width: 100%;
       min-width: min(440px, 90vw);
@@ -1548,7 +1548,7 @@ export interface PropertyTypeOption {
       max-height: 440px;
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 8px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       z-index: 100;
       overflow-y: auto;

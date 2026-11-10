@@ -96,8 +96,15 @@ import {
   AdminFinancialSummary,
   AdminChannelItem
 } from '../../../../core/services/admin.service';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
+import {
+  SiteVisitItem,
+  AdvisoryConsultationItem,
+  SavedSearchItem,
+  PlotBookingItem
+} from '../../../../core/models/workspace.model';
 
-export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset' | 'bulk_upload';
+export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset' | 'bulk_upload' | 'buyer_workspaces';
 
 export interface UploadedImageItem {
   id: string;
@@ -165,6 +172,7 @@ export class AdminDashboardComponent {
 
   readonly adminService = inject(AdminService);
   readonly propertyService = inject(PropertyService);
+  readonly workspaceService = inject(WorkspaceService);
   readonly notificationService = inject(NotificationService);
   readonly userBehaviorService = inject(UserBehaviorService);
   private readonly http = inject(HttpClient);
@@ -179,7 +187,7 @@ export class AdminDashboardComponent {
     }
 
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'financials', 'user_mindset', 'bulk_upload'].includes(params['tab'])) {
+      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces'].includes(params['tab'])) {
         this.setTab(params['tab'] as AdminActiveTab);
       }
     });
@@ -206,6 +214,229 @@ export class AdminDashboardComponent {
     if (tab === 'user_mindset') {
       this.loadMindsetLeads();
     }
+    if (tab === 'buyer_workspaces') {
+      this.workspaceService.fetchAdminWorkspaces().subscribe();
+    }
+  }
+
+  // =========================================================================
+  // PRD BUYER WORKSPACES & CRM MANAGEMENT (DEDICATED ADMIN TAB)
+  // =========================================================================
+  readonly adminWorkspaces = computed(() => this.workspaceService.adminOverview());
+  readonly workspaceSubTab = signal<'membership' | 'visits' | 'consultations' | 'saved_searches' | 'bookings'>('membership');
+  readonly workspaceSearchQuery = signal<string>('');
+
+  readonly filteredAdminVisits = computed(() => {
+    const list = this.adminWorkspaces()?.allVisits || [];
+    const q = this.workspaceSearchQuery().toLowerCase().trim();
+    if (!q) return list;
+    return list.filter(v =>
+      (v.user_name && v.user_name.toLowerCase().includes(q)) ||
+      (v.property_title && v.property_title.toLowerCase().includes(q)) ||
+      (v.assigned_executive_name && v.assigned_executive_name.toLowerCase().includes(q)) ||
+      (v.status && v.status.toLowerCase().includes(q))
+    );
+  });
+
+  readonly filteredAdminUsers = computed(() => {
+    const list = this.adminWorkspaces()?.users || [];
+    const q = this.workspaceSearchQuery().toLowerCase().trim();
+    if (!q) return list;
+    return list.filter(u =>
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.phone && u.phone.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.plan_name && u.plan_name.toLowerCase().includes(q))
+    );
+  });
+
+  readonly filteredAdminConsultations = computed(() => {
+    const list = this.adminWorkspaces()?.allConsultations || [];
+    const q = this.workspaceSearchQuery().toLowerCase().trim();
+    if (!q) return list;
+    return list.filter(c =>
+      (c.user_name && c.user_name.toLowerCase().includes(q)) ||
+      (c.advisor_name && c.advisor_name.toLowerCase().includes(q)) ||
+      (c.advisor_notes && c.advisor_notes.toLowerCase().includes(q))
+    );
+  });
+
+  readonly filteredAdminSearches = computed(() => {
+    const list = this.adminWorkspaces()?.allSearches || [];
+    const q = this.workspaceSearchQuery().toLowerCase().trim();
+    if (!q) return list;
+    return list.filter(s =>
+      (s.user_name && s.user_name.toLowerCase().includes(q)) ||
+      (s.search_name && s.search_name.toLowerCase().includes(q))
+    );
+  });
+
+  readonly filteredAdminBookings = computed(() => {
+    const list = this.adminWorkspaces()?.allBookings || [];
+    const q = this.workspaceSearchQuery().toLowerCase().trim();
+    if (!q) return list;
+    return list.filter(b =>
+      (b.user_name && b.user_name.toLowerCase().includes(q)) ||
+      (b.property_title && b.property_title.toLowerCase().includes(q)) ||
+      (b.plot_number && b.plot_number.toLowerCase().includes(q)) ||
+      (b.status && b.status.toLowerCase().includes(q))
+    );
+  });
+
+  getBookingStepIndex(status: string): number {
+    switch (status) {
+      case 'enquiry':
+      case 'plot_on_hold':
+        return 1;
+      case 'token_paid':
+        return 2;
+      case 'document_verification':
+        return 3;
+      case 'registration_in_progress':
+        return 4;
+      case 'registered_completed':
+        return 5;
+      default:
+        return 1;
+    }
+  }
+
+  // Modals
+  readonly isAssignVisitModalOpen = signal<boolean>(false);
+  readonly selectedVisit = signal<SiteVisitItem | null>(null);
+  readonly editExecutiveName = signal<string>('Ramesh V (Relationship Mgr)');
+  readonly editExecutivePhone = signal<string>('+91 94440 12345');
+  readonly editVisitStatus = signal<'requested' | 'confirmed' | 'completed' | 'cancelled'>('confirmed');
+  readonly editPickupLocation = signal<string>('Koyambedu Metro Station, Gate 2');
+  readonly editAdminNotes = signal<string>('');
+
+  readonly isAddConsultModalOpen = signal<boolean>(false);
+  readonly consultUserId = signal<number>(1);
+  readonly consultAdvisorName = signal<string>('Karthik Narayanan (Senior Plot Specialist)');
+  readonly consultAdvisorRole = signal<string>('RERA & CMDA Cadastral Advisor');
+  readonly consultNotes = signal<string>('');
+  readonly consultDossier = signal<string>('FAP-DOSSIER-PRJ-0059.pdf');
+
+  readonly isEditBookingModalOpen = signal<boolean>(false);
+  readonly selectedBooking = signal<PlotBookingItem | null>(null);
+  readonly bookingStatus = signal<string>('plot_on_hold');
+  readonly bookingLegalOfficer = signal<string>('Advocate S. Swaminathan (SRO Madras HC)');
+  readonly bookingNotes = signal<string>('');
+  readonly bookingTargetDate = signal<string>('');
+
+  readonly isAdjustCreditsModalOpen = signal<boolean>(false);
+  readonly creditsUserId = signal<number>(1);
+  readonly addViews = signal<number>(5);
+  readonly addComparisons = signal<number>(3);
+  readonly addAdvisory = signal<number>(2);
+  readonly addVisits = signal<number>(1);
+
+  openAssignVisitModal(v: SiteVisitItem): void {
+    this.selectedVisit.set(v);
+    this.editExecutiveName.set(v.assigned_executive_name || 'Ramesh V (Relationship Mgr)');
+    this.editExecutivePhone.set(v.assigned_executive_phone || '+91 94440 12345');
+    this.editVisitStatus.set(v.status || 'confirmed');
+    this.editPickupLocation.set(v.pickup_location || 'Koyambedu Metro Station, Gate 2');
+    this.editAdminNotes.set(v.admin_notes || '');
+    this.isAssignVisitModalOpen.set(true);
+  }
+
+  closeAssignVisitModal(): void {
+    this.isAssignVisitModalOpen.set(false);
+    this.selectedVisit.set(null);
+  }
+
+  saveAssignVisit(): void {
+    const v = this.selectedVisit();
+    if (!v) return;
+    this.workspaceService.updateSiteVisit({
+      visitId: v.id,
+      status: this.editVisitStatus(),
+      executiveName: this.editExecutiveName(),
+      executivePhone: this.editExecutivePhone(),
+      pickupLocation: this.editPickupLocation(),
+      adminNotes: this.editAdminNotes()
+    }).subscribe(() => {
+      this.closeAssignVisitModal();
+    });
+  }
+
+  openAddConsultModal(userId: number): void {
+    this.consultUserId.set(userId);
+    this.consultNotes.set('');
+    this.isAddConsultModalOpen.set(true);
+  }
+
+  closeAddConsultModal(): void {
+    this.isAddConsultModalOpen.set(false);
+  }
+
+  saveConsultation(): void {
+    this.workspaceService.addConsultation({
+      userId: this.consultUserId(),
+      advisorName: this.consultAdvisorName(),
+      advisorRole: this.consultAdvisorRole(),
+      notes: this.consultNotes() || 'Discussed investor boundary verification and patta clearance timeline.',
+      dossierPdf: this.consultDossier(),
+      recommendations: [
+        { id: 'PRJ-0059', title: 'Green Square Elite Plotted Enclave', locality: 'Chengalpattu NH45 Belt', price: '₹45 Lakhs', reason: 'High industrial corridor yield.' }
+      ]
+    }).subscribe(() => {
+      this.closeAddConsultModal();
+    });
+  }
+
+  openEditBookingModal(b: PlotBookingItem): void {
+    this.selectedBooking.set(b);
+    this.bookingStatus.set(b.status || 'plot_on_hold');
+    this.bookingLegalOfficer.set(b.assigned_legal_officer || 'Advocate S. Swaminathan (SRO Madras HC)');
+    this.bookingNotes.set(b.notes || '');
+    this.bookingTargetDate.set(b.target_registration_date || '');
+    this.isEditBookingModalOpen.set(true);
+  }
+
+  closeEditBookingModal(): void {
+    this.isEditBookingModalOpen.set(false);
+    this.selectedBooking.set(null);
+  }
+
+  saveBookingStatus(): void {
+    const b = this.selectedBooking();
+    if (!b) return;
+    this.workspaceService.updateBookingStatus({
+      bookingId: b.id,
+      status: this.bookingStatus(),
+      legalOfficer: this.bookingLegalOfficer(),
+      notes: this.bookingNotes(),
+      targetRegistrationDate: this.bookingTargetDate()
+    }).subscribe(() => {
+      this.closeEditBookingModal();
+    });
+  }
+
+  dispatchAlert(searchId: number): void {
+    this.workspaceService.triggerSearchAlert(searchId).subscribe();
+  }
+
+  openAdjustCreditsModal(userId: number): void {
+    this.creditsUserId.set(userId);
+    this.isAdjustCreditsModalOpen.set(true);
+  }
+
+  closeAdjustCreditsModal(): void {
+    this.isAdjustCreditsModalOpen.set(false);
+  }
+
+  saveAdjustCredits(): void {
+    this.workspaceService.adjustEntitlements({
+      userId: this.creditsUserId(),
+      addViews: this.addViews(),
+      addComparisons: this.addComparisons(),
+      addAdvisory: this.addAdvisory(),
+      addVisits: this.addVisits()
+    }).subscribe(() => {
+      this.closeAdjustCreditsModal();
+    });
   }
 
   // Buyer Mindset Leads State

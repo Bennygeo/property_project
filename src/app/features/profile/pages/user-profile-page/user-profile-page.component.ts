@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { WalletService } from '../../../../core/services/wallet.service';
 import { SubscriptionService } from '../../../../core/services/subscription.service';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { PropertyService } from '../../../../core/services/property.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -27,11 +28,15 @@ import { Property, PropertyType } from '../../../../core/models/property.model';
 
 export type ProfileDashboardSection =
   | 'profile'
+  | 'membership'
   | 'my_properties'
   | 'favourites'
   | 'views'
-  | 'transactions'
   | 'visits'
+  | 'consultations'
+  | 'saved_searches'
+  | 'bookings'
+  | 'transactions'
   | 'brochures'
   | 'preferences'
   | 'danger';
@@ -58,10 +63,36 @@ export class UserProfilePageComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly walletService = inject(WalletService);
   readonly subscriptionService = inject(SubscriptionService);
+  readonly workspaceService = inject(WorkspaceService);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
   readonly router = inject(Router);
   readonly route = inject(ActivatedRoute);
+
+  // PRD Workspace Data Signals
+  readonly userWorkspace = computed(() => this.workspaceService.userWorkspace());
+  readonly siteVisits = computed(() => this.userWorkspace()?.siteVisits || []);
+  readonly consultations = computed(() => this.userWorkspace()?.consultations || []);
+  readonly savedSearches = computed(() => this.userWorkspace()?.savedSearches || []);
+  readonly plotBookings = computed(() => this.userWorkspace()?.plotBookings || []);
+
+  getBookingStepIndex(status: string): number {
+    switch (status) {
+      case 'enquiry':
+      case 'plot_on_hold':
+        return 1;
+      case 'token_paid':
+        return 2;
+      case 'document_verification':
+        return 3;
+      case 'registration_in_progress':
+        return 4;
+      case 'registered_completed':
+        return 5;
+      default:
+        return 1;
+    }
+  }
 
   // Active Dashboard Section
   readonly activeSection = signal<ProfileDashboardSection>('profile');
@@ -125,8 +156,16 @@ export class UserProfilePageComponent implements OnInit {
         this.activeSection.set('favourites');
       } else if (tab === 'my_properties') {
         this.activeSection.set('my_properties');
+      } else if (tab === 'membership') {
+        this.activeSection.set('membership');
       } else if (tab === 'visits') {
         this.activeSection.set('visits');
+      } else if (tab === 'consultations') {
+        this.activeSection.set('consultations');
+      } else if (tab === 'saved_searches') {
+        this.activeSection.set('saved_searches');
+      } else if (tab === 'bookings') {
+        this.activeSection.set('bookings');
       }
     });
     this.loadFullProfile();
@@ -136,6 +175,9 @@ export class UserProfilePageComponent implements OnInit {
     this.isLoading.set(true);
     const user = this.authService.currentUser();
     const userId = user?.id || 1;
+
+    // Load full PRD workspace (Membership, Site Visits, Consultations, Saved Searches, Bookings)
+    this.workspaceService.fetchUserWorkspace(userId).subscribe();
 
     // Refresh shortlists immediately from backend for the active user
     this.propertyService.fetchShortlistsFromBackend(userId);

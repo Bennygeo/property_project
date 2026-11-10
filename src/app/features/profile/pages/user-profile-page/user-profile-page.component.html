@@ -116,15 +116,53 @@
             <span class="nav-title">Profile &amp; Details</span>
           </button>
 
-          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'my_properties'"
-            (click)="setSection('my_properties')">
-            <span class="material-symbols-outlined nav-icon">real_estate_agent</span>
-            <span class="nav-title">My Listed Properties</span>
-            @if (myPropertiesCount() > 0) {
-            <span class="nav-badge">{{ myPropertiesCount() }}</span>
+          <!-- PRD WORKSPACE TABS -->
+          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'membership'"
+            (click)="setSection('membership')">
+            <span class="material-symbols-outlined nav-icon">card_membership</span>
+            <span class="nav-title">My Membership</span>
+            <span class="nav-badge plan-badge">{{ userWorkspace()?.membership?.subscription?.plan_name || subscriptionService.activePlanName() }}</span>
+          </button>
+
+          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'visits'"
+            (click)="setSection('visits')">
+            <span class="material-symbols-outlined nav-icon">event_available</span>
+            <span class="nav-title">Scheduled Site Visits</span>
+            @if (siteVisits().length > 0) {
+            <span class="nav-badge">{{ siteVisits().length }}</span>
             }
           </button>
 
+          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'consultations'"
+            (click)="setSection('consultations')">
+            <span class="material-symbols-outlined nav-icon">support_agent</span>
+            <span class="nav-title">Advisory Consultations</span>
+            @if (consultations().length > 0) {
+            <span class="nav-badge">{{ consultations().length }}</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'saved_searches'"
+            (click)="setSection('saved_searches')">
+            <span class="material-symbols-outlined nav-icon">saved_search</span>
+            <span class="nav-title">My Saved Searches</span>
+            @if (savedSearches().length > 0) {
+            <span class="nav-badge">{{ savedSearches().length }}</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'bookings'"
+            (click)="setSection('bookings')">
+            <span class="material-symbols-outlined nav-icon">gavel</span>
+            <span class="nav-title">Bookings &amp; Enquiries</span>
+            @if (plotBookings().length > 0) {
+            <span class="nav-badge">{{ plotBookings().length }}</span>
+            }
+          </button>
+
+          <div class="sidebar-divider"></div>
+
+          <!-- PORTFOLIO & HISTORY -->
           <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'favourites'"
             (click)="setSection('favourites')">
             <span class="material-symbols-outlined nav-icon">favorite</span>
@@ -143,12 +181,6 @@
             }
           </button>
 
-          <a routerLink="/subscriptions" class="sidebar-nav-item">
-            <span class="material-symbols-outlined nav-icon">card_membership</span>
-            <span class="nav-title">Membership &amp; Plans</span>
-            <span class="nav-badge plan-badge">{{ subscriptionService.activePlanName() }}</span>
-          </a>
-
           <a routerLink="/wallet" class="sidebar-nav-item">
             <span class="material-symbols-outlined nav-icon">account_balance_wallet</span>
             <span class="nav-title">Media Wallet &amp; Recharge</span>
@@ -161,21 +193,12 @@
             <span class="nav-title">Payment Ledger</span>
           </button>
 
-          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'visits'"
-            (click)="setSection('visits')">
-            <span class="material-symbols-outlined nav-icon">event_available</span>
-            <span class="nav-title">Scheduled Site Visits</span>
-            @if (visitsCount() > 0) {
-            <span class="nav-badge">{{ visitsCount() }}</span>
-            }
-          </button>
-
-          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'brochures'"
-            (click)="setSection('brochures')">
-            <span class="material-symbols-outlined nav-icon">description</span>
-            <span class="nav-title">Downloaded Brochures</span>
-            @if (brochuresCount() > 0) {
-            <span class="nav-badge">{{ brochuresCount() }}</span>
+          <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'my_properties'"
+            (click)="setSection('my_properties')">
+            <span class="material-symbols-outlined nav-icon">real_estate_agent</span>
+            <span class="nav-title">My Listed Properties</span>
+            @if (myPropertiesCount() > 0) {
+            <span class="nav-badge">{{ myPropertiesCount() }}</span>
             }
           </button>
 
@@ -656,58 +679,251 @@
         }
 
         <!-- ========================================== -->
-        <!-- SECTION 5: SCHEDULED SITE VISITS           -->
+        <!-- PRD WORKSPACE TAB 1: MY MEMBERSHIP         -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'membership') {
+        <div class="content-section-block">
+          <div class="section-heading-bar">
+            <div>
+              <h2 class="section-title">My Membership &amp; Entitlements</h2>
+              <p class="section-subtitle">Active tier subscription, validity expiry countdown, and remaining verification credits.</p>
+            </div>
+            <a routerLink="/subscriptions" class="btn-primary-action">
+              <span class="material-symbols-outlined">upgrade</span>
+              <span>Upgrade Plan</span>
+            </a>
+          </div>
+
+          <!-- Active Plan Tier Card -->
+          <div class="membership-tier-hero">
+            <div class="tier-hero-left">
+              <div class="tier-icon-box">
+                <span class="material-symbols-outlined">workspace_premium</span>
+              </div>
+              <div class="tier-info">
+                <div class="tier-badge-row">
+                  <span class="plan-pill-main">{{ userWorkspace()?.membership?.subscription?.plan_name || subscriptionService.activePlanName() }}</span>
+                  <span class="plan-status-active">
+                    <span class="status-pulse-dot"></span>
+                    <span>ACTIVE</span>
+                  </span>
+                </div>
+                <h3 class="tier-name">{{ userWorkspace()?.membership?.subscription?.badge_text || 'Buyer Advisory Access' }}</h3>
+                <p class="tier-subtext">Direct cadastral verification, developer title escrow, and priority relationship manager.</p>
+              </div>
+            </div>
+
+            <!-- Expiry countdown -->
+            <div class="tier-countdown-box">
+              <div class="countdown-label">Validity Expiry</div>
+              <div class="countdown-value">
+                <span class="countdown-days">{{ userWorkspace()?.membership?.daysRemaining || 30 }}</span>
+                <span class="countdown-unit">Days Left</span>
+              </div>
+              <div class="countdown-sub">
+                @if (userWorkspace()?.membership?.subscription?.expires_at) {
+                  Valid until {{ userWorkspace()?.membership?.subscription?.expires_at | date:'mediumDate' }}
+                } @else {
+                  Auto-renews or renew manually
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 4-Meter Remaining Credits Grid -->
+          <h3 class="subsection-title">Remaining Entitlement Credits</h3>
+          <div class="credits-meter-grid">
+            <!-- Project Views -->
+            <div class="credit-card">
+              <div class="credit-card-header">
+                <span class="material-symbols-outlined credit-icon">visibility</span>
+                <span class="credit-type">Project Views</span>
+              </div>
+              <div class="credit-count-row">
+                <span class="credit-current">
+                  {{ (userWorkspace()?.membership?.entitlements?.project_view_limit || 2) - (userWorkspace()?.membership?.entitlements?.project_views_used || 0) }}
+                </span>
+                <span class="credit-total">of {{ userWorkspace()?.membership?.entitlements?.project_view_limit || 2 }} Left</span>
+              </div>
+              <div class="credit-progress-track">
+                <div class="credit-progress-bar"
+                  [style.width.%]="(((userWorkspace()?.membership?.entitlements?.project_views_used || 0) / (userWorkspace()?.membership?.entitlements?.project_view_limit || 2)) * 100)">
+                </div>
+              </div>
+              <div class="credit-footer-note">Unique visits tracked; duplicate views free.</div>
+            </div>
+
+            <!-- Comparisons -->
+            <div class="credit-card">
+              <div class="credit-card-header">
+                <span class="material-symbols-outlined credit-icon">compare_arrows</span>
+                <span class="credit-type">Side-by-Side Comparisons</span>
+              </div>
+              <div class="credit-count-row">
+                <span class="credit-current">
+                  {{ (userWorkspace()?.membership?.entitlements?.comparison_limit || 1) - (userWorkspace()?.membership?.entitlements?.comparisons_used || 0) }}
+                </span>
+                <span class="credit-total">of {{ userWorkspace()?.membership?.entitlements?.comparison_limit || 1 }} Left</span>
+              </div>
+              <div class="credit-progress-track">
+                <div class="credit-progress-bar"
+                  [style.width.%]="(((userWorkspace()?.membership?.entitlements?.comparisons_used || 0) / (userWorkspace()?.membership?.entitlements?.comparison_limit || 1)) * 100)">
+                </div>
+              </div>
+              <div class="credit-footer-note">Benchmark legal, pricing, and amenities.</div>
+            </div>
+
+            <!-- Advisory Sessions -->
+            <div class="credit-card">
+              <div class="credit-card-header">
+                <span class="material-symbols-outlined credit-icon">support_agent</span>
+                <span class="credit-type">Advisory Sessions</span>
+              </div>
+              <div class="credit-count-row">
+                <span class="credit-current">
+                  {{ (userWorkspace()?.membership?.entitlements?.advisory_session_limit || 1) - (userWorkspace()?.membership?.entitlements?.advisory_sessions_used || 0) }}
+                </span>
+                <span class="credit-total">of {{ userWorkspace()?.membership?.entitlements?.advisory_session_limit || 1 }} Left</span>
+              </div>
+              <div class="credit-progress-track">
+                <div class="credit-progress-bar"
+                  [style.width.%]="(((userWorkspace()?.membership?.entitlements?.advisory_sessions_used || 0) / (userWorkspace()?.membership?.entitlements?.advisory_session_limit || 1)) * 100)">
+                </div>
+              </div>
+              <div class="credit-footer-note">1-on-1 calls with Senior Cadastral Specialists.</div>
+            </div>
+
+            <!-- Site Visits -->
+            <div class="credit-card">
+              <div class="credit-card-header">
+                <span class="material-symbols-outlined credit-icon">directions_car</span>
+                <span class="credit-type">Assisted Site Visits</span>
+              </div>
+              <div class="credit-count-row">
+                <span class="credit-current">
+                  {{ (userWorkspace()?.membership?.entitlements?.site_visit_limit || 0) - (userWorkspace()?.membership?.entitlements?.site_visits_used || 0) }}
+                </span>
+                <span class="credit-total">of {{ userWorkspace()?.membership?.entitlements?.site_visit_limit || 0 }} Left</span>
+              </div>
+              <div class="credit-progress-track">
+                <div class="credit-progress-bar"
+                  [style.width.%]="(((userWorkspace()?.membership?.entitlements?.site_visits_used || 0) / (userWorkspace()?.membership?.entitlements?.site_visit_limit || 1)) * 100)">
+                </div>
+              </div>
+              <div class="credit-footer-note">Cab pick-up &amp; verified field officer escort.</div>
+            </div>
+          </div>
+
+          <!-- Plan Upgrade Banner -->
+          <div class="plan-upgrade-banner">
+            <div class="banner-content">
+              <h4 class="banner-title">Need unlimited legal dossiers &amp; priority site visits?</h4>
+              <p class="banner-desc">Explore the VIP Concierge &amp; Priority Buyer plans with dedicated RERA advocate escorts.</p>
+            </div>
+            <a routerLink="/subscriptions" class="btn-banner-upgrade">
+              <span>View All 4 Plans</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- PRD WORKSPACE TAB 2: SCHEDULED SITE VISITS -->
         <!-- ========================================== -->
         @if (activeSection() === 'visits') {
         <div class="content-section-block">
           <div class="section-heading-bar">
             <div>
-              <h2 class="section-title">Scheduled Site Visits &amp; Inquiries</h2>
-              <p class="section-subtitle">Verified on-site property walkthroughs with assigned regional relationship
-                executives.</p>
+              <h2 class="section-title">My Scheduled Site Visits</h2>
+              <p class="section-subtitle">Confirmed physical property walkthroughs with assigned regional relationship executives.</p>
             </div>
+            <a routerLink="/search" class="btn-primary-action">
+              <span class="material-symbols-outlined">add_location_alt</span>
+              <span>Schedule New Visit</span>
+            </a>
           </div>
 
-          @if (getVisits().length > 0) {
-          <div class="visits-card-list">
-            @for (v of getVisits(); track v.id) {
-            <div class="visit-card">
-              <div class="visit-status-bar">
-                <span class="status-chip" [class.success]="v.status === 'scheduled' || v.status === 'completed'"
-                  [class.info]="v.status === 'new' || v.status === 'contacted'">
-                  <span class="material-symbols-outlined chip-icon">event</span>
+          @if (siteVisits().length > 0) {
+          <div class="workspace-list-grid">
+            @for (v of siteVisits(); track v.id) {
+            <div class="workspace-item-card">
+              <div class="item-card-header">
+                <div class="item-id-pill">VISIT-{{ v.id }}</div>
+                <span class="status-chip"
+                  [class.status-confirmed]="v.status === 'confirmed'"
+                  [class.status-requested]="v.status === 'requested'"
+                  [class.status-completed]="v.status === 'completed'"
+                  [class.status-cancelled]="v.status === 'cancelled'">
+                  <span class="status-dot"></span>
                   <span>{{ v.status | uppercase }}</span>
                 </span>
-                <span class="visit-lead-type">On-Site Physical Inspection</span>
               </div>
 
-              <div class="visit-body">
-                <div class="visit-prop-details">
-                  <h3 class="visit-prop-title" [routerLink]="['/property', v.propertyId]">{{ v.propertyTitle }}</h3>
-                  <div class="visit-locality">
+              <div class="item-card-body">
+                <div class="item-main-details">
+                  <h3 class="item-title">
+                    <a [routerLink]="['/property', v.property_id]">{{ v.property_title }}</a>
+                  </h3>
+                  <div class="item-locality">
                     <span class="material-symbols-outlined">location_on</span>
-                    <span>{{ v.locality || 'Chennai Urban Corridor' }}, {{ v.city || 'Tamil Nadu' }}</span>
+                    <span>{{ v.locality || 'Chennai Urban Corridor' }}</span>
                   </div>
                 </div>
 
-                <div class="visit-timing-box">
-                  <div class="timing-label">Appointment Time</div>
-                  <div class="timing-val">
-                    <span class="material-symbols-outlined">calendar_today</span>
-                    <span>{{ v.preferredDate || 'Upcoming Weekend' }} ({{ v.visitSlot || 'Morning 10 AM - 1 PM'
-                      }})</span>
+                <div class="visit-meta-grid">
+                  <div class="meta-box">
+                    <span class="meta-label">Visit Date &amp; Slot</span>
+                    <div class="meta-value">
+                      <span class="material-symbols-outlined">event</span>
+                      <span>{{ v.visit_date }} ({{ v.visit_slot }})</span>
+                    </div>
+                  </div>
+
+                  <div class="meta-box">
+                    <span class="meta-label">Pickup Location</span>
+                    <div class="meta-value">
+                      <span class="material-symbols-outlined">commute</span>
+                      <span>{{ v.pickup_location || 'Koyambedu Metro Station, Gate 2' }}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div class="visit-actions">
-                  <a href="tel:+919444100000" class="btn-visit-concierge">
-                    <span class="material-symbols-outlined">call</span>
-                    <span>Contact Escort</span>
-                  </a>
-                  <a [routerLink]="['/property', v.propertyId]" class="btn-visit-details">
-                    <span>View Property</span>
+                <!-- Assigned Executive Box -->
+                <div class="executive-assigned-box">
+                  <div class="exec-avatar">
+                    <span class="material-symbols-outlined">badge</span>
+                  </div>
+                  <div class="exec-info">
+                    <div class="exec-label">Assigned Executive</div>
+                    <div class="exec-name">{{ v.assigned_executive_name || 'Ramesh V (Relationship Mgr)' }}</div>
+                    <div class="exec-contact">
+                      <a [href]="'tel:' + v.assigned_executive_phone" class="exec-phone-link">
+                        <span class="material-symbols-outlined">call</span>
+                        <span>{{ v.assigned_executive_phone || '+91 94440 12345' }}</span>
+                      </a>
+                    </div>
+                  </div>
+                  <a [href]="'https://wa.me/' + (v.assigned_executive_phone ? v.assigned_executive_phone.replace('+', '').replace(' ', '') : '919444012345')"
+                    target="_blank" class="btn-whatsapp-mini">
+                    <span class="material-symbols-outlined">chat</span>
+                    <span>WhatsApp</span>
                   </a>
                 </div>
+
+                @if (v.admin_notes) {
+                <div class="item-notes-box">
+                  <span class="notes-label">Escort Notes:</span>
+                  <span class="notes-text">{{ v.admin_notes }}</span>
+                </div>
+                }
+              </div>
+
+              <div class="item-card-footer">
+                <a [routerLink]="['/property', v.property_id]" class="btn-view-prop-link">
+                  <span>View Project Details</span>
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
               </div>
             </div>
             }
@@ -718,11 +934,345 @@
               <span class="material-symbols-outlined">event_busy</span>
             </div>
             <h3 class="empty-title">No Site Visits Scheduled Yet</h3>
-            <p class="empty-text">Schedule free private property walkthroughs with cab pick-up options directly from any
-              property page.</p>
-            <a routerLink="/" class="btn-primary-action">
+            <p class="empty-text">Schedule private property walkthroughs with dedicated pickup transport and cadastral legal officer assistance.</p>
+            <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">travel_explore</span>
-              <span>Explore Properties to Visit</span>
+              <span>Browse Properties to Visit</span>
+            </a>
+          </div>
+          }
+        </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- PRD WORKSPACE TAB 3: ADVISORY CONSULTATIONS-->
+        <!-- ========================================== -->
+        @if (activeSection() === 'consultations') {
+        <div class="content-section-block">
+          <div class="section-heading-bar">
+            <div>
+              <h2 class="section-title">My Advisory Consultations</h2>
+              <p class="section-subtitle">Log of past 1-on-1 strategy calls, advisor notes, and downloadable property recommendation dossiers.</p>
+            </div>
+            <a routerLink="/subscriptions" class="btn-primary-action">
+              <span class="material-symbols-outlined">video_call</span>
+              <span>Request Advisory Call</span>
+            </a>
+          </div>
+
+          @if (consultations().length > 0) {
+          <div class="workspace-list-grid">
+            @for (c of consultations(); track c.id) {
+            <div class="workspace-item-card">
+              <div class="item-card-header">
+                <div class="advisor-badge">
+                  <div class="advisor-icon">
+                    <span class="material-symbols-outlined">person_pin</span>
+                  </div>
+                  <div class="advisor-title-col">
+                    <span class="advisor-name">{{ c.advisor_name }}</span>
+                    <span class="advisor-role">{{ c.advisor_role }}</span>
+                  </div>
+                </div>
+                <span class="status-chip status-confirmed">
+                  <span class="status-dot"></span>
+                  <span>{{ c.status | uppercase }}</span>
+                </span>
+              </div>
+
+              <div class="item-card-body">
+                <div class="consultation-meta-row">
+                  <div class="meta-tag">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span>{{ c.consultation_date }}</span>
+                  </div>
+                  <div class="meta-tag">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span>{{ c.duration_minutes }} Minutes</span>
+                  </div>
+                </div>
+
+                <!-- Advisor Notes -->
+                <div class="advisor-notes-panel">
+                  <div class="panel-header">
+                    <span class="material-symbols-outlined">quick_reference</span>
+                    <span>Advisor Key Findings &amp; Summary</span>
+                  </div>
+                  <p class="panel-text">{{ c.advisor_notes }}</p>
+                </div>
+
+                <!-- Recommended Plots -->
+                @if (c.recommendations && c.recommendations.length > 0) {
+                <div class="recommendations-box">
+                  <div class="rec-title">Curated Property Recommendations:</div>
+                  <div class="rec-list">
+                    @for (rec of c.recommendations; track rec.id) {
+                    <div class="rec-item">
+                      <div class="rec-item-header">
+                        <span class="rec-prop-title">{{ rec.title }}</span>
+                        <span class="rec-price">{{ rec.price }}</span>
+                      </div>
+                      <div class="rec-locality">{{ rec.locality }}</div>
+                      <div class="rec-reason"><strong>Advisor Rationale:</strong> {{ rec.reason }}</div>
+                    </div>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+
+              <div class="item-card-footer">
+                @if (c.dossier_pdf_url) {
+                <a [href]="c.dossier_pdf_url" target="_blank" class="btn-download-dossier">
+                  <span class="material-symbols-outlined">download</span>
+                  <span>Download Property Recommendation Dossier (PDF)</span>
+                </a>
+                } @else {
+                <span class="text-muted-sm">Dossier generation in progress</span>
+                }
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <div class="empty-state-card">
+            <div class="empty-icon-wrap">
+              <span class="material-symbols-outlined">headset_mic</span>
+            </div>
+            <h3 class="empty-title">No Advisory Sessions Logged</h3>
+            <p class="empty-text">Consult our legal and cadastral specialists for title verification, guideline valuation, and investment roadmap planning.</p>
+            <a routerLink="/subscriptions" class="btn-primary-action">
+              <span class="material-symbols-outlined">calendar_today</span>
+              <span>Schedule 1-on-1 Consultation</span>
+            </a>
+          </div>
+          }
+        </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- PRD WORKSPACE TAB 4: MY SAVED SEARCHES     -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'saved_searches') {
+        <div class="content-section-block">
+          <div class="section-heading-bar">
+            <div>
+              <h2 class="section-title">My Saved Searches &amp; Alerts</h2>
+              <p class="section-subtitle">Stored search criteria with instant Email and WhatsApp alert triggers for new matching plots.</p>
+            </div>
+            <a routerLink="/search" class="btn-primary-action">
+              <span class="material-symbols-outlined">search</span>
+              <span>Explore &amp; Save Search</span>
+            </a>
+          </div>
+
+          @if (savedSearches().length > 0) {
+          <div class="workspace-list-grid">
+            @for (s of savedSearches(); track s.id) {
+            <div class="workspace-item-card">
+              <div class="item-card-header">
+                <div class="saved-search-title-row">
+                  <span class="material-symbols-outlined search-icon">saved_search</span>
+                  <h3 class="search-title">{{ s.search_name }}</h3>
+                </div>
+                <div class="match-count-badge">
+                  <span class="material-symbols-outlined">domain</span>
+                  <span>{{ s.matches_count }} Plots Matched</span>
+                </div>
+              </div>
+
+              <div class="item-card-body">
+                <!-- Filters tags -->
+                <div class="filters-chips-cloud">
+                  @if (s.filters.district) {
+                  <span class="filter-chip">
+                    <span class="chip-k">District:</span>
+                    <span class="chip-v">{{ s.filters.district }}</span>
+                  </span>
+                  }
+                  @if (s.filters.locality) {
+                  <span class="filter-chip">
+                    <span class="chip-k">Locality:</span>
+                    <span class="chip-v">{{ s.filters.locality }}</span>
+                  </span>
+                  }
+                  @if (s.filters.budgetMax) {
+                  <span class="filter-chip">
+                    <span class="chip-k">Budget:</span>
+                    <span class="chip-v">Up to ₹{{ s.filters.budgetMax / 100000 }} Lakhs</span>
+                  </span>
+                  }
+                  @if (s.filters.propertyType) {
+                  <span class="filter-chip">
+                    <span class="chip-k">Type:</span>
+                    <span class="chip-v">{{ s.filters.propertyType }}</span>
+                  </span>
+                  }
+                </div>
+
+                <!-- Alert Channels Notification Strip -->
+                <div class="alerts-channel-status">
+                  <div class="channel-pill" [class.active]="s.email_alerts_enabled">
+                    <span class="material-symbols-outlined">mail</span>
+                    <span>Email Alerts: {{ s.email_alerts_enabled ? 'Active' : 'Disabled' }}</span>
+                  </div>
+                  <div class="channel-pill" [class.active]="s.whatsapp_alerts_enabled">
+                    <span class="material-symbols-outlined">chat</span>
+                    <span>WhatsApp Alerts: {{ s.whatsapp_alerts_enabled ? 'Active' : 'Disabled' }}</span>
+                  </div>
+                </div>
+
+                <div class="last-notified-time">
+                  <span class="material-symbols-outlined">notifications_active</span>
+                  <span>Last Alert Dispatched: {{ s.last_notified_at || 'Today at 02:30 PM' }}</span>
+                </div>
+              </div>
+
+              <div class="item-card-footer">
+                <a routerLink="/search" class="btn-primary-action">
+                  <span class="material-symbols-outlined">travel_explore</span>
+                  <span>View Matching Plots Now</span>
+                </a>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <div class="empty-state-card">
+            <div class="empty-icon-wrap">
+              <span class="material-symbols-outlined">manage_search</span>
+            </div>
+            <h3 class="empty-title">No Saved Searches Stored</h3>
+            <p class="empty-text">Save your custom search parameters to receive automated WhatsApp notifications when new plots enter the registry.</p>
+            <a routerLink="/search" class="btn-primary-action">
+              <span class="material-symbols-outlined">search</span>
+              <span>Find Plots &amp; Save Search</span>
+            </a>
+          </div>
+          }
+        </div>
+        }
+
+        <!-- ========================================== -->
+        <!-- PRD WORKSPACE TAB 5: BOOKINGS & ENQUIRIES  -->
+        <!-- ========================================== -->
+        @if (activeSection() === 'bookings') {
+        <div class="content-section-block">
+          <div class="section-heading-bar">
+            <div>
+              <h2 class="section-title">My Bookings &amp; Enquiries</h2>
+              <p class="section-subtitle">Real-time tracker for plots placed on hold, advance tokens, document verification, and SRO registration.</p>
+            </div>
+            <a routerLink="/search" class="btn-primary-action">
+              <span class="material-symbols-outlined">add_task</span>
+              <span>Enquire New Plot</span>
+            </a>
+          </div>
+
+          @if (plotBookings().length > 0) {
+          <div class="workspace-list-grid">
+            @for (b of plotBookings(); track b.id) {
+            <div class="workspace-item-card">
+              <div class="item-card-header">
+                <div class="booking-title-col">
+                  <div class="plot-number-badge">Plot #{{ b.plot_number }}</div>
+                  <h3 class="booking-prop-title">
+                    <a [routerLink]="['/property', b.property_id]">{{ b.property_title }}</a>
+                  </h3>
+                </div>
+                <div class="booking-extent-pill">
+                  <span class="material-symbols-outlined">straighten</span>
+                  <span>{{ b.plot_extent_sqft | number }} sq.ft</span>
+                </div>
+              </div>
+
+              <div class="item-card-body">
+                <!-- Financials Highlight -->
+                <div class="booking-financials-bar">
+                  <div class="f-col">
+                    <span class="f-lbl">Total Agreement Value</span>
+                    <span class="f-val">₹{{ b.total_price | number }}</span>
+                  </div>
+                  <div class="f-col">
+                    <span class="f-lbl">Token Advance Deposited</span>
+                    <span class="f-val text-brand-green font-bold">₹{{ b.token_advance_paid | number }}</span>
+                  </div>
+                  <div class="f-col">
+                    <span class="f-lbl">Target SRO Registration</span>
+                    <span class="f-val">{{ b.target_registration_date || 'Within 15 Days' }}</span>
+                  </div>
+                </div>
+
+                <!-- 5-Stage Visual Workflow Tracker -->
+                <div class="workflow-stepper">
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 1" [class.current]="getBookingStepIndex(b.status) === 1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Plot on Hold</div>
+                  </div>
+                  <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 2"></div>
+
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 2" [class.current]="getBookingStepIndex(b.status) === 2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Token Paid</div>
+                  </div>
+                  <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 3"></div>
+
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 3" [class.current]="getBookingStepIndex(b.status) === 3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Doc Verification</div>
+                  </div>
+                  <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 4"></div>
+
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 4" [class.current]="getBookingStepIndex(b.status) === 4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">In Registration</div>
+                  </div>
+                  <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 5"></div>
+
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 5" [class.current]="getBookingStepIndex(b.status) === 5">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Completed</div>
+                  </div>
+                </div>
+
+                <!-- Assigned Legal Officer -->
+                <div class="legal-escort-card">
+                  <div class="legal-icon">
+                    <span class="material-symbols-outlined">gavel</span>
+                  </div>
+                  <div class="legal-info">
+                    <div class="legal-lbl">Assigned Legal &amp; Title Verification Officer</div>
+                    <div class="legal-name">{{ b.assigned_legal_officer || 'Advocate S. Swaminathan (SRO Madras HC)' }}</div>
+                  </div>
+                </div>
+
+                @if (b.notes) {
+                <div class="item-notes-box">
+                  <span class="notes-label">Cadastral &amp; Escrow Update:</span>
+                  <span class="notes-text">{{ b.notes }}</span>
+                </div>
+                }
+              </div>
+
+              <div class="item-card-footer">
+                <a [routerLink]="['/property', b.property_id]" class="btn-primary-action">
+                  <span class="material-symbols-outlined">description</span>
+                  <span>View Full Title Dossier</span>
+                </a>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <div class="empty-state-card">
+            <div class="empty-icon-wrap">
+              <span class="material-symbols-outlined">hourglass_empty</span>
+            </div>
+            <h3 class="empty-title">No Plots On Hold Or In Registration</h3>
+            <p class="empty-text">Once you place a plot on hold or submit a token advance, our legal officers will guide the entire title registration workflow here.</p>
+            <a routerLink="/search" class="btn-primary-action">
+              <span class="material-symbols-outlined">explore</span>
+              <span>Find Verified Ready Plots</span>
             </a>
           </div>
           }
