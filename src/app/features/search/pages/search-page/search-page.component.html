@@ -410,8 +410,8 @@
             </label>
             <div class="budget-grid">
               @for (b of budgetOptions; track b.value) {
-              <button type="button" class="budget-pill" [class.selected]="selectedBudget() === b.value && !isCustomBudgetActive()"
-                (click)="setBudget(b.value)">
+              <button type="button" class="budget-pill"
+                [class.selected]="selectedBudget() === b.value && !isCustomBudgetActive()" (click)="setBudget(b.value)">
                 {{ b.label }}
               </button>
               }
@@ -422,33 +422,21 @@
               <div class="slider-header-row">
                 <span class="slider-label">Custom Range</span>
                 <span class="slider-range-val">
-                  {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ? formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
+                  {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ?
+                  formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
                 </span>
               </div>
 
               <div class="range-slider-wrapper">
                 <div class="range-slider-track"></div>
-                <div class="range-slider-fill" 
-                  [style.left.%]="sliderMinPercent()" 
+                <div class="range-slider-fill" [style.left.%]="sliderMinPercent()"
                   [style.width.%]="sliderWidthPercent()"></div>
-                <input 
-                  type="range" 
-                  class="range-slider-input range-input-min" 
-                  [min]="MIN_BUDGET_LIMIT" 
-                  [max]="MAX_BUDGET_LIMIT" 
-                  [step]="BUDGET_STEP"
-                  [value]="customBudgetMin()" 
-                  (input)="onMinSliderChange($event)"
-                  aria-label="Minimum budget slider" />
-                <input 
-                  type="range" 
-                  class="range-slider-input range-input-max" 
-                  [min]="MIN_BUDGET_LIMIT" 
-                  [max]="MAX_BUDGET_LIMIT" 
-                  [step]="BUDGET_STEP"
-                  [value]="customBudgetMax()" 
-                  (input)="onMaxSliderChange($event)"
-                  aria-label="Maximum budget slider" />
+                <input type="range" class="range-slider-input range-input-min" [min]="MIN_BUDGET_LIMIT"
+                  [max]="MAX_BUDGET_LIMIT" [step]="BUDGET_STEP" [value]="customBudgetMin()"
+                  (input)="onMinSliderChange($event)" aria-label="Minimum budget slider" />
+                <input type="range" class="range-slider-input range-input-max" [min]="MIN_BUDGET_LIMIT"
+                  [max]="MAX_BUDGET_LIMIT" [step]="BUDGET_STEP" [value]="customBudgetMax()"
+                  (input)="onMaxSliderChange($event)" aria-label="Maximum budget slider" />
               </div>
 
               <div class="slider-ticks-row">

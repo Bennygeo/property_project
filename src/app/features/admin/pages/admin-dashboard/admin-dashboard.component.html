@@ -2835,7 +2835,8 @@
           </div>
           <div>
             <h2 class="banner-main-title">Buyer Workspaces &amp; CRM Desk</h2>
-            <p class="banner-subtitle">Centralized administrative control for buyer subscriptions, entitlement quotas, site visit escorts, advisory dossiers, and registration legal workflows.</p>
+            <p class="banner-subtitle">Centralized administrative control for buyer subscriptions, entitlement quotas,
+              site visit escorts, advisory dossiers, and registration legal workflows.</p>
           </div>
         </div>
 
@@ -2947,7 +2948,9 @@
                 </div>
               </td>
               <td>
-                <span class="tier-chip" [class.tier-vip]="u.plan_id === 'vip_concierge'" [class.tier-smart]="u.plan_id === 'smart_buyer'" [class.tier-priority]="u.plan_id === 'priority_buyer'">
+                <span class="tier-chip" [class.tier-vip]="u.plan_id === 'vip_concierge'"
+                  [class.tier-smart]="u.plan_id === 'smart_buyer'"
+                  [class.tier-priority]="u.plan_id === 'priority_buyer'">
                   {{ u.plan_name }}
                 </span>
               </td>
@@ -2956,10 +2959,14 @@
               </td>
               <td>
                 <div class="metrics-mini-list">
-                  <span class="m-pill" title="Site Visits"><span class="material-symbols-outlined">event</span> {{ u.total_visits }}</span>
-                  <span class="m-pill" title="Advisory Consultations"><span class="material-symbols-outlined">support_agent</span> {{ u.total_consultations }}</span>
-                  <span class="m-pill" title="Saved Searches"><span class="material-symbols-outlined">saved_search</span> {{ u.total_saved_searches }}</span>
-                  <span class="m-pill" title="Plot Bookings"><span class="material-symbols-outlined">gavel</span> {{ u.total_bookings }}</span>
+                  <span class="m-pill" title="Site Visits"><span class="material-symbols-outlined">event</span> {{
+                    u.total_visits }}</span>
+                  <span class="m-pill" title="Advisory Consultations"><span
+                      class="material-symbols-outlined">support_agent</span> {{ u.total_consultations }}</span>
+                  <span class="m-pill" title="Saved Searches"><span
+                      class="material-symbols-outlined">saved_search</span> {{ u.total_saved_searches }}</span>
+                  <span class="m-pill" title="Plot Bookings"><span class="material-symbols-outlined">gavel</span> {{
+                    u.total_bookings }}</span>
                 </div>
               </td>
               <td class="td-actions">
@@ -3008,7 +3015,8 @@
               <td>
                 <div class="prop-meta-cell">
                   <a [routerLink]="['/property', v.property_id]" class="prop-link-bold">{{ v.property_title }}</a>
-                  <span class="text-muted-xs"><span class="material-symbols-outlined">location_on</span> {{ v.locality }}</span>
+                  <span class="text-muted-xs"><span class="material-symbols-outlined">location_on</span> {{ v.locality
+                    }}</span>
                 </div>
               </td>
               <td>
@@ -3027,7 +3035,10 @@
                 </div>
               </td>
               <td>
-                <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'" [class.status-requested]="v.status === 'requested'" [class.status-completed]="v.status === 'completed'" [class.status-cancelled]="v.status === 'cancelled'">
+                <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'"
+                  [class.status-requested]="v.status === 'requested'"
+                  [class.status-completed]="v.status === 'completed'"
+                  [class.status-cancelled]="v.status === 'cancelled'">
                   {{ v.status | uppercase }}
                 </span>
               </td>
@@ -4002,7 +4013,8 @@
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Visit Status</label>
-            <select class="form-input-field" [ngModel]="editVisitStatus()" (ngModelChange)="editVisitStatus.set($event)">
+            <select class="form-input-field" [ngModel]="editVisitStatus()"
+              (ngModelChange)="editVisitStatus.set($event)">
               <option value="requested">Requested (Pending Confirmation)</option>
               <option value="confirmed">Confirmed (Escort Assigned)</option>
               <option value="completed">Completed (Walkthrough Finished)</option>
@@ -4014,25 +4026,30 @@
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Assigned Executive Name</label>
-            <input type="text" class="form-input-field" [ngModel]="editExecutiveName()" (ngModelChange)="editExecutiveName.set($event)" placeholder="e.g. Ramesh V (Senior Field Officer)" />
+            <input type="text" class="form-input-field" [ngModel]="editExecutiveName()"
+              (ngModelChange)="editExecutiveName.set($event)" placeholder="e.g. Ramesh V (Senior Field Officer)" />
           </div>
           <div class="form-group flex-1">
             <label class="form-label">Executive Contact Phone</label>
-            <input type="text" class="form-input-field" [ngModel]="editExecutivePhone()" (ngModelChange)="editExecutivePhone.set($event)" placeholder="e.g. +91 94440 12345" />
+            <input type="text" class="form-input-field" [ngModel]="editExecutivePhone()"
+              (ngModelChange)="editExecutivePhone.set($event)" placeholder="e.g. +91 94440 12345" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Pickup &amp; Transport Location</label>
-            <input type="text" class="form-input-field" [ngModel]="editPickupLocation()" (ngModelChange)="editPickupLocation.set($event)" placeholder="e.g. Koyambedu Metro Station Gate 2" />
+            <input type="text" class="form-input-field" [ngModel]="editPickupLocation()"
+              (ngModelChange)="editPickupLocation.set($event)" placeholder="e.g. Koyambedu Metro Station Gate 2" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Escort / Internal Notes</label>
-            <textarea class="form-input-field textarea-field" rows="2" [ngModel]="editAdminNotes()" (ngModelChange)="editAdminNotes.set($event)" placeholder="Provide instructions for field officer or buyer pickup details..."></textarea>
+            <textarea class="form-input-field textarea-field" rows="2" [ngModel]="editAdminNotes()"
+              (ngModelChange)="editAdminNotes.set($event)"
+              placeholder="Provide instructions for field officer or buyer pickup details..."></textarea>
           </div>
         </div>
       </div>
@@ -4068,29 +4085,35 @@
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Buyer User ID</label>
-            <input type="number" class="form-input-field" [ngModel]="consultUserId()" (ngModelChange)="consultUserId.set($event)" />
+            <input type="number" class="form-input-field" [ngModel]="consultUserId()"
+              (ngModelChange)="consultUserId.set($event)" />
           </div>
           <div class="form-group flex-1">
             <label class="form-label">Senior Advisor Specialist</label>
-            <input type="text" class="form-input-field" [ngModel]="consultAdvisorName()" (ngModelChange)="consultAdvisorName.set($event)" />
+            <input type="text" class="form-input-field" [ngModel]="consultAdvisorName()"
+              (ngModelChange)="consultAdvisorName.set($event)" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Advisor Role / Specialization</label>
-            <input type="text" class="form-input-field" [ngModel]="consultAdvisorRole()" (ngModelChange)="consultAdvisorRole.set($event)" />
+            <input type="text" class="form-input-field" [ngModel]="consultAdvisorRole()"
+              (ngModelChange)="consultAdvisorRole.set($event)" />
           </div>
           <div class="form-group flex-1">
             <label class="form-label">Attached Dossier Document URL / PDF</label>
-            <input type="text" class="form-input-field" [ngModel]="consultDossier()" (ngModelChange)="consultDossier.set($event)" />
+            <input type="text" class="form-input-field" [ngModel]="consultDossier()"
+              (ngModelChange)="consultDossier.set($event)" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Consultation Findings &amp; Legal Takeaways</label>
-            <textarea class="form-input-field textarea-field" rows="3" [ngModel]="consultNotes()" (ngModelChange)="consultNotes.set($event)" placeholder="Enter advice regarding DTCP master plan, setback requirements, patta transfer timeline..."></textarea>
+            <textarea class="form-input-field textarea-field" rows="3" [ngModel]="consultNotes()"
+              (ngModelChange)="consultNotes.set($event)"
+              placeholder="Enter advice regarding DTCP master plan, setback requirements, patta transfer timeline..."></textarea>
           </div>
         </div>
       </div>
@@ -4125,8 +4148,10 @@
       <div class="modal-dialog-body ws-modal-body">
         <div class="ws-modal-info-strip">
           <div><strong>Buyer:</strong> {{ selectedBooking()?.user_name }}</div>
-          <div><strong>Property:</strong> {{ selectedBooking()?.property_title }} (Plot #{{ selectedBooking()?.plot_number }})</div>
-          <div><strong>Price:</strong> ₹{{ selectedBooking()?.total_price | number }} | <strong>Advance:</strong> ₹{{ selectedBooking()?.token_advance_paid | number }}</div>
+          <div><strong>Property:</strong> {{ selectedBooking()?.property_title }} (Plot #{{
+            selectedBooking()?.plot_number }})</div>
+          <div><strong>Price:</strong> ₹{{ selectedBooking()?.total_price | number }} | <strong>Advance:</strong> ₹{{
+            selectedBooking()?.token_advance_paid | number }}</div>
         </div>
 
         <div class="form-row">
@@ -4146,18 +4171,22 @@
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Assigned Legal &amp; Title Verification Officer</label>
-            <input type="text" class="form-input-field" [ngModel]="bookingLegalOfficer()" (ngModelChange)="bookingLegalOfficer.set($event)" />
+            <input type="text" class="form-input-field" [ngModel]="bookingLegalOfficer()"
+              (ngModelChange)="bookingLegalOfficer.set($event)" />
           </div>
           <div class="form-group flex-1">
             <label class="form-label">Target SRO Registration Date</label>
-            <input type="date" class="form-input-field" [ngModel]="bookingTargetDate()" (ngModelChange)="bookingTargetDate.set($event)" />
+            <input type="date" class="form-input-field" [ngModel]="bookingTargetDate()"
+              (ngModelChange)="bookingTargetDate.set($event)" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Cadastral / Sub-Registrar Progress Notes</label>
-            <textarea class="form-input-field textarea-field" rows="2" [ngModel]="bookingNotes()" (ngModelChange)="bookingNotes.set($event)" placeholder="Enter legal verification status or sub-registrar appointment details..."></textarea>
+            <textarea class="form-input-field textarea-field" rows="2" [ngModel]="bookingNotes()"
+              (ngModelChange)="bookingNotes.set($event)"
+              placeholder="Enter legal verification status or sub-registrar appointment details..."></textarea>
           </div>
         </div>
       </div>
@@ -4190,27 +4219,32 @@
       </div>
 
       <div class="modal-dialog-body ws-modal-body">
-        <p class="ws-modal-subtext">Add verification and access credits directly to buyer account without manual payment billing:</p>
+        <p class="ws-modal-subtext">Add verification and access credits directly to buyer account without manual payment
+          billing:</p>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Add Project Views</label>
-            <input type="number" class="form-input-field" [ngModel]="addViews()" (ngModelChange)="addViews.set($event)" min="0" />
+            <input type="number" class="form-input-field" [ngModel]="addViews()" (ngModelChange)="addViews.set($event)"
+              min="0" />
           </div>
           <div class="form-group flex-1">
             <label class="form-label">Add Comparisons</label>
-            <input type="number" class="form-input-field" [ngModel]="addComparisons()" (ngModelChange)="addComparisons.set($event)" min="0" />
+            <input type="number" class="form-input-field" [ngModel]="addComparisons()"
+              (ngModelChange)="addComparisons.set($event)" min="0" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Add Advisory Sessions</label>
-            <input type="number" class="form-input-field" [ngModel]="addAdvisory()" (ngModelChange)="addAdvisory.set($event)" min="0" />
+            <input type="number" class="form-input-field" [ngModel]="addAdvisory()"
+              (ngModelChange)="addAdvisory.set($event)" min="0" />
           </div>
           <div class="form-group flex-1">
             <label class="form-label">Add Assisted Site Visits</label>
-            <input type="number" class="form-input-field" [ngModel]="addVisits()" (ngModelChange)="addVisits.set($event)" min="0" />
+            <input type="number" class="form-input-field" [ngModel]="addVisits()"
+              (ngModelChange)="addVisits.set($event)" min="0" />
           </div>
         </div>
       </div>

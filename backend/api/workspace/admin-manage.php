@@ -188,3 +188,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Response::error('Admin workspace update error: ' . $e->getMessage(), 500);
     }
 }
+

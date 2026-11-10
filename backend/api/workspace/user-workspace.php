@@ -126,3 +126,4 @@ try {
 } catch (\Throwable $e) {
     Response::error('Failed to load user workspace: ' . $e->getMessage(), 500);
 }
+

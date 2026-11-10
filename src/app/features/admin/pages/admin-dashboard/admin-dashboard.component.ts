@@ -187,10 +187,10 @@ export class AdminDashboardComponent {
     }
 
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces'].includes(params['tab'])) {
-        this.setTab(params['tab'] as AdminActiveTab);
-      }
-    });
+        if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces'].includes(params['tab'])) {
+          this.setTab(params['tab'] as AdminActiveTab);
+        }
+      });
   }
 
   onSignOut(): void {
