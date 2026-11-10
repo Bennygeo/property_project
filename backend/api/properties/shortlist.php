@@ -1,7 +1,7 @@
 <?php
 /**
  * GET/POST/DELETE /api/properties/shortlist.php
- * Manages user property shortlists with database persistence and automatic cascade sync.
+ * Manages user property shortlists with database persistence, guest support, and automatic admin cascade sync.
  */
 
 declare(strict_types=1);
@@ -17,22 +17,93 @@ Response::initCors();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $db = (new Database())->getConnection();
 
+// Ensure default fallback user exists for guest/visitor sessions
+try {
+    $db->exec("
+        INSERT IGNORE INTO users (id, name, email, phone, role, points_balance)
+        VALUES (1, 'Guest / Verified Investor', 'guest@findaplot.in', '+91 94440 00001', 'buyer', 100)
+    ");
+} catch (\Throwable $e) {
+    // Continue
+}
+
 /**
  * Helper to get User ID from request (Query param, JSON body, or default demo user)
  */
-function resolveUserId(array $body = []): int {
+function resolveUserId(PDO $db, array $body = []): int {
+    $cand = 0;
     if (!empty($body['userId'])) {
-        return max(1, (int)$body['userId']);
+        $cand = (int)$body['userId'];
+    } elseif (!empty($_GET['userId'])) {
+        $cand = (int)$_GET['userId'];
     }
-    if (!empty($_GET['userId'])) {
-        return max(1, (int)$_GET['userId']);
+
+    if ($cand > 0) {
+        // Validate user actually exists in users table to prevent FK constraint failure
+        $checkStmt = $db->prepare("SELECT id FROM users WHERE id = ?");
+        $checkStmt->execute([$cand]);
+        if ($checkStmt->fetch()) {
+            return $cand;
+        }
     }
-    // Default to registered user 1 for development/demo sessions
+
+    // Default to system user 1
     return 1;
 }
 
 if ($method === 'GET') {
-    $userId = resolveUserId();
+    $userId = resolveUserId($db);
+    $localIdsParam = trim((string)($_GET['localIds'] ?? ''));
+    $localIds = array_filter(array_map('trim', explode(',', $localIdsParam)));
+
+    $purgedPropertyIds = [];
+    $validLocalIds = [];
+
+    // If client supplied localIds from localStorage, verify each against properties table
+    if (!empty($localIds)) {
+        // Check which localIds actually exist in published properties
+        $placeholders = implode(',', array_fill(0, count($localIds), '?'));
+        $checkStmt = $db->prepare("
+            SELECT id, status 
+            FROM properties 
+            WHERE id IN ($placeholders)
+        ");
+        $checkStmt->execute($localIds);
+        $found = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $existingMap = [];
+        foreach ($found as $row) {
+            if (($row['status'] ?? '') !== 'archived') {
+                $existingMap[$row['id']] = true;
+                $validLocalIds[] = (string)$row['id'];
+            }
+        }
+
+        // Any local ID not in existing published properties was deleted by admin
+        foreach ($localIds as $lid) {
+            if (!isset($existingMap[$lid])) {
+                $purgedPropertyIds[] = $lid;
+                // Delete any orphaned row from user_shortlists
+                try {
+                    $delStmt = $db->prepare("DELETE FROM user_shortlists WHERE property_id = ?");
+                    $delStmt->execute([$lid]);
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        // Auto-sync valid local IDs into user_shortlists for this user
+        if (!empty($validLocalIds) && $userId > 0) {
+            $syncIns = $db->prepare("
+                INSERT IGNORE INTO user_shortlists (user_id, property_id, created_at)
+                VALUES (?, ?, NOW())
+            ");
+            foreach ($validLocalIds as $vlId) {
+                try {
+                    $syncIns->execute([$userId, $vlId]);
+                } catch (\Throwable $e) {}
+            }
+        }
+    }
 
     // Fetch all shortlisted properties joined with properties table
     // Properties removed by admin or archived will be automatically excluded
@@ -60,17 +131,21 @@ if ($method === 'GET') {
         ORDER BY s.created_at DESC
     ");
     $stmt->execute([$userId]);
-    $shortlists = $stmt->fetchAll();
+    $shortlists = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $propertyIds = array_values(array_unique(array_map(function ($row) {
+    $dbPropertyIds = array_values(array_unique(array_map(function ($row) {
         return (string)$row['propertyId'];
     }, $shortlists)));
 
+    // Combined unique list of confirmed active property IDs
+    $allActiveIds = array_values(array_unique(array_merge($dbPropertyIds, $validLocalIds)));
+
     Response::success([
-        'userId'      => $userId,
-        'propertyIds' => $propertyIds,
-        'shortlists'  => $shortlists,
-        'count'       => count($propertyIds)
+        'userId'             => $userId,
+        'propertyIds'        => $allActiveIds,
+        'purgedPropertyIds'  => array_values(array_unique($purgedPropertyIds)),
+        'shortlists'         => $shortlists,
+        'count'              => count($allActiveIds)
     ], 'User shortlists retrieved successfully');
     exit;
 }
@@ -81,7 +156,7 @@ if ($method === 'POST' || $method === 'DELETE') {
 
     $propertyId = trim((string)($body['propertyId'] ?? $_GET['propertyId'] ?? ''));
     $action = strtolower(trim((string)($body['action'] ?? ($method === 'DELETE' ? 'remove' : 'toggle'))));
-    $userId = resolveUserId($body);
+    $userId = resolveUserId($db, $body);
 
     if (empty($propertyId)) {
         Response::error('Property ID is required', 400);
@@ -138,4 +213,3 @@ if ($method === 'POST' || $method === 'DELETE') {
 }
 
 Response::error('Method not allowed', 405);
-

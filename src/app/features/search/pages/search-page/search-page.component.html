@@ -760,11 +760,13 @@
                   <span class="material-symbols-outlined">chat</span>
                 </a>
 
-                <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
+                <button type="button" class="btn-list-shortlist"
+                  [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
                   (click)="propertyService.toggleShortlist(prop.id)"
                   [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Add to shortlist'">
                   <span class="material-symbols-outlined">
-                    {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
+                    {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border'
+                    }}
                   </span>
                 </button>
               </div>
@@ -981,11 +983,13 @@
                     <span class="material-symbols-outlined">chat</span>
                   </a>
 
-                  <button type="button" class="btn-list-shortlist" [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
+                  <button type="button" class="btn-list-shortlist"
+                    [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
                     (click)="propertyService.toggleShortlist(prop.id)"
                     [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Add to shortlist'">
                     <span class="material-symbols-outlined">
-                      {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
+                      {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border'
+                      }}
                     </span>
                   </button>
                 </div>

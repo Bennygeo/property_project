@@ -10,6 +10,7 @@ import { NotificationService } from './notification.service';
 import { WalletService } from './wallet.service';
 import { enrichPropertyWithMockDetails } from './property-details-mock.helper';
 import { MOCK_50_PROPERTIES } from './mock-properties-data';
+import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
 export interface NearbyLocality {
@@ -128,6 +129,7 @@ export class PropertyService {
   private readonly http = inject(HttpClient);
   private readonly notificationService = inject(NotificationService);
   private readonly walletService = inject(WalletService);
+  private readonly authService = inject(AuthService);
   public readonly isSqlLoaded = signal<boolean>(false);
   public readonly totalApiProperties = signal<number>(0);
   public readonly isFetchingApi = signal<boolean>(false);
@@ -214,6 +216,18 @@ export class PropertyService {
     this.activeCategoryFilter.set(filter);
   }
 
+  public getActiveUserId(): number {
+    try {
+      const user = this.authService.currentUser();
+      if (user && typeof user.id === 'number' && user.id > 0) {
+        return user.id;
+      }
+    } catch {
+      // Fallback
+    }
+    return 1;
+  }
+
   public isShortlisted(propertyId: string): boolean {
     if (!propertyId) return false;
     return this.shortlistedPropertyIds().has(propertyId);
@@ -258,12 +272,27 @@ export class PropertyService {
 
   /**
    * Fetch user shortlists from backend database.
-   * If an admin deletes a property from the database, it will automatically
-   * be excluded from the database response and removed from the active shortlists.
+   * Transmits current local shortlists to backend for cross-validation.
+   * If an admin deletes a property from the database, it will be returned in purgedPropertyIds
+   * and automatically pruned from both shortlistedPropertyIds and localStorage.
    */
-  public fetchShortlistsFromBackend(userId: number = 1): void {
-    const tryGet = (baseUrl: string) =>
-      this.http.get<{ success: boolean; data: { propertyIds: string[] } }>(`${baseUrl}?userId=${userId}`);
+  public fetchShortlistsFromBackend(userId?: number): void {
+    const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
+    const currentLocalIds = Array.from(this.shortlistedPropertyIds());
+
+    const qParams = new URLSearchParams();
+    qParams.set('userId', String(effectiveUserId));
+    if (currentLocalIds.length > 0) {
+      qParams.set('localIds', currentLocalIds.join(','));
+    }
+
+    const tryGet = (baseUrl: string) => {
+      const sep = baseUrl.includes('?') ? '&' : '?';
+      return this.http.get<{
+        success: boolean;
+        data: { propertyIds: string[]; purgedPropertyIds?: string[] };
+      }>(`${baseUrl}${sep}${qParams.toString()}`);
+    };
 
     (tryGet(environment.apiUrl + '/properties/shortlist.php').pipe(
       catchError(() => tryGet('/api/properties/shortlist.php')),
@@ -273,19 +302,34 @@ export class PropertyService {
         return of(null);
       })
     ) as Observable<any>).subscribe((res: any) => {
-      if (res && res.success && res.data && Array.isArray(res.data.propertyIds)) {
-        const backendIds: string[] = res.data.propertyIds;
-        const newSet = new Set<string>(backendIds);
-        this.shortlistedPropertyIds.set(newSet);
-        this.saveShortlistsToStorage(newSet);
+      if (res && res.success && res.data) {
+        const validBackendIds: string[] = Array.isArray(res.data.propertyIds) ? res.data.propertyIds : [];
+        const purgedIds: string[] = Array.isArray(res.data.purgedPropertyIds) ? res.data.purgedPropertyIds : [];
+
+        const updatedSet = new Set<string>(this.shortlistedPropertyIds());
+
+        // 1. Prune any property that was deleted by admin from database
+        for (const pid of purgedIds) {
+          updatedSet.delete(pid);
+        }
+
+        // 2. Add all confirmed valid properties
+        for (const vid of validBackendIds) {
+          updatedSet.add(vid);
+        }
+
+        // 3. Save confirmed active set
+        this.shortlistedPropertyIds.set(updatedSet);
+        this.saveShortlistsToStorage(updatedSet);
         this.syncShortlistedStateInProperties();
       }
     });
   }
 
-  toggleShortlist(propertyId: string, userId: number = 1): void {
+  toggleShortlist(propertyId: string, userId?: number): void {
     if (!propertyId) return;
 
+    const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
     const currentSet = new Set(this.shortlistedPropertyIds());
     const isCurrentlyShortlisted = currentSet.has(propertyId);
     const nextState = !isCurrentlyShortlisted;
@@ -316,7 +360,7 @@ export class PropertyService {
     const payload = {
       propertyId: propertyId,
       action: nextState ? 'add' : 'remove',
-      userId: userId
+      userId: effectiveUserId
     };
 
     const tryPost = (baseUrl: string) =>
