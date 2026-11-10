@@ -14,24 +14,16 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       <!-- Section Header -->
       <div class="section-header-row">
         <div class="header-left">
-          <div class="section-location-badge">
-            <span class="material-symbols-outlined loc-badge-pin">location_on</span>
-            <span class="loc-badge-text">{{ locationService.selectedDistrict() }}, Tamil Nadu</span>
-            <button type="button" class="btn-change-district-inline" (click)="locationService.openDistrictModal()" title="Change Tamil Nadu District">
-              <span>Change</span>
-              <span class="material-symbols-outlined">expand_more</span>
-            </button>
-          </div>
-          <h2 class="section-title">Featured Verified Properties in {{ locationService.selectedDistrict() }}</h2>
+          <h2 class="section-title">Featured Verified Properties</h2>
           <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="section-subtitle">
-            Audited legal titles, RERA/DTCP layouts, and verified plots in {{ locationService.selectedDistrict() }}.
+            Audited legal titles, genuine owner contacts, and verified site dimensions in {{ locationService.selectedDistrict() }}.
           </p>
         </div>
         <div class="header-right">
-          <span class="meta-count">Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() || displayedProperties().length }} in {{ locationService.selectedDistrict() }}</span>
+          <span class="meta-count">Showing {{ displayedProperties().length }} of {{ propertyService.totalApiProperties() || displayedProperties().length }}</span>
           <a class="meta-link" routerLink="/search" [queryParams]="getSearchQueryParams()">
-            <span>Search all in {{ locationService.selectedDistrict() }}</span>
+            <span>Search all properties</span>
             <span class="material-symbols-outlined link-arrow">arrow_forward</span>
           </a>
         </div>
@@ -113,13 +105,9 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           </div>
           <h3 class="empty-title">No properties match your filter in {{ locationService.selectedDistrict() }}</h3>
           <p class="empty-desc">
-            Try adjusting your asset class filter, or switch to another Tamil Nadu district.
+            Try adjusting your asset class filter or explore all verified plots across Tamil Nadu.
           </p>
           <div class="empty-actions-row">
-            <button type="button" class="btn-action-switch" (click)="locationService.openDistrictModal()">
-              <span class="material-symbols-outlined">location_on</span>
-              <span>Change District</span>
-            </button>
             <button type="button" class="btn-reset-search" (click)="resetSearch()">
               <span class="material-symbols-outlined">restart_alt</span>
               <span>Reset Filters</span>
@@ -167,50 +155,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-    }
-
-    .section-location-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 0.25rem;
-      width: fit-content;
-    }
-
-    .loc-badge-pin {
-      font-size: 16px;
-      color: #16a34a;
-    }
-
-    .loc-badge-text {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: -0.01em;
-    }
-
-    .btn-change-district-inline {
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      padding: 2px 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-      transition: all 0.15s ease;
-
-      &:hover {
-        background: #e2e8f0;
-        color: #0f172a;
-      }
-
-      .material-symbols-outlined {
-        font-size: 14px;
-      }
     }
 
     .section-badge {
@@ -597,29 +541,6 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       gap: 0.75rem;
       margin-top: 1.25rem;
       flex-wrap: wrap;
-    }
-
-    .btn-action-switch {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 16px;
-      background: var(--brand-green, #5e8f72);
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s ease;
-
-      &:hover {
-        background: var(--brand-green-hover, #497259);
-      }
-
-      .material-symbols-outlined {
-        font-size: 17px;
-      }
     }
 
     .btn-action-all {

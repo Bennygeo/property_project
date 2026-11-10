@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
 import { ListingMode, Property } from '../../../../core/models/property.model';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { LocationService } from '../../../../core/services/location.service';
 import { DealsScrollingBannerComponent } from '../deals-scrolling-banner/deals-scrolling-banner.component';
 
 export interface LocationSuggestion {
@@ -86,29 +85,6 @@ export interface PropertyTypeOption {
               <span>Commercial</span>
             </button>
           </div>
-
-          <!-- Location District Context Pill -->
-          <div class="hero-location-bar">
-            <button 
-              type="button" 
-              class="hero-location-chip" 
-              (click)="locationService.openDistrictModal()" 
-              [class.blocked]="locationService.isBlocked()"
-              [title]="'Location: ' + locationService.selectedDistrict() + ', Tamil Nadu. Click to switch district.'">
-              <span class="material-symbols-outlined chip-pin" [class.detecting]="locationService.isDetecting()">
-                {{ locationService.isDetecting() ? 'progress_activity' : (locationService.isBlocked() ? 'location_off' : 'location_on') }}
-              </span>
-              <span class="chip-text">
-                @if (locationService.isBlocked()) {
-                  <span>Location access blocked • Showing <strong>{{ locationService.selectedDistrict() }}</strong>, TN</span>
-                } @else {
-                  <span>Active District: <strong>{{ locationService.selectedDistrict() }}</strong>, Tamil Nadu</span>
-                }
-              </span>
-              <span class="chip-action-btn">Change</span>
-              <span class="material-symbols-outlined chip-dropdown-icon">expand_more</span>
-            </button>
-          </div>
         </div>
 
         <!-- Sleek Minimalist Floating Search Pill -->
@@ -133,7 +109,7 @@ export interface PropertyTypeOption {
                   role="combobox"
                   aria-autocomplete="list"
                   [attr.aria-expanded]="isLocationSuggestOpen() || isMobileQuestionnaireOpen()"
-                  [placeholder]="'In ' + locationService.selectedDistrict() + ' (Tamil Nadu) or locality, project...'">
+                  placeholder="City, locality or project...">
               </div>
 
               <!-- Clear Input Button -->
@@ -733,88 +709,6 @@ export interface PropertyTypeOption {
       border: 1px solid var(--brand-green, #5e8f72);
       padding: 1px 6px;
       border-radius: 0;
-    }
-
-    /* Hero Location District Context Bar */
-    .hero-location-bar {
-      display: flex;
-      justify-content: center;
-      margin-top: 0.75rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .hero-location-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px 5px 10px;
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(203, 213, 225, 0.9);
-      border-radius: 9999px;
-      font-size: 12px;
-      color: #334155;
-      cursor: pointer;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      transition: all 0.15s ease;
-
-      &:hover {
-        background: #ffffff;
-        border-color: #94a3b8;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      }
-
-      &.blocked {
-        background: #fffbeb;
-        border-color: #fde68a;
-        color: #92400e;
-
-        .chip-pin {
-          color: #d97706;
-        }
-
-        .chip-action-btn {
-          background: #fef3c7;
-          color: #92400e;
-        }
-      }
-
-      .chip-pin {
-        font-size: 15px;
-        color: #16a34a;
-
-        &.detecting {
-          animation: spin 1s linear infinite;
-          color: #0284c7;
-        }
-      }
-
-      .chip-text {
-        font-size: 12px;
-        color: #334155;
-
-        strong {
-          color: #0f172a;
-          font-weight: 600;
-        }
-      }
-
-      .chip-action-btn {
-        padding: 1px 7px;
-        background: #f1f5f9;
-        border-radius: 9999px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #475569;
-        margin-left: 2px;
-      }
-
-      .chip-dropdown-icon {
-        font-size: 15px;
-        color: #64748b;
-        margin-left: -3px;
-      }
     }
     .badge-hero-verified {
       display: inline-flex;
@@ -2150,7 +2044,6 @@ export class HeroSearchComponent implements OnInit {
   private readonly router = inject(Router);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
-  readonly locationService = inject(LocationService);
 
   // Hero Top Mode Tabs (Buy | Post | Commercial)
   readonly activeHeroTab = signal<'buy' | 'commercial'>('buy');
