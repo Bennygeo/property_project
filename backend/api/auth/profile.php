@@ -23,7 +23,7 @@ $userId = max(1, (int)($_GET['userId'] ?? 1));
 $db = (new Database())->getConnection();
 
 // 1. Fetch User Record
-$userStmt = $db->prepare("SELECT id, name, email, phone, role, points_balance AS pointsBalance, created_at AS createdAt FROM users WHERE id = ?");
+$userStmt = $db->prepare("SELECT id, name, email, phone, role, developer_id, points_balance AS pointsBalance, created_at AS createdAt FROM users WHERE id = ?");
 $userStmt->execute([$userId]);
 $user = $userStmt->fetch();
 
@@ -35,9 +35,14 @@ if (!$user) {
         'email'         => "investor_{$userId}@mannidam.com",
         'phone'         => '+91 94440 00001',
         'role'          => 'buyer',
+        'developerId'   => 0,
+        'companyName'   => null,
         'pointsBalance' => 100,
         'createdAt'     => date('Y-m-d H:i:s')
     ];
+} else {
+    $user['developerId'] = (int)($user['developer_id'] ?? 0);
+    $user['companyName'] = !empty($user['developer_id']) ? 'Experion Developers & Infrastructure' : null;
 }
 
 // Ensure support tables exist

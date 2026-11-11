@@ -91,6 +91,7 @@ import { UserMindsetBarComponent } from '../../../../shared/components/user-mind
 import { ActivatedRoute } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
+import { environment } from '../../../../../environments/environment';
 import {
   AdminFinancialTransaction,
   AdminFinancialSummary,
@@ -104,7 +105,7 @@ import {
   PlotBookingItem
 } from '../../../../core/models/workspace.model';
 
-export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'financials' | 'user_mindset' | 'bulk_upload' | 'buyer_workspaces';
+export type AdminActiveTab = 'review_queue' | 'post_property' | 'plot_studio' | 'all_directory' | 'developers' | 'financials' | 'user_mindset' | 'bulk_upload' | 'buyer_workspaces';
 
 export interface UploadedImageItem {
   id: string;
@@ -203,6 +204,9 @@ export class AdminDashboardComponent {
 
   setTab(tab: AdminActiveTab): void {
     this.activeTab.set(tab);
+    if (tab === 'developers') {
+      this.loadAdminDevelopers();
+    }
     if (tab === 'financials') {
       this.adminService.loadFinancials(this.financialGateway(), this.financialStatus(), this.financialTimeframe(), this.financialSearch());
     }
@@ -220,11 +224,163 @@ export class AdminDashboardComponent {
   }
 
   // =========================================================================
+  // DEVELOPER PORTFOLIOS & AUTHORIZED COMPANIES MANAGEMENT (FULL ADMIN ROLE)
+  // =========================================================================
+  readonly adminDevelopers = signal<any[]>([]);
+  readonly isDevelopersLoading = signal<boolean>(false);
+  readonly developerSearchQuery = signal<string>('');
+
+  loadAdminDevelopers(): void {
+    this.isDevelopersLoading.set(true);
+    this.http.get<any>(`${environment.apiUrl}/builders/list.php`).pipe(
+      catchError(() => of({ success: false, data: { builders: [] } }))
+    ).subscribe(res => {
+      this.isDevelopersLoading.set(false);
+      if (res && res.success && res.data?.builders) {
+        this.adminDevelopers.set(res.data.builders);
+      }
+    });
+  }
+
+  readonly filteredAdminDevelopers = computed(() => {
+    const list = this.adminDevelopers();
+    const q = this.developerSearchQuery().trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(d => 
+      (d.name && d.name.toLowerCase().includes(q)) ||
+      (d.reraNumber && d.reraNumber.toLowerCase().includes(q)) ||
+      (d.corporateOffice && d.corporateOffice.toLowerCase().includes(q))
+    );
+  });
+
+  // =========================================================================
   // PRD BUYER WORKSPACES & CRM MANAGEMENT (DEDICATED ADMIN TAB)
   // =========================================================================
   readonly adminWorkspaces = computed(() => this.workspaceService.adminOverview());
-  readonly workspaceSubTab = signal<'membership' | 'visits' | 'consultations' | 'saved_searches' | 'bookings'>('membership');
+  readonly workspaceSubTab = signal<'membership' | 'visits' | 'consultations' | 'saved_searches' | 'bookings' | 'daily_visitors'>('membership');
   readonly workspaceSearchQuery = signal<string>('');
+
+  // Daily Visitors Call Tracker & Escalation Logs
+  readonly visitorLeads = signal<any[]>([
+    {
+      id: 'VIS-901',
+      visitorName: 'Senthil Nathan',
+      phone: '+91 98401 23456',
+      firstVisitedAt: 'Today, 10:45 AM',
+      interestedProject: 'Experion Cadastral Greens',
+      propertyId: 'PRJ-0059',
+      status: 'called_connected',
+      callDuration: '04:12 mins',
+      lastCalledAt: 'Today, 11:30 AM',
+      executiveName: 'Benny (Admin Director)',
+      notes: 'Interested in East facing 1200 sqft plot. Requested weekend site escort with family.',
+      nextFollowUp: '14 Nov 2026, 10:00 AM',
+      closeReason: null,
+      callHistory: [
+        { time: 'Today 11:30 AM', executive: 'Benny', duration: '04:12 mins', outcome: 'Connected — Follow-up Scheduled', notes: 'Discussed legal patta and bank loan pre-approvals.' }
+      ]
+    },
+    {
+      id: 'VIS-902',
+      visitorName: 'Karthik Raja',
+      phone: '+91 94442 88765',
+      firstVisitedAt: 'Today, 09:15 AM',
+      interestedProject: 'Prestige Pine Crest Plots',
+      propertyId: 'PRJ-0006',
+      status: 'called_unreachable',
+      callDuration: '00:00 (Not Reachable)',
+      lastCalledAt: 'Today, 10:05 AM',
+      executiveName: 'Ram (Co-Admin)',
+      notes: 'Ringing no response. Triggered WhatsApp notification brochure.',
+      nextFollowUp: 'Today, 04:30 PM',
+      closeReason: null,
+      callHistory: [
+        { time: 'Today 10:05 AM', executive: 'Ram', duration: 'Not Reachable', outcome: 'No Response', notes: 'Sent WhatsApp brochure and callback link.' }
+      ]
+    },
+    {
+      id: 'VIS-903',
+      visitorName: 'Anandhi Venkatesh',
+      phone: '+91 97900 11223',
+      firstVisitedAt: 'Today, 11:10 AM',
+      interestedProject: 'Verified Cadastral Layout - Plot 1',
+      propertyId: 'PRJ-0059',
+      status: 'visit_confirmed',
+      callDuration: '06:45 mins',
+      lastCalledAt: 'Today, 12:15 PM',
+      executiveName: 'Ezhil (Admin)',
+      notes: 'Confirmed site escort for Saturday 11 AM with transport pick-up.',
+      nextFollowUp: '15 Nov 2026, 11:00 AM',
+      closeReason: null,
+      callHistory: [
+        { time: 'Today 12:15 PM', executive: 'Ezhil', duration: '06:45 mins', outcome: 'Site Escort Scheduled', notes: 'Sent vehicle driver details and geo-pin.' }
+      ]
+    },
+    {
+      id: 'VIS-904',
+      visitorName: 'Vignesh Sundaram',
+      phone: '+91 98840 99881',
+      firstVisitedAt: 'Yesterday, 04:20 PM',
+      interestedProject: 'Experion Green Crest',
+      propertyId: 'PRJ-8889',
+      status: 'closed_budget',
+      callDuration: '02:30 mins',
+      lastCalledAt: 'Yesterday, 05:00 PM',
+      executiveName: 'Benny (Admin Director)',
+      notes: 'Budget maximum ₹ 25 Lakhs, project starts at ₹ 48 Lakhs.',
+      nextFollowUp: 'Closed',
+      closeReason: 'Budget Mismatch (Budget below ₹25L)',
+      callHistory: [
+        { time: 'Yesterday 05:00 PM', executive: 'Benny', duration: '02:30 mins', outcome: 'Closed', notes: 'Looking for plots below 25 Lakhs. Added to budget alert list.' }
+      ]
+    }
+  ]);
+
+  readonly callStatusFilter = signal<string>('all');
+
+  readonly filteredVisitorLeads = computed(() => {
+    let list = this.visitorLeads();
+    const st = this.callStatusFilter();
+    if (st !== 'all') {
+      list = list.filter(v => v.status === st);
+    }
+    const q = this.workspaceSearchQuery().trim().toLowerCase();
+    if (q) {
+      list = list.filter(v => 
+        v.visitorName.toLowerCase().includes(q) ||
+        v.phone.includes(q) ||
+        v.interestedProject.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  });
+
+  updateVisitorStatus(leadId: string, newStatus: string, closeReason?: string): void {
+    this.visitorLeads.update(list => list.map(item => {
+      if (item.id === leadId) {
+        const historyEntry = {
+          time: 'Just now',
+          executive: this.adminService.currentAdmin()?.name || 'Benny',
+          duration: 'Updated by Admin',
+          outcome: newStatus,
+          notes: closeReason ? `Closed with reason: ${closeReason}` : 'Status updated'
+        };
+        return {
+          ...item,
+          status: newStatus,
+          closeReason: closeReason || item.closeReason,
+          callHistory: [historyEntry, ...(item.callHistory || [])]
+        };
+      }
+      return item;
+    }));
+    this.notificationService.show({
+      type: 'success',
+      title: 'Call Status Updated',
+      message: `Lead ${leadId} status updated to ${newStatus}`,
+      icon: 'phone_callback'
+    });
+  }
 
   readonly filteredAdminVisits = computed(() => {
     const list = this.adminWorkspaces()?.allVisits || [];

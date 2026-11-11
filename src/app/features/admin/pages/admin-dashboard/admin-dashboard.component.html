@@ -49,6 +49,13 @@
         <span>Credits &amp; Revenue</span>
       </button>
 
+      <a routerLink="/developer" class="btn-topbar-financials"
+        style="background: rgba(94, 143, 114, 0.2); border-color: rgba(94, 143, 114, 0.4); color: #5e8f72;"
+        title="Open Developer Workspace & Manage Company Projects">
+        <span class="material-symbols-outlined">domain</span>
+        <span>Developer Portal</span>
+      </a>
+
       <a routerLink="/admin/profile" class="btn-admin-profile" title="View Admin Profile & Audit Logs">
         <span class="material-symbols-outlined">shield_person</span>
         <span>Profile &amp; Logs</span>
@@ -168,6 +175,13 @@
         (click)="setTab('all_directory')">
         <span class="material-symbols-outlined">table_view</span>
         <span>All Properties &amp; Audit Trail</span>
+      </button>
+
+      <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'developers'"
+        (click)="setTab('developers')">
+        <span class="material-symbols-outlined text-green">domain</span>
+        <span>Developer Portfolios</span>
+        <span class="tab-badge-studio" style="background:#5e8f72;color:#ffffff;">DEV ROLE</span>
       </button>
 
       <a routerLink="/admin/compare" class="admin-nav-item" style="text-decoration: none;"
@@ -2013,6 +2027,127 @@
     }
 
     <!-- ========================================== -->
+    <!-- TAB CONTENT: DEVELOPER PORTFOLIOS & ACCESS -->
+    <!-- ========================================== -->
+    @if (activeTab() === 'developers') {
+    <section class="tab-pane-section developers-admin-pane">
+      <div class="workspace-header-banner" style="background: linear-gradient(135deg, #0f3b4a 0%, #1e4d58 60%, #2c4938 100%);">
+        <div class="banner-title-block">
+          <div class="banner-icon-box" style="background: rgba(255,255,255,0.15); color: #ffffff;">
+            <span class="material-symbols-outlined">domain</span>
+          </div>
+          <div>
+            <h2 class="banner-main-title" style="color: #ffffff;">Developer Entities &amp; Master Promoters</h2>
+            <p class="banner-subtitle" style="color: rgba(255,255,255,0.85);">
+              Super Administrator oversight for registered real estate promoters, RERA numbers, authorized company portfolios, and upcoming projects.
+            </p>
+          </div>
+        </div>
+
+        <div class="workspace-stats-pills">
+          <div class="stat-pill">
+            <span class="stat-num">{{ adminDevelopers().length }}</span>
+            <span class="stat-lbl">Developers</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">{{ adminService.stats().total }}</span>
+            <span class="stat-lbl">Total Projects</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">100%</span>
+            <span class="stat-lbl">TNRERA Audited</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="workspace-controls-bar">
+        <div class="workspace-search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" [ngModel]="developerSearchQuery()" (ngModelChange)="developerSearchQuery.set($event)"
+            placeholder="Search developer by name, RERA registration, office..." class="workspace-search-input" />
+        </div>
+        <div class="toolbar-actions">
+          <a routerLink="/developer" class="btn-post-developer-proj" style="display:inline-flex;align-items:center;gap:6px;background:#5e8f72;color:#ffffff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            <span>Open Developer Workspace</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Developers Table -->
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Company / Developer</th>
+              <th>Promoter RERA No.</th>
+              <th>Corporate Office</th>
+              <th>Active Projects</th>
+              <th>Upcoming Releases</th>
+              <th>Track Record</th>
+              <th class="th-actions">Direct Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (dev of filteredAdminDevelopers(); track dev.id || dev.name) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="dev-table-logo-box" style="width:40px;height:40px;border-radius:6px;background:#ffffff;border:1px solid #e2e8f0;padding:2px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                    @if (dev.logoUrl) {
+                      <img [src]="dev.logoUrl" [alt]="dev.name" style="max-width:100%;max-height:100%;object-fit:contain;">
+                    } @else {
+                      <span class="material-symbols-outlined" style="color:#0f3b4a;font-size:24px;">apartment</span>
+                    }
+                  </div>
+                  <div>
+                    <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ dev.name }}</span>
+                    <span class="user-cell-id">ID #{{ dev.id }} • {{ dev.slug }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge-role badge-rera" style="background:#e5f7ec;color:#2c4938;font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">
+                  {{ dev.reraNumber || 'TNRERA/PROM/0219/2026' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-xs text-muted" style="color:#475569;font-size:12px;">{{ dev.corporateOffice || 'Chennai, Tamil Nadu' }}</span>
+              </td>
+              <td>
+                <span style="font-weight:700;color:#0f3b4a;">{{ dev.propertyCount || 1 }} Active</span>
+              </td>
+              <td>
+                <span class="badge-plan-tier" style="background:#e0f2fe;color:#0369a1;font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">
+                  {{ dev.upcomingProjectsCount || 0 }} Pipeline
+                </span>
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;font-size:11px;color:#64748b;">
+                  <span>Est. {{ dev.establishedYear || '2016' }}</span>
+                  <span>{{ dev.projectCount }} Delivered</span>
+                </div>
+              </td>
+              <td class="td-actions">
+                <div class="action-btn-group">
+                  <a [routerLink]="['/builder', dev.slug || dev.name]" target="_blank" class="btn-action-icon" title="View Public Developer Page">
+                    <span class="material-symbols-outlined">visibility</span>
+                  </a>
+                  <a routerLink="/developer" class="btn-action-icon" title="Manage In Developer Portal" style="color:#5e8f72;">
+                    <span class="material-symbols-outlined">edit_square</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    }
+
+    <!-- ========================================== -->
     <!-- TAB CONTENT 4: RAZORPAY & FINANCIAL CREDITS DASHBOARD -->
     <!-- ========================================== -->
     @if (activeTab() === 'financials') {
@@ -2898,6 +3033,13 @@
             <span>Plot Bookings &amp; SRO</span>
             <span class="subtab-badge">{{ adminWorkspaces()?.allBookings?.length || 0 }}</span>
           </button>
+
+          <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'daily_visitors'"
+            (click)="workspaceSubTab.set('daily_visitors')">
+            <span class="material-symbols-outlined">phone_in_talk</span>
+            <span>Daily Visitors &amp; Call Logs</span>
+            <span class="subtab-badge">{{ visitorLeads().length }}</span>
+          </button>
         </div>
 
         <!-- Search Input -->
@@ -3254,6 +3396,126 @@
             }
           </tbody>
         </table>
+      </div>
+      }
+
+      <!-- SUB-TAB 6: DAILY VISITORS & CALL LOGS TRACKER -->
+      @if (workspaceSubTab() === 'daily_visitors') {
+      <div class="workspace-visitors-wrapper">
+        <!-- Quick Status Filter Pills -->
+        <div class="call-filter-pills-row" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'all'" (click)="callStatusFilter.set('all')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            All Visitors ({{ visitorLeads().length }})
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'called_connected'" (click)="callStatusFilter.set('called_connected')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Connected (1)
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'called_unreachable'" (click)="callStatusFilter.set('called_unreachable')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Not Reachable (1)
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'visit_confirmed'" (click)="callStatusFilter.set('visit_confirmed')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Site Visit Confirmed (1)
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'closed_budget'" (click)="callStatusFilter.set('closed_budget')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Closed / Budget (1)
+          </button>
+        </div>
+
+        <div class="workspace-table-container">
+          <table class="workspace-table">
+            <thead>
+              <tr>
+                <th>Visitor Lead</th>
+                <th>Contact &amp; Dialler</th>
+                <th>Interested Project</th>
+                <th>Visit Time</th>
+                <th>Call Status</th>
+                <th>Call Duration</th>
+                <th>Assigned Executive &amp; Notes</th>
+                <th class="th-actions">Log Call / Update</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (v of filteredVisitorLeads(); track v.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-cell-avatar" style="background:#e5f7ec;color:#2c4938;">
+                      <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <div>
+                      <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ v.visitorName }}</span>
+                      <span class="user-cell-id">LEAD #{{ v.id }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="contact-cell">
+                    <a [href]="'tel:' + v.phone" style="display:inline-flex;align-items:center;gap:4px;color:#0f3b4a;text-decoration:none;font-weight:600;" title="Click to call">
+                      <span class="material-symbols-outlined" style="font-size:15px;color:#5e8f72;">call</span>
+                      <span>{{ v.phone }}</span>
+                    </a>
+                    <a [href]="'https://wa.me/' + v.phone" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;color:#16a34a;text-decoration:none;font-size:11px;">
+                      <span class="material-symbols-outlined" style="font-size:13px;">chat</span>
+                      <span>WhatsApp Dossier</span>
+                    </a>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex;flex-direction:column;">
+                    <span style="font-weight:600;color:#0f3b4a;">{{ v.interestedProject }}</span>
+                    <a [routerLink]="['/property', v.propertyId]" target="_blank" class="text-xs" style="color:#5e8f72;text-decoration:none;">
+                      {{ v.propertyId }} ↗
+                    </a>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-xs text-muted">{{ v.firstVisitedAt }}</span>
+                </td>
+                <td>
+                  @if (v.status === 'called_connected') {
+                    <span class="badge-role" style="background:#e5f7ec;color:#166534;font-weight:700;">Connected</span>
+                  } @else if (v.status === 'called_unreachable') {
+                    <span class="badge-role" style="background:#fef3c7;color:#92400e;font-weight:700;">Not Reachable</span>
+                  } @else if (v.status === 'visit_confirmed') {
+                    <span class="badge-role" style="background:#dcfce7;color:#15803d;font-weight:700;">Visit Confirmed</span>
+                  } @else if (v.status.startsWith('closed')) {
+                    <span class="badge-role" style="background:#fee2e2;color:#991b1b;font-weight:700;">Closed</span>
+                  } @else {
+                    <span class="badge-role" style="background:#f1f5f9;color:#475569;font-weight:700;">New Lead</span>
+                  }
+                </td>
+                <td>
+                  <span class="text-xs" style="font-weight:600;color:#334155;">{{ v.callDuration }}</span>
+                </td>
+                <td>
+                  <div style="display:flex;flex-direction:column;gap:2px;">
+                    <span class="text-xs" style="font-weight:600;color:#0f3b4a;">{{ v.executiveName }}</span>
+                    <span class="text-xs" style="color:#64748b;max-width:260px;line-height:1.3;">{{ v.notes }}</span>
+                    @if (v.closeReason) {
+                      <span class="text-xs" style="color:#b91c1c;font-weight:600;">Reason: {{ v.closeReason }}</span>
+                    }
+                  </div>
+                </td>
+                <td class="td-actions">
+                  <div class="action-btn-group">
+                    <button type="button" class="btn-action-primary" (click)="updateVisitorStatus(v.id, 'called_connected')" title="Mark as Connected">
+                      <span class="material-symbols-outlined">call</span>
+                      <span>Connected</span>
+                    </button>
+                    <button type="button" class="btn-action-icon" (click)="updateVisitorStatus(v.id, 'visit_confirmed')" title="Confirm Site Visit" style="color:#15803d;">
+                      <span class="material-symbols-outlined">event_available</span>
+                    </button>
+                    <button type="button" class="btn-action-icon" (click)="updateVisitorStatus(v.id, 'closed_budget', 'Customer budget under ₹25 Lakhs')" title="Close with reason" style="color:#b91c1c;">
+                      <span class="material-symbols-outlined">cancel</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
       }
 

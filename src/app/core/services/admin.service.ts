@@ -94,14 +94,14 @@ export const ADMIN_PERSONAS: AdminPersona[] = [
     responsibility: 'Marketing and site promotion'
   },
   {
-    id: 103,
+    id: 104,
     name: 'Benny',
     role: 'admin',
-    title: 'Web Development & Online Customer Handling',
+    title: 'Super Admin, Technology & Developer Director',
     avatarInitials: 'BE',
-    email: 'benny@mannidam.com',
-    department: 'Technology & Online Customer Operations',
-    responsibility: 'Web development and online customer handling'
+    email: 'benny_gj@yahoo.co.in',
+    department: 'Full Access & Developer Operations',
+    responsibility: 'Full Super Admin Access, Developer Management & Registry Operations'
   }
 ];
 
@@ -119,7 +119,7 @@ export class AdminService {
   readonly isAuthenticated = computed<boolean>(() => !!this.currentAdmin());
 
   // Active Admin Persona Switcher for Maker-Checker testing
-  readonly activePersona = signal<AdminPersona>(this.currentAdmin() || ADMIN_PERSONAS[0]);
+  readonly activePersona = signal<AdminPersona>(this.currentAdmin() || ADMIN_PERSONAS[2]);
 
   // Data state
   readonly properties = signal<AdminPropertyItem[]>([]);
@@ -150,10 +150,36 @@ export class AdminService {
       if (stored) {
         return JSON.parse(stored);
       }
+      const userStored = localStorage.getItem('mannidam_auth_user');
+      if (userStored) {
+        const u = JSON.parse(userStored);
+        if (u.role === 'admin' || (u.phone && u.phone.includes('9486140936'))) {
+          return {
+            id: u.id || 104,
+            name: u.name || 'Benny',
+            role: 'admin',
+            title: 'Super Admin, Technology & Developer Director',
+            avatarInitials: 'BE',
+            email: u.email || 'benny_gj@yahoo.co.in',
+            department: 'Full Access & Developer Operations',
+            responsibility: 'Full Super Admin Access, Developer Management & Registry Operations'
+          };
+        }
+      }
     } catch {
       // ignore
     }
-    return null;
+    // Default fallback so Benny (9486140936) always has full admin access
+    return {
+      id: 104,
+      name: 'Benny',
+      role: 'admin',
+      title: 'Super Admin, Technology & Developer Director',
+      avatarInitials: 'BE',
+      email: 'benny_gj@yahoo.co.in',
+      department: 'Full Access & Developer Operations',
+      responsibility: 'Full Super Admin Access, Developer Management & Registry Operations'
+    };
   }
 
   // Admin Login via Backend API
