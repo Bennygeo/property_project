@@ -207,6 +207,16 @@ export interface Property {
   closestNeighborDistanceKm?: number;
   closestNeighborLocality?: string;
   closestNeighborId?: string;
+
+  // PRD M06 Entitlement & Plan Limit Restriction Metadata
+  isViewRestricted?: boolean;
+  isMasked?: boolean;
+  restrictionReason?: string;
+  activePlanId?: string;
+  activePlanName?: string;
+  projectViewsUsed?: number;
+  projectViewLimit?: number;
+  upgradeMessage?: string;
 }
 
 export * from './property-master.model';

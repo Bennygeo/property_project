@@ -20,10 +20,10 @@ export class AuthService {
   public readonly currentUser = signal<User | null>(this.getInitialUser());
   public readonly isLoggedIn = computed(() => !!this.currentUser());
 
-  // Guest property views tracking (Max 1 free property view for unauthenticated visitors)
+  // Guest property views tracking (Max 2 free property views for unauthenticated visitors)
   public readonly guestViewedPropertyIds = signal<string[]>(this.getInitialGuestViews());
   public readonly guestViewCount = computed(() => this.guestViewedPropertyIds().length);
-  public readonly hasReachedGuestLimit = computed(() => !this.isLoggedIn() && this.guestViewedPropertyIds().length >= 1);
+  public readonly hasReachedGuestLimit = computed(() => !this.isLoggedIn() && this.guestViewedPropertyIds().length >= 2);
 
   // Modal display signal
   public readonly isOtpModalOpen = signal<boolean>(false);
@@ -124,24 +124,20 @@ export class AuthService {
 
   /**
    * Check whether a user is allowed to view this property.
-   * - Logged-in users: Unlimited access (true).
-   * - Unauthenticated guests: Allowed to view 1 single property. Subsequent property views are blocked.
+   * - Logged-in users: Controlled by entitlement plan limits (Free: 2, Smart: 5, Priority: 25, VIP: 50).
+   * - Unauthenticated guests: Allowed to view 2 free properties. Subsequent property views are restricted.
    */
   public canViewProperty(propertyId: string): boolean {
     if (this.isLoggedIn()) {
       return true;
     }
     const views = this.guestViewedPropertyIds();
-    // If user is already viewing the single property they unlocked, allow continued viewing
+    // If user is already viewing one of the unlocked properties, allow continued viewing
     if (views.includes(propertyId)) {
       return true;
     }
-    // If user hasn't viewed any property yet, allow viewing this first property
-    if (views.length === 0) {
-      return true;
-    }
-    // Blocked: Guest has already viewed 1 property and is trying to view a different one
-    return false;
+    // If guest has viewed fewer than 2 properties, allow viewing
+    return views.length < 2;
   }
 
   /**

@@ -1051,11 +1051,23 @@ export class PropertyService {
 
   /**
    * Fetch full 100acress-style property dossier from MySQL PHP Backend
+   * Enforces PRD M06 entitlement limits (Free: 2, Smart: 5, Priority: 25, VIP: 50).
+   * When limits are exceeded, details below banner are masked and not downloaded from DB.
    */
-  public fetchPropertyDetails(id: string): Observable<Property | null> {
-    const proxyUrl = `${environment.apiUrl}/properties/details.php?id=${encodeURIComponent(id)}`;
-    const cliUrl = `${environment.cliApiUrl}/properties/details.php?id=${encodeURIComponent(id)}`;
-    const apacheUrl = `${environment.apacheApiUrl}/properties/details.php?id=${encodeURIComponent(id)}`;
+  public fetchPropertyDetails(id: string, userId?: number, deviceHash?: string): Observable<Property | null> {
+    const params = new URLSearchParams();
+    params.set('id', id);
+    if (userId !== undefined && userId !== null && userId > 0) {
+      params.set('userId', String(userId));
+    }
+    if (deviceHash) {
+      params.set('deviceHash', deviceHash);
+    }
+    const qs = params.toString();
+
+    const proxyUrl = `${environment.apiUrl}/properties/details.php?${qs}`;
+    const cliUrl = `${environment.cliApiUrl}/properties/details.php?${qs}`;
+    const apacheUrl = `${environment.apacheApiUrl}/properties/details.php?${qs}`;
 
     console.info(`[XHR API] Requesting property details dossier for ${id} from MySQL: ${proxyUrl}`);
     return this.http.get<{ success: boolean; data: Property }>(proxyUrl).pipe(

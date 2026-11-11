@@ -334,6 +334,9 @@
           </div>
         </section>
 
+        <!-- DETAILS BELOW BANNER: MASKED AND NOT DOWNLOADED WHEN QUOTA LIMIT IS REACHED -->
+        @if (!isViewRestricted()) {
+
         <!-- ====================================================================== -->
         <!-- IMPROVISED EXECUTIVE CONTEXT BAR: 6 CRITICAL PURCHASE VALUE METRICS   -->
         <!-- ====================================================================== -->
@@ -1248,11 +1251,159 @@
             }
           </div>
         </div>
+        } @else {
+        <!-- ====================================================================== -->
+        <!-- PAYWALL: MEMBERSHIP QUOTA REACHED / VIEW RESTRICTED                   -->
+        <!-- (Details below banner are NOT downloaded from DB per PRD M06)         -->
+        <!-- ====================================================================== -->
+        <section class="restricted-view-paywall-card">
+          <div class="paywall-header">
+            <div class="paywall-icon-circle">
+              <span class="material-symbols-outlined">lock</span>
+            </div>
+            <div class="paywall-title-block">
+              <div class="paywall-plan-tag">
+                <span class="tag-plan-name">{{ property()?.activePlanName || activePlanName() }} Plan</span>
+                <span class="tag-quota">{{ projectViewsUsed() }} of {{ projectViewLimit() }} Project Views Used</span>
+              </div>
+              <h2 class="paywall-heading">Full Project Dossier Restricted</h2>
+              <p class="paywall-sub">
+                {{ property()?.upgradeMessage || 'You have reached your project view limit for your current plan. Upgrade to view full specifications, cadastral audit, layout plots, and documents.' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature Lock Notice Strip -->
+          <div class="restricted-features-strip">
+            <div class="strip-header">
+              <span class="material-symbols-outlined">shield</span>
+              <span>Protected Project Intelligence (Locked)</span>
+            </div>
+            <div class="locked-features-grid">
+              <div class="locked-feat-item">
+                <span class="material-symbols-outlined lock-bullet">lock</span>
+                <span>Complete 49-Point Master Excel Dossier</span>
+              </div>
+              <div class="locked-feat-item">
+                <span class="material-symbols-outlined lock-bullet">lock</span>
+                <span>3D Interactive Partition Studio &amp; Plot Layouts</span>
+              </div>
+              <div class="locked-feat-item">
+                <span class="material-symbols-outlined lock-bullet">lock</span>
+                <span>Cadastral Survey Numbers &amp; SRO Encumbrance (EC)</span>
+              </div>
+              <div class="locked-feat-item">
+                <span class="material-symbols-outlined lock-bullet">lock</span>
+                <span>DTCP / TNRERA Approval Sanction Numbers</span>
+              </div>
+              <div class="locked-feat-item">
+                <span class="material-symbols-outlined lock-bullet">lock</span>
+                <span>Ground Water Table &amp; Soil Bearing Reports</span>
+              </div>
+              <div class="locked-feat-item">
+                <span class="material-symbols-outlined lock-bullet">lock</span>
+                <span>Highway &amp; Corridor Connectivity Benchmarks</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3-Tier Upgrade Comparison Cards -->
+          <div class="upgrade-tiers-grid">
+            <!-- Smart Buyer -->
+            <div class="upgrade-tier-box">
+              <div class="tier-box-header">
+                <span class="tier-chip-name">Smart Buyer</span>
+                <div class="tier-pricing">
+                  <span class="price-currency">₹</span>
+                  <span class="price-amount">750</span>
+                  <span class="price-period">/ 30 Days</span>
+                </div>
+              </div>
+              <ul class="tier-features-list">
+                <li><span class="material-symbols-outlined">check_circle</span> <strong>5 Project Views</strong></li>
+                <li><span class="material-symbols-outlined">check_circle</span> 3 Benchmark Comparisons</li>
+                <li><span class="material-symbols-outlined">check_circle</span> 2 Senior Advisory Calls</li>
+                <li><span class="material-symbols-outlined">check_circle</span> Location Intelligence Report</li>
+              </ul>
+              <a routerLink="/subscriptions" class="btn-tier-select">
+                <span>Upgrade to Smart Buyer</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+
+            <!-- Priority Buyer (Recommended) -->
+            <div class="upgrade-tier-box tier-recommended">
+              <div class="recommended-badge">MOST POPULAR</div>
+              <div class="tier-box-header">
+                <span class="tier-chip-name">Priority Buyer</span>
+                <div class="tier-pricing">
+                  <span class="price-currency">₹</span>
+                  <span class="price-amount">7,500</span>
+                  <span class="price-period">/ 60 Days</span>
+                </div>
+              </div>
+              <ul class="tier-features-list">
+                <li><span class="material-symbols-outlined">check_circle</span> <strong>25 Project Views</strong></li>
+                <li><span class="material-symbols-outlined">check_circle</span> 10 Benchmark Comparisons</li>
+                <li><span class="material-symbols-outlined">check_circle</span> 4 Advisory Consultations</li>
+                <li><span class="material-symbols-outlined">check_circle</span> 1 Assisted Site Visit (Cab Escort)</li>
+                <li><span class="material-symbols-outlined">check_circle</span> Dedicated Relationship Advisor</li>
+              </ul>
+              <a routerLink="/subscriptions" class="btn-tier-select btn-recommended">
+                <span>Upgrade to Priority Buyer</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+
+            <!-- VIP Concierge -->
+            <div class="upgrade-tier-box">
+              <div class="tier-box-header">
+                <span class="tier-chip-name">VIP Concierge</span>
+                <div class="tier-pricing">
+                  <span class="price-currency">₹</span>
+                  <span class="price-amount">20,000</span>
+                  <span class="price-period">/ 90 Days</span>
+                </div>
+              </div>
+              <ul class="tier-features-list">
+                <li><span class="material-symbols-outlined">check_circle</span> <strong>50 Project Views</strong></li>
+                <li><span class="material-symbols-outlined">check_circle</span> 20 Benchmark Comparisons</li>
+                <li><span class="material-symbols-outlined">check_circle</span> 8 Advisory Consultations</li>
+                <li><span class="material-symbols-outlined">check_circle</span> 3 Assisted Site Visits</li>
+                <li><span class="material-symbols-outlined">check_circle</span> Priority Legal &amp; Title Escort</li>
+              </ul>
+              <a routerLink="/subscriptions" class="btn-tier-select">
+                <span>Upgrade to VIP Concierge</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="paywall-footer-note">
+            <span class="material-symbols-outlined">info</span>
+            <span>Any properties already viewed remain permanently accessible in your account at zero credit cost.</span>
+          </div>
+        </section>
+        }
 
       </div>
 
       <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
       <aside class="hanu-sidebar-column" id="inquiry-box">
+
+        @if (isViewRestricted()) {
+        <div class="sidebar-restricted-box">
+          <div class="s-icon">
+            <span class="material-symbols-outlined">lock</span>
+          </div>
+          <h3 class="s-title">Plan Upgrade Required</h3>
+          <p class="s-desc">Verified promoter contacts, legal title escrow, and private site walkthroughs are unlocked with an active buyer membership.</p>
+          <a routerLink="/subscriptions" class="btn-sidebar-upgrade">
+            <span class="material-symbols-outlined">upgrade</span>
+            <span>Explore Membership Plans</span>
+          </a>
+        </div>
+        }
 
         <!-- DOCKED PRICING & QUICK ACTIONS (APPEARS WHEN SCROLLED PAST HEADER) -->
         @if (isScrolledPastHeader()) {

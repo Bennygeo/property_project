@@ -81,6 +81,19 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly isEntitlementExhausted = signal<boolean>(false);
   readonly entitlementExhaustedMessage = signal<string>('');
 
+  readonly isViewRestricted = computed<boolean>(() => {
+    return !!this.property()?.isViewRestricted || this.isEntitlementExhausted();
+  });
+  readonly activePlanName = computed<string>(() => {
+    return this.property()?.activePlanName || this.subscriptionService.activePlanName();
+  });
+  readonly projectViewsUsed = computed<number>(() => {
+    return this.property()?.projectViewsUsed ?? this.subscriptionService.entitlements()?.projectViewsUsed ?? 2;
+  });
+  readonly projectViewLimit = computed<number>(() => {
+    return this.property()?.projectViewLimit ?? this.subscriptionService.entitlements()?.projectViewLimit ?? 2;
+  });
+
   readonly propertyId = signal<string>('');
   readonly fetchedProperty = signal<Property | null>(null);
   readonly isLoading = signal<boolean>(true);
@@ -357,45 +370,38 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => this.setupWhatsAppObserver(), 400);
 
+        const currentUser = this.authService.currentUser();
+        const userId = currentUser ? currentUser.id : undefined;
+        const deviceHash = this.authService.getDeviceFingerprint();
+
         if (this.authService.isLoggedIn()) {
           // Record browsing history in MySQL & localStorage for logged in user
           this.authService.recordPropertyView(id).subscribe();
-
-          // PRD M06 Entitlement Engine: consume project view credit (0 credits burned on repeat views)
-          this.subscriptionService.consumeEntitlement('project_view', id).subscribe(res => {
-            if (res && res.allowed === false) {
-              this.isEntitlementExhausted.set(true);
-              this.entitlementExhaustedMessage.set(res.message || 'You have reached your project view limit.');
-              this.notificationService.show({
-                type: 'warning',
-                title: 'Membership Quota Reached',
-                message: res.message || 'Upgrade your plan to unlock more project dossiers and advisory sessions.',
-                icon: 'lock'
-              });
-            } else {
-              this.isEntitlementExhausted.set(false);
-            }
-          });
         } else {
-          // Guest visitor flow - verify against server IP/device records across browsers
-          this.authService.syncGuestViews().subscribe(() => {
-            if (this.authService.canViewProperty(id)) {
-              // First free property view granted to guest
-              this.authService.recordGuestPropertyView(id);
-            } else {
-              // Blocked: Guest has already viewed 1 property from this computer/IP. Prescribe login!
-              this.authService.openOtpModal('guest_limit');
-            }
-          });
+          // Guest visitor flow - sync device view count
+          this.authService.syncGuestViews().subscribe();
         }
 
-        // Fetch real-time dossier from MySQL backend
+        // Fetch real-time dossier from MySQL backend with user and device identity
+        // Backend enforces PRD M06 entitlement limits and omits details below banner when limit is reached
         this.isLoading.set(true);
-        this.propertyService.fetchPropertyDetails(id).subscribe({
+        this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
           next: (prop) => {
             this.isLoading.set(false);
             if (prop) {
               this.fetchedProperty.set(prop);
+              if (prop.isViewRestricted) {
+                this.isEntitlementExhausted.set(true);
+                this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
+                this.notificationService.show({
+                  type: 'warning',
+                  title: 'Membership Quota Reached',
+                  message: prop.upgradeMessage || 'Upgrade your plan to unlock full project specifications and cadastral documents.',
+                  icon: 'lock'
+                });
+              } else {
+                this.isEntitlementExhausted.set(false);
+              }
             }
             const resolved = prop || this.propertyService.getPropertyById(id);
             if (resolved) {
@@ -404,7 +410,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
               if (priceNum > 0) {
                 this.loanAmount.set(Math.round(priceNum * 0.8));
               }
-              this.loadNearbyLocalities(resolved);
+              if (!prop?.isViewRestricted) {
+                this.loadNearbyLocalities(resolved);
+              }
             }
           },
           error: () => {
