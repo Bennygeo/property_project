@@ -83,7 +83,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
               <div class="top-right-actions">
                 <a 
                   class="btn-action-icon btn-action-wa" 
-                  [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" 
+                  [href]="prop.whatsappUrl || 'https://wa.me/919486140936'" 
                   target="_blank" 
                   rel="noopener"
                   (click)="$event.stopPropagation()"

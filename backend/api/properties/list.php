@@ -686,7 +686,7 @@ $formatPropertyRow = function(array $row, int $index, PDO $db, array $fallbackIm
         'mediaPoints'     => (int)($row['mediaPoints'] ?? 4),
         'freePhotos'      => $freePhotos,
         'premiumMedia'    => $premiumMedia,
-        'whatsappUrl'     => $row['whatsappUrl'] ?? ('https://wa.me/919444100000?text=' . urlencode("Hi Find a Plot, I am interested in {$row['title']} (REF: {$row['id']})")),
+        'whatsappUrl'     => $row['whatsappUrl'] ?? ('https://wa.me/919486140936?text=' . urlencode("Hi Find a Plot, I am interested in {$row['title']} (REF: {$row['id']})")),
         'possessionDate'  => $row['possessionDate'] ?? 'Immediate',
         'projectStatus'   => $row['projectStatus'] ?? 'Ready to Register',
         'totalLandParcel' => $row['totalLandParcel'] ?? 'Approved Layout',

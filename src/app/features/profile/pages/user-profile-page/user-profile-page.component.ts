@@ -363,7 +363,7 @@ export class UserProfilePageComponent implements OnInit {
             isShortlisted: true,
             freePhotos: [ps.imageUrl],
             premiumMedia: [],
-            whatsappUrl: `https://wa.me/919444100000?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (ps.title || pId))}`
+            whatsappUrl: `https://wa.me/919486140936?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (ps.title || pId))}`
           } as Property);
         }
       }

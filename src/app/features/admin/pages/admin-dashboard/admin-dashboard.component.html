@@ -3841,30 +3841,37 @@
       </div>
 
       <!-- Controls & Filter Toolbar -->
-      <div class="workspace-controls-bar">
-        <div class="workspace-search-box">
+      <div class="workspace-controls-bar" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div class="workspace-search-box" style="flex:1;min-width:260px;">
           <span class="material-symbols-outlined">search</span>
           <input type="text" [ngModel]="whatsappSearchQuery()" (ngModelChange)="whatsappSearchQuery.set($event)"
             placeholder="Search messages by lead name, phone number, property title, message notes..." class="workspace-search-input" />
         </div>
 
-        <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'all'"
-            (click)="whatsappStatusFilter.set('all')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            All Messages ({{ (dashboardMetrics().whatsappMessages || []).length }})
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button type="button" (click)="createTestWhatsAppRequest()" style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;" title="Create a test WhatsApp inquiry directly to test the flow">
+            <span class="material-symbols-outlined" style="font-size:16px;">add_comment</span>
+            <span>+ Test WhatsApp Request (9486140936)</span>
           </button>
-          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'new'"
-            (click)="whatsappStatusFilter.set('new')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            New Uncontacted
-          </button>
-          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'contacted'"
-            (click)="whatsappStatusFilter.set('contacted')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            Contacted / In Progress
-          </button>
-          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'completed'"
-            (click)="whatsappStatusFilter.set('completed')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            Resolved &amp; Completed
-          </button>
+
+          <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'all'"
+              (click)="whatsappStatusFilter.set('all')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+              All Messages ({{ (dashboardMetrics().whatsappMessages || []).length }})
+            </button>
+            <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'new'"
+              (click)="whatsappStatusFilter.set('new')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+              New Uncontacted
+            </button>
+            <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'contacted'"
+              (click)="whatsappStatusFilter.set('contacted')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+              Contacted / In Progress
+            </button>
+            <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'completed'"
+              (click)="whatsappStatusFilter.set('completed')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+              Resolved &amp; Completed
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3956,7 +3963,11 @@
               <td colspan="6" style="text-align:center;padding:3rem 1rem;color:#64748b;">
                 <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">chat_bubble_outline</span>
                 <strong style="color:#0f3b4a;font-size:14px;">No WhatsApp inquiries logged yet</strong>
-                <p style="font-size:12px;margin:4px 0 0;color:#94a3b8;">When visitors inquire about properties via WhatsApp, their message records will appear here.</p>
+                <p style="font-size:12px;margin:4px 0 16px;color:#94a3b8;">When visitors inquire about properties via WhatsApp, their message records will appear here.</p>
+                <button type="button" (click)="createTestWhatsAppRequest()" style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,0.1);" title="Click to test WhatsApp request with 9486140936">
+                  <span class="material-symbols-outlined" style="font-size:18px;">add_comment</span>
+                  <span>Create Test WhatsApp Request (9486140936)</span>
+                </button>
               </td>
             </tr>
             }

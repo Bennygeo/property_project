@@ -108,7 +108,7 @@ import { Property } from '../../../../core/models/property.model';
             <div class="deal-actions">
               <a 
                 class="btn-deal-wa" 
-                href="https://wa.me/919444100000?text=I%20am%20interested%20in%20the%20Immediate%20Selling%20Offer%20for%20The%20Azure%20Horizon%20Villa%20(₹1.95%20Cr)" 
+                href="https://wa.me/919486140936?text=I%20am%20interested%20in%20the%20Immediate%20Selling%20Offer%20for%20The%20Azure%20Horizon%20Villa%20(₹1.95%20Cr)" 
                 target="_blank" 
                 rel="noopener">
                 <span class="material-symbols-outlined">chat</span>
@@ -208,7 +208,7 @@ import { Property } from '../../../../core/models/property.model';
             <div class="deal-actions">
               <a 
                 class="btn-deal-wa" 
-                href="https://wa.me/919444100000?text=I%20am%20interested%20in%20the%20Below%20Market%20Price%20Deal%20for%20The%20Pinnacle%20Sky%20Suite%20(₹1.33%20Cr)" 
+                href="https://wa.me/919486140936?text=I%20am%20interested%20in%20the%20Below%20Market%20Price%20Deal%20for%20The%20Pinnacle%20Sky%20Suite%20(₹1.33%20Cr)" 
                 target="_blank" 
                 rel="noopener">
                 <span class="material-symbols-outlined">chat</span>
@@ -830,7 +830,7 @@ export class NewLaunchesSpotlightComponent {
         tag: 'Aerial Beach Survey'
       }
     ],
-    whatsappUrl: 'https://wa.me/919444100000?text=I%20am%20interested%20in%20the%20Immediate%20Selling%20Offer%20for%20The%20Azure%20Horizon%20Villa%20(₹1.95%20Cr)'
+    whatsappUrl: 'https://wa.me/919486140936?text=I%20am%20interested%20in%20the%20Immediate%20Selling%20Offer%20for%20The%20Azure%20Horizon%20Villa%20(₹1.95%20Cr)'
   };
 
   readonly lesserMarketProperty: Property = {
@@ -871,7 +871,7 @@ export class NewLaunchesSpotlightComponent {
         tag: 'Skyline 4K Tour'
       }
     ],
-    whatsappUrl: 'https://wa.me/919444100000?text=I%20am%20interested%20in%20the%20Below%20Market%20Price%20Deal%20for%20The%20Pinnacle%20Sky%20Suite%20(₹1.33%20Cr)'
+    whatsappUrl: 'https://wa.me/919486140936?text=I%20am%20interested%20in%20the%20Below%20Market%20Price%20Deal%20for%20The%20Pinnacle%20Sky%20Suite%20(₹1.33%20Cr)'
   };
 
   viewPropertyMedia(prop: Property): void {

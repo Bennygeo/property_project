@@ -252,7 +252,7 @@ import { SecureVideoPlayerComponent } from '../../../../shared/components/secure
 
             <div class="footer-actions">
               <a 
-                [href]="prop.whatsappUrl || 'https://wa.me/919444100000'" 
+                [href]="prop.whatsappUrl || 'https://wa.me/919486140936'" 
                 target="_blank" 
                 rel="noopener"
                 class="btn-concierge-wa">

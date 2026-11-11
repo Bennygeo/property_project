@@ -230,7 +230,7 @@ try {
             ],
             'mediaPoints'     => (int)($r['mediaPoints'] ?: 4),
             'freePhotos'      => [$img],
-            'whatsappUrl'     => $r['whatsappUrl'] ?: ('https://wa.me/919444100000?text=Hi+Find+a+Plot%2C+I+am+interested+in+' . urlencode($r['title']) . '+%28ID%3A+' . $r['id'] . '%29'),
+            'whatsappUrl'     => $r['whatsappUrl'] ?: ('https://wa.me/919486140936?text=Hi+Find+a+Plot%2C+I+am+interested+in+' . urlencode($r['title']) . '+%28ID%3A+' . $r['id'] . '%29'),
             'possessionDate'  => $r['possessionDate'] ?: 'Ready for registration',
             'projectStatus'   => $r['projectStatus'] ?: 'Ready to Register',
             'totalLandParcel' => $r['totalLandParcel'] ?: 'Approved Layout',

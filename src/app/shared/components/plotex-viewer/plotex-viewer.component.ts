@@ -815,7 +815,7 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
     const msg = encodeURIComponent(
       `Hello Find a Plot Realty, I am viewing the 3D Master Community map for ${this.propertyTitle} and interested in ${plot.phase || ''} Plot No. ${plot.plotNo} (${area}, ${plot.facing}, Price: ${plot.formattedPrice}). Please share cadastral factsheet and schedule site inspection.`
     );
-    return `https://wa.me/919444100000?text=${msg}`;
+    return `https://wa.me/919486140936?text=${msg}`;
   }
 
   // =========================================================================

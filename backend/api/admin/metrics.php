@@ -192,5 +192,21 @@ if ($method === 'POST') {
         Response::error('Invalid leadId');
     }
 
+    if ($action === 'create_test_whatsapp') {
+        $name = trim((string)($input['name'] ?? 'Test Buyer Inquiry'));
+        $phone = trim((string)($input['phone'] ?? '9486140936'));
+        $message = trim((string)($input['message'] ?? 'Hi Find a Plot, I am interested in viewing the verified legal Patta & TNRERA dossier on WhatsApp.'));
+        $prop = $db->query("SELECT id, title FROM properties LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        $propId = $prop['id'] ?? 'PRJ-0059';
+
+        $stmt = $db->prepare("
+            INSERT INTO inquiries_and_visits (property_id, user_id, lead_type, contact_name, contact_phone, notes, status, created_at)
+            VALUES (?, 104, 'whatsapp_concierge', ?, ?, ?, 'new', NOW())
+        ");
+        $stmt->execute([$propId, $name, $phone, $message]);
+        $newId = (int)$db->lastInsertId();
+        Response::success(['id' => $newId, 'propertyId' => $propId], 'Test WhatsApp inquiry created successfully');
+    }
+
     Response::error('Invalid action');
 }

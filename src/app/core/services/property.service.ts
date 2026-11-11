@@ -158,7 +158,7 @@ function formatShortlistApiToProperty(raw: any): Property {
     isShortlisted: true,
     freePhotos: [img],
     premiumMedia: raw.premiumMedia || [],
-    whatsappUrl: `https://wa.me/919444100000?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (raw.title || pId))}`
+    whatsappUrl: `https://wa.me/919486140936?text=${encodeURIComponent('Hi Find a Plot, I am inquiring about ' + (raw.title || pId))}`
   };
 }
 

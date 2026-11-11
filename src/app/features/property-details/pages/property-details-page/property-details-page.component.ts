@@ -833,10 +833,10 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
   getPromptWhatsAppUrl(): string {
     const prop = this.property();
-    if (!prop) return 'https://wa.me/919444100000';
+    if (!prop) return 'https://wa.me/919486140936';
     const dateStr = this.promptVisitDate() || 'this week';
     const slotStr = this.promptVisitSlot() || 'morning';
     const msg = `Hi Find a Plot Concierge, I have been reviewing ${prop.title} (REF: ${prop.id}) in ${prop.locality || prop.city} and would like to arrange a site visit on ${dateStr} (${slotStr}). Please share available coordinator contact and exact coordinates.`;
-    return `https://wa.me/919444100000?text=${encodeURIComponent(msg)}`;
+    return `https://wa.me/919486140936?text=${encodeURIComponent(msg)}`;
   }
 }

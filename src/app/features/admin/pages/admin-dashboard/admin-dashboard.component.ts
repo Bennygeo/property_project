@@ -369,6 +369,20 @@ export class AdminDashboardComponent {
   });
 
   updateWhatsappStatus(id: number, status: string): void {
+    const tryPost = (url: string) => this.http.post<any>(url, {
+      action: 'update_lead_status',
+      leadId: id,
+      status: status,
+      notes: `Status updated to ${status} via Admin Dashboard`
+    });
+
+    tryPost(`${environment.apiUrl}/admin/metrics.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/metrics.php')),
+      catchError(() => of(null))
+    ).subscribe(() => {
+      this.loadDashboardMetrics();
+    });
+
     const current = this.dashboardMetrics();
     const updatedMsgs = (current.whatsappMessages || []).map(m => {
       if (m.id === id) {
@@ -385,6 +399,30 @@ export class AdminDashboardComponent {
       title: 'WhatsApp Lead Updated',
       message: `Lead #${id} status changed to ${status.toUpperCase()}`,
       icon: 'check_circle'
+    });
+  }
+
+  createTestWhatsAppRequest(): void {
+    const tryPost = (url: string) => this.http.post<any>(url, {
+      action: 'create_test_whatsapp',
+      name: 'Benny (Test Investor)',
+      phone: '9486140936',
+      message: 'Hi Find a Plot, I am interested in viewing the verified legal Patta & TNRERA dossier on WhatsApp.'
+    });
+
+    tryPost(`${environment.apiUrl}/admin/metrics.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/metrics.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.success) {
+        this.notificationService.show({
+          type: 'success',
+          title: 'Test Request Created',
+          message: 'Real test WhatsApp inquiry logged to database!',
+          icon: 'chat'
+        });
+        this.loadDashboardMetrics();
+      }
     });
   }
 

@@ -276,6 +276,6 @@ export class InteractivePlotLayoutComponent implements OnInit {
     const text = encodeURIComponent(
       `Hi Find a Plot Realty, I am interested in Plot No. ${plot.plotNo} (${area}, ${plot.facing}, Price: ${plot.formattedPrice}) at ${this.propertyTitle}. Please share full survey sketch and arrange site visit.`
     );
-    return `https://wa.me/919444100000?text=${text}`;
+    return `https://wa.me/919486140936?text=${text}`;
   }
 }

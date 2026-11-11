@@ -479,7 +479,7 @@ try {
         if (strlen($digitsOnly) === 10) {
             $digitsOnly = '91' . $digitsOnly;
         }
-        $phoneForWa = (!empty($digitsOnly) && strlen($digitsOnly) >= 10) ? $digitsOnly : '919444100000';
+        $phoneForWa = (!empty($digitsOnly) && strlen($digitsOnly) >= 10) ? $digitsOnly : '919486140936';
 
         // Assign curated mock image package
         $pack = $mockImagePacks[$index % count($mockImagePacks)];

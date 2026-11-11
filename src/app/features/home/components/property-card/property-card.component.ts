@@ -80,7 +80,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
         <div class="card-top-actions">
           <a 
             class="btn-card-wa" 
-            [href]="property.whatsappUrl || 'https://wa.me/919444100000'" 
+            [href]="property.whatsappUrl || 'https://wa.me/919486140936'" 
             target="_blank" 
             rel="noopener"
             (click)="$event.stopPropagation()"

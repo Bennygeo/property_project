@@ -1324,7 +1324,7 @@ export class PropertyCompareModalComponent {
     } else {
       text += 'properties on Find a Plot. Please assist.';
     }
-    return `https://wa.me/919444100000?text=${encodeURIComponent(text)}`;
+    return `https://wa.me/919486140936?text=${encodeURIComponent(text)}`;
   }
 
   onBackdropClick(event: MouseEvent): void {
