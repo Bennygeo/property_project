@@ -16,12 +16,18 @@
       <div class="subnav-breadcrumbs">
         <a routerLink="/" class="crumb-link">Home</a>
         <span class="crumb-sep">/</span>
-        <a routerLink="/search" class="crumb-link">Developers</a>
+        <a routerLink="/developers" class="crumb-link">Developers</a>
         <span class="crumb-sep">/</span>
         <span class="crumb-current">{{ builderDossier()?.name || builderName() }}</span>
       </div>
 
       <div class="subnav-actions">
+        @if (isAuthorizedDeveloper()) {
+          <a routerLink="/developer" class="btn-dev-workspace-link">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            <span>Developer Portal</span>
+          </a>
+        }
         <button type="button" class="btn-share-portfolio" (click)="shareBuilderProfile()" title="Share Developer Portfolio">
           <span class="material-symbols-outlined">share</span>
           <span>Share Profile</span>
@@ -29,6 +35,27 @@
       </div>
     </div>
   </nav>
+
+  @if (isAuthorizedDeveloper()) {
+    <div class="developer-admin-strip">
+      <div class="max-w-content strip-inner">
+        <div class="strip-text">
+          <span class="material-symbols-outlined">shield_person</span>
+          <span>You are viewing your authorized company profile. You can customize branding, RERA number, and upcoming projects.</span>
+        </div>
+        <div class="strip-btns">
+          <button type="button" class="btn-strip-action" (click)="setTab('customize')">
+            <span class="material-symbols-outlined">tune</span>
+            <span>Customize Page</span>
+          </button>
+          <a routerLink="/developer" class="btn-strip-portal">
+            <span class="material-symbols-outlined">add_business</span>
+            <span>Post New Project</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
 
   @if (isLoading()) {
     <!-- SKELETON LOADER STATE -->
@@ -45,9 +72,13 @@
 
       <div class="max-w-content hero-content-inner">
         <div class="hero-identity-row">
-          <!-- Developer Corporate Monogram Emblem -->
+          <!-- Developer Corporate Logo Emblem -->
           <div class="developer-monogram-box">
-            <span class="material-symbols-outlined monogram-icon">apartment</span>
+            @if (builderDossier()?.logoUrl) {
+              <img [src]="builderDossier()?.logoUrl" [alt]="builderDossier()?.name" class="developer-logo-img">
+            } @else {
+              <span class="material-symbols-outlined monogram-icon">apartment</span>
+            }
             <div class="monogram-verified-glow"></div>
           </div>
 
@@ -56,7 +87,7 @@
             <div class="developer-badges-strip">
               <span class="badge-tnrera-gold">
                 <span class="material-symbols-outlined">verified</span>
-                <span>TNRERA Registered Promoter</span>
+                <span>TNRERA: {{ builderDossier()?.reraNumber || 'TNRERA/PROM/0219/2026' }}</span>
               </span>
               <span class="badge-dtcp-green">
                 <span class="material-symbols-outlined">gavel</span>
@@ -97,30 +128,29 @@
         <!-- KPI COUNTERS BANNER -->
         <div class="hero-kpi-grid">
           <div class="kpi-card">
-            <span class="kpi-label">Active Projects</span>
+            <span class="kpi-label">Total Projects</span>
             <div class="kpi-value-row">
-              <span class="kpi-num">{{ builderDossier()?.totalProjects || projectsList().length }}</span>
-              <span class="kpi-tag">Master Layouts</span>
+              <span class="kpi-num">{{ builderDossier()?.totalProjects || (projectsList().length + upcomingProjects().length) }}</span>
+              <span class="kpi-tag">Portfolio</span>
             </div>
-            <span class="kpi-sub">DTCP &amp; RERA Sanctioned</span>
+            <span class="kpi-sub">{{ projectsList().length }} Active • {{ upcomingProjects().length }} Upcoming</span>
           </div>
 
           <div class="kpi-card">
-            <span class="kpi-label">Available Properties</span>
+            <span class="kpi-label">Upcoming Releases</span>
             <div class="kpi-value-row">
-              <span class="kpi-num">{{ builderDossier()?.totalProperties || propertiesList().length }}</span>
-              <span class="kpi-tag">Plots &amp; Units</span>
+              <span class="kpi-num">{{ upcomingProjects().length }}</span>
+              <span class="kpi-tag">Pre-Launch</span>
             </div>
-            <span class="kpi-sub">Direct Registry Dossiers</span>
+            <span class="kpi-sub">Pipeline Plotted Sites</span>
           </div>
 
           <div class="kpi-card">
-            <span class="kpi-label">Operating Districts</span>
+            <span class="kpi-label">Delivered Extent</span>
             <div class="kpi-value-row">
-              <span class="kpi-num">{{ builderDossier()?.districts?.length || 1 }}</span>
-              <span class="kpi-tag">Hubs</span>
+              <span class="kpi-num">{{ builderDossier()?.deliveredSqFt || '12M+ sq.ft' }}</span>
             </div>
-            <span class="kpi-sub">{{ builderDossier()?.districts?.join(' • ') || 'Tamil Nadu' }}</span>
+            <span class="kpi-sub">Est. {{ builderDossier()?.estYear || '2016' }} • {{ builderDossier()?.completedProjects || '25+ Projects' }}</span>
           </div>
 
           <div class="kpi-card kpi-price-card">
@@ -147,10 +177,22 @@
           <span>Master Projects ({{ projectsList().length }})</span>
         </button>
 
+        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'upcoming'" (click)="setTab('upcoming')">
+          <span class="material-symbols-outlined">event_upcoming</span>
+          <span>Upcoming Projects ({{ upcomingProjects().length }})</span>
+        </button>
+
         <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'credentials'" (click)="setTab('credentials')">
           <span class="material-symbols-outlined">gavel</span>
           <span>Cadastral Compliance</span>
         </button>
+
+        @if (isAuthorizedDeveloper()) {
+          <button type="button" class="tab-item-btn tab-btn-customize" [class.active]="activeTab() === 'customize'" (click)="setTab('customize')">
+            <span class="material-symbols-outlined">tune</span>
+            <span>Customize Company</span>
+          </button>
+        }
       </div>
     </nav>
 
@@ -424,6 +466,170 @@
             <p>Direct loan sanctions available through SBI, HDFC Bank, ICICI Bank, and Axis Bank with pre-vetted legal paperwork for immediate disbursement.</p>
             <div class="comp-tag-green">80% Loan Support</div>
           </div>
+        </div>
+      </section>
+      }
+
+      <!-- SECTION: UPCOMING PROJECTS PIPELINE -->
+      @if (activeTab() === 'upcoming') {
+      <section class="builder-upcoming-section">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">FUTURE PIPELINE &amp; PRE-LAUNCH DEVELOPMENTS</span>
+            <h2 class="section-main-heading">Upcoming Land Projects ({{ upcomingProjects().length }})</h2>
+          </div>
+          @if (isAuthorizedDeveloper()) {
+            <a routerLink="/developer" class="btn-manage-upcoming">
+              <span class="material-symbols-outlined">add_circle</span>
+              <span>Manage Upcoming Projects</span>
+            </a>
+          }
+        </div>
+
+        @if (upcomingProjects().length > 0) {
+          <div class="upcoming-showcase-grid">
+            @for (item of upcomingProjects(); track item.id || item.name) {
+              <article class="upcoming-showcase-card">
+                <div class="upcoming-media-frame">
+                  <img [src]="item.bannerUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'" [alt]="item.name" class="upcoming-banner-img">
+                  <span class="upcoming-launch-badge">Expected Launch: {{ item.expectedLaunch }}</span>
+                </div>
+                <div class="upcoming-card-content">
+                  <span class="upcoming-category-tag">{{ item.propertyType || 'Gated CMDA Plots' }}</span>
+                  <h3 class="upcoming-title">{{ item.name }}</h3>
+                  <p class="upcoming-location">
+                    <span class="material-symbols-outlined">location_on</span>
+                    <span>{{ item.locality }}, {{ item.city }}</span>
+                  </p>
+                  <p class="upcoming-desc">{{ item.description }}</p>
+
+                  <div class="upcoming-specs-strip">
+                    <div class="spec-cell">
+                      <span class="s-label">Starting Price</span>
+                      <span class="s-value">{{ item.startingPrice }}</span>
+                    </div>
+                    <div class="spec-cell">
+                      <span class="s-label">Planned Extent</span>
+                      <span class="s-value">{{ item.totalUnits }}</span>
+                    </div>
+                  </div>
+
+                  <div class="upcoming-card-actions">
+                    <a [href]="'https://wa.me/919444100000?text=Hi+Find+a+Plot%2C+I+want+to+register+interest+for+upcoming+project%3A+' + item.name" target="_blank" rel="noopener" class="btn-register-interest">
+                      <span class="material-symbols-outlined">notification_add</span>
+                      <span>Register Priority Interest</span>
+                    </a>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="empty-upcoming-box">
+            <span class="material-symbols-outlined">event_upcoming</span>
+            <h3>No Pre-Launch Projects Announced</h3>
+            <p>New plotted developments and phase extensions by {{ builderDossier()?.name || builderName() }} will be announced here.</p>
+          </div>
+        }
+      </section>
+      }
+
+      <!-- SECTION: IN-PAGE DEVELOPER CUSTOMIZATION (DEVELOPER ROLE) -->
+      @if (activeTab() === 'customize' && isAuthorizedDeveloper()) {
+      <section class="builder-customization-section">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">DEVELOPER ROLE ACCESS</span>
+            <h2 class="section-main-heading">Customize Company Branding &amp; Details</h2>
+          </div>
+        </div>
+
+        <div class="customize-card-container">
+          <form (submit)="saveCustomization()" class="inpage-custom-form">
+            <div class="form-row-2">
+              <div class="form-field">
+                <label>Company / Developer Name *</label>
+                <input type="text" [(ngModel)]="customEditForm.name" name="name" required class="input-ctrl">
+              </div>
+
+              <div class="form-field">
+                <label>Developer RERA Registration Number *</label>
+                <input type="text" [(ngModel)]="customEditForm.reraNumber" name="reraNumber" required class="input-ctrl">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label>Developer Logo URL *</label>
+                <input type="url" [(ngModel)]="customEditForm.logoUrl" name="logoUrl" class="input-ctrl">
+                <div class="preview-mini-wrap" *ngIf="customEditForm.logoUrl">
+                  <span class="text-xs">Logo Preview:</span>
+                  <img [src]="customEditForm.logoUrl" alt="Logo preview" class="preview-img">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label>Cover Banner Image URL</label>
+                <input type="url" [(ngModel)]="customEditForm.coverImageUrl" name="coverImageUrl" class="input-ctrl">
+              </div>
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-field">
+                <label>Established Year</label>
+                <input type="text" [(ngModel)]="customEditForm.establishedYear" name="establishedYear" class="input-ctrl">
+              </div>
+
+              <div class="form-field">
+                <label>Projects Completed</label>
+                <input type="text" [(ngModel)]="customEditForm.projectsCompleted" name="projectsCompleted" class="input-ctrl">
+              </div>
+
+              <div class="form-field">
+                <label>Delivered Extent (Sq.Ft)</label>
+                <input type="text" [(ngModel)]="customEditForm.deliveredSqFt" name="deliveredSqFt" class="input-ctrl">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>Corporate Office Address</label>
+              <input type="text" [(ngModel)]="customEditForm.corporateOffice" name="corporateOffice" class="input-ctrl">
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-field">
+                <label>Contact Phone</label>
+                <input type="text" [(ngModel)]="customEditForm.contactPhone" name="contactPhone" class="input-ctrl">
+              </div>
+
+              <div class="form-field">
+                <label>Contact Email</label>
+                <input type="email" [(ngModel)]="customEditForm.contactEmail" name="contactEmail" class="input-ctrl">
+              </div>
+
+              <div class="form-field">
+                <label>Official Website</label>
+                <input type="url" [(ngModel)]="customEditForm.websiteUrl" name="websiteUrl" class="input-ctrl">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>About Company Narrative</label>
+              <textarea [(ngModel)]="customEditForm.about" name="about" rows="4" class="textarea-ctrl"></textarea>
+            </div>
+
+            <div class="form-btn-bar">
+              <button type="button" class="btn-cancel" (click)="setTab('properties')">Cancel</button>
+              <button type="submit" class="btn-save-custom" [disabled]="isSaving()">
+                @if (isSaving()) {
+                  <span>Saving Customizations...</span>
+                } @else {
+                  <span class="material-symbols-outlined">save</span>
+                  <span>Save Developer Profile</span>
+                }
+              </button>
+            </div>
+          </form>
         </div>
       </section>
       }

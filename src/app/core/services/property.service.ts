@@ -50,13 +50,20 @@ export interface DistrictHubItem {
 }
 
 export interface DeveloperSummary {
+  id?: number;
   name: string;
   rawName?: string;
+  slug?: string;
+  reraNumber?: string;
   propertyCount: number;
   projectCount: number;
+  upcomingProjectsCount?: number;
   districts?: string[];
   logoUrl?: string | null;
+  coverImageUrl?: string | null;
   initials?: string;
+  corporateOffice?: string;
+  establishedYear?: string;
 }
 
 export interface RegionalGroupItem {

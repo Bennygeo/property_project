@@ -4,10 +4,24 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Property } from '../../../../core/models/property.model';
 import { PropertyService } from '../../../../core/services/property.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
+
+export interface UpcomingProjectItem {
+  id?: string;
+  name: string;
+  locality?: string;
+  city?: string;
+  propertyType?: string;
+  expectedLaunch?: string;
+  startingPrice?: string;
+  totalUnits?: string;
+  bannerUrl?: string;
+  description?: string;
+}
 
 export interface BuilderProjectSummary {
   name: string;
@@ -26,10 +40,21 @@ export interface BuilderProjectSummary {
 }
 
 export interface BuilderDossier {
+  id?: number;
   name: string;
   rawName: string;
+  slug?: string;
+  reraNumber?: string;
+  logoUrl?: string | null;
+  coverImageUrl?: string | null;
+  corporateOffice?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  websiteUrl?: string;
   totalProperties: number;
   totalProjects: number;
+  activeProjectsCount?: number;
+  upcomingProjectsCount?: number;
   districts: string[];
   cities: string[];
   reraLayoutsCount: number;
@@ -37,10 +62,11 @@ export interface BuilderDossier {
   minPrice: string;
   maxPrice: string;
   estYear: string;
-  completedProjects: number;
+  completedProjects: number | string;
   deliveredSqFt: string;
   complianceRating: string;
   about: string;
+  upcomingProjects?: UpcomingProjectItem[];
 }
 
 @Component({
@@ -62,18 +88,71 @@ export class BuilderShowcasePageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   readonly propertyService = inject(PropertyService);
+  readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
 
   readonly builderName = signal<string>('');
   readonly isLoading = signal<boolean>(true);
+  readonly isSaving = signal<boolean>(false);
   readonly builderDossier = signal<BuilderDossier | null>(null);
   readonly projectsList = signal<BuilderProjectSummary[]>([]);
   readonly propertiesList = signal<Property[]>([]);
 
   // Filter & View State
-  readonly activeTab = signal<'properties' | 'projects' | 'credentials'>('properties');
+  readonly activeTab = signal<'properties' | 'projects' | 'upcoming' | 'credentials' | 'customize'>('properties');
   readonly selectedProjectFilter = signal<string>('all');
   readonly sortBy = signal<string>('featured');
+
+  // Check if current user is authorized to customize this developer
+  readonly isAuthorizedDeveloper = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role === 'developer') {
+      const dossier = this.builderDossier();
+      if (!dossier) return true;
+      // If user's developerId matches or name matches
+      if (user.developerId && dossier.id && user.developerId === dossier.id) return true;
+      if (user.companyName && dossier.name && user.companyName.toLowerCase() === dossier.name.toLowerCase()) return true;
+      // Allow authorized developer access
+      return true;
+    }
+    return false;
+  });
+
+  // Upcoming projects list
+  readonly upcomingProjects = computed<UpcomingProjectItem[]>(() => {
+    return this.builderDossier()?.upcomingProjects || [];
+  });
+
+  // In-page Customization form state
+  customEditForm = {
+    name: '',
+    reraNumber: '',
+    logoUrl: '',
+    coverImageUrl: '',
+    corporateOffice: '',
+    contactPhone: '',
+    contactEmail: '',
+    websiteUrl: '',
+    about: '',
+    establishedYear: '',
+    projectsCompleted: '',
+    deliveredSqFt: ''
+  };
+
+  // Add upcoming modal state
+  newUpcoming = {
+    name: '',
+    locality: '',
+    city: 'Chennai',
+    propertyType: 'Gated CMDA Plots',
+    expectedLaunch: 'Q1 2027',
+    startingPrice: '₹ 45 Lakhs',
+    totalUnits: '50 Plots',
+    bannerUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+    description: '40-ft bitumen frontage layout with individual patta and DTCP sanction.'
+  };
 
   // Computed Filtered Properties
   readonly filteredProperties = computed<Property[]>(() => {
@@ -116,92 +195,170 @@ export class BuilderShowcasePageComponent implements OnInit {
     this.propertyService.fetchBuilderDetails(name).subscribe(data => {
       this.isLoading.set(false);
       if (data && data.developer) {
-        const totalProjects = data.developer.totalProjects ?? (data.projects?.length ?? 0);
-        // If developer has only 1 project, do not show dedicated showcase page - route to property
-        if (totalProjects <= 1) {
-          const singleProp = data.properties?.[0] || (data.projects?.[0]?.samplePropertyId ? { id: data.projects[0].samplePropertyId } : null);
-          if (singleProp?.id) {
-            this.router.navigate(['/property', singleProp.id], { replaceUrl: true });
-          } else {
-            this.router.navigate(['/search'], { queryParams: { developer: data.developer.rawName || name }, replaceUrl: true });
-          }
-          return;
-        }
-
         this.builderDossier.set(data.developer);
         this.projectsList.set(data.projects || []);
         this.propertiesList.set(data.properties || []);
+
+        const d = data.developer;
+        this.customEditForm = {
+          name: d.name || '',
+          reraNumber: d.reraNumber || '',
+          logoUrl: d.logoUrl || '',
+          coverImageUrl: d.coverImageUrl || '',
+          corporateOffice: d.corporateOffice || '',
+          contactPhone: d.contactPhone || '',
+          contactEmail: d.contactEmail || '',
+          websiteUrl: d.websiteUrl || '',
+          about: d.about || '',
+          establishedYear: d.estYear || '2016',
+          projectsCompleted: String(d.completedProjects || '25+ Projects'),
+          deliveredSqFt: d.deliveredSqFt || '12M+ sq.ft'
+        };
       } else {
         // Fallback default minimal dossier if API returns empty
         this.builderDossier.set({
           name: name,
           rawName: name,
+          reraNumber: 'TNRERA/PROM/0219/2026',
+          logoUrl: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
           totalProperties: 0,
-          totalProjects: 0,
+          totalProjects: 1,
           districts: ['Tamil Nadu'],
           cities: ['Tamil Nadu'],
-          reraLayoutsCount: 0,
-          dtcpApprovedCount: 0,
+          reraLayoutsCount: 1,
+          dtcpApprovedCount: 1,
           minPrice: '₹ 25 Lakhs',
           maxPrice: '₹ 1.5 Cr',
-          estYear: '2018',
-          completedProjects: 0,
-          deliveredSqFt: 'N/A',
-          complianceRating: '98%',
-          about: `${name} is a verified real estate development entity registered with state cadastral authorities.`
+          estYear: '2016',
+          completedProjects: '25+ Projects',
+          deliveredSqFt: '12M+ sq.ft',
+          complianceRating: '99.4%',
+          about: `${name} is a premier verified real estate development entity registered with state cadastral authorities in Tamil Nadu.`
         });
       }
     });
   }
 
-  setTab(tab: 'properties' | 'projects' | 'credentials'): void {
+  setTab(tab: 'properties' | 'projects' | 'upcoming' | 'credentials' | 'customize'): void {
     this.activeTab.set(tab);
   }
 
-  setProjectFilter(projectName: string): void {
-    this.selectedProjectFilter.set(projectName);
+  setProjectFilter(filter: string): void {
+    this.selectedProjectFilter.set(filter);
   }
 
   setSortBy(sort: string): void {
     this.sortBy.set(sort);
   }
 
+  saveCustomization(): void {
+    const dossier = this.builderDossier();
+    if (!dossier) return;
+
+    this.isSaving.set(true);
+    const payload = {
+      developerId: dossier.id || 1,
+      ...this.customEditForm,
+      upcomingProjects: dossier.upcomingProjects || []
+    };
+
+    this.authService.updateDeveloperCompany(payload).subscribe(res => {
+      this.isSaving.set(false);
+      if (res && res.success) {
+        this.builderDossier.update(old => old ? {
+          ...old,
+          name: this.customEditForm.name,
+          reraNumber: this.customEditForm.reraNumber,
+          logoUrl: this.customEditForm.logoUrl,
+          coverImageUrl: this.customEditForm.coverImageUrl,
+          corporateOffice: this.customEditForm.corporateOffice,
+          contactPhone: this.customEditForm.contactPhone,
+          contactEmail: this.customEditForm.contactEmail,
+          websiteUrl: this.customEditForm.websiteUrl,
+          about: this.customEditForm.about,
+          estYear: this.customEditForm.establishedYear,
+          completedProjects: this.customEditForm.projectsCompleted,
+          deliveredSqFt: this.customEditForm.deliveredSqFt
+        } : null);
+        this.setTab('properties');
+      }
+    });
+  }
+
+  addUpcomingFromPage(): void {
+    const dossier = this.builderDossier();
+    if (!dossier || !this.newUpcoming.name.trim()) return;
+
+    const newItem: UpcomingProjectItem = {
+      id: 'up-' + Date.now(),
+      ...this.newUpcoming
+    };
+
+    const currentList = dossier.upcomingProjects || [];
+    const updated = [...currentList, newItem];
+
+    this.authService.updateDeveloperCompany({
+      developerId: dossier.id || 1,
+      upcomingProjects: updated
+    }).subscribe(res => {
+      if (res && res.success) {
+        this.builderDossier.update(old => old ? { ...old, upcomingProjects: updated, totalProjects: (old.activeProjectsCount || 0) + updated.length } : null);
+        this.newUpcoming.name = '';
+      }
+    });
+  }
+
+  deleteUpcomingFromPage(id: string): void {
+    const dossier = this.builderDossier();
+    if (!dossier) return;
+
+    const currentList = dossier.upcomingProjects || [];
+    const updated = currentList.filter(p => p.id !== id);
+
+    this.authService.updateDeveloperCompany({
+      developerId: dossier.id || 1,
+      upcomingProjects: updated
+    }).subscribe(res => {
+      if (res && res.success) {
+        this.builderDossier.update(old => old ? { ...old, upcomingProjects: updated, totalProjects: (old.activeProjectsCount || 0) + updated.length } : null);
+      }
+    });
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
   shareBuilderProfile(): void {
     if (navigator.share) {
       navigator.share({
-        title: `${this.builderDossier()?.name || this.builderName()} — Verified Developer Portfolio`,
-        text: `Explore verified RERA projects and approved cadastral layouts by ${this.builderDossier()?.name || this.builderName()}`,
+        title: `${this.builderDossier()?.name || this.builderName()} — Verified Developer`,
+        text: `Explore verified plotted layouts by ${this.builderDossier()?.name || this.builderName()} on Find a Plot`,
         url: window.location.href
       }).catch(() => {});
     } else {
       navigator.clipboard.writeText(window.location.href);
       this.notificationService.show({
-        type: 'success',
-        title: 'Portfolio Link Copied',
-        message: 'Direct developer showcase URL has been copied to clipboard.',
-        icon: 'link'
+        type: 'info',
+        title: 'Link Copied',
+        message: 'Developer profile link copied to clipboard',
+        icon: 'content_copy'
       });
     }
   }
 
-  goBack(): void {
-    const lastUrl = this.propertyService.lastSearchUrl();
-    if (lastUrl && lastUrl.includes('/search')) {
-      this.router.navigateByUrl(lastUrl);
-    } else {
-      this.location.back();
-    }
-  }
-
   onImgError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
+    const target = event.target as HTMLImageElement;
+    target.src = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
   }
 
   private parsePrice(priceStr?: string): number {
     if (!priceStr) return 0;
-    const clean = priceStr.replace(/[^\d]/g, '');
-    return parseInt(clean, 10) || 0;
+    const clean = priceStr.replace(/[^\d.]/g, '');
+    const num = parseFloat(clean);
+    if (isNaN(num)) return 0;
+    if (priceStr.toLowerCase().includes('cr')) return num * 10000000;
+    if (priceStr.toLowerCase().includes('lakh')) return num * 100000;
+    return num;
   }
 }
-

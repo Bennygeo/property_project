@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { User, UserProfileResponse } from '../models/user.model';
+import { User, UserRole, UserProfileResponse } from '../models/user.model';
 import { NotificationService } from './notification.service';
 import { environment } from '../../../environments/environment';
 
@@ -19,6 +19,8 @@ export class AuthService {
   // Active user state
   public readonly currentUser = signal<User | null>(this.getInitialUser());
   public readonly isLoggedIn = computed(() => !!this.currentUser());
+  public readonly isDeveloper = computed(() => this.currentUser()?.role === 'developer');
+  public readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
   // Guest property views tracking (Max 2 free property views for unauthenticated visitors)
   public readonly guestViewedPropertyIds = signal<string[]>(this.getInitialGuestViews());
@@ -471,6 +473,116 @@ export class AuthService {
           icon: 'error'
         });
         return of({ success: false, message: errorMsg });
+      })
+    );
+  }
+
+  /**
+   * Switch the active user role (e.g. for testing / demo access to Developer or Admin portal)
+   */
+  public switchRole(role: UserRole, developerId: number = 1): void {
+    const current = this.currentUser();
+    const updated: User = {
+      id: current?.id || (role === 'developer' ? 105 : 1),
+      name: role === 'developer' ? 'Experion Project Director' : (current?.name || 'Verified Investor'),
+      email: role === 'developer' ? 'developer@experion.com' : (current?.email || 'user@findaplot.in'),
+      phone: current?.phone || '+91 94861 40936',
+      role,
+      developerId: role === 'developer' ? developerId : undefined,
+      companyName: role === 'developer' ? 'Experion Developers & Infrastructure' : undefined,
+      pointsBalance: current?.pointsBalance || 1000,
+      createdAt: current?.createdAt || new Date().toISOString()
+    };
+    this.setCurrentUser(updated);
+    this.notificationService.show({
+      type: 'success',
+      title: 'Role Switched',
+      message: `Active session role is now: ${role.toUpperCase()}`,
+      icon: 'manage_accounts'
+    });
+  }
+
+  /**
+   * Developer Portal Data: Access only authorized company & projects
+   */
+  public getDeveloperPortal(userId?: number, developerId?: number): Observable<any> {
+    const uId = userId ?? (this.currentUser()?.id || 105);
+    const dId = developerId ?? (this.currentUser()?.developerId || 1);
+    const url = `${environment.apiUrl}/developers/portal.php?userId=${uId}&developerId=${dId}`;
+    return this.http.get<any>(url).pipe(
+      catchError(err => {
+        console.error('Failed to load developer portal:', err);
+        return of({ success: false, message: err?.error?.message || 'Failed to load developer portal' });
+      })
+    );
+  }
+
+  /**
+   * Customize Developer Profile & Company Branding
+   */
+  public updateDeveloperCompany(payload: any): Observable<any> {
+    const url = `${environment.apiUrl}/developers/update-profile.php`;
+    const user = this.currentUser();
+    const data = {
+      userId: user?.id || 105,
+      developerId: user?.developerId || payload.id || payload.developerId || 1,
+      ...payload
+    };
+    return this.http.post<any>(url, data).pipe(
+      tap(res => {
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Company Customized',
+            message: 'Your developer company profile and showcase have been updated.',
+            icon: 'verified'
+          });
+        }
+      }),
+      catchError(err => {
+        const msg = err?.error?.message || 'Failed to update company profile';
+        this.notificationService.show({
+          type: 'error',
+          title: 'Update Failed',
+          message: msg,
+          icon: 'error'
+        });
+        return of({ success: false, message: msg });
+      })
+    );
+  }
+
+  /**
+   * Developer Post New Project Details
+   */
+  public postDeveloperProject(payload: any): Observable<any> {
+    const url = `${environment.apiUrl}/developers/post-project.php`;
+    const user = this.currentUser();
+    const data = {
+      userId: user?.id || 105,
+      developerId: user?.developerId || 1,
+      ...payload
+    };
+    return this.http.post<any>(url, data).pipe(
+      tap(res => {
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Project Published!',
+            message: 'Your new developer project is now live on the registry.',
+            icon: 'check_circle'
+          });
+        }
+      }),
+      catchError(err => {
+        const msg = err?.error?.message || 'Failed to post project';
+        this.notificationService.show({
+          type: 'error',
+          title: 'Publish Error',
+          message: msg,
+          icon: 'error'
+        });
+        return of({ success: false, message: msg });
       })
     );
   }

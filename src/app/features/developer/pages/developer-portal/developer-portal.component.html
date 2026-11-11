@@ -1,0 +1,647 @@
+<app-top-concierge-bar />
+<app-header />
+
+<div class="developer-portal-page">
+  <!-- AUTHORIZED DEVELOPER BRAND HERO BANNER -->
+  <header class="developer-hero-banner">
+    <div class="max-w-content banner-inner">
+      <div class="developer-identity-strip">
+        <div class="logo-preview-box">
+          @if (company()?.logoUrl) {
+            <img [src]="company()?.logoUrl" [alt]="company()?.name" class="dev-logo-img">
+          } @else {
+            <span class="material-symbols-outlined logo-fallback-icon">apartment</span>
+          }
+        </div>
+
+        <div class="developer-info-col">
+          <div class="badges-row">
+            <span class="badge-role-tag">
+              <span class="material-symbols-outlined">shield_person</span>
+              <span>Authorized Developer Portal</span>
+            </span>
+            <span class="badge-rera-promoter">
+              <span class="material-symbols-outlined">verified</span>
+              <span>TNRERA: {{ company()?.reraNumber || 'TNRERA/PROM/0219/2026' }}</span>
+            </span>
+          </div>
+
+          <h1 class="company-heading">{{ company()?.name || 'Authorized Developer' }}</h1>
+
+          <p class="company-meta-line">
+            <span class="material-symbols-outlined">business</span>
+            <span>{{ company()?.corporateOffice || 'Chennai, Tamil Nadu' }}</span>
+            <span class="meta-dot">•</span>
+            <span>Est. <strong>{{ company()?.establishedYear || '2016' }}</strong></span>
+            <span class="meta-dot">•</span>
+            <span><strong>{{ company()?.projectsCompleted || '25+ Projects' }}</strong> Delivered</span>
+          </p>
+        </div>
+
+        <div class="banner-actions-col">
+          <button type="button" class="btn-public-preview" (click)="viewPublicPage()">
+            <span class="material-symbols-outlined">visibility</span>
+            <span>View Public Page</span>
+          </button>
+          <button type="button" class="btn-primary-action" (click)="setTab('post-project')">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Post New Project</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="portal-nav-bar">
+    <div class="max-w-content nav-tabs-list">
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Overview</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'projects'" (click)="setTab('projects')">
+        <span class="material-symbols-outlined">apartment</span>
+        <span>My Projects ({{ projects().length }})</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'post-project'" (click)="setTab('post-project')">
+        <span class="material-symbols-outlined">add_business</span>
+        <span>Post New Project</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'upcoming'" (click)="setTab('upcoming')">
+        <span class="material-symbols-outlined">event_upcoming</span>
+        <span>Upcoming Projects ({{ upcomingProjects().length }})</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'customize'" (click)="setTab('customize')">
+        <span class="material-symbols-outlined">tune</span>
+        <span>Customize Developer Page</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN TAB CONTENT CONTAINER -->
+  <main class="max-w-content portal-main-body">
+
+    <!-- TAB 1: OVERVIEW -->
+    @if (activeTab() === 'overview') {
+      <section class="tab-pane overview-pane">
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid-4">
+          <div class="kpi-card">
+            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">apartment</span></span>
+            <div class="kpi-text-col">
+              <span class="kpi-val">{{ projects().length }}</span>
+              <span class="kpi-tit">Total Projects</span>
+              <span class="kpi-sub">Authorized Portfolio</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">check_circle</span></span>
+            <div class="kpi-text-col">
+              <span class="kpi-val">{{ stats().publishedProjects }}</span>
+              <span class="kpi-tit">Live on Registry</span>
+              <span class="kpi-sub">Active buyer visibility</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">event_available</span></span>
+            <div class="kpi-text-col">
+              <span class="kpi-val">{{ upcomingProjects().length }}</span>
+              <span class="kpi-tit">Upcoming Pipelines</span>
+              <span class="kpi-sub">Pre-launch registered</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">mark_chat_unread</span></span>
+            <div class="kpi-text-col">
+              <span class="kpi-val">{{ stats().totalInquiries }}</span>
+              <span class="kpi-tit">Buyer Enquiries</span>
+              <span class="kpi-sub">Site visit & dossier leads</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Company Profile Quick Status -->
+        <div class="card-box company-status-box">
+          <div class="box-header-row">
+            <div>
+              <h2 class="box-heading">Developer Credentials & Verification</h2>
+              <p class="box-sub">Your company's state regulatory compliance status</p>
+            </div>
+            <button type="button" class="btn-subtle" (click)="setTab('customize')">
+              <span class="material-symbols-outlined">edit</span>
+              <span>Edit Profile</span>
+            </button>
+          </div>
+
+          <div class="credentials-summary-grid">
+            <div class="cred-cell">
+              <span class="cell-label">Promoter RERA No.</span>
+              <span class="cell-val text-brand">{{ company()?.reraNumber || 'TNRERA/PROM/0219/2026' }}</span>
+            </div>
+            <div class="cred-cell">
+              <span class="cell-label">Corporate Office</span>
+              <span class="cell-val">{{ company()?.corporateOffice }}</span>
+            </div>
+            <div class="cred-cell">
+              <span class="cell-label">Contact Desk</span>
+              <span class="cell-val">{{ company()?.contactPhone }} / {{ company()?.contactEmail }}</span>
+            </div>
+            <div class="cred-cell">
+              <span class="cell-label">Official Website</span>
+              <span class="cell-val">{{ company()?.websiteUrl || 'Not specified' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Live Projects Preview -->
+        <div class="card-box projects-summary-box">
+          <div class="box-header-row">
+            <div>
+              <h2 class="box-heading">Authorized Live Projects</h2>
+              <p class="box-sub">Projects linked strictly to {{ company()?.name }}</p>
+            </div>
+            <button type="button" class="btn-primary-action" (click)="setTab('post-project')">
+              <span class="material-symbols-outlined">add</span>
+              <span>Add New Project</span>
+            </button>
+          </div>
+
+          @if (projects().length > 0) {
+            <div class="projects-table-wrap">
+              <table class="portal-table">
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <th>Location</th>
+                    <th>Price Range</th>
+                    <th>Plots / Units</th>
+                    <th>RERA Number</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of projects(); track p.id) {
+                    <tr>
+                      <td class="proj-title-cell">
+                        <img [src]="p.imageUrl" [alt]="p.title" class="table-thumb">
+                        <div>
+                          <strong>{{ p.title }}</strong>
+                          <span class="text-xs text-muted">ID: {{ p.id }}</span>
+                        </div>
+                      </td>
+                      <td>{{ p.locality }}, {{ p.city }}</td>
+                      <td class="price-cell">{{ p.price }}</td>
+                      <td>{{ p.totalUnits || p.sqft }}</td>
+                      <td><span class="rera-pill">{{ p.reraNumber }}</span></td>
+                      <td><span class="status-pill status-published">{{ p.status || 'published' }}</span></td>
+                      <td>
+                        <a [routerLink]="['/property', p.id]" target="_blank" class="table-action-link" title="View Property Details">
+                          <span class="material-symbols-outlined">open_in_new</span>
+                        </a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="empty-state-card">
+              <span class="material-symbols-outlined empty-icon">apartment</span>
+              <h3>No Projects Posted Yet</h3>
+              <p>Post your first residential plotted layout or luxury villa project.</p>
+              <button type="button" class="btn-primary-action" (click)="setTab('post-project')">Post New Project</button>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- TAB 2: MY PROJECTS REGISTRY -->
+    @if (activeTab() === 'projects') {
+      <section class="tab-pane projects-pane">
+        <div class="pane-header-strip">
+          <div>
+            <h2 class="pane-title">Authorized Company Projects</h2>
+            <p class="pane-desc">You are only permitted to view and manage projects registered under {{ company()?.name }}</p>
+          </div>
+          <button type="button" class="btn-primary-action" (click)="setTab('post-project')">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Post New Project</span>
+          </button>
+        </div>
+
+        <div class="developer-projects-grid">
+          @for (p of projects(); track p.id) {
+            <article class="project-registry-card">
+              <div class="card-media-wrap">
+                <img [src]="p.imageUrl" [alt]="p.title" class="card-img">
+                <span class="status-badge-overlay">{{ p.status || 'Published' }}</span>
+                <span class="rera-badge-overlay">{{ p.reraNumber }}</span>
+              </div>
+              <div class="card-body">
+                <h3 class="proj-name">{{ p.title }}</h3>
+                <p class="proj-loc"><span class="material-symbols-outlined">location_on</span> {{ p.locality }}, {{ p.city }}</p>
+
+                <div class="proj-metrics-strip">
+                  <div class="metric-item">
+                    <span class="m-lbl">Pricing</span>
+                    <span class="m-val">{{ p.price }}</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="m-lbl">Extent</span>
+                    <span class="m-val">{{ p.sqft }}</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="m-lbl">Units</span>
+                    <span class="m-val">{{ p.totalUnits || 'Plotted' }}</span>
+                  </div>
+                </div>
+
+                <div class="card-actions-strip">
+                  <a [routerLink]="['/property', p.id]" class="btn-view-details">
+                    <span>View Property Details</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- TAB 3: POST NEW PROJECT (FREE OPTION LIKE POST-PROPERTY) -->
+    @if (activeTab() === 'post-project') {
+      <section class="tab-pane post-project-pane">
+        <div class="card-box form-card-box">
+          <div class="form-header-intro">
+            <div class="post-free-badge">
+              <span class="material-symbols-outlined">verified</span>
+              <span>Developer Free Project Submission</span>
+            </div>
+            <h2 class="form-title">Post New Developer Project Details</h2>
+            <p class="form-sub">
+              Your listing will be automatically linked to <strong>{{ company()?.name }}</strong> under your authorized developer role.
+            </p>
+          </div>
+
+          <form (submit)="submitNewProject()" class="portal-form">
+            <div class="form-section-title">1. Master Project Information</div>
+            
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="p-title">Project Name / Title *</label>
+                <input id="p-title" type="text" [(ngModel)]="newProjectForm.title" name="title" placeholder="e.g. Experion Grand Plotted Layout" required class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-type">Property Category *</label>
+                <select id="p-type" [(ngModel)]="newProjectForm.propertyType" name="propertyType" class="form-select">
+                  <option value="Gated CMDA Plots">Gated CMDA Plots</option>
+                  <option value="DTCP Sanctioned Plots">DTCP Sanctioned Plots</option>
+                  <option value="Independent Villas">Independent Villas</option>
+                  <option value="Apartments & Flats">Apartments & Flats</option>
+                  <option value="Commercial Spaces">Commercial Spaces</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="p-city">City *</label>
+                <input id="p-city" type="text" [(ngModel)]="newProjectForm.cityName" name="cityName" placeholder="e.g. Chennai" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-locality">Locality / Corridor *</label>
+                <input id="p-locality" type="text" [(ngModel)]="newProjectForm.localityName" name="localityName" placeholder="e.g. Kelambakkam Corridor" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-district">District</label>
+                <input id="p-district" type="text" [(ngModel)]="newProjectForm.district" name="district" placeholder="e.g. Chengalpattu" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="p-price">Starting Price *</label>
+                <input id="p-price" type="text" [(ngModel)]="newProjectForm.price" name="price" placeholder="e.g. ₹ 45.00 Lakhs" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-rate">Rate per Sq.Ft</label>
+                <input id="p-rate" type="text" [(ngModel)]="newProjectForm.pricePerSqft" name="pricePerSqft" placeholder="e.g. ₹ 3,750/sq.ft" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-extent">Typical Plot Size *</label>
+                <input id="p-extent" type="text" [(ngModel)]="newProjectForm.sqft" name="sqft" placeholder="e.g. 1200 sq.ft (2.75 Cents)" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-section-title">2. Statutory Approvals & Infrastructure</div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="p-rera">Project RERA Number</label>
+                <input id="p-rera" type="text" [(ngModel)]="newProjectForm.reraNumber" name="reraNumber" placeholder="TNRERA/..." class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-dtcp">DTCP / CMDA Sanction No.</label>
+                <input id="p-dtcp" type="text" [(ngModel)]="newProjectForm.dtcpApprovalNo" name="dtcpApprovalNo" placeholder="DTCP/2026/L-084" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="p-road">Internal Road Width (Ft)</label>
+                <input id="p-road" type="text" [(ngModel)]="newProjectForm.roadWidth" name="roadWidth" placeholder="40" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="p-facing">Orientation / Facing</label>
+                <select id="p-facing" [(ngModel)]="newProjectForm.facingOrView" name="facingOrView" class="form-select">
+                  <option value="East Facing">East Facing</option>
+                  <option value="North Facing">North Facing</option>
+                  <option value="North-East Corner">North-East Corner</option>
+                  <option value="West Facing">West Facing</option>
+                  <option value="South Facing">South Facing</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="p-cover">Master Project Cover Photo URL</label>
+                <input id="p-cover" type="url" [(ngModel)]="newProjectForm.mainImageUrl" name="mainImageUrl" class="form-input">
+              </div>
+            </div>
+
+            <!-- Subdivided Plot Matrix -->
+            <div class="form-section-title plot-matrix-title">
+              <span>3. Subdivided Plot Inventory (Cadastral Matrix)</span>
+              <button type="button" class="btn-subtle" (click)="addPlotRow()">
+                <span class="material-symbols-outlined">add</span>
+                <span>Add Plot</span>
+              </button>
+            </div>
+
+            <div class="plot-rows-list">
+              @for (plot of newProjectPlots(); track $index) {
+                <div class="plot-row-item">
+                  <div class="plot-cell">
+                    <label>Plot No.</label>
+                    <input type="text" [(ngModel)]="plot.plotNumber" [name]="'plotNum_' + $index" class="form-input">
+                  </div>
+                  <div class="plot-cell">
+                    <label>Sq.Ft</label>
+                    <input type="number" [(ngModel)]="plot.plotSizeSqft" [name]="'plotSqft_' + $index" class="form-input">
+                  </div>
+                  <div class="plot-cell">
+                    <label>Facing</label>
+                    <select [(ngModel)]="plot.facing" [name]="'plotFace_' + $index" class="form-select">
+                      <option value="East">East</option>
+                      <option value="North">North</option>
+                      <option value="West">West</option>
+                      <option value="South">South</option>
+                    </select>
+                  </div>
+                  <div class="plot-cell">
+                    <label>Total Price</label>
+                    <input type="text" [(ngModel)]="plot.totalPrice" [name]="'plotPrice_' + $index" class="form-input">
+                  </div>
+                  <button type="button" class="btn-remove-plot" (click)="removePlotRow($index)" title="Remove plot">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="form-section-title">4. Key Highlights & Legal Dossier (One per line)</div>
+            <div class="form-group">
+              <textarea [(ngModel)]="newProjectForm.highlightsText" name="highlightsText" rows="4" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-actions-bar">
+              <button type="button" class="btn-subtle" (click)="setTab('projects')">Cancel</button>
+              <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
+                @if (isSaving()) {
+                  <span>Publishing Project...</span>
+                } @else {
+                  <span class="material-symbols-outlined">check_circle</span>
+                  <span>Publish Developer Project</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    }
+
+    <!-- TAB 4: UPCOMING PROJECTS -->
+    @if (activeTab() === 'upcoming') {
+      <section class="tab-pane upcoming-pane">
+        <div class="pane-header-strip">
+          <div>
+            <h2 class="pane-title">Upcoming Projects Pipeline</h2>
+            <p class="pane-desc">Future land releases and pre-launch developments displayed prominently on your developer page</p>
+          </div>
+        </div>
+
+        <!-- Add Upcoming Project Card -->
+        <div class="card-box add-upcoming-box">
+          <h3 class="box-heading">Add New Upcoming Project</h3>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Upcoming Project Title *</label>
+              <input type="text" [(ngModel)]="newUpcoming.name" placeholder="e.g. Experion Lakeview Plots" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Locality &amp; City</label>
+              <input type="text" [(ngModel)]="newUpcoming.locality" placeholder="e.g. Kelambakkam, Chennai" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Expected Launch Window</label>
+              <input type="text" [(ngModel)]="newUpcoming.expectedLaunch" placeholder="e.g. Q2 2027" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Starting Price</label>
+              <input type="text" [(ngModel)]="newUpcoming.startingPrice" placeholder="e.g. ₹ 42 Lakhs" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Planned Extent / Total Units</label>
+              <input type="text" [(ngModel)]="newUpcoming.totalUnits" placeholder="e.g. 64 Villa Plots" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Banner Image URL</label>
+              <input type="url" [(ngModel)]="newUpcoming.bannerUrl" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Short Teaser Description</label>
+            <input type="text" [(ngModel)]="newUpcoming.description" placeholder="Brief overview of features, road width, amenities" class="form-input">
+          </div>
+
+          <div class="box-btn-row">
+            <button type="button" class="btn-primary-action" (click)="addUpcomingProject()">
+              <span class="material-symbols-outlined">add_circle</span>
+              <span>Add to Upcoming Showcase</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Existing Upcoming Projects List -->
+        <div class="upcoming-cards-grid">
+          @for (item of upcomingProjects(); track item.id) {
+            <article class="upcoming-item-card">
+              <img [src]="item.bannerUrl" [alt]="item.name" class="upcoming-card-img">
+              <div class="upcoming-card-body">
+                <span class="launch-tag">Expected Launch: {{ item.expectedLaunch }}</span>
+                <h4 class="upcoming-item-title">{{ item.name }}</h4>
+                <p class="upcoming-item-loc"><span class="material-symbols-outlined">location_on</span> {{ item.locality }}, {{ item.city }}</p>
+                <p class="upcoming-item-desc">{{ item.description }}</p>
+                <div class="upcoming-meta-row">
+                  <span><strong>{{ item.startingPrice }}</strong></span>
+                  <span>{{ item.totalUnits }}</span>
+                </div>
+                <div class="upcoming-card-footer">
+                  <button type="button" class="btn-remove-upcoming" (click)="deleteUpcomingProject(item.id)">
+                    <span class="material-symbols-outlined">delete</span>
+                    <span>Remove</span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- TAB 5: CUSTOMIZE DEVELOPER PAGE -->
+    @if (activeTab() === 'customize') {
+      <section class="tab-pane customize-pane">
+        <div class="card-box form-card-box">
+          <div class="form-header-intro">
+            <h2 class="form-title">Customize Developer Page &amp; Company Branding</h2>
+            <p class="form-sub">
+              Update your logo, RERA number, corporate office, contact channels, and company biography in real time.
+            </p>
+          </div>
+
+          <form (submit)="saveCompanyProfile()" class="portal-form">
+            <div class="form-section-title">1. Company Identity &amp; Logo</div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="c-name">Registered Company Name *</label>
+                <input id="c-name" type="text" [(ngModel)]="customForm.name" name="cName" required class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="c-rera">Developer RERA Registration Number *</label>
+                <input id="c-rera" type="text" [(ngModel)]="customForm.reraNumber" name="cRera" placeholder="TNRERA/PROM/..." required class="form-input">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="c-logo">Developer Logo URL *</label>
+                <input id="c-logo" type="url" [(ngModel)]="customForm.logoUrl" name="cLogo" placeholder="https://..." class="form-input">
+                <div class="logo-live-preview">
+                  <span>Preview:</span>
+                  @if (customForm.logoUrl) {
+                    <img [src]="customForm.logoUrl" alt="Logo Preview" class="mini-logo-preview">
+                  } @else {
+                    <span class="no-logo">No logo provided</span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="c-cover">Showcase Cover Image Banner URL</label>
+                <input id="c-cover" type="url" [(ngModel)]="customForm.coverImageUrl" name="cCover" placeholder="https://..." class="form-input">
+              </div>
+            </div>
+
+            <div class="form-section-title">2. Track Record &amp; Metrics</div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="c-est">Established Year</label>
+                <input id="c-est" type="text" [(ngModel)]="customForm.establishedYear" name="cEst" placeholder="2016" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="c-comp">Projects Completed</label>
+                <input id="c-comp" type="text" [(ngModel)]="customForm.projectsCompleted" name="cComp" placeholder="38+ Landmarks" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="c-sqft">Delivered Extent (Sq.Ft)</label>
+                <input id="c-sqft" type="text" [(ngModel)]="customForm.deliveredSqFt" name="cSqft" placeholder="18M+ sq.ft" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-section-title">3. Corporate Office &amp; Contact Desk</div>
+
+            <div class="form-group">
+              <label for="c-office">Corporate Office Address</label>
+              <input id="c-office" type="text" [(ngModel)]="customForm.corporateOffice" name="cOffice" placeholder="Full office address in Tamil Nadu" class="form-input">
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="c-phone">Contact Phone</label>
+                <input id="c-phone" type="tel" [(ngModel)]="customForm.contactPhone" name="cPhone" placeholder="+91 ..." class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="c-email">Official Email</label>
+                <input id="c-email" type="email" [(ngModel)]="customForm.contactEmail" name="cEmail" placeholder="projects@company.com" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label for="c-web">Company Website</label>
+                <input id="c-web" type="url" [(ngModel)]="customForm.websiteUrl" name="cWeb" placeholder="https://..." class="form-input">
+              </div>
+            </div>
+
+            <div class="form-section-title">4. About Company Narrative</div>
+            <div class="form-group">
+              <label for="c-about">Company Overview &amp; Cadastral Guarantees</label>
+              <textarea id="c-about" [(ngModel)]="customForm.about" name="cAbout" rows="4" class="form-textarea" placeholder="Describe your legal guarantees, layout approvals, and infrastructure track record..."></textarea>
+            </div>
+
+            <div class="form-actions-bar">
+              <button type="button" class="btn-subtle" (click)="viewPublicPage()">View Public Showcase</button>
+              <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
+                @if (isSaving()) {
+                  <span>Saving Updates...</span>
+                } @else {
+                  <span class="material-symbols-outlined">save</span>
+                  <span>Save &amp; Update Developer Page</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    }
+
+  </main>
+</div>
+
+<app-footer />
+

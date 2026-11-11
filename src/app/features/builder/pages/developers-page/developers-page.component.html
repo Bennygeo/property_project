@@ -132,9 +132,9 @@
               </div>
 
               <!-- RERA / Verified Indicator -->
-              <span class="verified-chip" title="RERA Registered Promoter">
+              <span class="verified-chip" [title]="dev.reraNumber || 'RERA Registered Promoter'">
                 <span class="material-symbols-outlined chip-icon">check_circle</span>
-                <span>Verified</span>
+                <span>{{ dev.reraNumber || 'Verified Promoter' }}</span>
               </span>
             </div>
 

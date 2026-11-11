@@ -27,6 +27,21 @@ export const routes: Routes = [
     title: 'Verified Developers & Builders — Find a Plot'
   },
   {
+    path: 'developer',
+    loadComponent: () => import('./features/developer/pages/developer-portal/developer-portal.component').then(m => m.DeveloperPortalComponent),
+    title: 'Developer Workspace & Project Portal — Find a Plot'
+  },
+  {
+    path: 'developer/portal',
+    redirectTo: 'developer',
+    pathMatch: 'full'
+  },
+  {
+    path: 'developer/post-project',
+    redirectTo: 'developer',
+    pathMatch: 'full'
+  },
+  {
     path: 'builders',
     redirectTo: 'developers',
     pathMatch: 'full'

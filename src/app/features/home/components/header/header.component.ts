@@ -87,6 +87,10 @@ import { LocationService } from '../../../../core/services/location.service';
                   </div>
 
                   <div class="user-dropdown-body">
+                    <a routerLink="/developer" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
+                      <span class="material-symbols-outlined text-green">apartment</span>
+                      <span>Developer Workspace (Authorized Projects)</span>
+                    </a>
                     <a routerLink="/admin" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
                       <span class="material-symbols-outlined text-purple">admin_panel_settings</span>
                       <span>Admin Review Portal (Maker-Checker)</span>
@@ -225,6 +229,10 @@ import { LocationService } from '../../../../core/services/location.service';
                     <span class="pts-badge">{{ propertyService.shortlistCount() }}</span>
                   </a>
                   @if (authService.isLoggedIn()) {
+                    <a class="drawer-nav-item" routerLink="/developer" (click)="closeMobileMenu()">
+                      <span class="material-symbols-outlined text-green">apartment</span>
+                      <span>Developer Workspace</span>
+                    </a>
                     <a class="drawer-nav-item" routerLink="/profile" (click)="closeMobileMenu()">
                       <span class="material-symbols-outlined">dashboard</span>
                       <span>My Dashboard</span>

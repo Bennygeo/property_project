@@ -7,6 +7,8 @@ export interface User {
   phone: string;
   gender?: 'male' | 'female' | 'other';
   role: UserRole;
+  developerId?: number;
+  companyName?: string;
   pointsBalance: number;
   createdAt: string;
 }
