@@ -120,7 +120,8 @@ if ($method === 'GET') {
             iv.auto_reply_text AS autoReplyText,
             iv.auto_reply_sent_at AS autoReplySentAt,
             iv.status,
-            iv.created_at AS createdAt
+            iv.created_at AS createdAt,
+            (SELECT COUNT(*) FROM whatsapp_chat_messages wcm WHERE wcm.lead_id = iv.id OR wcm.user_phone = iv.contact_phone) AS chatCount
         FROM inquiries_and_visits iv
         LEFT JOIN properties p ON iv.property_id = p.id
         WHERE iv.lead_type = 'whatsapp_concierge'
@@ -228,6 +229,23 @@ if ($method === 'POST') {
         ");
         $stmt->execute([$propId, $name, $phone, $message, $autoReplyText, $autoReplySentAt]);
         $newId = (int)$db->lastInsertId();
+
+        // Log to whatsapp_chat_messages thread
+        $businessNumber = Settings::getWhatsAppFullNumber();
+        try {
+            $db->prepare("
+                INSERT INTO whatsapp_chat_messages (lead_id, property_id, user_phone, business_phone, sender_type, sender_name, message_text, is_auto_reply, created_at)
+                VALUES (?, ?, ?, ?, 'user', ?, ?, 0, NOW())
+            ")->execute([$newId, $propId, $phone, $businessNumber, $name, $message]);
+
+            if (!empty($autoReplyText)) {
+                $db->prepare("
+                    INSERT INTO whatsapp_chat_messages (lead_id, property_id, user_phone, business_phone, sender_type, sender_name, message_text, is_auto_reply, created_at)
+                    VALUES (?, ?, ?, ?, 'ai_agent', 'Find a Plot AI Concierge', ?, 1, DATE_ADD(NOW(), INTERVAL 2 SECOND))
+                ")->execute([$newId, $propId, $phone, $businessNumber, $autoReplyText]);
+            }
+        } catch (\Throwable $e) {}
+
         Response::success([
             'id'            => $newId, 
             'propertyId'    => $propId,

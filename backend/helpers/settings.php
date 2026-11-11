@@ -80,3 +80,4 @@ class Settings {
         return $cc . $num;
     }
 }
+

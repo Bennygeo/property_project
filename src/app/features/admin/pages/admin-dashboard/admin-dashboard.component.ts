@@ -588,6 +588,187 @@ export class AdminDashboardComponent {
   }
 
   // =========================================================================
+  // DEDICATED WHATSAPP CONVERSATION THREAD VIEWER & LOGGING
+  // =========================================================================
+  readonly selectedChatLead = signal<any | null>(null);
+  readonly isChatDrawerOpen = signal<boolean>(false);
+  readonly chatThreadMessages = signal<any[]>([]);
+  readonly isChatThreadLoading = signal<boolean>(false);
+  readonly adminChatReplyInput = signal<string>('');
+  readonly isSendingAdminReply = signal<boolean>(false);
+  readonly simulatedUserMsgInput = signal<string>('What is the exact road width facing this plot and are bank loans pre-approved?');
+
+  openConversationThread(lead: any): void {
+    this.selectedChatLead.set(lead);
+    this.isChatDrawerOpen.set(true);
+    this.isChatThreadLoading.set(true);
+    this.adminChatReplyInput.set('');
+
+    const tryGet = (url: string) => this.http.get<any>(url);
+    const phone = lead.contactPhone || '';
+    const leadId = lead.id || 0;
+
+    tryGet(`${environment.apiUrl}/admin/whatsapp-chat.php?lead_id=${leadId}&user_phone=${phone}`).pipe(
+      catchError(() => tryGet(`/P_demo_5/backend/api/admin/whatsapp-chat.php?lead_id=${leadId}&user_phone=${phone}`)),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      this.isChatThreadLoading.set(false);
+      if (res && res.success && res.data) {
+        this.chatThreadMessages.set(res.data.thread || []);
+      }
+    });
+  }
+
+  closeConversationThread(): void {
+    this.isChatDrawerOpen.set(false);
+    this.selectedChatLead.set(null);
+  }
+
+  sendAdminChatReply(asAiAgent: boolean = false): void {
+    const text = this.adminChatReplyInput().trim();
+    const lead = this.selectedChatLead();
+    if (!text || !lead) return;
+
+    this.isSendingAdminReply.set(true);
+    const payload = {
+      action: 'send_admin_reply',
+      leadId: lead.id,
+      userPhone: lead.contactPhone,
+      propertyId: lead.propertyId,
+      messageText: text,
+      senderType: asAiAgent ? 'ai_agent' : 'admin',
+      senderName: asAiAgent ? 'Find a Plot AI Concierge' : 'Admin Benny (9486140936)',
+      isAutoReply: asAiAgent ? 1 : 0
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/whatsapp-chat.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/whatsapp-chat.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      this.isSendingAdminReply.set(false);
+      if (res && res.success) {
+        this.chatThreadMessages.update(msgs => [
+          ...msgs,
+          {
+            id: res.data.id || Date.now(),
+            leadId: lead.id,
+            propertyId: lead.propertyId,
+            userPhone: lead.contactPhone,
+            businessPhone: '9486140936',
+            senderType: asAiAgent ? 'ai_agent' : 'admin',
+            senderName: asAiAgent ? 'Find a Plot AI Concierge' : 'Admin Benny (9486140936)',
+            messageText: text,
+            isAutoReply: asAiAgent ? 1 : 0,
+            createdAt: res.data.createdAt || new Date().toISOString()
+          }
+        ]);
+        this.adminChatReplyInput.set('');
+        this.loadDashboardMetrics();
+        this.notificationService.show({
+          type: 'success',
+          title: 'Reply Logged',
+          message: asAiAgent ? 'AI Agent reply appended to thread' : 'Admin reply appended to thread',
+          icon: 'chat'
+        });
+      }
+    });
+  }
+
+  draftWithAiAgent(): void {
+    const lead = this.selectedChatLead();
+    if (!lead) return;
+
+    const msgs = this.chatThreadMessages();
+    const lastUserMsg = [...msgs].reverse().find(m => m.senderType === 'user')?.messageText || lead.message || 'Can you share plot details?';
+
+    const payload = {
+      action: 'test_agent_reply',
+      name: lead.contactName || 'Buyer',
+      phone: lead.contactPhone,
+      message: lastUserMsg,
+      propertyId: lead.propertyId,
+      persona: this.whatsappConfig().whatsapp_auto_reply_agent,
+      model: this.whatsappConfig().whatsapp_free_agent_model
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.success && res.data?.reply) {
+        this.adminChatReplyInput.set(res.data.reply);
+        this.notificationService.show({
+          type: 'success',
+          title: 'AI Draft Ready',
+          message: 'Review and click Send as Admin or Send as AI Agent',
+          icon: 'smart_toy'
+        });
+      }
+    });
+  }
+
+  simulateUserFollowUpMessage(): void {
+    const lead = this.selectedChatLead();
+    const msg = this.simulatedUserMsgInput().trim();
+    if (!lead || !msg) return;
+
+    const payload = {
+      action: 'log_user_message',
+      leadId: lead.id,
+      userPhone: lead.contactPhone,
+      userName: lead.contactName,
+      propertyId: lead.propertyId,
+      messageText: msg,
+      triggerAutoReply: this.whatsappConfig().whatsapp_auto_reply_enabled
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/whatsapp-chat.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/whatsapp-chat.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.success) {
+        this.openConversationThread(lead);
+        this.loadDashboardMetrics();
+        this.notificationService.show({
+          type: 'success',
+          title: 'User Follow-up Logged',
+          message: 'Simulated user message added to thread',
+          icon: 'question_answer'
+        });
+      }
+    });
+  }
+
+  seedSampleWhatsAppThread(): void {
+    const tryPost = (url: string) => this.http.post<any>(url, { action: 'seed_sample_thread' });
+    tryPost(`${environment.apiUrl}/admin/whatsapp-chat.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/whatsapp-chat.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.success) {
+        this.notificationService.show({
+          type: 'success',
+          title: 'Conversation Thread Seeded',
+          message: 'Multi-turn chat for 9498400967 & 9486140936 is ready!',
+          icon: 'chat'
+        });
+        this.loadDashboardMetrics();
+        this.openConversationThread({
+          id: res.data.leadId,
+          contactName: 'Kavitha M. (Buyer)',
+          contactPhone: '9498400967',
+          propertyId: 'PRJ-0059',
+          propertyTitle: 'Verified Cadastral Layout - Plot 1',
+          status: 'contacted'
+        });
+      }
+    });
+  }
+
+  // =========================================================================
   // DEVELOPER PORTFOLIOS & AUTHORIZED COMPANIES MANAGEMENT (FULL ADMIN ROLE)
   // =========================================================================
   readonly adminDevelopers = signal<any[]>([]);

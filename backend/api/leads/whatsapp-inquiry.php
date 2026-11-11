@@ -91,7 +91,22 @@ if ($method === 'POST') {
     ]);
     $leadId = (int)$db->lastInsertId();
 
+    // Log initial messages to whatsapp_chat_messages thread
     $businessPhone = Settings::getWhatsAppFullNumber();
+    try {
+        $db->prepare("
+            INSERT INTO whatsapp_chat_messages (lead_id, property_id, user_phone, business_phone, sender_type, sender_name, message_text, is_auto_reply, created_at)
+            VALUES (?, ?, ?, ?, 'user', ?, ?, 0, NOW())
+        ")->execute([$leadId, $propertyId, $contactPhone, $businessPhone, $contactName, $message]);
+
+        if (!empty($autoReplyText)) {
+            $db->prepare("
+                INSERT INTO whatsapp_chat_messages (lead_id, property_id, user_phone, business_phone, sender_type, sender_name, message_text, is_auto_reply, created_at)
+                VALUES (?, ?, ?, ?, 'ai_agent', 'Find a Plot AI Concierge', ?, 1, DATE_ADD(NOW(), INTERVAL 2 SECOND))
+            ")->execute([$leadId, $propertyId, $contactPhone, $businessPhone, $autoReplyText]);
+        }
+    } catch (\Throwable $e) {}
+
     $waText = urlencode("Hi Find a Plot, I am interested in {$propTitle} (Ref: {$propertyId}). Please share the verified Patta & TNRERA dossier.");
     $waUrl = "https://wa.me/{$businessPhone}?text={$waText}";
 
