@@ -9,9 +9,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../helpers/settings.php';
+require_once __DIR__ . '/../../helpers/free_agent_reply.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
+use Mannidam\Helpers\Settings;
+use Mannidam\Helpers\FreeAgentReply;
 
 Response::initCors();
 
@@ -113,6 +117,8 @@ if ($method === 'GET') {
             iv.contact_phone AS contactPhone,
             iv.contact_email AS contactEmail,
             iv.notes AS message,
+            iv.auto_reply_text AS autoReplyText,
+            iv.auto_reply_sent_at AS autoReplySentAt,
             iv.status,
             iv.created_at AS createdAt
         FROM inquiries_and_visits iv
@@ -171,7 +177,9 @@ if ($method === 'GET') {
         'callAttempts'              => $callAttempts,
         'totalDevelopers'           => $totalDevelopers,
         'totalProjects'             => $totalProjects,
-        'projectsAwaitingApproval'  => $awaitingApproval
+        'projectsAwaitingApproval'  => $awaitingApproval,
+        'businessWhatsAppNumber'    => Settings::getWhatsAppFullNumber(),
+        'whatsappSettings'          => Settings::getAll()
     ], 'Real metrics retrieved successfully');
 }
 
@@ -199,13 +207,32 @@ if ($method === 'POST') {
         $prop = $db->query("SELECT id, title FROM properties LIMIT 1")->fetch(PDO::FETCH_ASSOC);
         $propId = $prop['id'] ?? 'PRJ-0059';
 
+        $autoReplyText = null;
+        $autoReplySentAt = null;
+        if (Settings::get('whatsapp_auto_reply_enabled', '1') === '1') {
+            $agentRes = FreeAgentReply::generate([
+                'name'       => $name,
+                'phone'      => $phone,
+                'message'    => $message,
+                'propertyId' => $propId
+            ]);
+            $autoReplyText = $agentRes['reply'] ?? null;
+            if ($autoReplyText) {
+                $autoReplySentAt = date('Y-m-d H:i:s');
+            }
+        }
+
         $stmt = $db->prepare("
-            INSERT INTO inquiries_and_visits (property_id, user_id, lead_type, contact_name, contact_phone, notes, status, created_at)
-            VALUES (?, 104, 'whatsapp_concierge', ?, ?, ?, 'new', NOW())
+            INSERT INTO inquiries_and_visits (property_id, user_id, lead_type, contact_name, contact_phone, notes, auto_reply_text, auto_reply_sent_at, status, created_at)
+            VALUES (?, 104, 'whatsapp_concierge', ?, ?, ?, ?, ?, 'new', NOW())
         ");
-        $stmt->execute([$propId, $name, $phone, $message]);
+        $stmt->execute([$propId, $name, $phone, $message, $autoReplyText, $autoReplySentAt]);
         $newId = (int)$db->lastInsertId();
-        Response::success(['id' => $newId, 'propertyId' => $propId], 'Test WhatsApp inquiry created successfully');
+        Response::success([
+            'id'            => $newId, 
+            'propertyId'    => $propId,
+            'autoReplyText' => $autoReplyText
+        ], 'Test WhatsApp inquiry created with AI Auto-reply');
     }
 
     Response::error('Invalid action');

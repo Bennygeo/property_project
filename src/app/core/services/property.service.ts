@@ -173,6 +173,15 @@ export class PropertyService {
   private readonly authService = inject(AuthService);
   public readonly isSqlLoaded = signal<boolean>(false);
   public readonly totalApiProperties = signal<number>(0);
+  public readonly businessWhatsAppNumber = signal<string>('919486140936');
+
+  public getBusinessWhatsAppUrl(title?: string, id?: string): string {
+    const num = this.businessWhatsAppNumber();
+    const cleanNum = num.replace(/[^\d]/g, '');
+    const ref = id ? ` (Ref: ${id})` : '';
+    const text = encodeURIComponent(`Hi Find a Plot, I am interested in ${title || 'property'}${ref}. Please share verified legal Patta & TNRERA dossier.`);
+    return `https://wa.me/${cleanNum}?text=${text}`;
+  }
   public readonly isFetchingApi = signal<boolean>(false);
   public readonly suggestedProperties = signal<Property[]>(annotateInterPropertyProximity(enrichInitialGps(MOCK_50_PROPERTIES.slice(0, 8))));
   public readonly hasMoreApiProperties = computed(() => {

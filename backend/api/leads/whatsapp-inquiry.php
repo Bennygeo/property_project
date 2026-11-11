@@ -2,15 +2,20 @@
 /**
  * /api/leads/whatsapp-inquiry.php
  * Logs WhatsApp concierge inquiry and returns direct wa.me link with prefilled text.
+ * Integrates Free Agent Auto-Reply engine and dynamic business WhatsApp number.
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../helpers/settings.php';
+require_once __DIR__ . '/../../helpers/free_agent_reply.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
+use Mannidam\Helpers\Settings;
+use Mannidam\Helpers\FreeAgentReply;
 
 Response::initCors();
 
@@ -37,7 +42,6 @@ if ($method === 'POST') {
         if ($prop) {
             $propTitle = $prop['title'];
         } else {
-            // Find a valid fallback property if an invalid ID was passed
             $fallback = $db->query("SELECT id, title FROM properties LIMIT 1")->fetch(PDO::FETCH_ASSOC);
             if ($fallback) {
                 $propertyId = $fallback['id'];
@@ -52,10 +56,28 @@ if ($method === 'POST') {
         }
     }
 
+    // Check if Free Agent Auto-reply is enabled
+    $autoReplyText = null;
+    $autoReplySentAt = null;
+    $isAutoReplyOn = Settings::get('whatsapp_auto_reply_enabled', '1') === '1';
+
+    if ($isAutoReplyOn) {
+        $agentRes = FreeAgentReply::generate([
+            'name'       => $contactName,
+            'phone'      => $contactPhone,
+            'message'    => $message,
+            'propertyId' => $propertyId
+        ]);
+        $autoReplyText = $agentRes['reply'] ?? null;
+        if ($autoReplyText) {
+            $autoReplySentAt = date('Y-m-d H:i:s');
+        }
+    }
+
     $insStmt = $db->prepare("
         INSERT INTO inquiries_and_visits 
-        (property_id, user_id, lead_type, contact_name, contact_phone, contact_email, notes, status, created_at)
-        VALUES (?, ?, 'whatsapp_concierge', ?, ?, ?, ?, 'new', NOW())
+        (property_id, user_id, lead_type, contact_name, contact_phone, contact_email, notes, auto_reply_text, auto_reply_sent_at, status, created_at)
+        VALUES (?, ?, 'whatsapp_concierge', ?, ?, ?, ?, ?, ?, 'new', NOW())
     ");
     $insStmt->execute([
         $propertyId,
@@ -63,11 +85,13 @@ if ($method === 'POST') {
         $contactName,
         $contactPhone,
         $contactEmail ?: null,
-        $message
+        $message,
+        $autoReplyText,
+        $autoReplySentAt
     ]);
     $leadId = (int)$db->lastInsertId();
 
-    $businessPhone = '919486140936';
+    $businessPhone = Settings::getWhatsAppFullNumber();
     $waText = urlencode("Hi Find a Plot, I am interested in {$propTitle} (Ref: {$propertyId}). Please share the verified Patta & TNRERA dossier.");
     $waUrl = "https://wa.me/{$businessPhone}?text={$waText}";
 
@@ -76,8 +100,8 @@ if ($method === 'POST') {
         'propertyId'    => $propertyId,
         'propertyTitle' => $propTitle,
         'whatsappUrl'   => $waUrl,
+        'autoReplyText' => $autoReplyText,
         'status'        => 'new',
         'createdAt'     => date('Y-m-d H:i:s')
     ], 'WhatsApp inquiry recorded successfully');
 }
-

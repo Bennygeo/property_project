@@ -3849,9 +3849,16 @@
         </div>
 
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button type="button" (click)="isWhatsappSettingsOpen.set(!isWhatsappSettingsOpen())"
+            style="display:inline-flex;align-items:center;gap:6px;background:#0f3b4a;color:#ffffff;border:1px solid #1e5567;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;"
+            title="Change WhatsApp business number & configure free agent auto-reply">
+            <span class="material-symbols-outlined" style="font-size:16px;color:#38bdf8;">tune</span>
+            <span>WhatsApp &amp; Free Agent Settings</span>
+          </button>
+
           <button type="button" (click)="createTestWhatsAppRequest()" style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;" title="Create a test WhatsApp inquiry directly to test the flow">
             <span class="material-symbols-outlined" style="font-size:16px;">add_comment</span>
-            <span>+ Test WhatsApp Request (9486140936)</span>
+            <span>+ Test WhatsApp Request ({{ whatsappConfig().whatsapp_number }})</span>
           </button>
 
           <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -3875,6 +3882,132 @@
         </div>
       </div>
 
+      <!-- DEDICATED WHATSAPP CONFIGURATION & FREE AGENT AUTO-REPLY PANEL -->
+      @if (isWhatsappSettingsOpen()) {
+      <div class="whatsapp-config-card" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding-bottom:14px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;background:#e0f2fe;color:#0284c7;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-symbols-outlined" style="font-size:22px;">tune</span>
+            </div>
+            <div>
+              <h3 style="margin:0;font-size:16px;font-weight:700;color:#0f3b4a;">WhatsApp Business Number &amp; Free Agent Auto-Reply Engine</h3>
+              <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Configure the marketplace contact number and activate automated AI conversational agents.</p>
+            </div>
+          </div>
+          <button type="button" (click)="isWhatsappSettingsOpen.set(false)" style="background:none;border:none;color:#64748b;cursor:pointer;padding:4px;" title="Close settings panel">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;">
+          <!-- SECTION 1: BUSINESS WHATSAPP NUMBER -->
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <span class="material-symbols-outlined" style="color:#16a34a;font-size:20px;">phone_iphone</span>
+              <h4 style="margin:0;font-size:14px;font-weight:700;color:#0f3b4a;">1. Marketplace WhatsApp Number</h4>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Country Code &amp; Mobile Number *</label>
+              <div style="display:flex;gap:8px;">
+                <input type="text" [(ngModel)]="whatsappConfig().whatsapp_country_code" placeholder="91"
+                  style="width:70px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;color:#0f3b4a;background:#fff;" />
+                <input type="text" [(ngModel)]="whatsappConfig().whatsapp_number" placeholder="9486140936"
+                  style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;color:#0f3b4a;background:#fff;" />
+              </div>
+              <span style="font-size:11px;color:#64748b;display:block;margin-top:4px;">Direct international format: +{{ whatsappConfig().whatsapp_country_code }} {{ whatsappConfig().whatsapp_number }}</span>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Business Display Name</label>
+              <input type="text" [(ngModel)]="whatsappConfig().whatsapp_display_name" placeholder="Find a Plot Concierge Desk"
+                style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#0f3b4a;background:#fff;" />
+            </div>
+
+            <div style="background:#e5f7ec;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:14px;">
+              <span style="font-size:11px;font-weight:700;color:#166534;display:block;margin-bottom:3px;">Live WhatsApp Click-to-Chat Preview:</span>
+              <a [href]="'https://wa.me/' + whatsappConfig().whatsapp_country_code + whatsappConfig().whatsapp_number" target="_blank" rel="noopener"
+                 style="font-size:12px;font-family:monospace;color:#15803d;text-decoration:underline;word-break:break-all;">
+                https://wa.me/{{ whatsappConfig().whatsapp_country_code }}{{ whatsappConfig().whatsapp_number }} ↗
+              </a>
+            </div>
+
+            <button type="button" (click)="saveWhatsappSettings()" [disabled]="isSavingWhatsappSettings()"
+              style="display:inline-flex;align-items:center;gap:6px;background:#0f3b4a;color:#ffffff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
+              <span class="material-symbols-outlined" style="font-size:16px;">save</span>
+              <span>{{ isSavingWhatsappSettings() ? 'Saving...' : 'Save WhatsApp Number' }}</span>
+            </button>
+          </div>
+
+          <!-- SECTION 2: FREE AGENT AUTO-REPLY ENGINE -->
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="material-symbols-outlined" style="color:#5e8f72;font-size:20px;">smart_toy</span>
+                <h4 style="margin:0;font-size:14px;font-weight:700;color:#0f3b4a;">2. Free Agent Auto-Reply System</h4>
+              </div>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;cursor:pointer;">
+                <input type="checkbox" [(ngModel)]="whatsappConfig().whatsapp_auto_reply_enabled" style="accent-color:#16a34a;width:16px;height:16px;" />
+                <span [style.color]="whatsappConfig().whatsapp_auto_reply_enabled ? '#166534' : '#64748b'">
+                  {{ whatsappConfig().whatsapp_auto_reply_enabled ? 'Auto-Reply ON' : 'Paused' }}
+                </span>
+              </label>
+            </div>
+
+            <!-- Agent Persona Selector -->
+            <div style="margin-bottom:12px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Select Free Agent Persona *</label>
+              <select [(ngModel)]="whatsappConfig().whatsapp_auto_reply_agent"
+                style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#0f3b4a;background:#fff;">
+                <option value="cadastral_concierge">🏛️ Cadastral &amp; Legal Concierge (DTCP/RERA, Patta verification)</option>
+                <option value="investment_advisor">📈 Land Investment &amp; ROI Advisor (Valuation, 5-yr appreciation)</option>
+                <option value="fast_concierge">⚡ Express Concierge (Instant warm greeting &amp; free chauffeur cab booking)</option>
+              </select>
+            </div>
+
+            <!-- Free AI Model Engine -->
+            <div style="margin-bottom:12px;">
+              <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Free AI Inference Engine *</label>
+              <select [(ngModel)]="whatsappConfig().whatsapp_free_agent_model"
+                style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#0f3b4a;background:#fff;">
+                <option value="local_real_estate_ai">🤖 Local Real Estate Agent AI (Deterministic, 0ms, 100% Free, Zero Key)</option>
+                <option value="pollinations_free">🌐 Pollinations Free LLM (Conversational Open-Source AI, No API Key)</option>
+              </select>
+              <span style="font-size:11px;color:#64748b;display:block;margin-top:3px;">Both engines run completely free with no usage limits or API billing.</span>
+            </div>
+
+            <!-- Live Test Agent Sandbox -->
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px;margin-bottom:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:11px;font-weight:700;color:#0f3b4a;">Interactive Free Agent Test:</span>
+                <button type="button" (click)="testFreeAgentAutoReply()" [disabled]="isGeneratingTestReply()"
+                  style="display:inline-flex;align-items:center;gap:4px;background:#e0f2fe;color:#0369a1;border:none;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">
+                  <span class="material-symbols-outlined" style="font-size:13px;">play_arrow</span>
+                  <span>{{ isGeneratingTestReply() ? 'Generating...' : 'Test AI Reply' }}</span>
+                </button>
+              </div>
+              <input type="text" [(ngModel)]="testSampleMessage" placeholder="Ask sample question e.g. DTCP approval status?"
+                style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;margin-bottom:8px;" />
+              
+              @if (testReplyPreview()) {
+              <div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:8px;border-radius:4px;font-size:12px;line-height:1.4;color:#14532d;white-space:pre-line;">
+                <strong style="display:block;font-size:11px;color:#166534;margin-bottom:4px;">AI Agent Output ({{ testReplyModelUsed() }}):</strong>
+                {{ testReplyPreview() }}
+              </div>
+              }
+            </div>
+
+            <button type="button" (click)="saveWhatsappSettings()" [disabled]="isSavingWhatsappSettings()"
+              style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
+              <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span>
+              <span>Save Free Agent Settings</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
       <!-- WhatsApp Messages Table -->
       <div class="workspace-table-container">
         <table class="workspace-table">
@@ -3883,7 +4016,7 @@
               <th>Lead Name &amp; Time</th>
               <th>WhatsApp Contact</th>
               <th>Property Inquired</th>
-              <th>Inquiry Message &amp; Dossier Request</th>
+              <th>Inquiry Message &amp; AI Auto-Reply</th>
               <th>Lead Status</th>
               <th class="th-actions">Direct Actions</th>
             </tr>
@@ -3928,10 +4061,30 @@
                 </div>
               </td>
               <td>
-                <div style="max-width:340px;line-height:1.4;">
-                  <p class="text-xs" style="color:#1e293b;margin:0;font-style:italic;background:#f8fafc;padding:8px 10px;border-left:3px solid #16a34a;border-radius:4px;">
+                <div style="max-width:380px;line-height:1.4;">
+                  <p class="text-xs" style="color:#1e293b;margin:0 0 6px 0;font-style:italic;background:#f8fafc;padding:8px 10px;border-left:3px solid #64748b;border-radius:4px;">
                     "{{ m.message }}"
                   </p>
+                  @if (m.autoReplyText) {
+                  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #16a34a;padding:8px 10px;border-radius:6px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                      <span style="font-size:11px;font-weight:700;color:#166534;display:inline-flex;align-items:center;gap:4px;">
+                        <span class="material-symbols-outlined" style="font-size:14px;color:#16a34a;">smart_toy</span>
+                        <span>Free Agent Auto-Reply</span>
+                      </span>
+                      <button type="button" (click)="generateLeadReply(m)" style="background:none;border:none;color:#15803d;font-size:11px;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;" title="Regenerate auto-reply with active agent">
+                        ↻ Regenerate
+                      </button>
+                    </div>
+                    <p style="font-size:12px;color:#14532d;margin:0;white-space:pre-line;line-height:1.4;">{{ m.autoReplyText }}</p>
+                  </div>
+                  } @else {
+                  <button type="button" (click)="generateLeadReply(m)"
+                    style="display:inline-flex;align-items:center;gap:4px;background:#f8fafc;border:1px solid #cbd5e1;color:#0f3b4a;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">
+                    <span class="material-symbols-outlined" style="font-size:14px;color:#16a34a;">smart_toy</span>
+                    <span>Generate AI Reply</span>
+                  </button>
+                  }
                 </div>
               </td>
               <td>
@@ -3945,10 +4098,10 @@
               </td>
               <td class="td-actions">
                 <div class="action-btn-group">
-                  <a [href]="'https://wa.me/' + m.contactPhone + '?text=' + ('Hi ' + m.contactName + ', regarding your inquiry for ' + (m.propertyTitle || 'property') + ', here is the verified document dossier:')"
-                     target="_blank" rel="noopener" class="btn-action-primary" style="background:#16a34a;text-decoration:none;" title="Send WhatsApp Dossier Reply">
+                  <a [href]="getDirectWhatsAppReplyUrl(m)"
+                     target="_blank" rel="noopener" class="btn-action-primary" style="background:#16a34a;text-decoration:none;" [title]="m.autoReplyText ? 'Send AI Auto-Reply on WhatsApp' : 'Send WhatsApp Dossier Reply'">
                     <span class="material-symbols-outlined">send</span>
-                    <span>Reply on WA</span>
+                    <span>{{ m.autoReplyText ? 'Send AI Reply' : 'Reply on WA' }}</span>
                   </a>
                   @if (m.status !== 'completed') {
                   <button type="button" class="btn-action-icon" (click)="updateWhatsappStatus(m.id, 'completed')" title="Mark as Completed" style="color:#16a34a;">
@@ -3964,9 +4117,9 @@
                 <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">chat_bubble_outline</span>
                 <strong style="color:#0f3b4a;font-size:14px;">No WhatsApp inquiries logged yet</strong>
                 <p style="font-size:12px;margin:4px 0 16px;color:#94a3b8;">When visitors inquire about properties via WhatsApp, their message records will appear here.</p>
-                <button type="button" (click)="createTestWhatsAppRequest()" style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,0.1);" title="Click to test WhatsApp request with 9486140936">
+                <button type="button" (click)="createTestWhatsAppRequest()" style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,0.1);" title="Click to test WhatsApp request">
                   <span class="material-symbols-outlined" style="font-size:18px;">add_comment</span>
-                  <span>Create Test WhatsApp Request (9486140936)</span>
+                  <span>Create Test WhatsApp Request ({{ whatsappConfig().whatsapp_number }})</span>
                 </button>
               </td>
             </tr>

@@ -199,6 +199,7 @@ export class AdminDashboardComponent {
     }
 
     this.loadDashboardMetrics();
+    this.loadWhatsappSettings();
 
     this.route.queryParams.subscribe(params => {
       if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'whatsapp_messages'].includes(params['tab'])) {
@@ -219,6 +220,9 @@ export class AdminDashboardComponent {
     this.activeTab.set(tab);
     if (tab === 'subscription_buyers' || tab === 'whatsapp_messages') {
       this.loadDashboardMetrics();
+      if (tab === 'whatsapp_messages') {
+        this.loadWhatsappSettings();
+      }
     }
     if (tab === 'developers') {
       this.loadAdminDevelopers();
@@ -350,6 +354,163 @@ export class AdminDashboardComponent {
   // =========================================================================
   readonly whatsappSearchQuery = signal<string>('');
   readonly whatsappStatusFilter = signal<string>('all');
+  readonly isWhatsappSettingsOpen = signal<boolean>(false);
+  readonly isSavingWhatsappSettings = signal<boolean>(false);
+  readonly isGeneratingTestReply = signal<boolean>(false);
+  readonly testReplyPreview = signal<string>('');
+  readonly testReplyModelUsed = signal<string>('');
+  readonly testSampleName = signal<string>('Dr. Rajesh');
+  readonly testSampleMessage = signal<string>('Is this plot DTCP approved and can I get a 75% bank loan?');
+
+  readonly whatsappConfig = signal<{
+    whatsapp_number: string;
+    whatsapp_country_code: string;
+    whatsapp_display_name: string;
+    whatsapp_auto_reply_enabled: boolean;
+    whatsapp_auto_reply_agent: string;
+    whatsapp_free_agent_model: string;
+    whatsapp_auto_reply_template: string;
+  }>({
+    whatsapp_number: '9486140936',
+    whatsapp_country_code: '91',
+    whatsapp_display_name: 'Find a Plot Concierge Desk',
+    whatsapp_auto_reply_enabled: true,
+    whatsapp_auto_reply_agent: 'cadastral_concierge',
+    whatsapp_free_agent_model: 'local_real_estate_ai',
+    whatsapp_auto_reply_template: 'Hi {name}! Thank you for inquiring about {property} in {locality}. Our AI Concierge has logged your request. This property is DTCP/TNRERA verified with clear title deeds. Would you like our executive to share the legal cadastral dossier or book a free chauffeur site visit?'
+  });
+
+  loadWhatsappSettings(): void {
+    const tryGet = (url: string) => this.http.get<any>(url);
+    tryGet(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryGet('/P_demo_5/backend/api/admin/settings.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.success && res.data) {
+        const s = res.data.settings || {};
+        this.whatsappConfig.set({
+          whatsapp_number: s.whatsapp_number || '9486140936',
+          whatsapp_country_code: s.whatsapp_country_code || '91',
+          whatsapp_display_name: s.whatsapp_display_name || 'Find a Plot Concierge Desk',
+          whatsapp_auto_reply_enabled: s.whatsapp_auto_reply_enabled === '1' || s.whatsapp_auto_reply_enabled === true,
+          whatsapp_auto_reply_agent: s.whatsapp_auto_reply_agent || 'cadastral_concierge',
+          whatsapp_free_agent_model: s.whatsapp_free_agent_model || 'local_real_estate_ai',
+          whatsapp_auto_reply_template: s.whatsapp_auto_reply_template || ''
+        });
+        if (res.data.fullWhatsAppNumber) {
+          this.propertyService.businessWhatsAppNumber.set(res.data.fullWhatsAppNumber);
+        }
+      }
+    });
+  }
+
+  saveWhatsappSettings(): void {
+    this.isSavingWhatsappSettings.set(true);
+    const cfg = this.whatsappConfig();
+    const payload = {
+      action: 'update_settings',
+      whatsapp_number: cfg.whatsapp_number,
+      whatsapp_country_code: cfg.whatsapp_country_code,
+      whatsapp_display_name: cfg.whatsapp_display_name,
+      whatsapp_auto_reply_enabled: cfg.whatsapp_auto_reply_enabled ? '1' : '0',
+      whatsapp_auto_reply_agent: cfg.whatsapp_auto_reply_agent,
+      whatsapp_free_agent_model: cfg.whatsapp_free_agent_model,
+      whatsapp_auto_reply_template: cfg.whatsapp_auto_reply_template
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      this.isSavingWhatsappSettings.set(false);
+      if (res && res.success) {
+        this.notificationService.show({
+          type: 'success',
+          title: 'WhatsApp Settings Saved',
+          message: `Active business number updated to ${res.data?.fullWhatsAppNumber || cfg.whatsapp_number}`,
+          icon: 'check_circle'
+        });
+        if (res.data?.fullWhatsAppNumber) {
+          this.propertyService.businessWhatsAppNumber.set(res.data.fullWhatsAppNumber);
+        }
+        this.loadDashboardMetrics();
+      } else {
+        this.notificationService.show({
+          type: 'error',
+          title: 'Save Failed',
+          message: 'Could not update settings in database',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  testFreeAgentAutoReply(): void {
+    this.isGeneratingTestReply.set(true);
+    this.testReplyPreview.set('');
+    const cfg = this.whatsappConfig();
+    const payload = {
+      action: 'test_agent_reply',
+      name: this.testSampleName(),
+      message: this.testSampleMessage(),
+      persona: cfg.whatsapp_auto_reply_agent,
+      model: cfg.whatsapp_free_agent_model,
+      template: cfg.whatsapp_auto_reply_template
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      this.isGeneratingTestReply.set(false);
+      if (res && res.success && res.data) {
+        this.testReplyPreview.set(res.data.reply);
+        this.testReplyModelUsed.set(res.data.modelUsed || 'local_real_estate_ai');
+      }
+    });
+  }
+
+  generateLeadReply(lead: any): void {
+    const cfg = this.whatsappConfig();
+    const payload = {
+      action: 'generate_lead_reply',
+      leadId: lead.id,
+      persona: cfg.whatsapp_auto_reply_agent,
+      model: cfg.whatsapp_free_agent_model
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      if (res && res.success && res.data) {
+        const replyText = res.data.autoReplyText;
+        const current = this.dashboardMetrics();
+        const updated = (current.whatsappMessages || []).map(m => {
+          if (m.id === lead.id) {
+            return { ...m, autoReplyText: replyText, autoReplySentAt: new Date().toISOString() };
+          }
+          return m;
+        });
+        this.dashboardMetrics.set({ ...current, whatsappMessages: updated });
+        this.notificationService.show({
+          type: 'success',
+          title: 'AI Reply Generated',
+          message: `Auto-reply created for ${lead.contactName}`,
+          icon: 'smart_toy'
+        });
+      }
+    });
+  }
+
+  getDirectWhatsAppReplyUrl(m: any): string {
+    const phone = (m.contactPhone || '').replace(/[^\d]/g, '');
+    const text = m.autoReplyText || `Hi ${m.contactName}, regarding your inquiry for ${m.propertyTitle || 'property'}, here is the verified document dossier:`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  }
 
   readonly filteredWhatsappMessages = computed(() => {
     const list = this.dashboardMetrics().whatsappMessages || [];
