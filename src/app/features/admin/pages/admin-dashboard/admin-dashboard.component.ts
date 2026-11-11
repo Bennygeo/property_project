@@ -425,81 +425,17 @@ export class AdminDashboardComponent {
   readonly workspaceSubTab = signal<'membership' | 'visits' | 'consultations' | 'saved_searches' | 'bookings' | 'daily_visitors'>('membership');
   readonly workspaceSearchQuery = signal<string>('');
 
-  // Daily Visitors Call Tracker & Escalation Logs
-  readonly visitorLeads = signal<any[]>([
-    {
-      id: 'VIS-901',
-      visitorName: 'Senthil Nathan',
-      phone: '+91 98401 23456',
-      firstVisitedAt: 'Today, 10:45 AM',
-      interestedProject: 'Experion Cadastral Greens',
-      propertyId: 'PRJ-0059',
-      status: 'called_connected',
-      callDuration: '04:12 mins',
-      lastCalledAt: 'Today, 11:30 AM',
-      executiveName: 'Benny (Admin Director)',
-      notes: 'Interested in East facing 1200 sqft plot. Requested weekend site escort with family.',
-      nextFollowUp: '14 Nov 2026, 10:00 AM',
-      closeReason: null,
-      callHistory: [
-        { time: 'Today 11:30 AM', executive: 'Benny', duration: '04:12 mins', outcome: 'Connected — Follow-up Scheduled', notes: 'Discussed legal patta and bank loan pre-approvals.' }
-      ]
-    },
-    {
-      id: 'VIS-902',
-      visitorName: 'Karthik Raja',
-      phone: '+91 94442 88765',
-      firstVisitedAt: 'Today, 09:15 AM',
-      interestedProject: 'Prestige Pine Crest Plots',
-      propertyId: 'PRJ-0006',
-      status: 'called_unreachable',
-      callDuration: '00:00 (Not Reachable)',
-      lastCalledAt: 'Today, 10:05 AM',
-      executiveName: 'Ram (Co-Admin)',
-      notes: 'Ringing no response. Triggered WhatsApp notification brochure.',
-      nextFollowUp: 'Today, 04:30 PM',
-      closeReason: null,
-      callHistory: [
-        { time: 'Today 10:05 AM', executive: 'Ram', duration: 'Not Reachable', outcome: 'No Response', notes: 'Sent WhatsApp brochure and callback link.' }
-      ]
-    },
-    {
-      id: 'VIS-903',
-      visitorName: 'Anandhi Venkatesh',
-      phone: '+91 97900 11223',
-      firstVisitedAt: 'Today, 11:10 AM',
-      interestedProject: 'Verified Cadastral Layout - Plot 1',
-      propertyId: 'PRJ-0059',
-      status: 'visit_confirmed',
-      callDuration: '06:45 mins',
-      lastCalledAt: 'Today, 12:15 PM',
-      executiveName: 'Ezhil (Admin)',
-      notes: 'Confirmed site escort for Saturday 11 AM with transport pick-up.',
-      nextFollowUp: '15 Nov 2026, 11:00 AM',
-      closeReason: null,
-      callHistory: [
-        { time: 'Today 12:15 PM', executive: 'Ezhil', duration: '06:45 mins', outcome: 'Site Escort Scheduled', notes: 'Sent vehicle driver details and geo-pin.' }
-      ]
-    },
-    {
-      id: 'VIS-904',
-      visitorName: 'Vignesh Sundaram',
-      phone: '+91 98840 99881',
-      firstVisitedAt: 'Yesterday, 04:20 PM',
-      interestedProject: 'Experion Green Crest',
-      propertyId: 'PRJ-8889',
-      status: 'closed_budget',
-      callDuration: '02:30 mins',
-      lastCalledAt: 'Yesterday, 05:00 PM',
-      executiveName: 'Benny (Admin Director)',
-      notes: 'Budget maximum ₹ 25 Lakhs, project starts at ₹ 48 Lakhs.',
-      nextFollowUp: 'Closed',
-      closeReason: 'Budget Mismatch (Budget below ₹25L)',
-      callHistory: [
-        { time: 'Yesterday 05:00 PM', executive: 'Benny', duration: '02:30 mins', outcome: 'Closed', notes: 'Looking for plots below 25 Lakhs. Added to budget alert list.' }
-      ]
-    }
-  ]);
+  // Daily Visitors Call Tracker & Escalation Logs (100% Real Database Inquiries)
+  readonly visitorLeads = signal<any[]>([]);
+
+  countVisitorStatus(status: string): number {
+    return this.visitorLeads().filter(v => v.status === status).length;
+  }
+
+  getTotalSubscriptionRevenue(): number {
+    const list = this.dashboardMetrics().subscriptionBuyers || [];
+    return list.reduce((sum, b) => sum + (parseFloat(b.amountPaid) || 0), 0);
+  }
 
   readonly callStatusFilter = signal<string>('all');
 

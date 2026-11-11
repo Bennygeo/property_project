@@ -83,3 +83,4 @@ Response::success([
     'onlineUsers' => $onlineCount,
     'timestamp'   => date('Y-m-d H:i:s')
 ], 'Heartbeat received');
+

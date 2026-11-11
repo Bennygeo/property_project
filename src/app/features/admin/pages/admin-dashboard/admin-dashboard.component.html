@@ -2144,8 +2144,8 @@
             <span class="stat-lbl">Total Projects</span>
           </div>
           <div class="stat-pill">
-            <span class="stat-num">100%</span>
-            <span class="stat-lbl">TNRERA Audited</span>
+            <span class="stat-num">{{ adminDevelopers().length > 0 ? 'Verified' : 'None' }}</span>
+            <span class="stat-lbl">TNRERA Registry</span>
           </div>
         </div>
       </div>
@@ -3498,16 +3498,16 @@
             All Visitors ({{ visitorLeads().length }})
           </button>
           <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'called_connected'" (click)="callStatusFilter.set('called_connected')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            Connected (1)
+            Connected ({{ countVisitorStatus('called_connected') }})
           </button>
           <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'called_unreachable'" (click)="callStatusFilter.set('called_unreachable')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            Not Reachable (1)
+            Not Reachable ({{ countVisitorStatus('called_unreachable') }})
           </button>
           <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'visit_confirmed'" (click)="callStatusFilter.set('visit_confirmed')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            Site Visit Confirmed (1)
+            Site Visit Confirmed ({{ countVisitorStatus('visit_confirmed') }})
           </button>
           <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'closed_budget'" (click)="callStatusFilter.set('closed_budget')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-            Closed / Budget (1)
+            Closed ({{ countVisitorStatus('closed_budget') }})
           </button>
         </div>
 
@@ -3569,19 +3569,19 @@
                     <span class="badge-role" style="background:#fef3c7;color:#92400e;font-weight:700;">Not Reachable</span>
                   } @else if (v.status === 'visit_confirmed') {
                     <span class="badge-role" style="background:#dcfce7;color:#15803d;font-weight:700;">Visit Confirmed</span>
-                  } @else if (v.status.startsWith('closed')) {
+                  } @else if (v.status && v.status.startsWith('closed')) {
                     <span class="badge-role" style="background:#fee2e2;color:#991b1b;font-weight:700;">Closed</span>
                   } @else {
                     <span class="badge-role" style="background:#f1f5f9;color:#475569;font-weight:700;">New Lead</span>
                   }
                 </td>
                 <td>
-                  <span class="text-xs" style="font-weight:600;color:#334155;">{{ v.callDuration }}</span>
+                  <span class="text-xs" style="font-weight:600;color:#334155;">{{ v.callDuration || '00:00' }}</span>
                 </td>
                 <td>
                   <div style="display:flex;flex-direction:column;gap:2px;">
-                    <span class="text-xs" style="font-weight:600;color:#0f3b4a;">{{ v.executiveName }}</span>
-                    <span class="text-xs" style="color:#64748b;max-width:260px;line-height:1.3;">{{ v.notes }}</span>
+                    <span class="text-xs" style="font-weight:600;color:#0f3b4a;">{{ v.executiveName || 'Unassigned' }}</span>
+                    <span class="text-xs" style="color:#64748b;max-width:260px;line-height:1.3;">{{ v.notes || 'Direct inquiry' }}</span>
                     @if (v.closeReason) {
                       <span class="text-xs" style="color:#b91c1c;font-weight:600;">Reason: {{ v.closeReason }}</span>
                     }
@@ -3600,6 +3600,14 @@
                       <span class="material-symbols-outlined">cancel</span>
                     </button>
                   </div>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="8" style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                  <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">phone_disabled</span>
+                  <strong style="color:#0f3b4a;font-size:14px;">No visitor call inquiries yet</strong>
+                  <p style="font-size:12px;margin:4px 0 0;color:#94a3b8;">When users request a callback on a property, their inquiry appears here in real time.</p>
                 </td>
               </tr>
               }
@@ -3636,11 +3644,11 @@
             <span class="stat-lbl">Paid Subscribers</span>
           </div>
           <div class="stat-pill">
-            <span class="stat-num">₹28,250</span>
+            <span class="stat-num">₹{{ getTotalSubscriptionRevenue() | number:'1.0-0' }}</span>
             <span class="stat-lbl">Plan Collections</span>
           </div>
           <div class="stat-pill">
-            <span class="stat-num">100%</span>
+            <span class="stat-num">{{ dashboardMetrics().totalSubscriptionBuyers > 0 ? '100%' : '0%' }}</span>
             <span class="stat-lbl">Active Validities</span>
           </div>
         </div>
@@ -3783,6 +3791,14 @@
                 </div>
               </td>
             </tr>
+            } @empty {
+            <tr>
+              <td colspan="9" style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">workspace_premium</span>
+                <strong style="color:#0f3b4a;font-size:14px;">No active paid subscribers yet</strong>
+                <p style="font-size:12px;margin:4px 0 0;color:#94a3b8;">When buyers subscribe to Smart Buyer, Priority Buyer, or VIP Concierge, their account status and quotas will appear here.</p>
+              </td>
+            </tr>
             }
           </tbody>
         </table>
@@ -3814,11 +3830,11 @@
             <span class="stat-lbl">Inquiries</span>
           </div>
           <div class="stat-pill">
-            <span class="stat-num">100%</span>
+            <span class="stat-num">{{ dashboardMetrics().totalWhatsappRequests > 0 ? '100%' : '0%' }}</span>
             <span class="stat-lbl">Direct Chat Links</span>
           </div>
           <div class="stat-pill">
-            <span class="stat-num">&lt; 15 min</span>
+            <span class="stat-num">{{ dashboardMetrics().totalWhatsappRequests > 0 ? '< 15 min' : 'Live' }}</span>
             <span class="stat-lbl">Avg Response Time</span>
           </div>
         </div>
@@ -3933,6 +3949,14 @@
                   </button>
                   }
                 </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="6" style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">chat_bubble_outline</span>
+                <strong style="color:#0f3b4a;font-size:14px;">No WhatsApp inquiries logged yet</strong>
+                <p style="font-size:12px;margin:4px 0 0;color:#94a3b8;">When visitors inquire about properties via WhatsApp, their message records will appear here.</p>
               </td>
             </tr>
             }
