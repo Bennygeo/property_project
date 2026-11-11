@@ -249,7 +249,45 @@ export class UserBehaviorService {
     }
   });
 
+  // Real-time visitor presence heartbeat
+  private readonly sessionId: string = this.getOrCreateSessionId();
+
+  private getOrCreateSessionId(): string {
+    try {
+      let s = sessionStorage.getItem('mannidam_visitor_session_id');
+      if (!s) {
+        s = 'sess_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+        sessionStorage.setItem('mannidam_visitor_session_id', s);
+      }
+      return s;
+    } catch {
+      return 'sess_' + Date.now();
+    }
+  }
+
+  public sendHeartbeat(): void {
+    const payload = {
+      sessionId: this.sessionId,
+      userPhone: this.authService.currentUser()?.phone || (this.activeUserPhone() !== 'Guest Visitor' ? this.activeUserPhone() : ''),
+      pageUrl: typeof window !== 'undefined' ? window.location.pathname : '/'
+    };
+
+    const tryPing = (url: string) => this.http.post(url, payload);
+    tryPing(`${environment.apiUrl}/analytics/heartbeat.php`).pipe(
+      catchError(() => tryPing('/P_demo_5/backend/api/analytics/heartbeat.php')),
+      catchError(() => tryPing('/the-property-project/backend/api/analytics/heartbeat.php')),
+      catchError(() => tryPing('/api/analytics/heartbeat.php')),
+      catchError(() => of(null))
+    ).subscribe();
+  }
+
   constructor() {
+    this.sendHeartbeat();
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.sendHeartbeat(), 45000);
+      window.addEventListener('focus', () => this.sendHeartbeat());
+    }
+
     // Automatically synchronize tracked mindset identity with the logged-in user
     effect(() => {
       const user = this.authService.currentUser();

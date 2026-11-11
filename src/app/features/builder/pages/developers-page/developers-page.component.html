@@ -19,7 +19,8 @@
           </div>
           <h1 class="header-title">Verified Developers &amp; Builders</h1>
           <p class="header-subtitle">
-            Browse licensed real estate promoters and developers with verified plotted layouts and gated communities across Tamil Nadu.
+            Browse licensed real estate promoters and developers with verified plotted layouts and gated communities
+            across Tamil Nadu.
           </p>
         </div>
 
@@ -48,18 +49,9 @@
     <div class="max-w-content toolbar-inner">
       <div class="search-box-wrapper">
         <span class="material-symbols-outlined search-icon">search</span>
-        <input 
-          type="text" 
-          class="developer-search-input"
-          placeholder="Search developer by name or location..."
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
-          aria-label="Search developers">
-        <button 
-          *ngIf="searchQuery()" 
-          type="button" 
-          class="search-clear-btn" 
-          (click)="searchQuery.set('')"
+        <input type="text" class="developer-search-input" placeholder="Search developer by name or location..."
+          [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" aria-label="Search developers">
+        <button *ngIf="searchQuery()" type="button" class="search-clear-btn" (click)="searchQuery.set('')"
           title="Clear search">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -67,10 +59,7 @@
 
       <div class="filter-actions">
         <div class="select-wrapper" *ngIf="availableDistricts().length > 0">
-          <select 
-            class="district-select"
-            [ngModel]="selectedDistrict()"
-            (ngModelChange)="selectedDistrict.set($event)"
+          <select class="district-select" [ngModel]="selectedDistrict()" (ngModelChange)="selectedDistrict.set($event)"
             aria-label="Filter by District">
             <option value="all">All Districts ({{ availableDistricts().length }})</option>
             <option *ngFor="let dist of availableDistricts()" [value]="dist">{{ dist }}</option>
@@ -101,30 +90,23 @@
           <span class="material-symbols-outlined">apartment</span>
         </div>
         <h3 class="empty-title">No developers found</h3>
-        <p class="empty-text">No verified developers matched your search "{{ searchQuery() }}". Try adjusting your keywords.</p>
+        <p class="empty-text">No verified developers matched your search "{{ searchQuery() }}". Try adjusting your
+          keywords.</p>
         <button type="button" class="empty-reset-btn" (click)="clearFilters()">Reset Filters</button>
       </div>
 
       <!-- Developer Cards Grid -->
       <div *ngIf="!isLoading() && filteredDevelopers().length > 0" class="developers-grid">
-        <article 
-          *ngFor="let dev of visibleDevelopers()" 
-          class="developer-card">
-          <a [routerLink]="['/builder', dev.name]" class="card-main-link" [title]="'View projects developed by ' + dev.name">
-            
+        <article *ngFor="let dev of visibleDevelopers()" class="developer-card">
+          <a [routerLink]="['/builder', dev.name]" class="card-main-link"
+            [title]="'View projects developed by ' + dev.name">
+
             <!-- Top Row: Logo & Badges -->
             <div class="card-top">
               <!-- Developer Logo / Branded Monogram -->
-              <div 
-                class="developer-logo-frame"
-                [style.background-color]="getBrandColor(dev.name).bg"
-                [style.border-color]="getBrandColor(dev.name).border"
-                [style.color]="getBrandColor(dev.name).text">
-                <img 
-                  *ngIf="dev.logoUrl" 
-                  [src]="dev.logoUrl" 
-                  [alt]="dev.name + ' Logo'"
-                  class="logo-image"
+              <div class="developer-logo-frame" [style.background-color]="getBrandColor(dev.name).bg"
+                [style.border-color]="getBrandColor(dev.name).border" [style.color]="getBrandColor(dev.name).text">
+                <img *ngIf="dev.logoUrl" [src]="dev.logoUrl" [alt]="dev.name + ' Logo'" class="logo-image"
                   (error)="dev.logoUrl = null">
                 <span *ngIf="!dev.logoUrl" class="logo-initials">
                   {{ dev.initials || 'DV' }}
@@ -146,7 +128,8 @@
               <div class="project-metric-banner">
                 <span class="material-symbols-outlined metric-icon">domain_add</span>
                 <span class="project-count-highlight">{{ dev.projectCount }}</span>
-                <span class="project-count-label">{{ dev.projectCount === 1 ? 'Project Developed' : 'Projects Developed' }}</span>
+                <span class="project-count-label">{{ dev.projectCount === 1 ? 'Project Developed' : 'Projects Developed'
+                  }}</span>
               </div>
 
               <!-- Districts / Locations Presence -->
@@ -178,4 +161,3 @@
 </main>
 
 <app-footer></app-footer>
-

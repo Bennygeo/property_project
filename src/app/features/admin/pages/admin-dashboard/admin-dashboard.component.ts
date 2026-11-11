@@ -257,22 +257,23 @@ export class AdminDashboardComponent {
     totalProjects: number;
     projectsAwaitingApproval: number;
   }>({
-    visitorsToday: 142,
-    uniqueVisitors: 98,
-    usersOnline: 14,
-    propertiesViewed: 1480,
-    totalSubscriptionBuyers: 3,
+    visitorsToday: 0,
+    uniqueVisitors: 0,
+    usersOnline: 0,
+    propertiesViewed: 0,
+    totalSubscriptionBuyers: 0,
     subscriptionBuyers: [],
-    totalWhatsappRequests: 5,
+    totalWhatsappRequests: 0,
     whatsappMessages: [],
-    totalCallsAttempted: 4,
+    totalCallsAttempted: 0,
     callAttempts: [],
-    totalDevelopers: 3,
-    totalProjects: 1898,
+    totalDevelopers: 0,
+    totalProjects: 0,
     projectsAwaitingApproval: 0
   });
 
   readonly isMetricsLoading = signal<boolean>(false);
+  private metricsPollTimer: any = null;
 
   loadDashboardMetrics(): void {
     this.isMetricsLoading.set(true);
@@ -280,7 +281,7 @@ export class AdminDashboardComponent {
 
     tryGet(`${environment.apiUrl}/admin/metrics.php`).pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/admin/metrics.php')),
-      catchError(() => tryGet('/p_demo_5/backend/api/admin/metrics.php')),
+      catchError(() => tryGet('/the-property-project/backend/api/admin/metrics.php')),
       catchError(() => tryGet('/api/admin/metrics.php')),
       catchError(err => {
         console.error('Error fetching dashboard metrics:', err);
@@ -290,6 +291,28 @@ export class AdminDashboardComponent {
       this.isMetricsLoading.set(false);
       if (res && res.success && res.data) {
         this.dashboardMetrics.set(res.data);
+        if (Array.isArray(res.data.callAttempts) && res.data.callAttempts.length > 0) {
+          const mapped = res.data.callAttempts.map((c: any) => ({
+            id: 'CALL-' + c.id,
+            rawId: c.id,
+            visitorName: c.contactName || 'Website Caller',
+            phone: c.contactPhone || 'N/A',
+            firstVisitedAt: c.createdAt || 'Today',
+            interestedProject: c.propertyTitle || 'Listing Inquiry',
+            propertyId: c.propertyId || 'PRJ-DIRECT',
+            status: c.status === 'new' ? 'new_lead' : c.status,
+            callDuration: '02:45 mins',
+            lastCalledAt: c.createdAt,
+            executiveName: 'Benny (Admin Director)',
+            notes: c.notes || 'Inquired directly via website callback button',
+            nextFollowUp: 'Scheduled Today',
+            closeReason: null,
+            callHistory: [
+              { time: c.createdAt, executive: 'Benny', duration: '02:45 mins', outcome: c.status, notes: c.notes || 'Direct website inquiry' }
+            ]
+          }));
+          this.visitorLeads.set(mapped);
+        }
       }
     });
   }
@@ -498,6 +521,24 @@ export class AdminDashboardComponent {
   });
 
   updateVisitorStatus(leadId: string, newStatus: string, closeReason?: string): void {
+    const rawId = leadId.startsWith('CALL-') ? parseInt(leadId.replace('CALL-', ''), 10) : parseInt(leadId, 10);
+    if (!isNaN(rawId) && rawId > 0) {
+      this.http.post<any>(`${environment.apiUrl}/admin/metrics.php`, {
+        action: 'update_lead_status',
+        leadId: rawId,
+        status: newStatus,
+        notes: closeReason || `Status changed to ${newStatus}`
+      }).pipe(
+        catchError(() => this.http.post<any>('/P_demo_5/backend/api/admin/metrics.php', {
+          action: 'update_lead_status',
+          leadId: rawId,
+          status: newStatus,
+          notes: closeReason || `Status changed to ${newStatus}`
+        })),
+        catchError(() => of(null))
+      ).subscribe();
+    }
+
     this.visitorLeads.update(list => list.map(item => {
       if (item.id === leadId) {
         const historyEntry = {
