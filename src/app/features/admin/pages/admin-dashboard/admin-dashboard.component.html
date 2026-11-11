@@ -74,66 +74,142 @@
   </header>
 
   <!-- ========================================== -->
-  <!-- METRICS & KPI STRIP                       -->
+  <!-- METRICS & KPI STRIP (10 MANDATORY ADMIN METRICS) -->
   <!-- ========================================== -->
   <section class="admin-kpi-strip">
     <div class="kpi-grid">
 
-      <!-- Total Properties -->
-      <div class="kpi-card">
-        <div class="kpi-icon-box total">
-          <span class="material-symbols-outlined">real_estate_agent</span>
+      <!-- 1. Visitors Today -->
+      <div class="kpi-card" title="Total visits recorded across web platform today">
+        <div class="kpi-icon-box total" style="background:#e0f2fe;color:#0284c7;">
+          <span class="material-symbols-outlined">visibility</span>
         </div>
         <div class="kpi-details">
-          <span class="kpi-value">{{ adminService.stats().total }}</span>
-          <span class="kpi-label">Total Properties</span>
+          <span class="kpi-value text-slate">{{ dashboardMetrics().visitorsToday }}</span>
+          <span class="kpi-label">Visitors Today</span>
+          <span class="kpi-sub-text">Active daily sessions</span>
         </div>
       </div>
 
-      <!-- Pending Co-Admin Peer Reviews (Four-Eyes Principle) -->
-      <div class="kpi-card highlight-peer">
-        <div class="kpi-icon-box peer">
-          <span class="material-symbols-outlined">supervisor_account</span>
+      <!-- 2. Unique Visitors -->
+      <div class="kpi-card" title="Distinct unique visitors tracked by IP and device finger-print">
+        <div class="kpi-icon-box peer" style="background:#f1f5f9;color:#475569;">
+          <span class="material-symbols-outlined">fingerprint</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-slate">{{ dashboardMetrics().uniqueVisitors }}</span>
+          <span class="kpi-label">Unique Visitors</span>
+          <span class="kpi-sub-text">Distinct verified browsers</span>
+        </div>
+      </div>
+
+      <!-- 3. Users Online -->
+      <div class="kpi-card highlight-emerald" title="Concurrent users active in the last 15 minutes">
+        <div class="kpi-icon-box" style="background:#dcfce7;color:#15803d;">
+          <span class="material-symbols-outlined">sensors</span>
         </div>
         <div class="kpi-details">
           <div class="kpi-val-row">
-            <span class="kpi-value text-purple">{{ adminService.stats().pendingPeerReviews }}</span>
-            <span class="kpi-tag-pulse">MAKER-CHECKER</span>
+            <span class="kpi-value text-emerald">{{ dashboardMetrics().usersOnline }}</span>
+            <span class="kpi-tag-pulse" style="background:#e5f7ec;color:#166534;">
+              <span class="live-dot"></span>LIVE
+            </span>
           </div>
-          <span class="kpi-label">Co-Admin Peer Reviews</span>
+          <span class="kpi-label">Users Online</span>
+          <span class="kpi-sub-text">Concurrent active traffic</span>
         </div>
       </div>
 
-      <!-- Pending User Submissions -->
-      <div class="kpi-card">
-        <div class="kpi-icon-box user-rev">
+      <!-- 4. Properties Viewed -->
+      <div class="kpi-card" title="Total listing dossiers and project views tracked">
+        <div class="kpi-icon-box" style="background:#fef3c7;color:#b45309;">
+          <span class="material-symbols-outlined">preview</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-amber">{{ dashboardMetrics().propertiesViewed }}</span>
+          <span class="kpi-label">Properties Viewed</span>
+          <span class="kpi-sub-text">Total project interactions</span>
+        </div>
+      </div>
+
+      <!-- 5. Total Subscription Buyers (Clickable -> Dedicated Page) -->
+      <div class="kpi-card is-clickable highlight-tier" (click)="setTab('subscription_buyers')" title="Click to open dedicated Subscription Buyers dashboard">
+        <div class="kpi-icon-box" style="background:#ede9fe;color:#6d28d9;">
+          <span class="material-symbols-outlined">workspace_premium</span>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-val-row">
+            <span class="kpi-value text-purple">{{ dashboardMetrics().totalSubscriptionBuyers }}</span>
+            <span class="kpi-tag-pulse" style="background:#ede9fe;color:#6d28d9;">PAID</span>
+          </div>
+          <span class="kpi-label">Subscription Buyers</span>
+          <span class="kpi-action-link">View Subscribers Dedicated Page →</span>
+        </div>
+      </div>
+
+      <!-- 6. Total WhatsApp Requests (Clickable -> Dedicated Page & Message List) -->
+      <div class="kpi-card is-clickable highlight-emerald" (click)="setTab('whatsapp_messages')" title="Click to view WhatsApp inquiry messages list">
+        <div class="kpi-icon-box" style="background:#dcfce7;color:#16a34a;">
+          <span class="material-symbols-outlined">chat</span>
+        </div>
+        <div class="kpi-details">
+          <div class="kpi-val-row">
+            <span class="kpi-value text-emerald">{{ dashboardMetrics().totalWhatsappRequests }}</span>
+            <span class="kpi-tag-pulse" style="background:#e5f7ec;color:#166534;">CHAT</span>
+          </div>
+          <span class="kpi-label">WhatsApp Requests</span>
+          <span class="kpi-action-link" style="color:#16a34a;">Open Messages List →</span>
+        </div>
+      </div>
+
+      <!-- 7. Calls Attempted from Website (Clickable -> Daily Visitors & Call Logs) -->
+      <div class="kpi-card is-clickable" (click)="openVisitorCallLogs()" title="Click to view Call Tracking & Visitor Escalation Logs">
+        <div class="kpi-icon-box" style="background:#e0e7ff;color:#4338ca;">
+          <span class="material-symbols-outlined">call</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-blue">{{ dashboardMetrics().totalCallsAttempted }}</span>
+          <span class="kpi-label">Website Call Attempts</span>
+          <span class="kpi-action-link">Track Visitor Logs →</span>
+        </div>
+      </div>
+
+      <!-- 8. Total Developers (Clickable -> Developer Portfolios) -->
+      <div class="kpi-card is-clickable" (click)="setTab('developers')" title="Click to manage authorized Developer Portfolios">
+        <div class="kpi-icon-box" style="background:#e5f7ec;color:#2c4938;">
+          <span class="material-symbols-outlined">domain</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-emerald">{{ dashboardMetrics().totalDevelopers }}</span>
+          <span class="kpi-label">Total Developers</span>
+          <span class="kpi-action-link">View Promoters &amp; RERA →</span>
+        </div>
+      </div>
+
+      <!-- 9. Total Projects (Clickable -> Property Registry) -->
+      <div class="kpi-card is-clickable" (click)="setTab('all_directory')" title="Click to view all registry projects & audit trails">
+        <div class="kpi-icon-box total" style="background:#eff6ff;color:#2563eb;">
+          <span class="material-symbols-outlined">holiday_village</span>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-value text-blue">{{ dashboardMetrics().totalProjects || adminService.stats().total }}</span>
+          <span class="kpi-label">Total Projects</span>
+          <span class="kpi-action-link">All Properties Audit Trail →</span>
+        </div>
+      </div>
+
+      <!-- 10. Projects Awaiting Approval (Clickable -> Review Queue) -->
+      <div class="kpi-card is-clickable highlight-peer" (click)="setTab('review_queue')" title="Click to review pending user & peer submissions">
+        <div class="kpi-icon-box peer" style="background:#fee2e2;color:#dc2626;">
           <span class="material-symbols-outlined">pending_actions</span>
         </div>
         <div class="kpi-details">
-          <span class="kpi-value text-amber">{{ adminService.stats().pendingUserReviews }}</span>
-          <span class="kpi-label">Pending User Reviews</span>
-        </div>
-      </div>
-
-      <!-- Published Live -->
-      <div class="kpi-card">
-        <div class="kpi-icon-box published">
-          <span class="material-symbols-outlined">verified</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-emerald">{{ adminService.stats().published }}</span>
-          <span class="kpi-label">Published &amp; Live</span>
-        </div>
-      </div>
-
-      <!-- Rejected / Returned -->
-      <div class="kpi-card">
-        <div class="kpi-icon-box rejected">
-          <span class="material-symbols-outlined">gavel</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-red">{{ adminService.stats().rejected }}</span>
-          <span class="kpi-label">Rejected / Returned</span>
+          <div class="kpi-val-row">
+            <span class="kpi-value text-red">{{ dashboardMetrics().projectsAwaitingApproval || (adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews) }}</span>
+            <span class="kpi-tag-pulse" style="background:#fee2e2;color:#991b1b;">MAKER-CHECKER</span>
+          </div>
+          <span class="kpi-label">Awaiting Approval</span>
+          <span class="kpi-action-link text-red">Open Review Queue →</span>
         </div>
       </div>
 
@@ -218,9 +294,23 @@
 
       <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'buyer_workspaces'"
         (click)="setTab('buyer_workspaces')">
-        <span class="material-symbols-outlined text-green">workspace_premium</span>
+        <span class="material-symbols-outlined text-green">groups</span>
         <span>Buyer Workspaces &amp; CRM</span>
         <span class="tab-badge-studio" style="background:#0f3b4a;color:#ffffff;">PRD CRM</span>
+      </button>
+
+      <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'subscription_buyers'"
+        (click)="setTab('subscription_buyers')" title="View All Subscribed Buyers & Plan Entitlements">
+        <span class="material-symbols-outlined text-purple">workspace_premium</span>
+        <span>Subscription Buyers</span>
+        <span class="tab-badge-studio" style="background:#6d28d9;color:#ffffff;">{{ dashboardMetrics().totalSubscriptionBuyers }} PAID</span>
+      </button>
+
+      <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'whatsapp_messages'"
+        (click)="setTab('whatsapp_messages')" title="View WhatsApp Concierge Inquiries & Messages">
+        <span class="material-symbols-outlined text-green">chat</span>
+        <span>WhatsApp Requests</span>
+        <span class="tab-badge-studio" style="background:#16a34a;color:#ffffff;">{{ dashboardMetrics().totalWhatsappRequests }} MSGS</span>
       </button>
     </div>
 
@@ -3519,6 +3609,336 @@
       </div>
       }
 
+    </section>
+    }
+
+    <!-- ========================================== -->
+    <!-- TAB CONTENT: DEDICATED SUBSCRIPTION BUYERS -->
+    <!-- ========================================== -->
+    @if (activeTab() === 'subscription_buyers') {
+    <section class="tab-pane-section subscription-buyers-pane">
+      <div class="workspace-header-banner" style="background: linear-gradient(135deg, #0f3b4a 0%, #2e1065 60%, #1e1b4b 100%);">
+        <div class="banner-title-block">
+          <div class="banner-icon-box" style="background: rgba(255,255,255,0.18); color: #ffffff;">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div>
+            <h2 class="banner-main-title" style="color: #ffffff;">Subscribed Buyers &amp; Plan Entitlements</h2>
+            <p class="banner-subtitle" style="color: rgba(255,255,255,0.85);">
+              Super Administrator oversight for premium paid buyers, view quotas, active validity countdowns, and advisory usage.
+            </p>
+          </div>
+        </div>
+
+        <div class="workspace-stats-pills">
+          <div class="stat-pill">
+            <span class="stat-num">{{ dashboardMetrics().totalSubscriptionBuyers }}</span>
+            <span class="stat-lbl">Paid Subscribers</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">₹28,250</span>
+            <span class="stat-lbl">Plan Collections</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">100%</span>
+            <span class="stat-lbl">Active Validities</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls & Filter Toolbar -->
+      <div class="workspace-controls-bar">
+        <div class="workspace-search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" [ngModel]="subscriptionSearchQuery()" (ngModelChange)="subscriptionSearchQuery.set($event)"
+            placeholder="Search subscribed buyers by name, phone, email, plan tier..." class="workspace-search-input" />
+        </div>
+
+        <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn-filter-pill" [class.active]="subscriptionTierFilter() === 'all'"
+            (click)="subscriptionTierFilter.set('all')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            All Plans ({{ (dashboardMetrics().subscriptionBuyers || []).length }})
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="subscriptionTierFilter() === 'smart_buyer'"
+            (click)="subscriptionTierFilter.set('smart_buyer')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Smart Buyer (₹750)
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="subscriptionTierFilter() === 'priority_buyer'"
+            (click)="subscriptionTierFilter.set('priority_buyer')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Priority Buyer (₹7,500)
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="subscriptionTierFilter() === 'vip_concierge'"
+            (click)="subscriptionTierFilter.set('vip_concierge')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            VIP Concierge (₹20,000)
+          </button>
+        </div>
+      </div>
+
+      <!-- Subscription Buyers Table -->
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Buyer / Investor</th>
+              <th>Contact Details</th>
+              <th>Active Plan Tier</th>
+              <th>Amount Paid</th>
+              <th>Validity Dates</th>
+              <th>View Quota</th>
+              <th>Advisory &amp; Visits</th>
+              <th>Status</th>
+              <th class="th-actions">Direct Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of filteredSubscriptionBuyers(); track b.subscriptionId) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-cell-avatar" style="background:#ede9fe;color:#6d28d9;font-weight:700;">
+                    {{ b.userName?.charAt(0) || 'U' }}
+                  </div>
+                  <div>
+                    <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ b.userName }}</span>
+                    <span class="user-cell-id">USER #{{ b.userId }} · SUB #{{ b.subscriptionId }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="contact-cell">
+                  <a [href]="'tel:' + b.userPhone" style="display:inline-flex;align-items:center;gap:4px;color:#0f3b4a;text-decoration:none;font-weight:600;">
+                    <span class="material-symbols-outlined" style="font-size:15px;color:#5e8f72;">call</span>
+                    <span>{{ b.userPhone }}</span>
+                  </a>
+                  <a [href]="'mailto:' + b.userEmail" style="display:inline-flex;align-items:center;gap:4px;color:#64748b;text-decoration:none;font-size:11px;">
+                    <span class="material-symbols-outlined" style="font-size:13px;">mail</span>
+                    <span>{{ b.userEmail }}</span>
+                  </a>
+                </div>
+              </td>
+              <td>
+                @if (b.planId === 'vip_concierge') {
+                  <span class="badge-role" style="background:#fef3c7;color:#92400e;font-weight:700;border:1px solid #fde68a;">
+                    👑 VIP Concierge (50 Projects)
+                  </span>
+                } @else if (b.planId === 'priority_buyer') {
+                  <span class="badge-role" style="background:#ede9fe;color:#5b21b6;font-weight:700;border:1px solid #ddd6fe;">
+                    ⭐ Priority Buyer (25 Projects)
+                  </span>
+                } @else if (b.planId === 'smart_buyer') {
+                  <span class="badge-role" style="background:#e0f2fe;color:#0369a1;font-weight:700;border:1px solid #bae6fd;">
+                    🚀 Smart Buyer (5 Projects)
+                  </span>
+                } @else {
+                  <span class="badge-role" style="background:#f1f5f9;color:#475569;">
+                    Free Explorer (2 Projects)
+                  </span>
+                }
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;">
+                  <span style="font-weight:700;color:#0f3b4a;font-size:14px;">₹{{ b.amountPaid | number:'1.2-2' }}</span>
+                  <span class="text-xs text-muted">Razorpay Verified</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <span class="text-xs" style="color:#0f3b4a;font-weight:600;">From: {{ b.startsAt | slice:0:10 }}</span>
+                  <span class="text-xs" style="color:#16a34a;font-weight:700;">Expires: {{ b.expiresAt | slice:0:10 }}</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;gap:3px;min-width:110px;">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;">
+                    <span>{{ b.viewsUsed || 0 }} / {{ b.viewLimit || 5 }}</span>
+                    <span style="color:#64748b;">{{ ((b.viewsUsed || 0) / (b.viewLimit || 5) * 100) | number:'1.0-0' }}%</span>
+                  </div>
+                  <div style="height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                    <div [style.width.%]="((b.viewsUsed || 0) / (b.viewLimit || 5) * 100)"
+                         [style.background]="(b.viewsUsed || 0) >= (b.viewLimit || 5) ? '#dc2626' : '#5e8f72'"
+                         style="height:100%;border-radius:4px;"></div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;gap:2px;font-size:12px;">
+                  <span style="color:#334155;"><strong>{{ b.advisoryUsed || 0 }}/{{ b.advisoryLimit || 0 }}</strong> Advisory Calls</span>
+                  <span style="color:#334155;"><strong>{{ b.visitsUsed || 0 }}/{{ b.visitLimit || 0 }}</strong> Site Escorts</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge-role" style="background:#e5f7ec;color:#166534;font-weight:700;">
+                  Active Tier
+                </span>
+              </td>
+              <td class="td-actions">
+                <div class="action-btn-group">
+                  <a [href]="'https://wa.me/' + b.userPhone" target="_blank" rel="noopener" class="btn-action-primary" style="background:#16a34a;text-decoration:none;" title="Direct WhatsApp Concierge">
+                    <span class="material-symbols-outlined">chat</span>
+                    <span>WhatsApp</span>
+                  </a>
+                  <a [routerLink]="['/profile']" class="btn-action-icon" title="Inspect User Workspace" style="color:#0f3b4a;">
+                    <span class="material-symbols-outlined">account_circle</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    }
+
+    <!-- ========================================== -->
+    <!-- TAB CONTENT: DEDICATED WHATSAPP MESSAGES   -->
+    <!-- ========================================== -->
+    @if (activeTab() === 'whatsapp_messages') {
+    <section class="tab-pane-section whatsapp-messages-pane">
+      <div class="workspace-header-banner" style="background: linear-gradient(135deg, #0f3b4a 0%, #14532d 60%, #166534 100%);">
+        <div class="banner-title-block">
+          <div class="banner-icon-box" style="background: rgba(255,255,255,0.18); color: #ffffff;">
+            <span class="material-symbols-outlined">chat</span>
+          </div>
+          <div>
+            <h2 class="banner-main-title" style="color: #ffffff;">WhatsApp Concierge Inquiries &amp; Messages Log</h2>
+            <p class="banner-subtitle" style="color: rgba(255,255,255,0.85);">
+              Live buyer requests initiated via website WhatsApp buttons, property dossier shares, and legal encumbrance queries.
+            </p>
+          </div>
+        </div>
+
+        <div class="workspace-stats-pills">
+          <div class="stat-pill">
+            <span class="stat-num">{{ dashboardMetrics().totalWhatsappRequests }}</span>
+            <span class="stat-lbl">Inquiries</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">100%</span>
+            <span class="stat-lbl">Direct Chat Links</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">&lt; 15 min</span>
+            <span class="stat-lbl">Avg Response Time</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls & Filter Toolbar -->
+      <div class="workspace-controls-bar">
+        <div class="workspace-search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" [ngModel]="whatsappSearchQuery()" (ngModelChange)="whatsappSearchQuery.set($event)"
+            placeholder="Search messages by lead name, phone number, property title, message notes..." class="workspace-search-input" />
+        </div>
+
+        <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'all'"
+            (click)="whatsappStatusFilter.set('all')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            All Messages ({{ (dashboardMetrics().whatsappMessages || []).length }})
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'new'"
+            (click)="whatsappStatusFilter.set('new')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            New Uncontacted
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'contacted'"
+            (click)="whatsappStatusFilter.set('contacted')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Contacted / In Progress
+          </button>
+          <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'completed'"
+            (click)="whatsappStatusFilter.set('completed')" style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+            Resolved &amp; Completed
+          </button>
+        </div>
+      </div>
+
+      <!-- WhatsApp Messages Table -->
+      <div class="workspace-table-container">
+        <table class="workspace-table">
+          <thead>
+            <tr>
+              <th>Lead Name &amp; Time</th>
+              <th>WhatsApp Contact</th>
+              <th>Property Inquired</th>
+              <th>Inquiry Message &amp; Dossier Request</th>
+              <th>Lead Status</th>
+              <th class="th-actions">Direct Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of filteredWhatsappMessages(); track m.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-cell-avatar" style="background:#dcfce7;color:#166534;font-weight:700;">
+                    {{ m.contactName?.charAt(0) || 'L' }}
+                  </div>
+                  <div>
+                    <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ m.contactName }}</span>
+                    <span class="user-cell-id">MSG #{{ m.id }} · {{ m.createdAt | slice:0:16 }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="contact-cell">
+                  <a [href]="'https://wa.me/' + m.contactPhone" target="_blank" rel="noopener"
+                     style="display:inline-flex;align-items:center;gap:5px;background:#e5f7ec;color:#15803d;padding:4px 10px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;"
+                     title="Open live WhatsApp chat">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chat</span>
+                    <span>{{ m.contactPhone }}</span>
+                  </a>
+                  <a [href]="'tel:' + m.contactPhone" style="display:inline-flex;align-items:center;gap:4px;color:#64748b;text-decoration:none;font-size:11px;margin-top:2px;">
+                    <span class="material-symbols-outlined" style="font-size:13px;color:#5e8f72;">call</span>
+                    <span>Call Phone</span>
+                  </a>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;flex-direction:column;">
+                  <span style="font-weight:600;color:#0f3b4a;">{{ m.propertyTitle || 'Project Reference' }}</span>
+                  <a [routerLink]="['/property', m.propertyId]" target="_blank" class="text-xs" style="color:#5e8f72;text-decoration:none;font-weight:600;">
+                    {{ m.propertyId }} · {{ m.localityName || 'Chennai' }} ↗
+                  </a>
+                  @if (m.price) {
+                    <span class="text-xs text-muted">{{ m.price }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div style="max-width:340px;line-height:1.4;">
+                  <p class="text-xs" style="color:#1e293b;margin:0;font-style:italic;background:#f8fafc;padding:8px 10px;border-left:3px solid #16a34a;border-radius:4px;">
+                    "{{ m.message }}"
+                  </p>
+                </div>
+              </td>
+              <td>
+                @if (m.status === 'completed') {
+                  <span class="badge-role" style="background:#e5f7ec;color:#166534;font-weight:700;">Completed</span>
+                } @else if (m.status === 'contacted') {
+                  <span class="badge-role" style="background:#e0f2fe;color:#0369a1;font-weight:700;">Contacted</span>
+                } @else {
+                  <span class="badge-role" style="background:#fef3c7;color:#92400e;font-weight:700;">New Request</span>
+                }
+              </td>
+              <td class="td-actions">
+                <div class="action-btn-group">
+                  <a [href]="'https://wa.me/' + m.contactPhone + '?text=' + ('Hi ' + m.contactName + ', regarding your inquiry for ' + (m.propertyTitle || 'property') + ', here is the verified document dossier:')"
+                     target="_blank" rel="noopener" class="btn-action-primary" style="background:#16a34a;text-decoration:none;" title="Send WhatsApp Dossier Reply">
+                    <span class="material-symbols-outlined">send</span>
+                    <span>Reply on WA</span>
+                  </a>
+                  @if (m.status !== 'completed') {
+                  <button type="button" class="btn-action-icon" (click)="updateWhatsappStatus(m.id, 'completed')" title="Mark as Completed" style="color:#16a34a;">
+                    <span class="material-symbols-outlined">done_all</span>
+                  </button>
+                  }
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </section>
     }
 

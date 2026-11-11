@@ -432,6 +432,80 @@
   color: #dc2626;
 }
 
+.text-blue {
+  color: #2563eb;
+}
+
+.text-slate {
+  color: #0f3b4a;
+}
+
+.kpi-card.is-clickable {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.kpi-card.is-clickable:hover {
+  transform: translateY(-3px);
+  border-color: #5e8f72;
+  box-shadow: 0 6px 16px rgba(15, 59, 74, 0.08);
+}
+
+.kpi-card.highlight-tier {
+  border-color: #c4b5fd;
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+}
+
+.kpi-card.highlight-emerald {
+  border-color: #a7f3d0;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.kpi-sub-text {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.kpi-action-link {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5e8f72;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.kpi-card.is-clickable:hover .kpi-action-link {
+  text-decoration: underline;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #16a34a;
+  margin-right: 4px;
+  animation: live-blink 1.5s infinite;
+}
+
+@keyframes live-blink {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Dedicated Panes */
+.subscription-buyers-pane,
+.whatsapp-messages-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 /* ==========================================
    MAIN WORKSPACE & TABS
    ========================================== */
