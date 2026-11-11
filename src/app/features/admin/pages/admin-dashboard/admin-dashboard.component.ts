@@ -383,7 +383,7 @@ export class AdminDashboardComponent {
     isTokenConfigured: false,
     verifyToken: 'findaplot_meta_token_77',
     apiVersion: 'v19.0',
-    webhookUrl: 'https://onenewstory.in/p_demo_5/backend/api/webhooks/whatsapp.php',
+    webhookUrl: 'https://onenewstory.in/p_demo_5/backend/api/whatsapp-webhook.php',
     isLive: false
   });
   readonly isSavingMetaConfig = signal<boolean>(false);

@@ -37,8 +37,22 @@ if ($method === 'GET') {
     }
 
     $cleanPhone = preg_replace('/[^\d]/', '', $userPhone);
+    $businessNumber = Settings::getWhatsAppFullNumber();
 
-    // Fetch conversation thread
+    // If no valid phone is specified, return empty thread (no mock fallback)
+    if (empty($cleanPhone) || strlen($cleanPhone) < 7) {
+        Response::success([
+            'userPhone'      => $userPhone,
+            'businessPhone'  => $businessNumber,
+            'lead'           => null,
+            'totalMessages'  => 0,
+            'thread'         => []
+        ], 'No phone specified');
+    }
+
+    $last10 = substr($cleanPhone, -10);
+
+    // Fetch real conversation thread strictly matching this buyer's phone
     $sql = "
         SELECT 
             m.id,
@@ -56,11 +70,13 @@ if ($method === 'GET') {
             p.price
         FROM whatsapp_chat_messages m
         LEFT JOIN properties p ON m.property_id = p.id
-        WHERE m.user_phone = ? OR REPLACE(REPLACE(REPLACE(m.user_phone, ' ', ''), '-', ''), '+', '') LIKE ?
+        WHERE m.user_phone = ? 
+           OR m.user_phone LIKE ?
+           OR REPLACE(REPLACE(REPLACE(m.user_phone, ' ', ''), '-', ''), '+', '') LIKE ?
         ORDER BY m.created_at ASC, m.id ASC
     ";
     $stmt = $db->prepare($sql);
-    $stmt->execute([$userPhone, "%{$cleanPhone}%"]);
+    $stmt->execute([$userPhone, "%{$last10}", "%{$last10}"]);
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Also get lead record if available

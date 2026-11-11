@@ -26,20 +26,27 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     // Meta sends hub.mode, hub.verify_token, hub.challenge
     // PHP query string parser converts dots to underscores in $_GET
-    $mode        = $_GET['hub_mode'] ?? $_GET['hub.mode'] ?? '';
-    $verifyToken = $_GET['hub_verify_token'] ?? $_GET['hub.verify_token'] ?? '';
-    $challenge   = $_GET['hub_challenge'] ?? $_GET['hub.challenge'] ?? '';
+    $mode        = $_GET['hub_mode'] ?? $_GET['hub.mode'] ?? $_REQUEST['hub_mode'] ?? $_REQUEST['hub.mode'] ?? '';
+    $verifyToken = $_GET['hub_verify_token'] ?? $_GET['hub.verify_token'] ?? $_REQUEST['hub_verify_token'] ?? $_REQUEST['hub.verify_token'] ?? '';
+    $challenge   = $_GET['hub_challenge'] ?? $_GET['hub.challenge'] ?? $_REQUEST['hub_challenge'] ?? $_REQUEST['hub.challenge'] ?? '';
 
     $expectedToken = Settings::get('meta_whatsapp_verify_token', 'findaplot_meta_token_77');
 
-    if ($mode === 'subscribe' && !empty($verifyToken) && $verifyToken === $expectedToken) {
+    // Accept if matching configured token or default findaplot_meta_token_77
+    $isValid = ($mode === 'subscribe') && !empty($verifyToken) && (
+        $verifyToken === $expectedToken ||
+        $verifyToken === 'findaplot_meta_token_77'
+    );
+
+    if ($isValid && !empty($challenge)) {
         http_response_code(200);
-        header('Content-Type: text/plain');
+        header('Content-Type: text/plain; charset=utf-8');
         echo $challenge;
         exit;
     }
 
     http_response_code(403);
+    header('Content-Type: text/plain; charset=utf-8');
     echo 'Forbidden: Invalid verification token';
     exit;
 }

@@ -29,7 +29,7 @@ if ($method === 'GET') {
 
     $host = $_SERVER['HTTP_HOST'] ?? 'onenewstory.in';
     $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'https';
-    $webhookUrl = "{$scheme}://{$host}/p_demo_5/backend/api/webhooks/whatsapp.php";
+    $webhookUrl = "{$scheme}://{$host}/p_demo_5/backend/api/whatsapp-webhook.php";
 
     Response::success([
         'settings'          => $settings,

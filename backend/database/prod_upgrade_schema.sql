@@ -36,7 +36,12 @@ VALUES
   ('whatsapp_auto_reply_enabled', '1', 'whatsapp', 'Whether AI free agent auto-replies are active (1/0)'),
   ('whatsapp_auto_reply_agent', 'cadastral_concierge', 'whatsapp', 'Active agent persona (cadastral_concierge, investment_advisor, fast_concierge)'),
   ('whatsapp_free_agent_model', 'local_real_estate_ai', 'whatsapp', 'Free AI agent engine (local_real_estate_ai, pollinations_free)'),
-  ('whatsapp_auto_reply_template', 'Hi {name}! Thank you for inquiring about {property} in {locality}. Our AI Concierge has logged your request. This property is DTCP/TNRERA verified with clear title deeds. Would you like our executive to share the legal cadastral dossier or book a free chauffeur site visit?', 'whatsapp', 'Default AI reply prompt template')
+  ('whatsapp_auto_reply_template', 'Hi {name}! Thank you for inquiring about {property} in {locality}. Our AI Concierge has logged your request. This property is DTCP/TNRERA verified with clear title deeds. Would you like our executive to share the legal cadastral dossier or book a free chauffeur site visit?', 'whatsapp', 'Default AI reply prompt template'),
+  ('meta_whatsapp_phone_number_id', '', 'whatsapp', 'Official Meta WhatsApp Business Phone Number ID'),
+  ('meta_whatsapp_waba_id', '', 'whatsapp', 'Meta WhatsApp Business Account ID (WABA ID)'),
+  ('meta_whatsapp_access_token', '', 'whatsapp', 'Permanent System User Access Token'),
+  ('meta_whatsapp_verify_token', 'findaplot_meta_token_77', 'whatsapp', 'Meta Webhook Verify Token'),
+  ('meta_whatsapp_api_version', 'v19.0', 'whatsapp', 'Meta Graph API Version')
 ON DUPLICATE KEY UPDATE `updated_at` = CURRENT_TIMESTAMP;
 
 
@@ -297,9 +302,16 @@ DELIMITER ;
 CALL `AddPropertyWhatsappColumn`();
 DROP PROCEDURE `AddPropertyWhatsappColumn`;
 
--- Purge any inadvertent CSV header row
+-- Purge any inadvertent CSV header row & mock conversation threads
 DELETE FROM `inquiries_and_visits` WHERE `property_id` = 'id';
 DELETE FROM `properties` WHERE `id` = 'id';
+
+-- Purge mock/test conversation threads so Admin Panel only shows 100% real conversations
+DELETE FROM `whatsapp_chat_messages` 
+WHERE `sender_name` LIKE '%Kavitha%' 
+   OR `message_text` LIKE '%Verified Cadastral Layout%' 
+   OR `message_text` LIKE '%Initial inquiry%'
+   OR `sender_name` LIKE '%Sample%';
 
 -- Update all existing properties to point to the official business WhatsApp number (919486140936)
 UPDATE `properties`

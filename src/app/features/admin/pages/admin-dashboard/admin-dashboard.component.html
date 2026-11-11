@@ -3849,16 +3849,9 @@
         </div>
 
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <button type="button" (click)="seedSampleWhatsAppThread()"
-            style="display:inline-flex;align-items:center;gap:6px;background:#0369a1;color:#ffffff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;"
-            title="Load live conversation thread between User 9498400967 & Admin 9486140936">
-            <span class="material-symbols-outlined" style="font-size:16px;">forum</span>
-            <span>View 9498400967 Chat Thread</span>
-          </button>
-
           <button type="button" (click)="isWhatsappSettingsOpen.set(!isWhatsappSettingsOpen())"
             style="display:inline-flex;align-items:center;gap:6px;background:#0f3b4a;color:#ffffff;border:1px solid #1e5567;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;"
-            title="Change WhatsApp business number & configure free agent auto-reply">
+            title="Configure Meta Cloud API, business number & free agent auto-reply">
             <span class="material-symbols-outlined" style="font-size:16px;color:#38bdf8;">tune</span>
             <span>WhatsApp &amp; Free Agent Settings</span>
           </button>
@@ -4350,7 +4343,7 @@
           <div style="text-align:center;padding:3rem 1rem;background:#fff;border-radius:8px;border:1px solid #e2e8f0;">
             <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;">chat_bubble_outline</span>
             <p style="font-size:13px;font-weight:700;color:#0f3b4a;margin:6px 0 2px;">No logged chat messages yet</p>
-            <p style="font-size:12px;color:#64748b;margin:0 0 12px;">Type a message below or click simulate to initiate the conversation log.</p>
+            <p style="font-size:12px;color:#64748b;margin:0 0 12px;">When {{ selectedChatLead()?.contactName || 'this contact' }} sends a message via WhatsApp, incoming and outgoing messages will appear here in real time.</p>
           </div>
           }
 
@@ -4399,22 +4392,6 @@
             }
           }
 
-        </div>
-
-        <!-- Multi-Turn Simulation Bar -->
-        <div style="background:#f1f5f9;border-top:1px solid #e2e8f0;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:280px;">
-            <span class="material-symbols-outlined" style="font-size:18px;color:#0284c7;">question_answer</span>
-            <span style="font-size:11px;font-weight:700;color:#334155;white-space:nowrap;">User Follow-Up:</span>
-            <input type="text" [(ngModel)]="simulatedUserMsgInput" placeholder="Enter follow-up question as user..."
-              style="flex:1;padding:5px 8px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;background:#fff;" />
-          </div>
-          <button type="button" (click)="simulateUserFollowUpMessage()"
-            style="background:#0284c7;color:#ffffff;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"
-            title="Log simulated user message (e.g. requesting additional info)">
-            <span class="material-symbols-outlined" style="font-size:14px;">send</span>
-            <span>+ Simulate User Follow-Up</span>
-          </button>
         </div>
 
         <!-- Chat Input & Direct Actions Area -->
