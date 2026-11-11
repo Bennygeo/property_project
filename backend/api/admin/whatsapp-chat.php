@@ -10,11 +10,13 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
 require_once __DIR__ . '/../../helpers/settings.php';
 require_once __DIR__ . '/../../helpers/free_agent_reply.php';
+require_once __DIR__ . '/../../helpers/meta_whatsapp.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
 use Mannidam\Helpers\Settings;
 use Mannidam\Helpers\FreeAgentReply;
+use Mannidam\Helpers\MetaWhatsApp;
 
 Response::initCors();
 
@@ -129,12 +131,23 @@ if ($method === 'POST') {
         $cleanPhone = preg_replace('/[^\d]/', '', $userPhone);
         $waDirectUrl = "https://wa.me/{$cleanPhone}?text=" . urlencode($messageText);
 
+        // Attempt live dispatch via Meta WhatsApp Cloud API if configured
+        $metaSent = false;
+        $metaError = null;
+        if (MetaWhatsApp::isConfigured()) {
+            $metaRes = MetaWhatsApp::sendTextMessage($userPhone, $messageText);
+            $metaSent = !empty($metaRes['success']);
+            $metaError = $metaRes['error'] ?? null;
+        }
+
         Response::success([
             'id'          => $msgId,
             'whatsappUrl' => $waDirectUrl,
             'senderType'  => $senderType,
+            'metaSent'    => $metaSent,
+            'metaError'   => $metaError,
             'createdAt'   => date('Y-m-d H:i:s')
-        ], 'Reply message logged to WhatsApp thread');
+        ], $metaSent ? 'Reply sent to buyer WhatsApp via Meta Cloud API!' : 'Reply message logged to WhatsApp thread');
     }
 
     // 2. LOG INCOMING USER MESSAGE (E.g. "User requested additional info")

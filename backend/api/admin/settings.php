@@ -10,11 +10,13 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
 require_once __DIR__ . '/../../helpers/settings.php';
 require_once __DIR__ . '/../../helpers/free_agent_reply.php';
+require_once __DIR__ . '/../../helpers/meta_whatsapp.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
 use Mannidam\Helpers\Settings;
 use Mannidam\Helpers\FreeAgentReply;
+use Mannidam\Helpers\MetaWhatsApp;
 
 Response::initCors();
 
@@ -25,9 +27,22 @@ if ($method === 'GET') {
     $settings = Settings::getAll();
     $fullNumber = Settings::getWhatsAppFullNumber();
 
+    $host = $_SERVER['HTTP_HOST'] ?? 'onenewstory.in';
+    $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'https';
+    $webhookUrl = "{$scheme}://{$host}/p_demo_5/backend/api/webhooks/whatsapp.php";
+
     Response::success([
         'settings'          => $settings,
         'fullWhatsAppNumber'=> $fullNumber,
+        'metaConfig'        => [
+            'phoneNumberId'   => Settings::get('meta_whatsapp_phone_number_id', ''),
+            'wabaId'          => Settings::get('meta_whatsapp_waba_id', ''),
+            'isTokenConfigured'=> !empty(Settings::get('meta_whatsapp_access_token', '')),
+            'verifyToken'     => Settings::get('meta_whatsapp_verify_token', 'findaplot_meta_token_77'),
+            'apiVersion'      => Settings::get('meta_whatsapp_api_version', 'v19.0'),
+            'webhookUrl'      => $webhookUrl,
+            'isLive'          => MetaWhatsApp::isConfigured()
+        ],
         'availableAgents'   => [
             [
                 'id'          => 'cadastral_concierge',
@@ -177,6 +192,57 @@ if ($method === 'POST') {
             'agentName'     => $result['agentName'],
             'modelUsed'     => $result['modelUsed']
         ], 'AI Auto-reply generated and attached to inquiry');
+    }
+
+    // 4. UPDATE META WHATSAPP CLOUD API CREDENTIALS
+    if ($action === 'update_meta_settings') {
+        $phoneId = trim((string)($input['phoneNumberId'] ?? ''));
+        $wabaId  = trim((string)($input['wabaId'] ?? ''));
+        $token   = trim((string)($input['accessToken'] ?? ''));
+        $vToken  = trim((string)($input['verifyToken'] ?? ''));
+        $version = trim((string)($input['apiVersion'] ?? 'v19.0'));
+
+        if (!empty($phoneId)) {
+            Settings::set('meta_whatsapp_phone_number_id', $phoneId, 'whatsapp_meta', 'Meta Phone Number ID');
+        }
+        if (!empty($wabaId)) {
+            Settings::set('meta_whatsapp_waba_id', $wabaId, 'whatsapp_meta', 'Meta WABA ID');
+        }
+        if (!empty($token)) {
+            Settings::set('meta_whatsapp_access_token', $token, 'whatsapp_meta', 'Meta System User Access Token');
+        }
+        if (!empty($vToken)) {
+            Settings::set('meta_whatsapp_verify_token', $vToken, 'whatsapp_meta', 'Meta Webhook Verify Token');
+        }
+        if (!empty($version)) {
+            Settings::set('meta_whatsapp_api_version', $version, 'whatsapp_meta', 'Meta Graph API version');
+        }
+
+        Response::success([
+            'phoneNumberId'   => Settings::get('meta_whatsapp_phone_number_id'),
+            'wabaId'          => Settings::get('meta_whatsapp_waba_id'),
+            'isTokenConfigured'=> !empty(Settings::get('meta_whatsapp_access_token')),
+            'verifyToken'     => Settings::get('meta_whatsapp_verify_token', 'findaplot_meta_token_77'),
+            'apiVersion'      => Settings::get('meta_whatsapp_api_version', 'v19.0'),
+            'isLive'          => MetaWhatsApp::isConfigured()
+        ], 'Meta WhatsApp Business Cloud API settings saved successfully');
+    }
+
+    // 5. TEST META WHATSAPP OUTBOUND MESSAGE
+    if ($action === 'test_meta_api') {
+        $testPhone = trim((string)($input['testPhone'] ?? '9486140936'));
+        $testMsg   = trim((string)($input['message'] ?? 'Find a Plot: Meta WhatsApp Cloud API connection test successful! ✅'));
+
+        if (!MetaWhatsApp::isConfigured()) {
+            Response::error('Meta credentials incomplete. Please configure Phone Number ID and Access Token.');
+        }
+
+        $res = MetaWhatsApp::sendTextMessage($testPhone, $testMsg);
+        if ($res['success']) {
+            Response::success($res, 'Test WhatsApp message sent successfully via Meta Cloud API!');
+        } else {
+            Response::error('Meta Cloud API test failed: ' . ($res['error'] ?? 'Unknown error'), 400, $res);
+        }
     }
 
     Response::error('Invalid action');

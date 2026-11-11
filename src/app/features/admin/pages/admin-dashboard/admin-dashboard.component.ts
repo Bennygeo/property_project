@@ -364,6 +364,118 @@ export class AdminDashboardComponent {
   readonly testSampleName = signal<string>('Dr. Rajesh');
   readonly testSampleMessage = signal<string>('Is this plot DTCP approved and can I get a 75% bank loan?');
 
+  // =========================================================================
+  // META WHATSAPP BUSINESS CLOUD API INTEGRATION
+  // =========================================================================
+  readonly metaWhatsappConfig = signal<{
+    phoneNumberId: string;
+    wabaId: string;
+    accessToken: string;
+    isTokenConfigured: boolean;
+    verifyToken: string;
+    apiVersion: string;
+    webhookUrl: string;
+    isLive: boolean;
+  }>({
+    phoneNumberId: '',
+    wabaId: '',
+    accessToken: '',
+    isTokenConfigured: false,
+    verifyToken: 'findaplot_meta_token_77',
+    apiVersion: 'v19.0',
+    webhookUrl: 'https://onenewstory.in/p_demo_5/backend/api/webhooks/whatsapp.php',
+    isLive: false
+  });
+  readonly isSavingMetaConfig = signal<boolean>(false);
+  readonly isTestingMetaApi = signal<boolean>(false);
+  readonly metaApiTestResult = signal<string>('');
+  readonly showMetaToken = signal<boolean>(false);
+
+  saveMetaWhatsappSettings(): void {
+    this.isSavingMetaConfig.set(true);
+    const m = this.metaWhatsappConfig();
+    const payload = {
+      action: 'update_meta_settings',
+      phoneNumberId: m.phoneNumberId,
+      wabaId: m.wabaId,
+      accessToken: m.accessToken,
+      verifyToken: m.verifyToken,
+      apiVersion: m.apiVersion
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/settings.php')),
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
+      catchError(() => of(null))
+    ).subscribe((res: any) => {
+      this.isSavingMetaConfig.set(false);
+      if (res && res.success) {
+        this.notificationService.show({
+          type: 'success',
+          title: 'Meta API Credentials Saved',
+          message: 'Official WhatsApp Cloud API settings updated successfully.',
+          icon: 'verified'
+        });
+        this.loadWhatsappSettings();
+      } else {
+        this.notificationService.show({
+          type: 'error',
+          title: 'Save Failed',
+          message: 'Could not update Meta Cloud API credentials.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  testMetaCloudApi(): void {
+    this.isTestingMetaApi.set(true);
+    this.metaApiTestResult.set('');
+    const payload = {
+      action: 'test_meta_api',
+      testPhone: this.whatsappConfig().whatsapp_number,
+      message: `Find a Plot: Meta WhatsApp Cloud API connection test successful for ${this.whatsappConfig().whatsapp_number}! ✅`
+    };
+
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+    tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/settings.php')),
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
+      catchError((err) => of({ success: false, message: err?.error?.message || err?.message || 'Network request failed' }))
+    ).subscribe((res: any) => {
+      this.isTestingMetaApi.set(false);
+      if (res && res.success) {
+        this.metaApiTestResult.set(`Success! Message ID: ${res.data?.messageId || 'Delivered'}`);
+        this.notificationService.show({
+          type: 'success',
+          title: 'Meta API Test Passed',
+          message: `Live WhatsApp message dispatched to ${this.whatsappConfig().whatsapp_number}`,
+          icon: 'check_circle'
+        });
+      } else {
+        const errMsg = res?.message || 'Meta API returned error. Check Phone Number ID & Access Token.';
+        this.metaApiTestResult.set(`Error: ${errMsg}`);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Meta API Test Failed',
+          message: errMsg,
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  copyToClipboard(text: string, label: string = 'Copied'): void {
+    navigator.clipboard?.writeText(text);
+    this.notificationService.show({
+      type: 'success',
+      title: 'Copied to Clipboard',
+      message: `${label} copied to clipboard!`,
+      icon: 'content_copy'
+    });
+  }
+
   readonly whatsappConfig = signal<{
     whatsapp_number: string;
     whatsapp_country_code: string;
@@ -402,6 +514,19 @@ export class AdminDashboardComponent {
         });
         if (res.data.fullWhatsAppNumber) {
           this.propertyService.businessWhatsAppNumber.set(res.data.fullWhatsAppNumber);
+        }
+        if (res.data.metaConfig) {
+          const mc = res.data.metaConfig;
+          this.metaWhatsappConfig.set({
+            phoneNumberId: mc.phoneNumberId || '',
+            wabaId: mc.wabaId || '',
+            accessToken: '',
+            isTokenConfigured: !!mc.isTokenConfigured,
+            verifyToken: mc.verifyToken || 'findaplot_meta_token_77',
+            apiVersion: mc.apiVersion || 'v19.0',
+            webhookUrl: mc.webhookUrl || 'https://onenewstory.in/p_demo_5/backend/api/webhooks/whatsapp.php',
+            isLive: !!mc.isLive
+          });
         }
       }
     });
