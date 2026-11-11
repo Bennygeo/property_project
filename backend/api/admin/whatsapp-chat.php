@@ -254,3 +254,4 @@ if ($method === 'POST') {
 
     Response::error('Invalid action');
 }
+

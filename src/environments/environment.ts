@@ -1,6 +1,11 @@
 function detectApiUrl(): string {
   if (typeof window === 'undefined') return '/p_demo_5/backend/api';
   const path = (window.location && window.location.pathname) ? window.location.pathname.toLowerCase() : '';
+  const host = (window.location && window.location.hostname) ? window.location.hostname.toLowerCase() : '';
+
+  if (host.includes('onenewstory.in')) {
+    return '/p_demo_5/backend/api';
+  }
   if (path.includes('/p_demo_5')) return '/p_demo_5/backend/api';
   if (path.includes('/p_demo_4')) return '/p_demo_4/backend/api';
   if (path.includes('/p_demo_3')) return '/p_demo_3/backend/api';

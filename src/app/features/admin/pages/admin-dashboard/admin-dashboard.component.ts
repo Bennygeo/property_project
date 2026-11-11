@@ -284,8 +284,10 @@ export class AdminDashboardComponent {
     const tryGet = (url: string) => this.http.get<any>(url);
 
     tryGet(`${environment.apiUrl}/admin/metrics.php`).pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/admin/metrics.php')),
       catchError(() => tryGet('/P_demo_5/backend/api/admin/metrics.php')),
       catchError(() => tryGet('/the-property-project/backend/api/admin/metrics.php')),
+      catchError(() => tryGet('/backend/api/admin/metrics.php')),
       catchError(() => tryGet('/api/admin/metrics.php')),
       catchError(err => {
         console.error('Error fetching dashboard metrics:', err);
@@ -383,6 +385,7 @@ export class AdminDashboardComponent {
   loadWhatsappSettings(): void {
     const tryGet = (url: string) => this.http.get<any>(url);
     tryGet(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/admin/settings.php')),
       catchError(() => tryGet('/P_demo_5/backend/api/admin/settings.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -420,6 +423,7 @@ export class AdminDashboardComponent {
 
     const tryPost = (url: string) => this.http.post<any>(url, payload);
     tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/settings.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -461,6 +465,7 @@ export class AdminDashboardComponent {
 
     const tryPost = (url: string) => this.http.post<any>(url, payload);
     tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/settings.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -483,6 +488,7 @@ export class AdminDashboardComponent {
 
     const tryPost = (url: string) => this.http.post<any>(url, payload);
     tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/settings.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -538,6 +544,7 @@ export class AdminDashboardComponent {
     });
 
     tryPost(`${environment.apiUrl}/admin/metrics.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/metrics.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/metrics.php')),
       catchError(() => of(null))
     ).subscribe(() => {
@@ -572,6 +579,7 @@ export class AdminDashboardComponent {
     });
 
     tryPost(`${environment.apiUrl}/admin/metrics.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/metrics.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/metrics.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -609,6 +617,7 @@ export class AdminDashboardComponent {
     const leadId = lead.id || 0;
 
     tryGet(`${environment.apiUrl}/admin/whatsapp-chat.php?lead_id=${leadId}&user_phone=${phone}`).pipe(
+      catchError(() => tryGet(`/p_demo_5/backend/api/admin/whatsapp-chat.php?lead_id=${leadId}&user_phone=${phone}`)),
       catchError(() => tryGet(`/P_demo_5/backend/api/admin/whatsapp-chat.php?lead_id=${leadId}&user_phone=${phone}`)),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -643,6 +652,7 @@ export class AdminDashboardComponent {
 
     const tryPost = (url: string) => this.http.post<any>(url, payload);
     tryPost(`${environment.apiUrl}/admin/whatsapp-chat.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/whatsapp-chat.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/whatsapp-chat.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -694,6 +704,7 @@ export class AdminDashboardComponent {
 
     const tryPost = (url: string) => this.http.post<any>(url, payload);
     tryPost(`${environment.apiUrl}/admin/settings.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/settings.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/settings.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -726,6 +737,7 @@ export class AdminDashboardComponent {
 
     const tryPost = (url: string) => this.http.post<any>(url, payload);
     tryPost(`${environment.apiUrl}/admin/whatsapp-chat.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/whatsapp-chat.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/whatsapp-chat.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
@@ -745,6 +757,7 @@ export class AdminDashboardComponent {
   seedSampleWhatsAppThread(): void {
     const tryPost = (url: string) => this.http.post<any>(url, { action: 'seed_sample_thread' });
     tryPost(`${environment.apiUrl}/admin/whatsapp-chat.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/whatsapp-chat.php')),
       catchError(() => tryPost('/P_demo_5/backend/api/admin/whatsapp-chat.php')),
       catchError(() => of(null))
     ).subscribe((res: any) => {
