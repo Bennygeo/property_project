@@ -153,6 +153,10 @@ try {
             $rawDimension = trim((string)($item['dimension'] ?? $item['dimensions'] ?? ''));
             $rawFacing = trim((string)($item['facing'] ?? $item['Facing'] ?? ''));
             $rawCornerPlot = trim((string)($item['cornerPlot'] ?? $item['Corner Plot'] ?? ''));
+            $rawLandType = trim((string)($item['land_type'] ?? $item['landType'] ?? $item['landUse'] ?? $item['land_use'] ?? $item['Land Use'] ?? $item['Land Type'] ?? ''));
+            if (empty($rawLandType)) {
+                $rawLandType = 'Residential';
+            }
             $rawPricePerSqft = (float)($item['pricePerSqft'] ?? $item['Price per sq.ft (₹)'] ?? $item['sqft_rate'] ?? 0);
             $rawTotalPrice = (float)($item['totalPrice'] ?? $item['Total Price (₹)'] ?? $item['price_from'] ?? 0);
             if ($rawTotalPrice < 100000 && $rawPricePerSqft > 0) {
@@ -238,6 +242,7 @@ try {
                         district       = CASE WHEN (district = '' OR district = 'Chennai') AND :district != '' THEN :district ELSE district END,
                         city           = CASE WHEN (city = '' OR city = 'Chennai') AND :city != '' THEN :city ELSE city END,
                         locality       = CASE WHEN locality = '' AND :locality != '' THEN :locality ELSE locality END,
+                        land_type      = CASE WHEN :landType != '' THEN :landType ELSE land_type END,
                         price_from     = CASE WHEN (price_from = 0.00 OR price_from < 1000) AND :priceFrom > 0 THEN :priceFrom ELSE price_from END,
                         price_to       = CASE WHEN (price_to = 0.00 OR price_to < 1000) AND :priceTo > 0 THEN :priceTo ELSE price_to END,
                         sqft_rate      = CASE WHEN sqft_rate = 0.00 AND :sqftRate > 0 THEN :sqftRate ELSE sqft_rate END,
@@ -255,6 +260,7 @@ try {
                     ':district'  => $district,
                     ':city'      => $city,
                     ':locality'  => $locality,
+                    ':landType'  => $rawLandType,
                     ':priceFrom' => $rawTotalPrice > 0 ? $rawTotalPrice : 0.00,
                     ':priceTo'   => $rawTotalPrice > 0 ? round($rawTotalPrice * 1.4) : 0.00,
                     ':sqftRate'  => $rawPricePerSqft > 0 ? $rawPricePerSqft : 0.00,
@@ -272,12 +278,12 @@ try {
                     $insDetail = $db->prepare("
                         INSERT INTO project_details (
                             project_id, total_layout_area, total_plots, available_plot_sizes,
-                            dimensions, road_width, corner_plot, approval_authority, approval_reference,
+                            dimensions, road_width, corner_plot, land_type, approval_authority, approval_reference,
                             internal_roads, street_lights, drainage, water, electricity, parks, security,
                             other_facilities, gps, nearby_roads, railway_station, schools, hospitals,
                             layout_pdf, brochure, created_at, updated_at
                         ) VALUES (
-                            :pId, 'Approved Layout', 24, :plotSizeStr, :dim, :roadW, :corner,
+                            :pId, 'Approved Layout', 24, :plotSizeStr, :dim, :roadW, :corner, :landType,
                             :appAuth, :appRef, :intRoads, :sLights, :drainage, :water, :elec,
                             :parks, :sec, :otherFac, :gps, :nearbyRds, :railway, :schools, :hosps,
                             CONCAT('https://onenewstory.in/p_demo_5/backend/uploads/layout_', :pId, '.pdf'),
@@ -291,6 +297,7 @@ try {
                         ':dim'        => $rawDimension ?: 'Standard Layout',
                         ':roadW'      => $rawRoadWidth ? ($rawRoadWidth . 'ft Road') : '30ft Tar Road',
                         ':corner'     => (strtolower($rawCornerPlot) === 'yes' || $rawCornerPlot === '1') ? 1 : 0,
+                        ':landType'   => $rawLandType,
                         ':appAuth'    => $rawDtcpApproved ?: 'DTCP Approved',
                         ':appRef'     => $rawDtcpApprovalNo ?: $rawRera,
                         ':intRoads'   => $rawRoadType ?: 'Tar Road',
@@ -313,6 +320,7 @@ try {
                             dimensions         = CASE WHEN (dimensions IS NULL OR dimensions = '' OR dimensions = '28 x 28') AND :dim != '' THEN :dim ELSE dimensions END,
                             road_width         = CASE WHEN (road_width IS NULL OR road_width = '') AND :roadW != '' THEN :roadW ELSE road_width END,
                             corner_plot        = CASE WHEN :corner IS NOT NULL THEN :corner ELSE corner_plot END,
+                            land_type          = CASE WHEN :landType != '' THEN :landType ELSE land_type END,
                             approval_authority = CASE WHEN (approval_authority IS NULL OR approval_authority = '') AND :appAuth != '' THEN :appAuth ELSE approval_authority END,
                             approval_reference = CASE WHEN (approval_reference IS NULL OR approval_reference = '') AND :appRef != '' THEN :appRef ELSE approval_reference END,
                             internal_roads     = CASE WHEN (internal_roads IS NULL OR internal_roads = '') AND :intRoads != '' THEN :intRoads ELSE internal_roads END,
@@ -336,6 +344,7 @@ try {
                         ':dim'        => $rawDimension,
                         ':roadW'      => $rawRoadWidth ? ($rawRoadWidth . 'ft Road') : '',
                         ':corner'     => (strtolower($rawCornerPlot) === 'yes' || $rawCornerPlot === '1') ? 1 : 0,
+                        ':landType'   => $rawLandType,
                         ':appAuth'    => $rawDtcpApproved,
                         ':appRef'     => $rawDtcpApprovalNo,
                         ':intRoads'   => $rawRoadType,
@@ -364,13 +373,13 @@ try {
                 $insProj = $db->prepare("
                     INSERT INTO projects (
                         project_id, project_name, developer_id, developer_name, district, city, locality,
-                        category, type, price_from, price_to, sqft_rate, min_plot_size, max_plot_size,
+                        category, type, land_type, price_from, price_to, sqft_rate, min_plot_size, max_plot_size,
                         project_stage, possession_date, rera_no, brokerage, no_brokerage, featured,
                         whatsapp_number, cover_image, interactive_map, total_units, project_status,
                         submitted_by, status, created_at, updated_at
                     ) VALUES (
                         :pId, :pName, :devId, :devName, :district, :city, :locality,
-                        'Gated CMDA Plots', 'plots', :priceFrom, :priceTo, :sqftRate, :minSize, :maxSize,
+                        'Gated CMDA Plots', 'plots', :landType, :priceFrom, :priceTo, :sqftRate, :minSize, :maxSize,
                         'Ready to Register', 'Immediate', :rera, '0% Direct SRO Deed', 1, 0,
                         :waNum, 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
                         'assets/secura-masterplan-3d.html', 'Individual Plots', 'Ready to Register',
@@ -385,6 +394,7 @@ try {
                     ':district'   => $district,
                     ':city'       => $city,
                     ':locality'   => $locality,
+                    ':landType'   => $rawLandType,
                     ':priceFrom'  => $rawTotalPrice > 0 ? $rawTotalPrice : 3800000.00,
                     ':priceTo'    => $rawTotalPrice > 0 ? round($rawTotalPrice * 1.4) : 5500000.00,
                     ':sqftRate'   => $rawPricePerSqft > 0 ? $rawPricePerSqft : 3200.00,
@@ -398,12 +408,12 @@ try {
                 $insDetail = $db->prepare("
                     INSERT INTO project_details (
                         project_id, total_layout_area, total_plots, available_plot_sizes,
-                        dimensions, road_width, corner_plot, approval_authority, approval_reference,
+                        dimensions, road_width, corner_plot, land_type, approval_authority, approval_reference,
                         internal_roads, street_lights, drainage, water, electricity, parks, security,
                         other_facilities, gps, nearby_roads, railway_station, schools, hospitals,
                         layout_pdf, brochure, created_at, updated_at
                     ) VALUES (
-                        :pId, 'Approved Layout', 24, :plotSizeStr, :dim, :roadW, :corner,
+                        :pId, 'Approved Layout', 24, :plotSizeStr, :dim, :roadW, :corner, :landType,
                         :appAuth, :appRef, :intRoads, :sLights, :drainage, :water, :elec,
                         :parks, :sec, :otherFac, :gps, :nearbyRds, :railway, :schools, :hosps,
                         CONCAT('https://onenewstory.in/p_demo_5/backend/uploads/layout_', :pId, '.pdf'),
@@ -417,6 +427,7 @@ try {
                     ':dim'        => $rawDimension ?: 'Standard Layout Dimensions',
                     ':roadW'      => $rawRoadWidth ? ($rawRoadWidth . 'ft Road') : '30ft Tar Road',
                     ':corner'     => (strtolower($rawCornerPlot) === 'yes' || $rawCornerPlot === '1') ? 1 : 0,
+                    ':landType'   => $rawLandType,
                     ':appAuth'    => $rawDtcpApproved ?: 'DTCP Approved',
                     ':appRef'     => $rawDtcpApprovalNo ?: $rawRera,
                     ':intRoads'   => $rawRoadType ?: 'Tar Road',

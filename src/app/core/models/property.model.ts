@@ -226,6 +226,8 @@ export interface Property {
   developer_id?: number;
   category?: string;
   type?: string;
+  land_type?: string;
+  landType?: string;
   priceFrom?: number;
   priceTo?: number;
   price_from?: number;
@@ -324,6 +326,7 @@ export interface ProjectRecord {
   locality: string;
   category: string;
   type: string;
+  land_type?: string;
   price_from?: number;
   price_to?: number;
   sqft_rate?: number;
@@ -362,6 +365,7 @@ export interface ProjectDetailRecord {
   dimensions?: string;
   road_width?: string;
   corner_plot?: boolean;
+  land_type?: string;
   approval_authority?: string;
   approval_reference?: string;
   approval_date?: string;

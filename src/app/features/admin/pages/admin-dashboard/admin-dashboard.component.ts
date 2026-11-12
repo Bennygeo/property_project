@@ -2790,7 +2790,7 @@ export class AdminDashboardComponent {
           // 18: Corner Plot
           const cornerPlot = String(getCol(18, 'cornerplot', 'corner') || 'No').trim();
           // 19: Land Use
-          const landUse = String(getCol(19, 'landuse', 'purpose', 'zoning') || 'Residential').trim();
+          const landUse = String(getCol(19, 'landuse', 'landtype', 'land_use', 'land_type', 'purpose', 'zoning') || 'Residential').trim();
 
           // 20: Price per sq.ft (₹)
           let rateSqft = getNumCol(20, 'pricepersqft', 'ratepersqft', 'rate', 'ratesqft', 'pricesqft', 'sqftrate');
@@ -2893,6 +2893,8 @@ export class AdminDashboardComponent {
             facing,
             cornerPlot: cornerPlot === 'Yes' ? 'Yes' : 'No',
             landUse,
+            landType: landUse,
+            land_type: landUse,
             pricePerSqft: rateSqft || 3200,
             totalPrice: totalPrice || 3840000,
             availability,

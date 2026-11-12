@@ -26,6 +26,8 @@ export interface PropertyMasterData {
   facing: 'North' | 'South' | 'East' | 'West' | 'North-East' | 'North-West' | 'South-East' | 'South-West' | '';
   cornerPlot: 'Yes' | 'No' | '';
   landUse: 'Residential' | 'Commercial' | 'Agricultural' | 'Mixed Use' | 'Industrial' | '';
+  land_type?: string;
+  landType?: string;
   pricePerSqft: number | null;
   totalPrice: number; // Auto-calculated (plotSizeSqft * pricePerSqft)
   availability: 'Available' | 'Booked' | 'Sold' | 'Hold' | '';
