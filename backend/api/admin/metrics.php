@@ -147,7 +147,7 @@ if ($method === 'GET') {
                 iv.created_at AS createdAt,
                 (SELECT COUNT(*) FROM whatsapp_chat_messages wcm WHERE wcm.lead_id = iv.id OR wcm.user_phone = iv.contact_phone) AS chatCount
             FROM inquiries_and_visits iv
-            LEFT JOIN properties p ON iv.property_id = p.id
+            LEFT JOIN projects p ON iv.property_id = p.project_id
             WHERE iv.lead_type = 'whatsapp_concierge'
             ORDER BY iv.created_at DESC
         ");
@@ -172,7 +172,7 @@ if ($method === 'GET') {
                     iv.created_at AS createdAt,
                     1 AS chatCount
                 FROM inquiries_and_visits iv
-                LEFT JOIN properties p ON iv.property_id = p.id
+                LEFT JOIN projects p ON iv.property_id = p.project_id
                 WHERE iv.lead_type = 'whatsapp_concierge'
                 ORDER BY iv.created_at DESC
             ");
@@ -189,14 +189,14 @@ if ($method === 'GET') {
             SELECT 
                 iv.id,
                 iv.property_id AS propertyId,
-                COALESCE(p.title, 'Direct Call Inquiry') AS propertyTitle,
+                COALESCE(p.project_name, 'Direct Call Inquiry') AS propertyTitle,
                 iv.contact_name AS contactName,
                 iv.contact_phone AS contactPhone,
                 iv.notes,
                 iv.status,
                 iv.created_at AS createdAt
             FROM inquiries_and_visits iv
-            LEFT JOIN properties p ON iv.property_id = p.id
+            LEFT JOIN projects p ON iv.property_id = p.project_id
             WHERE iv.lead_type = 'callback_request'
             ORDER BY iv.created_at DESC
         ");
@@ -220,7 +220,7 @@ if ($method === 'GET') {
             SELECT 
                 COUNT(*) AS total_projects,
                 SUM(CASE WHEN status IN ('pending_review', 'pending_peer_review', 'revision_requested') THEN 1 ELSE 0 END) AS awaiting_approval
-            FROM properties
+            FROM projects
         ");
         $propsRow = $propsStmt->fetch(PDO::FETCH_ASSOC);
         $totalProjects = (int)($propsRow['total_projects'] ?? 0);
@@ -274,7 +274,7 @@ if ($method === 'POST') {
         $name = trim((string)($input['name'] ?? 'Test Buyer Inquiry'));
         $phone = trim((string)($input['phone'] ?? '9486140936'));
         $message = trim((string)($input['message'] ?? 'Hi Find a Plot, I am interested in viewing the verified legal Patta & TNRERA dossier on WhatsApp.'));
-        $prop = $db->query("SELECT id, title FROM properties LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        $prop = $db->query("SELECT project_id AS id, project_name AS title FROM projects LIMIT 1")->fetch(PDO::FETCH_ASSOC);
         $propId = $prop['id'] ?? 'PRJ-0059';
 
         $autoReplyText = null;

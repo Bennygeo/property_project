@@ -110,28 +110,28 @@ if ($method === 'GET') {
         }
     }
 
-    // Fetch all shortlisted properties joined with properties table
+    // Fetch all shortlisted properties joined with projects table
     $stmt = $db->prepare("
         SELECT 
             s.id AS shortlistId,
             s.property_id AS propertyId,
             s.created_at AS shortlistedAt,
-            p.id,
-            p.title,
-            p.locality_name AS locality,
-            p.city_name AS city,
-            p.price,
-            p.price_per_sqft AS pricePerSqFt,
-            p.sqft,
-            p.bhk_badge AS bhkBadge,
-            p.facing_or_view AS facingOrView,
-            p.main_image_url AS imageUrl,
-            p.property_type AS propertyType,
+            p.project_id AS id,
+            p.project_name AS title,
+            p.locality AS locality,
+            p.city AS city,
+            p.price_from AS price,
+            p.sqft_rate AS pricePerSqFt,
+            CONCAT(p.min_plot_size, ' sq.ft') AS sqft,
+            'Approved Plot' AS bhkBadge,
+            'Direct SRO Deed' AS facingOrView,
+            p.cover_image AS imageUrl,
+            p.category AS propertyType,
             p.status
         FROM user_shortlists s
-        JOIN properties p ON UPPER(TRIM(s.property_id)) = UPPER(TRIM(p.id))
+        JOIN projects p ON UPPER(TRIM(s.property_id)) = UPPER(TRIM(p.project_id))
         WHERE s.user_id = ?
-          AND (p.status IS NULL OR p.status != 'archived')
+          AND (p.status IS NULL OR p.status != 'rejected')
         ORDER BY s.created_at DESC
     ");
     $stmt->execute([$userId]);
@@ -166,8 +166,8 @@ if ($method === 'POST' || $method === 'DELETE') {
         exit;
     }
 
-    // Check if property exists in properties table (case-insensitive)
-    $checkPropStmt = $db->prepare("SELECT id, title, status FROM properties WHERE UPPER(TRIM(id)) = UPPER(TRIM(?))");
+    // Check if property exists in projects table (case-insensitive)
+    $checkPropStmt = $db->prepare("SELECT project_id AS id, project_name AS title, status FROM projects WHERE UPPER(TRIM(project_id)) = UPPER(TRIM(?))");
     $checkPropStmt->execute([$propertyId]);
     $prop = $checkPropStmt->fetch(PDO::FETCH_ASSOC);
 

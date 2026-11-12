@@ -1,7 +1,7 @@
 <?php
 /**
- * GET /api/properties/my-properties.php?user_id=1
- * Returns properties submitted by the logged-in user with their review status.
+ * GET /api/properties/my-properties.php?user_id={id}
+ * Returns properties/projects submitted by a particular user/admin.
  */
 
 declare(strict_types=1);
@@ -23,35 +23,35 @@ $db = (new Database())->getConnection();
 
 $stmt = $db->prepare("
     SELECT 
-        p.id,
-        p.title,
-        p.property_type AS propertyType,
-        p.listing_mode AS listingMode,
-        p.locality_name AS localityName,
-        p.city_name AS cityName,
-        p.price,
-        p.price_per_sqft AS pricePerSqft,
-        p.sqft,
-        p.bhk_badge AS bhkBadge,
-        p.facing_or_view AS facingOrView,
-        p.main_image_url AS mainImageUrl,
-        p.rera_number AS reraNumber,
+        p.project_id AS id,
+        p.project_id AS projectId,
+        p.project_name AS title,
+        p.project_name AS projectName,
+        p.category AS propertyType,
+        p.type AS listingMode,
+        p.locality AS localityName,
+        p.city AS cityName,
+        p.district,
+        p.price_from AS price,
+        p.sqft_rate AS pricePerSqft,
+        p.min_plot_size AS sqft,
+        'Approved Plot' AS bhkBadge,
+        'Direct SRO Deed' AS facingOrView,
+        p.cover_image AS mainImageUrl,
+        p.rera_no AS reraNumber,
         p.status,
-        p.submitted_by_user_id AS submittedByUserId,
-        p.submitted_by_name AS submittedByName,
-        p.submitted_by_role AS submittedByRole,
-        p.reviewed_by_user_id AS reviewedByUserId,
-        p.reviewed_by_name AS reviewedByName,
+        p.submitted_by AS submittedByName,
+        p.reviewed_by AS reviewedByName,
         p.reviewed_at AS reviewedAt,
         p.review_notes AS reviewNotes,
         p.rejection_reason AS rejectionReason,
         p.created_at AS createdAt,
         p.updated_at AS updatedAt
-    FROM properties p
-    WHERE p.submitted_by_user_id = :userId
+    FROM projects p
+    WHERE p.developer_id = :userId OR p.submitted_by = :userIdStr
     ORDER BY p.created_at DESC
 ");
-$stmt->execute([':userId' => $userId]);
+$stmt->execute([':userId' => $userId, ':userIdStr' => (string)$userId]);
 $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 Response::success([

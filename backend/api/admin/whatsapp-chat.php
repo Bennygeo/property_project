@@ -65,11 +65,11 @@ if ($method === 'GET') {
             m.message_text AS messageText,
             m.is_auto_reply AS isAutoReply,
             m.created_at AS createdAt,
-            p.title AS propertyTitle,
-            p.locality_name AS localityName,
-            p.price
+            p.project_name AS propertyTitle,
+            p.locality AS localityName,
+            p.price_from AS price
         FROM whatsapp_chat_messages m
-        LEFT JOIN properties p ON m.property_id = p.id
+        LEFT JOIN projects p ON m.property_id = p.project_id
         WHERE m.user_phone = ? 
            OR m.user_phone LIKE ?
            OR REPLACE(REPLACE(REPLACE(m.user_phone, ' ', ''), '-', ''), '+', '') LIKE ?
@@ -83,9 +83,9 @@ if ($method === 'GET') {
     $lead = null;
     if (!empty($userPhone) || $leadId > 0) {
         $lStmt = $db->prepare("
-            SELECT iv.*, p.title AS property_title, p.locality_name, p.price AS property_price 
+            SELECT iv.*, p.project_name AS property_title, p.locality AS locality_name, p.price_from AS property_price 
             FROM inquiries_and_visits iv 
-            LEFT JOIN properties p ON iv.property_id = p.id 
+            LEFT JOIN projects p ON iv.property_id = p.project_id 
             WHERE iv.id = ? OR iv.contact_phone = ? 
             ORDER BY iv.id DESC LIMIT 1
         ");

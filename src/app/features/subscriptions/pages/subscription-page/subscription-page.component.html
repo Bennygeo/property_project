@@ -19,7 +19,7 @@
 
   <!-- Page Main Container -->
   <main class="max-w-content sub-main-content">
-    
+
     <!-- Hero Title & Value Proposition -->
     <header class="sub-hero-header">
       <div class="sub-hero-pill">
@@ -28,7 +28,8 @@
       </div>
       <h1 class="sub-hero-title">Membership &amp; Advisory Subscriptions</h1>
       <p class="sub-hero-subtitle">
-        Discover verified plotted developments, explore emerging growth corridors, compare layouts, and receive professional advisory with physical site coordination.
+        Discover verified plotted developments, explore emerging growth corridors, compare layouts, and receive
+        professional advisory with physical site coordination.
       </p>
     </header>
 
@@ -38,15 +39,16 @@
       <div class="hud-top-bar">
         <div class="hud-status-left">
           <div class="hud-plan-badge" [class.is-paid]="subscriptionService.isPaidSubscriber()">
-            <span class="material-symbols-outlined">{{ subscriptionService.isPaidSubscriber() ? 'workspace_premium' : 'explore' }}</span>
+            <span class="material-symbols-outlined">{{ subscriptionService.isPaidSubscriber() ? 'workspace_premium' :
+              'explore' }}</span>
             <span>{{ ent.planName.toUpperCase() }} PLAN</span>
           </div>
           @if (subscriptionService.daysRemaining() > 0) {
-            <span class="hud-days-chip">{{ subscriptionService.daysRemaining() }} Days Remaining</span>
+          <span class="hud-days-chip">{{ subscriptionService.daysRemaining() }} Days Remaining</span>
           } @else if (subscriptionService.isPaidSubscriber()) {
-            <span class="hud-days-chip">Active Subscription</span>
+          <span class="hud-days-chip">Active Subscription</span>
           } @else {
-            <span class="hud-days-chip">Free Tier</span>
+          <span class="hud-days-chip">Free Tier</span>
           }
         </div>
         <div class="hud-action-right">
@@ -68,11 +70,13 @@
             <span class="meter-counts">{{ ent.projectViewsUsed }} / {{ ent.projectViewLimit }}</span>
           </div>
           <div class="meter-progress-track">
-            <div class="meter-progress-fill" [style.width.%]="calculatePercentage(ent.projectViewsUsed, ent.projectViewLimit)"></div>
+            <div class="meter-progress-fill"
+              [style.width.%]="calculatePercentage(ent.projectViewsUsed, ent.projectViewLimit)"></div>
           </div>
           <div class="meter-footer">
             <span>{{ ent.projectViewsRemaining }} remaining</span>
-            <span class="meter-tip" title="Repeated visits to unlocked projects never burn credits">Re-visits Free</span>
+            <span class="meter-tip" title="Repeated visits to unlocked projects never burn credits">Re-visits
+              Free</span>
           </div>
         </div>
 
@@ -86,7 +90,8 @@
             <span class="meter-counts">{{ ent.comparisonsUsed }} / {{ ent.comparisonLimit }}</span>
           </div>
           <div class="meter-progress-track">
-            <div class="meter-progress-fill" [style.width.%]="calculatePercentage(ent.comparisonsUsed, ent.comparisonLimit)"></div>
+            <div class="meter-progress-fill"
+              [style.width.%]="calculatePercentage(ent.comparisonsUsed, ent.comparisonLimit)"></div>
           </div>
           <div class="meter-footer">
             <span>{{ ent.comparisonsRemaining }} remaining</span>
@@ -104,7 +109,8 @@
             <span class="meter-counts">{{ ent.advisorySessionsUsed }} / {{ ent.advisorySessionLimit }}</span>
           </div>
           <div class="meter-progress-track">
-            <div class="meter-progress-fill" [style.width.%]="calculatePercentage(ent.advisorySessionsUsed, ent.advisorySessionLimit)"></div>
+            <div class="meter-progress-fill"
+              [style.width.%]="calculatePercentage(ent.advisorySessionsUsed, ent.advisorySessionLimit)"></div>
           </div>
           <div class="meter-footer">
             <span>{{ ent.advisorySessionsRemaining }} remaining</span>
@@ -122,7 +128,8 @@
             <span class="meter-counts">{{ ent.siteVisitsUsed }} / {{ ent.siteVisitLimit }}</span>
           </div>
           <div class="meter-progress-track">
-            <div class="meter-progress-fill" [style.width.%]="calculatePercentage(ent.siteVisitsUsed, ent.siteVisitLimit)"></div>
+            <div class="meter-progress-fill"
+              [style.width.%]="calculatePercentage(ent.siteVisitsUsed, ent.siteVisitLimit)"></div>
           </div>
           <div class="meter-footer">
             <span>{{ ent.siteVisitsRemaining }} remaining</span>
@@ -139,18 +146,20 @@
         <span>TRANSPARENT VALUE-BASED PLANS</span>
       </div>
       <h2 class="section-title-center">Select Your Membership Level</h2>
-      <p class="section-sub-center">All paid plans include 18% GST with automated tax invoice generation and statutory refund protections.</p>
+      <p class="section-sub-center">All paid plans include 18% GST with automated tax invoice generation and statutory
+        refund protections.</p>
 
       <div class="plans-grid">
         @for (plan of (plans() && plans().length ? plans() : defaultPlans); track plan.id) {
-        <article class="plan-card" [class.is-current]="activePlanId() === plan.id" [class.is-popular]="plan.id === 'smart_buyer'">
-          
+        <article class="plan-card" [class.is-current]="activePlanId() === plan.id"
+          [class.is-popular]="plan.id === 'smart_buyer'">
+
           <!-- Top Tag Badge -->
           <div class="plan-badge-wrapper">
             @if (activePlanId() === plan.id) {
-              <span class="plan-tag active-tag">CURRENT PLAN</span>
+            <span class="plan-tag active-tag">CURRENT PLAN</span>
             } @else if (plan.badgeText) {
-              <span class="plan-tag" [class.popular-tag]="plan.id === 'smart_buyer'">{{ plan.badgeText }}</span>
+            <span class="plan-tag" [class.popular-tag]="plan.id === 'smart_buyer'">{{ plan.badgeText }}</span>
             }
           </div>
 
@@ -163,9 +172,9 @@
             <div class="plan-price-row">
               <span class="plan-price">{{ formatPrice(plan.priceInr) }}</span>
               @if (plan.priceInr > 0) {
-                <span class="plan-period">/ {{ plan.durationDays }} Days</span>
+              <span class="plan-period">/ {{ plan.durationDays }} Days</span>
               } @else {
-                <span class="plan-period">/ Ongoing</span>
+              <span class="plan-period">/ Ongoing</span>
               }
             </div>
             <div class="plan-gst-note">
@@ -189,7 +198,8 @@
             </div>
             <div class="quota-item">
               <span class="material-symbols-outlined quota-icon">location_on</span>
-              <span class="quota-text"><strong>{{ plan.siteVisitLimit > 0 ? plan.siteVisitLimit + ' Site Visit' + (plan.siteVisitLimit > 1 ? 's' : '') : 'Virtual Only' }}</strong></span>
+              <span class="quota-text"><strong>{{ plan.siteVisitLimit > 0 ? plan.siteVisitLimit + ' Site Visit' +
+                  (plan.siteVisitLimit > 1 ? 's' : '') : 'Virtual Only' }}</strong></span>
             </div>
           </div>
 
@@ -209,20 +219,21 @@
           <!-- Plan Call To Action -->
           <div class="plan-cta-wrapper">
             @if (activePlanId() === plan.id) {
-              <button type="button" class="btn-plan-cta current-cta" disabled>
-                <span class="material-symbols-outlined">verified</span>
-                <span>Active Plan</span>
-              </button>
+            <button type="button" class="btn-plan-cta current-cta" disabled>
+              <span class="material-symbols-outlined">verified</span>
+              <span>Active Plan</span>
+            </button>
             } @else {
-              <button type="button" class="btn-plan-cta" (click)="onSubscribe(plan)" [disabled]="subscriptionService.isProcessingPayment()">
-                @if (subscriptionService.isProcessingPayment()) {
-                  <span class="spinner-inline"></span>
-                  <span>Connecting Razorpay...</span>
-                } @else {
-                  <span class="material-symbols-outlined">bolt</span>
-                  <span>{{ plan.priceInr === 0 ? 'Choose Explorer' : 'Subscribe via Razorpay' }}</span>
-                }
-              </button>
+            <button type="button" class="btn-plan-cta" (click)="onSubscribe(plan)"
+              [disabled]="subscriptionService.isProcessingPayment()">
+              @if (subscriptionService.isProcessingPayment()) {
+              <span class="spinner-inline"></span>
+              <span>Connecting Razorpay...</span>
+              } @else {
+              <span class="material-symbols-outlined">bolt</span>
+              <span>{{ plan.priceInr === 0 ? 'Choose Explorer' : 'Subscribe via Razorpay' }}</span>
+              }
+            </button>
             }
           </div>
 
@@ -272,12 +283,14 @@
               <td class="inv-total-cell">₹{{ inv.totalAmount | number:'1.2-2' }}</td>
               <td class="inv-pay-cell">{{ inv.paymentId || 'Prepaid' }}</td>
               <td class="inv-action-cell">
-                <button type="button" class="btn-inv-download" (click)="downloadInvoice(inv.invoiceNumber)" title="Print or Download GST Tax Invoice">
+                <button type="button" class="btn-inv-download" (click)="downloadInvoice(inv.invoiceNumber)"
+                  title="Print or Download GST Tax Invoice">
                   <span class="material-symbols-outlined">download</span>
                   <span>Invoice</span>
                 </button>
                 @if (inv.status === 'paid' && inv.totalAmount > 0) {
-                <button type="button" class="btn-inv-refund" (click)="openRefundModal(inv)" title="Request Refund / Cancellation">
+                <button type="button" class="btn-inv-refund" (click)="openRefundModal(inv)"
+                  title="Request Refund / Cancellation">
                   <span class="material-symbols-outlined">restart_alt</span>
                 </button>
                 } @else if (inv.status === 'refunded') {
@@ -292,7 +305,8 @@
       } @else {
       <div class="no-invoices-box">
         <span class="material-symbols-outlined no-inv-icon">receipt</span>
-        <p>No payment invoices generated yet. Upgrading to any paid tier will automatically produce your official tax invoice here.</p>
+        <p>No payment invoices generated yet. Upgrading to any paid tier will automatically produce your official tax
+          invoice here.</p>
       </div>
       }
     </section>
@@ -305,7 +319,8 @@
         <div class="faq-item" [class.is-expanded]="expandedFaqIndex() === idx">
           <button type="button" class="faq-trigger" (click)="toggleFaq(idx)">
             <span class="faq-question">{{ item.q }}</span>
-            <span class="material-symbols-outlined faq-arrow">{{ expandedFaqIndex() === idx ? 'expand_less' : 'expand_more' }}</span>
+            <span class="material-symbols-outlined faq-arrow">{{ expandedFaqIndex() === idx ? 'expand_less' :
+              'expand_more' }}</span>
           </button>
           @if (expandedFaqIndex() === idx) {
           <div class="faq-answer">
@@ -334,11 +349,13 @@
       </div>
       <div class="refund-modal-body">
         <p class="refund-info-text">
-          You are requesting a refund for Invoice <strong>{{ curInv.invoiceNumber }}</strong> ({{ curInv.planName }} — ₹{{ curInv.totalAmount }}).
+          You are requesting a refund for Invoice <strong>{{ curInv.invoiceNumber }}</strong> ({{ curInv.planName }} —
+          ₹{{ curInv.totalAmount }}).
         </p>
         <div class="refund-form-group">
           <label for="refund-reason-select">Select Reason for Cancellation:</label>
-          <select id="refund-reason-select" class="refund-select" [value]="refundReason()" (change)="refundReason.set($any($event.target).value)">
+          <select id="refund-reason-select" class="refund-select" [value]="refundReason()"
+            (change)="refundReason.set($any($event.target).value)">
             <option value="Not satisfied with project discovery">Not satisfied with project discovery</option>
             <option value="Purchased plot outside platform">Purchased plot outside platform</option>
             <option value="Duplicate payment initiated">Duplicate payment initiated</option>
@@ -346,16 +363,17 @@
           </select>
         </div>
         <p class="refund-notice">
-          Upon refund processing, your active plan will be reverted to Explorer tier, and unused credits will be revoked under statutory norms.
+          Upon refund processing, your active plan will be reverted to Explorer tier, and unused credits will be revoked
+          under statutory norms.
         </p>
       </div>
       <div class="refund-modal-actions">
         <button type="button" class="btn-cancel" (click)="closeRefundModal()">Keep Plan</button>
         <button type="button" class="btn-confirm-refund" (click)="submitRefund()" [disabled]="isSubmittingRefund()">
           @if (isSubmittingRefund()) {
-            <span>Processing...</span>
+          <span>Processing...</span>
           } @else {
-            <span>Confirm Refund</span>
+          <span>Confirm Refund</span>
           }
         </button>
       </div>
@@ -367,4 +385,3 @@
   <app-footer />
   <app-toast />
 </div>
-
