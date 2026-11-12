@@ -1,19 +1,24 @@
 <?php
 /**
  * POST /api/admin/bulk-upload.php
- * Handles bulk property import from Excel/CSV and database clearing.
- * Enriches all imported properties with diverse, high-resolution cadastral mock images & media.
+ * Handles bulk property import and enrichment for consolidated schema:
+ * 1. projects (Property Card & Catalog)
+ * 2. project_details (Full Specifications, Approvals, Infrastructure & Media)
+ * 3. developers (Auto-creates and links missing developers)
+ *
+ * Fills all missing details in existing database records from the uploaded spreadsheet,
+ * or inserts new projects if not already present.
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
-require_once __DIR__ . '/../../helpers/property_master_helper.php';
+require_once __DIR__ . '/../../helpers/settings.php';
 
 use Mannidam\Config\Database;
 use Mannidam\Helpers\Response;
-use Mannidam\Helpers\PropertyMasterHelper;
+use Mannidam\Helpers\Settings;
 
 Response::initCors();
 
@@ -27,7 +32,6 @@ if (!$input) {
 }
 
 $db = (new Database())->getConnection();
-PropertyMasterHelper::ensureTable($db);
 
 $action = $input['action'] ?? 'import';
 $clearExisting = !empty($input['clearExisting']);
@@ -36,569 +40,401 @@ $clearExisting = !empty($input['clearExisting']);
 if ($action === 'clear_all' || $clearExisting) {
     try {
         $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
-        $tables = [
-            'property_media',
-            'property_highlights',
-            'property_plot_details',
-            'property_subdivided_plots',
-            'property_apartment_details',
-            'property_villa_details',
-            'property_commercial_details',
-            'property_floor_plans',
-            'property_amenities',
-            'property_connectivity',
-            'property_neighborhood_scores',
-            'property_cadastral_audits',
-            'property_faqs',
-            'property_media_unlocks',
-            'inquiries_and_visits',
-            'user_shortlists',
-            'property_master_details',
-            'properties'
-        ];
-
-        foreach ($tables as $tbl) {
-            try {
-                $db->exec("DELETE FROM `{$tbl}`;");
-            } catch (\Throwable $e) {
-                // Table might not exist or empty
-            }
-        }
+        $db->exec("DELETE FROM `project_details`;");
+        $db->exec("DELETE FROM `projects`;");
         $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
 
         if ($action === 'clear_all') {
             Response::success([
                 'cleared' => true,
-                'message' => 'All existing property records and relations have been removed successfully from database.'
-            ], 'Database properties cleared successfully');
+                'message' => 'All projects and project_details records have been cleared successfully from the database.'
+            ], 'Database projects cleared successfully');
             exit;
         }
     } catch (\Throwable $e) {
         if ($action === 'clear_all') {
-            Response::error('Failed to clear properties: ' . $e->getMessage(), 500);
+            Response::error('Failed to clear projects: ' . $e->getMessage(), 500);
             exit;
         }
     }
 }
 
-// 2. ACTION: BULK IMPORT PROPERTIES
+// 2. ACTION: BULK IMPORT / ENRICH MISSING DETAILS
 $rows = $input['properties'] ?? [];
 if (empty($rows) || !is_array($rows)) {
     Response::error('No property rows provided for import', 400);
 }
 
-// Ensure at least 1 default city exists in cities table
-$cityCheck = $db->query("SELECT id FROM cities WHERE city_key = 'chennai' LIMIT 1")->fetch() ?: $db->query("SELECT id FROM cities LIMIT 1")->fetch();
-$defaultCityId = 1;
-if (!$cityCheck) {
-    $db->exec("INSERT INTO cities (id, name, city_key, state) VALUES (1, 'Chennai', 'chennai', 'Tamil Nadu') ON DUPLICATE KEY UPDATE name=VALUES(name)");
-} else {
-    $defaultCityId = (int)$cityCheck['id'];
+// Helper: Slugify string
+function slugify(string $text): string {
+    $text = preg_replace('~[^\pL\d]+~u', '-', $text);
+    $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+    $text = preg_replace('~[^-\w]+~', '', $text);
+    $text = trim($text, '-');
+    $text = preg_replace('~-+~', '-', $text);
+    $text = strtolower($text);
+    return empty($text) ? 'dev-' . uniqid() : $text;
 }
 
-$importedCount = 0;
+// Cache of developers to avoid redundant SELECT queries
+$developerCache = [];
+$devStmt = $db->query("SELECT id, name FROM developers");
+while ($d = $devStmt->fetch(PDO::FETCH_ASSOC)) {
+    $developerCache[strtolower(trim($d['name']))] = (int)$d['id'];
+}
+
+$findOrCreateDeveloper = function(string $rawName) use ($db, &$developerCache): ?int {
+    $name = trim($rawName);
+    if (empty($name)) return null;
+    $lower = strtolower($name);
+    $ignoreList = ['null', 'undefined', 'n/a', 'none', 'admin', 'registry admin', 'unknown', '1', '0'];
+    if (in_array($lower, $ignoreList, true)) return null;
+
+    if (isset($developerCache[$lower])) {
+        return $developerCache[$lower];
+    }
+
+    // Check in database case-insensitively
+    $chk = $db->prepare("SELECT id FROM developers WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1");
+    $chk->execute([$name]);
+    $found = $chk->fetch(PDO::FETCH_ASSOC);
+    if ($found) {
+        $developerCache[$lower] = (int)$found['id'];
+        return (int)$found['id'];
+    }
+
+    // Auto-create developer profile
+    try {
+        $slug = slugify($name);
+        $ins = $db->prepare("
+            INSERT INTO developers (name, slug, corporate_office, established_year, projects_completed, delivered_sqft, on_time_track)
+            VALUES (?, ?, 'Tamil Nadu', '2015', '10+ Projects', '500,000 sq.ft', '98% Delivery Precision')
+        ");
+        $ins->execute([$name, $slug]);
+        $newId = (int)$db->lastInsertId();
+        $developerCache[$lower] = $newId;
+        return $newId;
+    } catch (\Throwable $e) {
+        return null;
+    }
+};
+
+$updatedExistingCount = 0;
+$insertedNewCount = 0;
+$developersLinkedCount = 0;
 $errors = [];
-$seenIds = [];
 
-// Prepare reusable insert statement for properties table
-$propStmt = $db->prepare("
-    INSERT INTO properties (
-        id, city_id, locality_id, title, property_type, listing_mode, locality_name, city_name,
-        price, price_per_sqft, sqft, bhk_badge, facing_or_view, main_image_url, rera_number,
-        brokerage_badge, special_tag, points_badge, media_points, possession_date,
-        project_status, total_land_parcel, total_units, whatsapp_url, interactive_map_url,
-        is_featured, status, submitted_by_user_id, submitted_by_name, submitted_by_role
-    ) VALUES (
-        :id, :city_id, 1, :title, :property_type, :listing_mode, :locality_name, :city_name,
-        :price, :price_per_sqft, :sqft, :bhk_badge, :facing_or_view, :main_image_url, :rera_number,
-        '0% Direct SRO Deed', 'Cadastral Verified', 4, 4, :possession_date,
-        'Ready to Register', 'Approved Layout', 'Individual Plots', :whatsapp_url, :interactive_map_url,
-        :is_featured, 'published', 1, 'Registry Admin', 'admin'
-    ) ON DUPLICATE KEY UPDATE
-        title = VALUES(title),
-        price = VALUES(price),
-        price_per_sqft = VALUES(price_per_sqft),
-        sqft = VALUES(sqft),
-        facing_or_view = VALUES(facing_or_view),
-        main_image_url = VALUES(main_image_url),
-        status = 'published'
-");
-
-$mediaStmt = $db->prepare("
-    INSERT INTO property_media (property_id, media_type, title, url, sort_order)
-    VALUES (:prop_id, 'free_photo', :title, :url, :sort_order)
-    ON DUPLICATE KEY UPDATE url = VALUES(url)
-");
-
-$premStmt = $db->prepare("
-    INSERT INTO property_media (property_id, media_type, title, url, thumbnail_url, duration, tag, sort_order)
-    VALUES (:prop_id, :type, :title, :url, :thumb, :duration, :tag, :sort_order)
-    ON DUPLICATE KEY UPDATE url = VALUES(url)
-");
-
-$highlightStmt = $db->prepare("
-    INSERT INTO property_highlights (property_id, highlight_text, sort_order)
-    VALUES (:prop_id, :highlight, :sort_order)
-");
-
-// Curated library of realistic mock real estate photos (plots, villas, acreage, developments)
-$mockImagePacks = [
-    [
-        'main' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://www.gobroker.co.in/uploads/amenities_image/banner27.png',
-        'gallery' => [
-            'https://www.gobroker.co.in/uploads/amenities_image/banner27.png',
-            'https://www.gobroker.co.in/uploads/image_category/Other_size26.png',
-            'https://www.gobroker.co.in/uploads/image_category/Other_size_113.png',
-            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ],
-    [
-        'main' => 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-        'gallery' => [
-            'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80'
-        ]
-    ]
-];
+// Prepare Statements for projects and project_details
+$findProjectByIdStmt = $db->prepare("SELECT * FROM projects WHERE project_id = ? LIMIT 1");
+$findProjectByNameStmt = $db->prepare("SELECT * FROM projects WHERE LOWER(TRIM(project_name)) = LOWER(TRIM(?)) LIMIT 1");
+$findDetailStmt = $db->prepare("SELECT * FROM project_details WHERE project_id = ? LIMIT 1");
 
 $db->beginTransaction();
+
 try {
     foreach ($rows as $index => $item) {
-    try {
-        // Map raw 49 canonical header names if provided directly
-        if (!isset($item['propertyId']) && isset($item['Property ID'])) $item['propertyId'] = $item['Property ID'];
-        if (!isset($item['developer']) && isset($item['Developer'])) $item['developer'] = $item['Developer'];
-        if (!isset($item['projectName']) && isset($item['Project Name'])) $item['projectName'] = $item['Project Name'];
-        if (!isset($item['locality_name'])) {
-            $item['locality_name'] = $item['locality_name name'] 
-                ?? $item['localityName'] 
-                ?? $item['locality'] 
-                ?? $item['Locality Name'] 
-                ?? $item['Locality'] 
-                ?? $item['villageLocality'] 
-                ?? $item['Village / Locality'] 
-                ?? $item['areaLocation'] 
-                ?? $item['Area / Location'] 
-                ?? null;
-        }
-        if (!isset($item['city_name'])) {
-            $item['city_name'] = $item['city_name name'] 
-                ?? $item['cityName'] 
-                ?? $item['city'] 
-                ?? $item['City Name'] 
-                ?? $item['City'] 
-                ?? $item['district'] 
-                ?? $item['District'] 
-                ?? $item['taluk'] 
-                ?? $item['Taluk'] 
-                ?? null;
-        }
-        if (!isset($item['reraNumber']) && isset($item['RERA Number'])) $item['reraNumber'] = $item['RERA Number'];
-        if (!isset($item['dtcpApproved']) && isset($item['DTCP Approved'])) $item['dtcpApproved'] = $item['DTCP Approved'];
-        if (!isset($item['dtcpApprovalNo']) && isset($item['DTCP / LP Approval No.'])) $item['dtcpApprovalNo'] = $item['DTCP / LP Approval No.'];
-        if (!isset($item['pattaType']) && isset($item['Patta Type'])) $item['pattaType'] = $item['Patta Type'];
-        if (!isset($item['clearTitleAvailable']) && isset($item['Clear Title / EC Available'])) $item['clearTitleAvailable'] = $item['Clear Title / EC Available'];
-        if (!isset($item['bankLoanApproved']) && isset($item['Bank Loan Approved'])) $item['bankLoanApproved'] = $item['Bank Loan Approved'];
-        if (!isset($item['areaLocation']) && isset($item['Area / Location'])) $item['areaLocation'] = $item['Area / Location'];
-        if (!isset($item['villageLocality']) && isset($item['Village / Locality'])) $item['villageLocality'] = $item['Village / Locality'];
-        if (!isset($item['taluk']) && isset($item['Taluk'])) $item['taluk'] = $item['Taluk'];
-        if (!isset($item['district']) && isset($item['District'])) $item['district'] = $item['District'];
-        if (!isset($item['pincode']) && isset($item['Pincode'])) $item['pincode'] = $item['Pincode'];
-        if (!isset($item['googleMapsLink']) && isset($item['Google Maps Link'])) $item['googleMapsLink'] = $item['Google Maps Link'];
-        if (!isset($item['plotNo']) && isset($item['Plot No.'])) $item['plotNo'] = $item['Plot No.'];
-        if (!isset($item['plotSizeSqft']) && isset($item['Plot Size (sq.ft)'])) $item['plotSizeSqft'] = $item['Plot Size (sq.ft)'];
-        if (!isset($item['facing']) && isset($item['Facing'])) $item['facing'] = $item['Facing'];
-        if (!isset($item['cornerPlot']) && isset($item['Corner Plot'])) $item['cornerPlot'] = $item['Corner Plot'];
-        if (!isset($item['landUse']) && isset($item['Land Use'])) $item['landUse'] = $item['Land Use'];
-        if (!isset($item['pricePerSqft']) && isset($item['Price per sq.ft (₹)'])) $item['pricePerSqft'] = $item['Price per sq.ft (₹)'];
-        if (!isset($item['totalPrice']) && isset($item['Total Price (₹)'])) $item['totalPrice'] = $item['Total Price (₹)'];
-        if (!isset($item['availability']) && isset($item['Availability'])) $item['availability'] = $item['Availability'];
-        if (!isset($item['petrolBunkDistance']) && isset($item['Petrol Bunk Distance (km)'])) $item['petrolBunkDistance'] = $item['Petrol Bunk Distance (km)'];
-        if (!isset($item['schoolsNearby']) && isset($item['Schools (Name & km)'])) $item['schoolsNearby'] = $item['Schools (Name & km)'];
-        if (!isset($item['collegesNearby']) && isset($item['Colleges (Name & km)'])) $item['collegesNearby'] = $item['Colleges (Name & km)'];
-        if (!isset($item['hospitalNearby']) && isset($item['Hospital (Name & km)'])) $item['hospitalNearby'] = $item['Hospital (Name & km)'];
-        if (!isset($item['corridor']) && isset($item['Corridor'])) $item['corridor'] = $item['Corridor'];
-        if (!isset($item['busStopDistance']) && isset($item['Bus Stop Distance (km)'])) $item['busStopDistance'] = $item['Bus Stop Distance (km)'];
-        if (!isset($item['railwayStationNearby']) && isset($item['Railway Station (Name & km)'])) $item['railwayStationNearby'] = $item['Railway Station (Name & km)'];
-        if (!isset($item['highwayName']) && isset($item['Highway Name'])) $item['highwayName'] = $item['Highway Name'];
-        if (!isset($item['highwayDistance']) && isset($item['Highway Access Distance (km)'])) $item['highwayDistance'] = $item['Highway Access Distance (km)'];
-        if (!isset($item['airportDistance']) && isset($item['Airport Distance (km)'])) $item['airportDistance'] = $item['Airport Distance (km)'];
-        if (!isset($item['suitedFor']) && isset($item['Suited For'])) $item['suitedFor'] = $item['Suited For'];
-        if (!isset($item['possessionTimeline']) && isset($item['Possession Timeline'])) $item['possessionTimeline'] = $item['Possession Timeline'];
-        if (!isset($item['electricity']) && isset($item['Electricity'])) $item['electricity'] = $item['Electricity'];
-        if (!isset($item['waterConnection']) && isset($item['Water Connection'])) $item['waterConnection'] = $item['Water Connection'];
-        if (!isset($item['drainageFacility']) && isset($item['Drainage Facility'])) $item['drainageFacility'] = $item['Drainage Facility'];
-        if (!isset($item['roadWidthFt']) && isset($item['Road Width (ft)'])) $item['roadWidthFt'] = $item['Road Width (ft)'];
-        if (!isset($item['roadType']) && isset($item['Road Type'])) $item['roadType'] = $item['Road Type'];
-        if (!isset($item['streetLights']) && isset($item['Street Lights'])) $item['streetLights'] = $item['Street Lights'];
-        if (!isset($item['compoundWallGated']) && isset($item['Compound Wall / Gated'])) $item['compoundWallGated'] = $item['Compound Wall / Gated'];
-        if (!isset($item['park']) && isset($item['Park'])) $item['park'] = $item['Park'];
-        if (!isset($item['otherAmenities']) && isset($item['Other Amenities'])) $item['otherAmenities'] = $item['Other Amenities'];
-        if (!isset($item['developerMaintenanceYears']) && isset($item['Developer Maintenance after Handover (yrs)'])) $item['developerMaintenanceYears'] = $item['Developer Maintenance after Handover (yrs)'];
-        if (!isset($item['floodZone']) && isset($item['Flood Zone'])) $item['floodZone'] = $item['Flood Zone'];
-        if (!isset($item['waterloggingHistory']) && isset($item['Waterlogging History'])) $item['waterloggingHistory'] = $item['Waterlogging History'];
-        if (!isset($item['contactPersonPhone']) && isset($item['Contact Person / Phone'])) $item['contactPersonPhone'] = $item['Contact Person / Phone'];
-        if (!isset($item['remarks']) && isset($item['Remarks'])) $item['remarks'] = $item['Remarks'];
+        try {
+            // Extract & Normalize Column Values from spreadsheet payload
+            $rawId = trim((string)($item['propertyId'] ?? $item['project_id'] ?? $item['Property ID'] ?? ''));
+            $rawProjectName = trim((string)($item['projectName'] ?? $item['project_name'] ?? $item['Project Name'] ?? $item['title'] ?? $item['Title'] ?? ''));
+            $rawPlotNo = trim((string)($item['plotNo'] ?? $item['Plot No.'] ?? $item['Plot No'] ?? ''));
+            $rawDeveloper = trim((string)($item['developer'] ?? $item['Developer'] ?? $item['developerName'] ?? $item['developer_name'] ?? ''));
+            $rawRera = trim((string)($item['reraNumber'] ?? $item['rera_no'] ?? $item['RERA Number'] ?? $item['rera'] ?? ''));
+            $rawDtcpApproved = trim((string)($item['dtcpApproved'] ?? $item['DTCP Approved'] ?? ''));
+            $rawDtcpApprovalNo = trim((string)($item['dtcpApprovalNo'] ?? $item['DTCP / LP Approval No.'] ?? $item['approval_reference'] ?? ''));
+            $rawPattaType = trim((string)($item['pattaType'] ?? $item['Patta Type'] ?? ''));
+            $rawAreaLocation = trim((string)($item['areaLocation'] ?? $item['Area / Location'] ?? ''));
+            $rawVillageLocality = trim((string)($item['villageLocality'] ?? $item['Village / Locality'] ?? $item['locality_name'] ?? $item['locality'] ?? ''));
+            $rawTaluk = trim((string)($item['taluk'] ?? $item['Taluk'] ?? ''));
+            $rawDistrict = trim((string)($item['district'] ?? $item['District'] ?? ''));
+            $rawCity = trim((string)($item['city_name'] ?? $item['city'] ?? $item['City Name'] ?? $item['City'] ?? ''));
+            $rawGoogleMaps = trim((string)($item['googleMapsLink'] ?? $item['Google Maps Link'] ?? $item['gps'] ?? ''));
+            $rawPlotSizeSqft = (float)($item['plotSizeSqft'] ?? $item['Plot Size (sq.ft)'] ?? $item['min_plot_size'] ?? 0);
+            $rawDimension = trim((string)($item['dimension'] ?? $item['dimensions'] ?? ''));
+            $rawFacing = trim((string)($item['facing'] ?? $item['Facing'] ?? ''));
+            $rawCornerPlot = trim((string)($item['cornerPlot'] ?? $item['Corner Plot'] ?? ''));
+            $rawPricePerSqft = (float)($item['pricePerSqft'] ?? $item['Price per sq.ft (₹)'] ?? $item['sqft_rate'] ?? 0);
+            $rawTotalPrice = (float)($item['totalPrice'] ?? $item['Total Price (₹)'] ?? $item['price_from'] ?? 0);
+            $rawSchools = trim((string)($item['schoolsNearby'] ?? $item['Schools (Name & km)'] ?? $item['schools'] ?? ''));
+            $rawHospitals = trim((string)($item['hospitalNearby'] ?? $item['Hospital (Name & km)'] ?? $item['hospitals'] ?? ''));
+            $rawRailway = trim((string)($item['railwayStationNearby'] ?? $item['Railway Station (Name & km)'] ?? $item['railway_station'] ?? ''));
+            $rawHighwayName = trim((string)($item['highwayName'] ?? $item['Highway Name'] ?? $item['nearby_roads'] ?? ''));
+            $rawElectricity = trim((string)($item['electricity'] ?? $item['Electricity'] ?? ''));
+            $rawWater = trim((string)($item['waterConnection'] ?? $item['Water Connection'] ?? $item['water'] ?? ''));
+            $rawDrainage = trim((string)($item['drainageFacility'] ?? $item['Drainage Facility'] ?? $item['drainage'] ?? ''));
+            $rawRoadWidth = trim((string)($item['roadWidthFt'] ?? $item['Road Width (ft)'] ?? $item['road_width'] ?? ''));
+            $rawRoadType = trim((string)($item['roadType'] ?? $item['Road Type'] ?? $item['internal_roads'] ?? ''));
+            $rawStreetLights = trim((string)($item['streetLights'] ?? $item['Street Lights'] ?? ''));
+            $rawSecurity = trim((string)($item['compoundWallGated'] ?? $item['Compound Wall / Gated'] ?? $item['security'] ?? ''));
+            $rawParks = trim((string)($item['park'] ?? $item['Park'] ?? $item['parks'] ?? ''));
+            $rawOtherAmenities = trim((string)($item['otherAmenities'] ?? $item['Other Amenities'] ?? $item['other_facilities'] ?? ''));
+            $rawPhone = trim((string)($item['contactPersonPhone'] ?? $item['Contact Person / Phone'] ?? $item['whatsapp_number'] ?? ''));
+            $rawRemarks = trim((string)($item['remarks'] ?? $item['Remarks'] ?? ''));
 
-        // Ensure unique, non-colliding Property ID across the entire batch
-        $rawId = !empty($item['propertyId']) ? trim((string)$item['propertyId']) : '';
-        $invalidIds = ['individual patta', 'promoter patta', 'chitta', 'panchayat', 'not available', 'yes', 'no', 'available', 'residential', 'commercial'];
-        if (empty($rawId) || in_array(strtolower($rawId), $invalidIds, true) || isset($seenIds[$rawId])) {
-            $pId = 'PRJ-' . str_pad((string)(1001 + $index), 4, '0', STR_PAD_LEFT);
-        } else {
-            $pId = $rawId;
-        }
-        $seenIds[$pId] = true;
-
-        $rawTitle = trim((string)($item['title'] ?? $item['Title'] ?? $item['Property Title'] ?? $item['propertyTitle'] ?? ''));
-        $projectName = trim((string)($item['projectName'] ?? $item['Project Name'] ?? ''));
-        $rawPlotNo = trim((string)($item['plotNo'] ?? $item['Plot No.'] ?? $item['Plot No'] ?? ''));
-
-        // Extract Project Name & Plot from Title column (or projectName if it contains "plot")
-        $sourceTitle = !empty($rawTitle) ? $rawTitle : (stripos($projectName, 'plot') !== false ? $projectName : '');
-        if (!empty($sourceTitle)) {
-            // Pattern A: "<Project Name> [-–—|:,] Plot [No.?/#] <PlotNo>"
-            if (preg_match('/^(.*?)\s*[-–—|:,]\s*Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i', $sourceTitle, $m)) {
-                if (!empty(trim($m[1]))) $projectName = trim($m[1]);
-                if (!empty(trim($m[2]))) $rawPlotNo = trim($m[2]);
+            // Clean & Link Developer
+            $devId = null;
+            if (!empty($rawDeveloper)) {
+                $devId = $findOrCreateDeveloper($rawDeveloper);
+                if ($devId) {
+                    $developersLinkedCount++;
+                }
             }
-            // Pattern B: "Plot [No.?/#] <PlotNo> [-–—|:,] <Project Name>"
-            elseif (preg_match('/^Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)\s*[-–—|:,]\s*(.*)$/i', $sourceTitle, $m)) {
-                if (!empty(trim($m[2]))) $projectName = trim($m[2]);
-                if (!empty(trim($m[1]))) $rawPlotNo = trim($m[1]);
+
+            // Clean Project Name
+            $projectName = $rawProjectName;
+            if (empty($projectName) && !empty($item['title'])) {
+                $projectName = trim((string)$item['title']);
             }
-            // Pattern C: "<Project Name> Plot [No.?/#] <PlotNo>"
-            elseif (preg_match('/^(.*?)\s+Plot\s*(?:No\.?|Number|#)?\s*([A-Za-z0-9\/-]+)/i', $sourceTitle, $m)) {
-                if (!empty(trim($m[1]))) $projectName = trim($m[1]);
-                if (!empty(trim($m[2]))) $rawPlotNo = trim($m[2]);
+            if (empty($projectName)) {
+                $projectName = 'Verified Cadastral Layout';
             }
-            // Pattern D: "<Project Name> [-–—|] <Digits/Letters>"
-            elseif (preg_match('/^(.*?)\s*[-–—|]\s*([0-9]+[A-Za-z]?)$/', $sourceTitle, $m)) {
-                if (!empty(trim($m[1]))) $projectName = trim($m[1]);
-                if (!empty(trim($m[2]))) $rawPlotNo = trim($m[2]);
+
+            // Find existing project in DB (First by ID, then by Name)
+            $existingProj = null;
+            if (!empty($rawId)) {
+                $findProjectByIdStmt->execute([$rawId]);
+                $existingProj = $findProjectByIdStmt->fetch(PDO::FETCH_ASSOC);
             }
-            elseif (empty($projectName)) {
-                $projectName = $sourceTitle;
+            if (!$existingProj && !empty($projectName) && strtolower($projectName) !== 'verified cadastral layout') {
+                $findProjectByNameStmt->execute([$projectName]);
+                $existingProj = $findProjectByNameStmt->fetch(PDO::FETCH_ASSOC);
             }
-        }
 
-        if (empty($projectName)) {
-            $projectName = 'Verified Layout';
-        }
-
-        if (empty($rawPlotNo) || stripos($rawPlotNo, '.com') !== false || stripos($rawPlotNo, 'http') !== false) {
-            $plotNo = (string)($index + 1);
-        } else {
-            $plotNo = $rawPlotNo;
-        }
-
-        $title = $projectName . ($plotNo !== '' ? " - Plot {$plotNo}" : '');
-
-        $sqftVal = (float)($item['plotSizeSqft'] ?? 0);
-        $centsVal = (float)($item['plotSizeCents'] ?? 0);
-        if ($centsVal <= 0 && $sqftVal > 0) {
-            $centsVal = round(($sqftVal / 435.6), 2);
-        }
-        $sqftDisplay = $sqftVal > 0 ? number_format($sqftVal) . ' sq.ft' . ($centsVal > 0 ? " ({$centsVal} Cents)" : '') : '1,200 sq.ft';
-
-        $rateVal = (float)($item['pricePerSqft'] ?? 0);
-        $rateDisplay = $rateVal > 0 ? '₹ ' . number_format($rateVal) . '/sq.ft' : '₹ 3,200/sq.ft';
-
-        $totalVal = (float)($item['totalPrice'] ?? 0);
-        if ($totalVal <= 0 && $sqftVal > 0 && $rateVal > 0) {
-            $totalVal = round($sqftVal * $rateVal);
-        }
-        $numToFormat = $totalVal > 0 ? $totalVal : 3840000;
-        if ($numToFormat >= 10000000) {
-            $cr = $numToFormat / 10000000;
-            $priceDisplay = '₹ ' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
-        } elseif ($numToFormat >= 100000) {
-            $lakhs = $numToFormat / 100000;
-            $priceDisplay = '₹ ' . (round($lakhs, 2) == round($lakhs, 0) ? number_format($lakhs, 0) : number_format($lakhs, 2)) . ' Lakhs';
-        } else {
-            $priceDisplay = '₹ ' . number_format($numToFormat);
-        }
-
-        // Validate and extract genuine Locality & City from parsed columns
-        $isInvalidName = function($val): bool {
-            if ($val === null) return true;
-            $s = trim((string)$val);
-            if ($s === '' || $s === '1' || $s === '0' || strtolower($s) === 'null' || strtolower($s) === 'undefined') return true;
-            if (is_numeric($s)) return true;
-            if (str_contains($s, '₹') || str_contains(strtolower($s), 'sq.ft') || str_contains(strtolower($s), 'cents')) return true;
-            if (str_contains(strtolower($s), 'facing')) return true;
-            return false;
-        };
-
-        $rawLoc = '';
-        $locCandidates = [
-            $item['locality_name'] ?? null,
-            $item['locality_name name'] ?? null,
-            $item['localityName'] ?? null,
-            $item['Locality Name'] ?? null,
-            $item['locality'] ?? null,
-            $item['Locality'] ?? null,
-            $item['villageLocality'] ?? null,
-            $item['Village / Locality'] ?? null,
-            $item['areaLocation'] ?? null,
-            $item['Area / Location'] ?? null,
-        ];
-        foreach ($locCandidates as $cand) {
-            if (!$isInvalidName($cand)) {
-                $rawLoc = trim((string)$cand);
-                break;
+            // Calculate Price & Rate
+            if ($rawTotalPrice <= 0 && $rawPlotSizeSqft > 0 && $rawPricePerSqft > 0) {
+                $rawTotalPrice = round($rawPlotSizeSqft * $rawPricePerSqft);
             }
-        }
-        $locality = !empty($rawLoc) ? $rawLoc : 'Guduvanchery';
-
-        $rawCity = '';
-        $cityCandidates = [
-            $item['city_name'] ?? null,
-            $item['city_name name'] ?? null,
-            $item['cityName'] ?? null,
-            $item['City Name'] ?? null,
-            $item['city'] ?? null,
-            $item['City'] ?? null,
-            $item['district'] ?? null,
-            $item['District'] ?? null,
-            $item['taluk'] ?? null,
-            $item['Taluk'] ?? null,
-        ];
-        foreach ($cityCandidates as $cand) {
-            if (!$isInvalidName($cand)) {
-                $rawCity = trim((string)$cand);
-                break;
+            if ($rawPricePerSqft <= 0 && $rawPlotSizeSqft > 0 && $rawTotalPrice > 0) {
+                $rawPricePerSqft = round($rawTotalPrice / $rawPlotSizeSqft);
             }
+
+            // Clean Locality, City, District
+            $locality = !empty($rawVillageLocality) ? $rawVillageLocality : (!empty($rawAreaLocation) ? $rawAreaLocation : '');
+            $city = !empty($rawCity) ? $rawCity : (!empty($rawDistrict) ? $rawDistrict : 'Chennai');
+            $district = !empty($rawDistrict) ? $rawDistrict : $city;
+
+            // Clean Phone
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            if (strlen($cleanPhone) === 10) {
+                $cleanPhone = '91' . $cleanPhone;
+            }
+            $whatsappNumber = (!empty($cleanPhone) && strlen($cleanPhone) >= 10) ? $cleanPhone : '9486140936';
+
+            // Case A: Project Exists in DB -> Enrich / Fill Missing Fields
+            if ($existingProj) {
+                $targetId = $existingProj['project_id'];
+
+                // Update projects table with missing/enriched fields
+                $updProjSql = "
+                    UPDATE projects SET
+                        developer_id   = CASE WHEN :devId IS NOT NULL THEN :devId ELSE developer_id END,
+                        submitted_by   = CASE WHEN :devName != '' THEN :devName ELSE submitted_by END,
+                        project_name   = CASE WHEN project_name = 'Verified Cadastral Layout' AND :pName != '' THEN :pName ELSE project_name END,
+                        district       = CASE WHEN (district = '' OR district = 'Chennai') AND :district != '' THEN :district ELSE district END,
+                        city           = CASE WHEN (city = '' OR city = 'Chennai') AND :city != '' THEN :city ELSE city END,
+                        locality       = CASE WHEN locality = '' AND :locality != '' THEN :locality ELSE locality END,
+                        price_from     = CASE WHEN (price_from = 0.00 OR price_from < 1000) AND :priceFrom > 0 THEN :priceFrom ELSE price_from END,
+                        price_to       = CASE WHEN (price_to = 0.00 OR price_to < 1000) AND :priceTo > 0 THEN :priceTo ELSE price_to END,
+                        sqft_rate      = CASE WHEN sqft_rate = 0.00 AND :sqftRate > 0 THEN :sqftRate ELSE sqft_rate END,
+                        min_plot_size  = CASE WHEN min_plot_size = 1200 AND :plotSize > 0 THEN :plotSize ELSE min_plot_size END,
+                        rera_no        = CASE WHEN (rera_no IS NULL OR rera_no = '' OR rera_no LIKE 'TNRERA Approved%') AND :rera != '' THEN :rera ELSE rera_no END,
+                        whatsapp_number= CASE WHEN (whatsapp_number IS NULL OR whatsapp_number = '') AND :waNum != '' THEN :waNum ELSE whatsapp_number END,
+                        updated_at     = NOW()
+                    WHERE project_id = :pId
+                ";
+                $updProj = $db->prepare($updProjSql);
+                $updProj->execute([
+                    ':devId'     => $devId,
+                    ':devName'   => $rawDeveloper,
+                    ':pName'     => $projectName,
+                    ':district'  => $district,
+                    ':city'      => $city,
+                    ':locality'  => $locality,
+                    ':priceFrom' => $rawTotalPrice > 0 ? $rawTotalPrice : 0.00,
+                    ':priceTo'   => $rawTotalPrice > 0 ? round($rawTotalPrice * 1.4) : 0.00,
+                    ':sqftRate'  => $rawPricePerSqft > 0 ? $rawPricePerSqft : 0.00,
+                    ':plotSize'  => $rawPlotSizeSqft > 0 ? (int)$rawPlotSizeSqft : 1200,
+                    ':rera'      => $rawRera,
+                    ':waNum'     => $whatsappNumber,
+                    ':pId'       => $targetId
+                ]);
+
+                // Ensure project_details record exists and update with enriched details
+                $findDetailStmt->execute([$targetId]);
+                $existingDetail = $findDetailStmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$existingDetail) {
+                    $insDetail = $db->prepare("
+                        INSERT INTO project_details (
+                            project_id, total_layout_area, total_plots, available_plot_sizes,
+                            dimensions, road_width, corner_plot, approval_authority, approval_reference,
+                            internal_roads, street_lights, drainage, water, electricity, parks, security,
+                            other_facilities, gps, nearby_roads, railway_station, schools, hospitals,
+                            layout_pdf, brochure, created_at, updated_at
+                        ) VALUES (
+                            :pId, 'Approved Layout', 24, :plotSizeStr, :dim, :roadW, :corner,
+                            :appAuth, :appRef, :intRoads, :sLights, :drainage, :water, :elec,
+                            :parks, :sec, :otherFac, :gps, :nearbyRds, :railway, :schools, :hosps,
+                            CONCAT('https://onenewstory.in/p_demo_5/backend/uploads/layout_', :pId, '.pdf'),
+                            CONCAT('https://onenewstory.in/p_demo_5/backend/uploads/brochure_', :pId, '.pdf'),
+                            NOW(), NOW()
+                        )
+                    ");
+                    $insDetail->execute([
+                        ':pId'        => $targetId,
+                        ':plotSizeStr'=> $rawPlotSizeSqft > 0 ? ($rawPlotSizeSqft . ' sq.ft') : '1,200 sq.ft',
+                        ':dim'        => $rawDimension ?: 'Standard Layout',
+                        ':roadW'      => $rawRoadWidth ? ($rawRoadWidth . 'ft Road') : '30ft Tar Road',
+                        ':corner'     => (strtolower($rawCornerPlot) === 'yes' || $rawCornerPlot === '1') ? 1 : 0,
+                        ':appAuth'    => $rawDtcpApproved ?: 'DTCP Approved',
+                        ':appRef'     => $rawDtcpApprovalNo ?: $rawRera,
+                        ':intRoads'   => $rawRoadType ?: 'Tar Road',
+                        ':sLights'    => $rawStreetLights ?: 'Yes',
+                        ':drainage'   => $rawDrainage ?: 'Underground Stormwater Drainage',
+                        ':water'      => $rawWater ?: 'Potable Groundwater Connection',
+                        ':elec'       => $rawElectricity ?: '3-Phase EB Line Active',
+                        ':parks'      => $rawParks ?: 'Landscaped Park',
+                        ':sec'        => $rawSecurity ?: 'Gated Community Perimeter',
+                        ':otherFac'   => $rawOtherAmenities,
+                        ':gps'        => $rawGoogleMaps ?: '12.9716, 80.2184',
+                        ':nearbyRds'  => $rawHighwayName ?: 'GST Road Link',
+                        ':railway'    => $rawRailway ?: 'Nearby Railway Junction',
+                        ':schools'    => $rawSchools,
+                        ':hosps'      => $rawHospitals
+                    ]);
+                } else {
+                    $updDetailSql = "
+                        UPDATE project_details SET
+                            dimensions         = CASE WHEN (dimensions IS NULL OR dimensions = '' OR dimensions = '28 x 28') AND :dim != '' THEN :dim ELSE dimensions END,
+                            road_width         = CASE WHEN (road_width IS NULL OR road_width = '') AND :roadW != '' THEN :roadW ELSE road_width END,
+                            corner_plot        = CASE WHEN :corner IS NOT NULL THEN :corner ELSE corner_plot END,
+                            approval_authority = CASE WHEN (approval_authority IS NULL OR approval_authority = '') AND :appAuth != '' THEN :appAuth ELSE approval_authority END,
+                            approval_reference = CASE WHEN (approval_reference IS NULL OR approval_reference = '') AND :appRef != '' THEN :appRef ELSE approval_reference END,
+                            internal_roads     = CASE WHEN (internal_roads IS NULL OR internal_roads = '') AND :intRoads != '' THEN :intRoads ELSE internal_roads END,
+                            street_lights      = CASE WHEN (street_lights IS NULL OR street_lights = '') AND :sLights != '' THEN :sLights ELSE street_lights END,
+                            drainage           = CASE WHEN (drainage IS NULL OR drainage = '') AND :drainage != '' THEN :drainage ELSE drainage END,
+                            water              = CASE WHEN (water IS NULL OR water = '') AND :water != '' THEN :water ELSE water END,
+                            electricity        = CASE WHEN (electricity IS NULL OR electricity = '') AND :elec != '' THEN :elec ELSE electricity END,
+                            parks              = CASE WHEN (parks IS NULL OR parks = '') AND :parks != '' THEN :parks ELSE parks END,
+                            security           = CASE WHEN (security IS NULL OR security = '') AND :sec != '' THEN :sec ELSE security END,
+                            other_facilities   = CASE WHEN (other_facilities IS NULL OR other_facilities = '') AND :otherFac != '' THEN :otherFac ELSE other_facilities END,
+                            gps                = CASE WHEN (gps IS NULL OR gps = '' OR gps = '12.9716, 80.2184') AND :gps != '' THEN :gps ELSE gps END,
+                            nearby_roads       = CASE WHEN (nearby_roads IS NULL OR nearby_roads = '') AND :nearbyRds != '' THEN :nearbyRds ELSE nearby_roads END,
+                            railway_station    = CASE WHEN (railway_station IS NULL OR railway_station = '') AND :railway != '' THEN :railway ELSE railway_station END,
+                            schools            = CASE WHEN (schools IS NULL OR schools = '' OR schools = '[]') AND :schools != '' THEN :schools ELSE schools END,
+                            hospitals          = CASE WHEN (hospitals IS NULL OR hospitals = '' OR hospitals = '[]') AND :hosps != '' THEN :hosps ELSE hospitals END,
+                            updated_at         = NOW()
+                        WHERE project_id = :pId
+                    ";
+                    $updDetail = $db->prepare($updDetailSql);
+                    $updDetail->execute([
+                        ':dim'        => $rawDimension,
+                        ':roadW'      => $rawRoadWidth ? ($rawRoadWidth . 'ft Road') : '',
+                        ':corner'     => (strtolower($rawCornerPlot) === 'yes' || $rawCornerPlot === '1') ? 1 : 0,
+                        ':appAuth'    => $rawDtcpApproved,
+                        ':appRef'     => $rawDtcpApprovalNo,
+                        ':intRoads'   => $rawRoadType,
+                        ':sLights'    => $rawStreetLights,
+                        ':drainage'   => $rawDrainage,
+                        ':water'      => $rawWater,
+                        ':elec'       => $rawElectricity,
+                        ':parks'      => $rawParks,
+                        ':sec'        => $rawSecurity,
+                        ':otherFac'   => $rawOtherAmenities,
+                        ':gps'        => $rawGoogleMaps,
+                        ':nearbyRds'  => $rawHighwayName,
+                        ':railway'    => $rawRailway,
+                        ':schools'    => $rawSchools,
+                        ':hosps'      => $rawHospitals,
+                        ':pId'        => $targetId
+                    ]);
+                }
+
+                $updatedExistingCount++;
+            } else {
+                // Case B: Project does not exist -> Insert new project and project_details
+                $newId = !empty($rawId) ? $rawId : ('PRJ-' . str_pad((string)(2001 + $index), 4, '0', STR_PAD_LEFT));
+                $titleDisplay = $projectName . (!empty($rawPlotNo) ? " - Plot {$rawPlotNo}" : '');
+
+                $insProj = $db->prepare("
+                    INSERT INTO projects (
+                        project_id, project_name, developer_id, district, city, locality,
+                        category, type, price_from, price_to, sqft_rate, min_plot_size, max_plot_size,
+                        project_stage, possession_date, rera_no, brokerage, no_brokerage, featured,
+                        whatsapp_number, cover_image, interactive_map, total_units, project_status,
+                        submitted_by, status, created_at, updated_at
+                    ) VALUES (
+                        :pId, :pName, :devId, :district, :city, :locality,
+                        'Gated CMDA Plots', 'plots', :priceFrom, :priceTo, :sqftRate, :minSize, :maxSize,
+                        'Ready to Register', 'Immediate', :rera, '0% Direct SRO Deed', 1, 0,
+                        :waNum, 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+                        'assets/secura-masterplan-3d.html', 'Individual Plots', 'Ready to Register',
+                        :submittedBy, 'published', NOW(), NOW()
+                    )
+                ");
+                $insProj->execute([
+                    ':pId'        => $newId,
+                    ':pName'      => $titleDisplay,
+                    ':devId'      => $devId,
+                    ':district'   => $district,
+                    ':city'       => $city,
+                    ':locality'   => $locality,
+                    ':priceFrom'  => $rawTotalPrice > 0 ? $rawTotalPrice : 3800000.00,
+                    ':priceTo'    => $rawTotalPrice > 0 ? round($rawTotalPrice * 1.4) : 5500000.00,
+                    ':sqftRate'   => $rawPricePerSqft > 0 ? $rawPricePerSqft : 3200.00,
+                    ':minSize'    => $rawPlotSizeSqft > 0 ? (int)$rawPlotSizeSqft : 1200,
+                    ':maxSize'    => $rawPlotSizeSqft > 0 ? (int)round($rawPlotSizeSqft * 1.5) : 2400,
+                    ':rera'       => $rawRera ?: 'TNRERA Approved',
+                    ':waNum'      => $whatsappNumber,
+                    ':submittedBy'=> $rawDeveloper ?: 'Registry Admin'
+                ]);
+
+                $insDetail = $db->prepare("
+                    INSERT INTO project_details (
+                        project_id, total_layout_area, total_plots, available_plot_sizes,
+                        dimensions, road_width, corner_plot, approval_authority, approval_reference,
+                        internal_roads, street_lights, drainage, water, electricity, parks, security,
+                        other_facilities, gps, nearby_roads, railway_station, schools, hospitals,
+                        layout_pdf, brochure, created_at, updated_at
+                    ) VALUES (
+                        :pId, 'Approved Layout', 24, :plotSizeStr, :dim, :roadW, :corner,
+                        :appAuth, :appRef, :intRoads, :sLights, :drainage, :water, :elec,
+                        :parks, :sec, :otherFac, :gps, :nearbyRds, :railway, :schools, :hosps,
+                        CONCAT('https://onenewstory.in/p_demo_5/backend/uploads/layout_', :pId, '.pdf'),
+                        CONCAT('https://onenewstory.in/p_demo_5/backend/uploads/brochure_', :pId, '.pdf'),
+                        NOW(), NOW()
+                    )
+                ");
+                $insDetail->execute([
+                    ':pId'        => $newId,
+                    ':plotSizeStr'=> $rawPlotSizeSqft > 0 ? ($rawPlotSizeSqft . ' sq.ft') : '1,200 sq.ft',
+                    ':dim'        => $rawDimension ?: 'Standard Layout Dimensions',
+                    ':roadW'      => $rawRoadWidth ? ($rawRoadWidth . 'ft Road') : '30ft Tar Road',
+                    ':corner'     => (strtolower($rawCornerPlot) === 'yes' || $rawCornerPlot === '1') ? 1 : 0,
+                    ':appAuth'    => $rawDtcpApproved ?: 'DTCP Approved',
+                    ':appRef'     => $rawDtcpApprovalNo ?: $rawRera,
+                    ':intRoads'   => $rawRoadType ?: 'Tar Road',
+                    ':sLights'    => $rawStreetLights ?: 'Yes',
+                    ':drainage'   => $rawDrainage ?: 'Underground Stormwater Drainage',
+                    ':water'      => $rawWater ?: 'Potable Groundwater Connection',
+                    ':elec'       => $rawElectricity ?: '3-Phase EB Line Active',
+                    ':parks'      => $rawParks ?: 'Landscaped Children Park',
+                    ':sec'        => $rawSecurity ?: 'Gated Community Perimeter',
+                    ':otherFac'   => $rawOtherAmenities,
+                    ':gps'        => $rawGoogleMaps ?: '12.9716, 80.2184',
+                    ':nearbyRds'  => $rawHighwayName ?: 'GST Road Link',
+                    ':railway'    => $rawRailway ?: 'Nearby Railway Station',
+                    ':schools'    => $rawSchools,
+                    ':hosps'      => $rawHospitals
+                ]);
+
+                $insertedNewCount++;
+            }
+        } catch (\Throwable $e) {
+            $errors[] = "Row #" . ($index + 1) . ": " . $e->getMessage();
         }
-        $city = !empty($rawCity) ? $rawCity : 'Chennai';
-        $facing = trim((string)($item['facing'] ?? 'East'));
-        $corner = trim((string)($item['cornerPlot'] ?? 'No'));
-        $facingOrView = $facing . ' Facing' . ($corner === 'Yes' ? ' (Corner Plot)' : '');
-
-        $rera = trim((string)($item['reraNumber'] ?? ''));
-        if (empty($rera)) {
-            $rera = trim((string)($item['dtcpApprovalNo'] ?? 'CMDA / DTCP Sanctioned'));
-        }
-        $mapsLink = trim((string)($item['googleMapsLink'] ?? ''));
-
-        // Contact phone & WhatsApp link
-        $rawPhone = trim((string)($item['contactPersonPhone'] ?? ''));
-        $digitsOnly = preg_replace('/[^0-9]/', '', $rawPhone);
-        if (strlen($digitsOnly) === 10) {
-            $digitsOnly = '91' . $digitsOnly;
-        }
-        $phoneForWa = (!empty($digitsOnly) && strlen($digitsOnly) >= 10) ? $digitsOnly : '919486140936';
-
-        // Assign curated mock image package
-        $pack = $mockImagePacks[$index % count($mockImagePacks)];
-        $imgUrl = !empty($item['imageUrl']) && str_starts_with($item['imageUrl'], 'http') 
-            ? trim((string)$item['imageUrl']) 
-            : $pack['main'];
-
-        // Map land use to property type
-        $landUse = trim((string)($item['landUse'] ?? 'Residential'));
-        $propType = 'Gated CMDA Plots';
-        $listingMode = 'plots';
-        if (stripos($landUse, 'Commercial') !== false) {
-            $propType = 'Commercial Spaces';
-            $listingMode = 'commercial';
-        }
-
-        $bhkBadge = 'Sanctioned Plot';
-        if ($centsVal > 0) {
-            $bhkBadge = "{$centsVal} Cents Plot";
-        }
-
-        // Insert into properties table
-        $propStmt->execute([
-            ':id'                  => $pId,
-            ':city_id'             => $defaultCityId,
-            ':title'               => $title,
-            ':property_type'       => $propType,
-            ':listing_mode'        => $listingMode,
-            ':locality_name'       => $locality,
-            ':city_name'           => $city,
-            ':price'               => $priceDisplay,
-            ':price_per_sqft'      => $rateDisplay,
-            ':sqft'                => $sqftDisplay,
-            ':bhk_badge'           => $bhkBadge,
-            ':facing_or_view'      => $facingOrView,
-            ':main_image_url'      => $imgUrl,
-            ':rera_number'         => $rera,
-            ':possession_date'     => !empty($item['possessionTimeline']) ? (string)$item['possessionTimeline'] : 'Immediate',
-            ':whatsapp_url'        => "https://wa.me/{$phoneForWa}?text=" . urlencode("Hi Find a Plot, I am interested in {$title} (ID: {$pId})"),
-            ':interactive_map_url' => 'assets/secura-masterplan-3d.html',
-            ':is_featured'         => ($index < 8) ? 1 : 0
-        ]);
-
-        // Insert into property_master_details table
-        $masterData = array_merge($item, [
-            'propertyId'      => $pId,
-            'projectName'     => $projectName,
-            'villageLocality' => $locality,
-            'areaLocation'    => $locality,
-            'district'        => $city,
-            'plotSizeSqft'    => $sqftVal,
-            'plotSizeCents'   => $centsVal,
-            'pricePerSqft'    => $rateVal,
-            'totalPrice'      => $totalVal,
-            'googleMapsLink'  => $mapsLink
-        ]);
-        PropertyMasterHelper::saveMasterDetails($db, $pId, $masterData);
-
-        // Delete existing media for this property before re-inserting
-        $db->exec("DELETE FROM property_media WHERE property_id = " . $db->quote($pId));
-
-        // Insert full gallery of mock photos into property_media
-        $galleryPhotos = !empty($pack['gallery']) ? $pack['gallery'] : [$imgUrl];
-        foreach ($galleryPhotos as $gIdx => $gUrl) {
-            $mediaStmt->execute([
-                ':prop_id'    => $pId,
-                ':title'      => $title . ' - Photo ' . ($gIdx + 1),
-                ':url'        => $gUrl,
-                ':sort_order' => $gIdx + 1
-            ]);
-        }
-
-        // Insert 4K Walkthrough Video & Drone Tour
-        $premStmt->execute([
-            ':prop_id'    => $pId,
-            ':type'       => 'video',
-            ':title'      => '4K Architectural Walkthrough',
-            ':url'        => 'https://www.w3schools.com/html/mov_bbb.mp4',
-            ':thumb'      => $imgUrl,
-            ':duration'   => '02:30 min',
-            ':tag'        => '4K Video Tour',
-            ':sort_order' => 1
-        ]);
-
-        $premStmt->execute([
-            ':prop_id'    => $pId,
-            ':type'       => 'drone_survey',
-            ':title'      => '360° Drone Aerial Layout Survey',
-            ':url'        => 'https://iframe.videodelivery.net/5d5ba37ff33a0b8d5d3c3763b71e5e85',
-            ':thumb'      => $galleryPhotos[1] ?? $imgUrl,
-            ':duration'   => '03:10 min',
-            ':tag'        => 'Drone Survey',
-            ':sort_order' => 2
-        ]);
-
-        // Delete existing highlights
-        $db->exec("DELETE FROM property_highlights WHERE property_id = " . $db->quote($pId));
-
-        // Insert key highlights
-        $highlights = [
-            (!empty($item['dtcpApproved']) && $item['dtcpApproved'] === 'Yes') ? 'DTCP Sanctioned Layout' : 'Clear Title Deed',
-            !empty($item['roadWidthFt']) ? $item['roadWidthFt'] . ' Ft Wide Bitumen Road' : '30 Ft Wide Road',
-            !empty($item['pattaType']) ? (string)$item['pattaType'] : 'Individual Patta',
-            !empty($item['corridor']) ? 'Strategic ' . $item['corridor'] : 'High Appreciation Zone'
-        ];
-
-        foreach ($highlights as $hIdx => $hText) {
-            $highlightStmt->execute([
-                ':prop_id'    => $pId,
-                ':highlight'  => $hText,
-                ':sort_order' => $hIdx + 1
-            ]);
-        }
-
-        $importedCount++;
-    } catch (\Throwable $e) {
-        $errors[] = "Row #" . ($index + 1) . ": " . $e->getMessage();
     }
-}
+
     if ($db->inTransaction()) {
         $db->commit();
     }
@@ -606,14 +442,19 @@ try {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    Response::error('Database batch transaction failed: ' . $trxErr->getMessage(), 500);
+    Response::error('Database transaction failed during bulk processing: ' . $trxErr->getMessage(), 500);
 }
 
+$totalProcessed = $updatedExistingCount + $insertedNewCount;
+
 Response::success([
-    'totalSubmitted' => count($rows),
-    'importedCount'  => $importedCount,
-    'failedCount'    => count($errors),
-    'errors'         => array_slice($errors, 0, 10),
-    'clearedExisting'=> $clearExisting,
-    'message'        => "Successfully imported {$importedCount} properties into live registry database with mock images."
+    'totalSubmitted'        => count($rows),
+    'importedCount'         => $totalProcessed,
+    'updatedExistingCount'  => $updatedExistingCount,
+    'insertedNewCount'      => $insertedNewCount,
+    'developersLinkedCount' => $developersLinkedCount,
+    'failedCount'           => count($errors),
+    'errors'                => array_slice($errors, 0, 10),
+    'clearedExisting'       => $clearExisting,
+    'message'               => "Successfully processed {$totalProcessed} properties: {$updatedExistingCount} existing records enriched with missing details, {$insertedNewCount} new records created, and {$developersLinkedCount} developer profiles linked."
 ]);
