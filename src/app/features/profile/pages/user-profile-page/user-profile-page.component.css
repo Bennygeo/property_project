@@ -3395,10 +3395,14 @@ input:checked+.toggle-slider:before {
   margin-left: 2px;
 }
 
+/* ========================================================================== */
+/* BENTO ENTITLEMENT METERS: 4 MILD COLORS & ASYMMETRIC BOX SIZES            */
+/* ========================================================================== */
 .hud-meters-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: 1.125rem;
+  align-items: stretch;
 }
 
 @media (min-width: 640px) {
@@ -3407,77 +3411,208 @@ input:checked+.toggle-slider:before {
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1080px) {
   .hud-meters-grid {
-    grid-template-columns: repeat(4, 1fr);
+    /* Asymmetric Professional Bento Layout: Featured Hero 1.28fr, Analytical 0.96fr, Consulting 0.96fr, VIP Concierge 1.16fr */
+    grid-template-columns: 1.28fr 0.96fr 0.96fr 1.16fr;
+    gap: 1.125rem;
   }
 }
 
+/* Base Meter Box */
 .meter-box {
-  background: #f8fafc;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 1rem 1.125rem;
+  border-radius: 9px;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.meter-box:hover {
+  transform: translateY(-2px);
+}
+
+/* Micro Kicker Category Label */
+.meter-kicker {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: -0.25rem;
 }
 
 .meter-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.meter-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meter-icon-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.meter-icon-pill .material-symbols-outlined {
+  font-size: 16px;
 }
 
 .meter-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.meter-icon {
-  font-size: 16px;
-  color: var(--brand-green);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .meter-counts {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--brand-teal);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
 }
 
 .meter-progress-track {
   height: 6px;
-  background: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .meter-progress-fill {
   height: 100%;
-  background: var(--brand-green);
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transition: width 0.35s ease;
 }
 
 .meter-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.6875rem;
-  color: var(--text-muted);
+}
+
+.meter-rem-text {
+  font-weight: 600;
 }
 
 .meter-tip {
-  color: var(--brand-green-dark);
-  font-weight: 600;
-  background: var(--brand-green-subtle);
-  padding: 1px 6px;
-  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
 }
+
+/* -------------------------------------------------------------------------- */
+/* THEME 1: MILD SAGE / EMERALD (HERO DOSSIERS - LARGEST BOX SIZE)            */
+/* -------------------------------------------------------------------------- */
+.meter-box-sage {
+  background: linear-gradient(145deg, #f3faf5 0%, #eaf6ef 100%);
+  border: 1px solid #c8e7d5;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(45, 106, 79, 0.04);
+}
+
+.meter-box-sage:hover {
+  border-color: #9bd6b2;
+  box-shadow: 0 6px 18px rgba(45, 106, 79, 0.08);
+}
+
+.kicker-sage { color: #1e6b45; }
+.title-sage { color: #165334; }
+.count-sage { color: #0d3822; font-size: 1.0625rem; }
+.icon-sage { background: #d7f1e2; color: #1b633e; }
+.track-sage { background: #d2edd9; }
+.fill-sage { background: linear-gradient(90deg, #48bb78 0%, #2f855a 100%); }
+.text-sage { color: #22543d; }
+.tip-sage { background: #d7f1e2; border: 1px solid #b3e3c6; color: #1b633e; }
+
+/* -------------------------------------------------------------------------- */
+/* THEME 2: MILD SKY / OCEAN BLUE (ANALYTICS - COMPACT BOX SIZE)              */
+/* -------------------------------------------------------------------------- */
+.meter-box-blue {
+  background: linear-gradient(145deg, #f2f7fc 0%, #e9f2fa 100%);
+  border: 1px solid #c6def5;
+  padding: 0.95rem 1.1rem;
+  box-shadow: 0 1px 3px rgba(30, 64, 175, 0.04);
+}
+
+.meter-box-blue:hover {
+  border-color: #9ec5f0;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
+}
+
+.kicker-blue { color: #1e40af; }
+.title-blue { color: #1e3a8a; }
+.count-blue { color: #172554; }
+.icon-blue { background: #dbeafe; color: #1d4ed8; }
+.track-blue { background: #d4e5f8; }
+.fill-blue { background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%); }
+.text-blue { color: #1e40af; }
+.tip-blue { background: #dbeafe; border: 1px solid #bfdbfe; color: #1e40af; }
+
+/* -------------------------------------------------------------------------- */
+/* THEME 3: MILD WARM AMBER / HONEY (CONSULTING - COMPACT BOX SIZE)           */
+/* -------------------------------------------------------------------------- */
+.meter-box-amber {
+  background: linear-gradient(145deg, #fdf9f0 0%, #faf2e3 100%);
+  border: 1px solid #f8e1b6;
+  padding: 0.95rem 1.1rem;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.04);
+}
+
+.meter-box-amber:hover {
+  border-color: #f6cd85;
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.08);
+}
+
+.kicker-amber { color: #92400e; }
+.title-amber { color: #78350f; }
+.count-amber { color: #451a03; }
+.icon-amber { background: #fef3c7; color: #d97706; }
+.track-amber { background: #fae4bb; }
+.fill-amber { background: linear-gradient(90deg, #fbbf24 0%, #d97706 100%); }
+.text-amber { color: #92400e; }
+.tip-amber { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+
+/* -------------------------------------------------------------------------- */
+/* THEME 4: MILD ROYAL LAVENDER / PLUM (VIP CONCIERGE - EXECUTIVE BOX SIZE)    */
+/* -------------------------------------------------------------------------- */
+.meter-box-purple {
+  background: linear-gradient(145deg, #f8f4fc 0%, #f1e9fa 100%);
+  border: 1px solid #e1cef5;
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 1px 3px rgba(109, 40, 217, 0.04);
+}
+
+.meter-box-purple:hover {
+  border-color: #cca9f0;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.08);
+}
+
+.kicker-purple { color: #6b21a8; }
+.title-purple { color: #581c87; }
+.count-purple { color: #3b0764; font-size: 1.02rem; }
+.icon-purple { background: #f3e8ff; color: #7c3aed; }
+.track-purple { background: #ead6f8; }
+.fill-purple { background: linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%); }
+.text-purple { color: #6b21a8; }
+.tip-purple { background: #f3e8ff; border: 1px solid #ddd6fe; color: #6b21a8; }
 
 /* INVOICES SECTION */
 .invoices-section {

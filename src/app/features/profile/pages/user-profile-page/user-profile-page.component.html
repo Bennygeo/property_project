@@ -720,81 +720,93 @@
               </div>
             </div>
 
-            <!-- 4 Core Entitlement Meters Grid -->
+            <!-- 4 Core Entitlement Meters Grid with 4 Mild Colors & Varied Proportions -->
             <div class="hud-meters-grid">
-              <!-- 1. Unique Project Views -->
-              <div class="meter-box">
+              <!-- 1. Unique Project Views (Mild Sage/Emerald - Hero Card) -->
+              <div class="meter-box meter-box-sage">
+                <div class="meter-kicker kicker-sage">Core Dossiers</div>
                 <div class="meter-header">
-                  <span class="meter-title">
-                    <span class="material-symbols-outlined meter-icon">apartment</span>
-                    <span>Project Views</span>
-                  </span>
-                  <span class="meter-counts">{{ ent.projectViewsUsed }} / {{ ent.projectViewLimit }}</span>
+                  <div class="meter-title-wrap">
+                    <div class="meter-icon-pill icon-sage">
+                      <span class="material-symbols-outlined">apartment</span>
+                    </div>
+                    <span class="meter-title title-sage">Project Views</span>
+                  </div>
+                  <span class="meter-counts count-sage">{{ ent.projectViewsUsed }} / {{ ent.projectViewLimit }}</span>
                 </div>
-                <div class="meter-progress-track">
-                  <div class="meter-progress-fill"
+                <div class="meter-progress-track track-sage">
+                  <div class="meter-progress-fill fill-sage"
                     [style.width.%]="calculatePercentage(ent.projectViewsUsed, ent.projectViewLimit)"></div>
                 </div>
                 <div class="meter-footer">
-                  <span>{{ ent.projectViewsRemaining }} remaining</span>
-                  <span class="meter-tip" title="Repeated visits to unlocked projects never burn credits">Re-visits Free</span>
+                  <span class="meter-rem-text text-sage">{{ ent.projectViewsRemaining }} remaining</span>
+                  <span class="meter-tip tip-sage" title="Repeated visits to unlocked projects never burn credits">Re-visits Free</span>
                 </div>
               </div>
 
-              <!-- 2. Side-by-Side Comparisons -->
-              <div class="meter-box">
+              <!-- 2. Side-by-Side Comparisons (Mild Sky/Blue) -->
+              <div class="meter-box meter-box-blue">
+                <div class="meter-kicker kicker-blue">Analytics</div>
                 <div class="meter-header">
-                  <span class="meter-title">
-                    <span class="material-symbols-outlined meter-icon">compare_arrows</span>
-                    <span>Comparisons</span>
-                  </span>
-                  <span class="meter-counts">{{ ent.comparisonsUsed }} / {{ ent.comparisonLimit }}</span>
+                  <div class="meter-title-wrap">
+                    <div class="meter-icon-pill icon-blue">
+                      <span class="material-symbols-outlined">compare_arrows</span>
+                    </div>
+                    <span class="meter-title title-blue">Comparisons</span>
+                  </div>
+                  <span class="meter-counts count-blue">{{ ent.comparisonsUsed }} / {{ ent.comparisonLimit }}</span>
                 </div>
-                <div class="meter-progress-track">
-                  <div class="meter-progress-fill"
+                <div class="meter-progress-track track-blue">
+                  <div class="meter-progress-fill fill-blue"
                     [style.width.%]="calculatePercentage(ent.comparisonsUsed, ent.comparisonLimit)"></div>
                 </div>
                 <div class="meter-footer">
-                  <span>{{ ent.comparisonsRemaining }} remaining</span>
-                  <span class="meter-tip">Matrix Workspace</span>
+                  <span class="meter-rem-text text-blue">{{ ent.comparisonsRemaining }} remaining</span>
+                  <span class="meter-tip tip-blue">Matrix Workspace</span>
                 </div>
               </div>
 
-              <!-- 3. Advisory Consultations -->
-              <div class="meter-box">
+              <!-- 3. Advisory Consultations (Mild Amber/Gold) -->
+              <div class="meter-box meter-box-amber">
+                <div class="meter-kicker kicker-amber">Consulting</div>
                 <div class="meter-header">
-                  <span class="meter-title">
-                    <span class="material-symbols-outlined meter-icon">support_agent</span>
-                    <span>Advisory Sessions</span>
-                  </span>
-                  <span class="meter-counts">{{ ent.advisorySessionsUsed }} / {{ ent.advisorySessionLimit }}</span>
+                  <div class="meter-title-wrap">
+                    <div class="meter-icon-pill icon-amber">
+                      <span class="material-symbols-outlined">support_agent</span>
+                    </div>
+                    <span class="meter-title title-amber">Advisory Sessions</span>
+                  </div>
+                  <span class="meter-counts count-amber">{{ ent.advisorySessionsUsed }} / {{ ent.advisorySessionLimit }}</span>
                 </div>
-                <div class="meter-progress-track">
-                  <div class="meter-progress-fill"
+                <div class="meter-progress-track track-amber">
+                  <div class="meter-progress-fill fill-amber"
                     [style.width.%]="calculatePercentage(ent.advisorySessionsUsed, ent.advisorySessionLimit)"></div>
                 </div>
                 <div class="meter-footer">
-                  <span>{{ ent.advisorySessionsRemaining }} remaining</span>
-                  <span class="meter-tip">1-on-1 Guidance</span>
+                  <span class="meter-rem-text text-amber">{{ ent.advisorySessionsRemaining }} remaining</span>
+                  <span class="meter-tip tip-amber">1-on-1 Guidance</span>
                 </div>
               </div>
 
-              <!-- 4. Chauffeured Site Visits -->
-              <div class="meter-box">
+              <!-- 4. Chauffeured Site Visits (Mild Royal Lavender/Plum) -->
+              <div class="meter-box meter-box-purple">
+                <div class="meter-kicker kicker-purple">VIP Escort</div>
                 <div class="meter-header">
-                  <span class="meter-title">
-                    <span class="material-symbols-outlined meter-icon">directions_car</span>
-                    <span>Site Visits</span>
-                  </span>
-                  <span class="meter-counts">{{ ent.siteVisitsUsed }} / {{ ent.siteVisitLimit }}</span>
+                  <div class="meter-title-wrap">
+                    <div class="meter-icon-pill icon-purple">
+                      <span class="material-symbols-outlined">directions_car</span>
+                    </div>
+                    <span class="meter-title title-purple">Site Visits</span>
+                  </div>
+                  <span class="meter-counts count-purple">{{ ent.siteVisitsUsed }} / {{ ent.siteVisitLimit }}</span>
                 </div>
-                <div class="meter-progress-track">
-                  <div class="meter-progress-fill"
+                <div class="meter-progress-track track-purple">
+                  <div class="meter-progress-fill fill-purple"
                     [style.width.%]="calculatePercentage(ent.siteVisitsUsed, ent.siteVisitLimit)"></div>
                 </div>
                 <div class="meter-footer">
-                  <span>{{ ent.siteVisitsRemaining }} remaining</span>
-                  <span class="meter-tip">Escorted Visit</span>
+                  <span class="meter-rem-text text-purple">{{ ent.siteVisitsRemaining }} remaining</span>
+                  <span class="meter-tip tip-purple">Escorted Visit</span>
                 </div>
               </div>
             </div>
