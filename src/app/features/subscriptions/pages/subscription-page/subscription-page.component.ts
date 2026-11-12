@@ -78,7 +78,25 @@ export class SubscriptionPageComponent implements OnInit {
 
   readonly currentSub = computed(() => this.subscriptionService.currentSubscription());
   readonly activePlanId = computed(() => this.subscriptionService.activePlanId());
+  readonly activePlanName = computed(() => this.subscriptionService.activePlanName());
   readonly invoices = computed(() => this.subscriptionService.invoices());
+
+  getPlanRank(planId: string | null | undefined): number {
+    if (!planId) return 1;
+    switch (planId.toLowerCase()) {
+      case 'explorer': return 1;
+      case 'smart_buyer': return 2;
+      case 'priority_buyer': return 3;
+      case 'vip_concierge': return 4;
+      default: return 1;
+    }
+  }
+
+  isPlanDowngrade(planId: string): boolean {
+    const activeRank = this.getPlanRank(this.activePlanId());
+    const targetRank = this.getPlanRank(planId);
+    return targetRank < activeRank;
+  }
 
   readonly faqs = [
     {
@@ -132,6 +150,16 @@ export class SubscriptionPageComponent implements OnInit {
         title: 'Current Plan Active',
         message: `You are already subscribed to the ${plan.name} plan.`,
         icon: 'verified'
+      });
+      return;
+    }
+
+    if (this.isPlanDowngrade(plan.id)) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Downgrade Not Permitted',
+        message: `You currently have an active higher tier (${this.activePlanName()}). Downgrading to ${plan.name} is not permitted.`,
+        icon: 'lock'
       });
       return;
     }

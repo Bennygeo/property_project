@@ -44,6 +44,28 @@ try {
         Response::error('Invalid or inactive subscription plan', 404);
     }
 
+    // Downgrade Prevention: Check if user already holds an active higher plan
+    $curStmt = $db->prepare("
+        SELECT s.plan_id, p.name AS current_plan_name, p.price_inr, p.sort_order 
+        FROM user_subscriptions s
+        JOIN subscription_plans p ON s.plan_id = p.id
+        WHERE s.user_id = ? AND s.status = 'active' AND (s.expires_at IS NULL OR s.expires_at > NOW())
+        ORDER BY p.price_inr DESC LIMIT 1
+    ");
+    $curStmt->execute([$userId]);
+    $currentActive = $curStmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($currentActive) {
+        $curPrice = (float)$currentActive['price_inr'];
+        $curOrder = (int)($currentActive['sort_order'] ?? 1);
+        $newPrice = (float)$plan['price_inr'];
+        $newOrder = (int)($plan['sort_order'] ?? 1);
+
+        if ($newPrice < $curPrice || $newOrder < $curOrder) {
+            Response::error("Downgrading from your active {$currentActive['current_plan_name']} tier is not permitted.", 400);
+        }
+    }
+
     $priceInr = (float)$plan['price_inr'];
 
     // If free plan, no Razorpay order is needed

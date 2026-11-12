@@ -153,13 +153,19 @@
         @for (plan of (plans() && plans().length ? plans() : defaultPlans); track plan.id) {
         <article class="plan-card" 
           [class.is-current]="activePlanId() === plan.id"
-          [class.is-popular]="plan.id === 'smart_buyer'"
+          [class.is-popular]="plan.id === 'smart_buyer' && !isPlanDowngrade(plan.id)"
+          [class.is-downgrade-disabled]="isPlanDowngrade(plan.id)"
           (click)="onSubscribe(plan)">
 
           <!-- Top Tag Badge -->
           <div class="plan-badge-wrapper">
             @if (activePlanId() === plan.id) {
             <span class="plan-tag active-tag">CURRENT PLAN</span>
+            } @else if (isPlanDowngrade(plan.id)) {
+            <span class="plan-tag downgrade-tag">
+              <span class="material-symbols-outlined" style="font-size: 13px;">lock</span>
+              <span>LOWER TIER</span>
+            </span>
             } @else if (plan.badgeText) {
             <span class="plan-tag" [class.popular-tag]="plan.id === 'smart_buyer'">{{ plan.badgeText }}</span>
             }
@@ -225,6 +231,11 @@
               <span class="material-symbols-outlined">verified</span>
               <span>Active Plan</span>
             </button>
+            } @else if (isPlanDowngrade(plan.id)) {
+            <button type="button" class="btn-plan-cta downgrade-cta" disabled title="Downgrading from an active higher tier is not allowed">
+              <span class="material-symbols-outlined">lock</span>
+              <span>Downgrade Not Allowed</span>
+            </button>
             } @else {
             <button type="button" class="btn-plan-cta" (click)="$event.stopPropagation(); onSubscribe(plan)"
               [disabled]="subscriptionService.isProcessingPayment()">
@@ -233,7 +244,7 @@
               <span>Connecting Razorpay...</span>
               } @else {
               <span class="material-symbols-outlined">bolt</span>
-              <span>{{ plan.priceInr === 0 ? 'Choose Explorer' : 'Subscribe via Razorpay' }}</span>
+              <span>{{ plan.priceInr === 0 ? 'Choose Explorer' : 'Upgrade via Razorpay' }}</span>
               }
             </button>
             }

@@ -386,6 +386,26 @@
   background: #fafcfe;
 }
 
+.plan-card.is-downgrade-disabled {
+  opacity: 0.62;
+  filter: grayscale(0.2);
+  cursor: not-allowed;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.plan-card.is-downgrade-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #cbd5e1 !important;
+}
+
+.plan-card.is-downgrade-disabled * {
+  cursor: not-allowed !important;
+}
+
 .plan-badge-wrapper {
   min-height: 24px;
   margin-bottom: 0.75rem;
@@ -411,6 +431,16 @@
 .plan-tag.active-tag {
   background: var(--brand-teal);
   color: #ffffff;
+}
+
+.plan-tag.downgrade-tag {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
 }
 
 .plan-name {
@@ -569,6 +599,15 @@
   color: #ffffff;
   box-shadow: none;
   opacity: 1;
+}
+
+.btn-plan-cta.downgrade-cta {
+  background: #e2e8f0;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  box-shadow: none;
+  opacity: 0.9;
+  cursor: not-allowed !important;
 }
 
 .spinner-inline {
