@@ -477,12 +477,12 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 2: SMART BUYER (MILD MINT GREEN PASTEL)                               */
+/* TIER 2: SMART BUYER (THEME BRAND GREEN MILD PASTEL)                        */
 /* Height: Medium Step (height: 660px on desktop)                             */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-smart-buyer {
-  background: #f0fdf4;
-  border: 1.5px solid #86efac;
+  background: #f2f8f4;
+  border: 1.5px solid #8ebaa0;
   padding: 1.65rem 1.35rem;
 }
 
@@ -494,37 +494,37 @@
 }
 
 .plan-card.plan-smart-buyer:hover:not(.is-downgrade-disabled) {
-  border-color: #4ade80;
-  box-shadow: 0 12px 32px rgba(22, 101, 52, 0.15);
+  border-color: #5e8f72;
+  box-shadow: 0 12px 32px rgba(94, 143, 114, 0.16);
 }
 
-.plan-card.plan-smart-buyer .plan-name { color: #166534; }
-.plan-card.plan-smart-buyer .plan-price { color: #166534; }
+.plan-card.plan-smart-buyer .plan-name { color: #2c4938; }
+.plan-card.plan-smart-buyer .plan-price { color: #2c4938; }
 .plan-card.plan-smart-buyer .plan-quotas-box {
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
+  background: #e5f7ec;
+  border: 1px solid #c4e8d1;
 }
-.plan-card.plan-smart-buyer .quota-icon { color: #15803d; }
-.plan-card.plan-smart-buyer .quota-text strong { color: #166534; }
-.plan-card.plan-smart-buyer .check-icon { color: #15803d; }
+.plan-card.plan-smart-buyer .quota-icon { color: #5e8f72; }
+.plan-card.plan-smart-buyer .quota-text strong { color: #2c4938; }
+.plan-card.plan-smart-buyer .check-icon { color: #5e8f72; }
 .plan-card.plan-smart-buyer .btn-plan-cta {
-  background: #15803d;
+  background: #5e8f72;
   color: #ffffff;
-  box-shadow: 0 3px 10px rgba(21, 128, 61, 0.28);
+  box-shadow: 0 3px 10px rgba(94, 143, 114, 0.28);
 }
 .plan-card.plan-smart-buyer .btn-plan-cta:hover:not(:disabled) {
-  background: #166534;
+  background: #497259;
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 3: PRIORITY BUYER (MILD ICE BLUE / CYAN-TEAL PASTEL)                   */
+/* TIER 3: PRIORITY BUYER (THEME BRAND TEAL MILD PASTEL)                      */
 /* Height: Tall Prominent Step (height: 715px on desktop)                     */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-priority-buyer {
-  background: #eff6ff;
-  border: 2px solid #60a5fa;
+  background: #f0f6f8;
+  border: 2px solid #7faab7;
   padding: 1.85rem 1.45rem;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 59, 74, 0.08);
   position: relative;
   z-index: 2;
 }
@@ -537,46 +537,46 @@
 }
 
 .plan-card.plan-priority-buyer:hover:not(.is-downgrade-disabled) {
-  border-color: #3b82f6;
-  box-shadow: 0 14px 38px rgba(37, 99, 235, 0.2);
+  border-color: #0f3b4a;
+  box-shadow: 0 14px 38px rgba(15, 59, 74, 0.2);
   transform: translateY(-6px);
 }
 
 .plan-card.plan-priority-buyer .plan-name {
-  color: #1d4ed8;
+  color: #0f3b4a;
   font-size: 1.45rem;
 }
 .plan-card.plan-priority-buyer .plan-price {
-  color: #1d4ed8;
+  color: #0f3b4a;
   font-size: 2.1rem;
 }
 .plan-card.plan-priority-buyer .plan-quotas-box {
-  background: #dbeafe;
-  border: 1px solid #bfdbfe;
+  background: #e1eff2;
+  border: 1px solid #c2e0e5;
   padding: 0.95rem;
 }
-.plan-card.plan-priority-buyer .quota-icon { color: #2563eb; }
-.plan-card.plan-priority-buyer .quota-text strong { color: #1d4ed8; }
-.plan-card.plan-priority-buyer .check-icon { color: #2563eb; }
+.plan-card.plan-priority-buyer .quota-icon { color: #0f3b4a; }
+.plan-card.plan-priority-buyer .quota-text strong { color: #0f3b4a; }
+.plan-card.plan-priority-buyer .check-icon { color: #0f3b4a; }
 .plan-card.plan-priority-buyer .btn-plan-cta {
-  background: #2563eb;
+  background: #0f3b4a;
   color: #ffffff;
-  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 3px 12px rgba(15, 59, 74, 0.35);
   padding: 0.825rem 1.25rem;
 }
 .plan-card.plan-priority-buyer .btn-plan-cta:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #144f63;
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 4: VIP CONCIERGE (MILD LUXURY LAVENDER PASTEL)                         */
+/* TIER 4: VIP CONCIERGE (THEME BRAND GOLD/SAND MILD PASTEL)                  */
 /* Height: Tallest Luxury Step (height: 770px on desktop)                     */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-vip-concierge {
-  background: #faf5ff;
-  border: 2px solid #c084fc;
+  background: #fdfbf6;
+  border: 2px solid #dfc886;
   padding: 2.05rem 1.45rem;
-  box-shadow: 0 8px 26px rgba(124, 58, 237, 0.08);
+  box-shadow: 0 8px 26px rgba(213, 179, 87, 0.1);
 }
 
 @media (min-width: 1040px) {
@@ -587,33 +587,33 @@
 }
 
 .plan-card.plan-vip-concierge:hover:not(.is-downgrade-disabled) {
-  border-color: #a855f7;
-  box-shadow: 0 16px 42px rgba(124, 58, 237, 0.22);
+  border-color: #b89230;
+  box-shadow: 0 16px 42px rgba(213, 179, 87, 0.22);
   transform: translateY(-6px);
 }
 
 .plan-card.plan-vip-concierge .plan-name {
-  color: #6d28d9;
+  color: #6e5719;
   font-size: 1.45rem;
 }
 .plan-card.plan-vip-concierge .plan-price {
-  color: #6d28d9;
+  color: #6e5719;
   font-size: 2.1rem;
 }
 .plan-card.plan-vip-concierge .plan-quotas-box {
-  background: #f3e8ff;
-  border: 1px solid #e9d5ff;
+  background: #f7f0d8;
+  border: 1px solid #ebdcb0;
 }
-.plan-card.plan-vip-concierge .quota-icon { color: #7c3aed; }
-.plan-card.plan-vip-concierge .quota-text strong { color: #6d28d9; }
-.plan-card.plan-vip-concierge .check-icon { color: #7c3aed; }
+.plan-card.plan-vip-concierge .quota-icon { color: #b89230; }
+.plan-card.plan-vip-concierge .quota-text strong { color: #6e5719; }
+.plan-card.plan-vip-concierge .check-icon { color: #b89230; }
 .plan-card.plan-vip-concierge .btn-plan-cta {
-  background: #7c3aed;
+  background: linear-gradient(135deg, #d5b357 0%, #b89230 100%);
   color: #ffffff;
-  box-shadow: 0 3px 12px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 3px 12px rgba(213, 179, 87, 0.35);
 }
 .plan-card.plan-vip-concierge .btn-plan-cta:hover:not(:disabled) {
-  background: #6d28d9;
+  background: #a68124;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -638,33 +638,33 @@
 }
 
 .plan-card.plan-vip-concierge.is-current {
-  border: 2.5px solid #7c3aed !important;
-  box-shadow: 0 14px 40px rgba(124, 58, 237, 0.22) !important;
+  border: 2.5px solid #b89230 !important;
+  box-shadow: 0 14px 40px rgba(184, 146, 48, 0.22) !important;
 }
 .plan-card.plan-vip-concierge.is-current .btn-plan-cta.current-cta {
-  background: #7c3aed !important;
+  background: #b89230 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(184, 146, 48, 0.35) !important;
 }
 
 .plan-card.plan-priority-buyer.is-current {
-  border: 2.5px solid #2563eb !important;
-  box-shadow: 0 14px 40px rgba(37, 99, 235, 0.22) !important;
+  border: 2.5px solid #0f3b4a !important;
+  box-shadow: 0 14px 40px rgba(15, 59, 74, 0.22) !important;
 }
 .plan-card.plan-priority-buyer.is-current .btn-plan-cta.current-cta {
-  background: #2563eb !important;
+  background: #0f3b4a !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(15, 59, 74, 0.35) !important;
 }
 
 .plan-card.plan-smart-buyer.is-current {
-  border: 2.5px solid #15803d !important;
-  box-shadow: 0 14px 40px rgba(21, 128, 61, 0.22) !important;
+  border: 2.5px solid #5e8f72 !important;
+  box-shadow: 0 14px 40px rgba(94, 143, 114, 0.22) !important;
 }
 .plan-card.plan-smart-buyer.is-current .btn-plan-cta.current-cta {
-  background: #15803d !important;
+  background: #5e8f72 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(94, 143, 114, 0.35) !important;
 }
 
 .plan-card.plan-explorer.is-current {
@@ -723,22 +723,22 @@
 }
 
 .plan-card.plan-smart-buyer .plan-tag:not(.downgrade-tag):not(.active-tag) {
-  background: #15803d;
+  background: #5e8f72;
   color: #ffffff;
 }
 
 .plan-card.plan-priority-buyer .plan-tag:not(.downgrade-tag):not(.active-tag) {
-  background: #2563eb;
+  background: #0f3b4a;
   color: #ffffff;
 }
 
 .plan-card.plan-vip-concierge .plan-tag:not(.downgrade-tag):not(.active-tag) {
-  background: #7c3aed;
+  background: #b89230;
   color: #ffffff;
 }
 
 .plan-tag.popular-tag {
-  background: #15803d !important;
+  background: #5e8f72 !important;
   color: #ffffff !important;
 }
 
@@ -748,15 +748,15 @@
 }
 
 .plan-card.plan-vip-concierge .plan-tag.active-tag {
-  background: #7c3aed !important;
+  background: #b89230 !important;
 }
 
 .plan-card.plan-priority-buyer .plan-tag.active-tag {
-  background: #2563eb !important;
+  background: #0f3b4a !important;
 }
 
 .plan-card.plan-smart-buyer .plan-tag.active-tag {
-  background: #15803d !important;
+  background: #5e8f72 !important;
 }
 
 .plan-card.plan-explorer .plan-tag.active-tag {
@@ -2113,100 +2113,131 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 1 & 3: WARM ALABASTER LIGHT CARD                                     */
+/* THEME 1: MILD SLATE PROCESS CARD (PHASE 01)                                */
 /* -------------------------------------------------------------------------- */
-.process-card-light {
-  background: #fbf9f5;
-  border: 1.5px solid #ece6db;
+.process-card-slate {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
 }
 
-.process-card-light:hover {
-  border-color: #dcd3c3;
+.process-card-slate:hover {
+  border-color: #94a3b8;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
-.process-card-light .card-step-badge {
-  background: #ebe6dc;
-  color: #57534e;
+.process-card-slate .card-step-badge.badge-slate {
+  background: #e2e8f0;
+  color: #334155;
 }
 
-.process-card-light .card-step-title {
-  color: #0f172a;
+.process-card-slate .card-step-title {
+  color: #1e293b;
 }
 
-.process-card-light .card-step-desc {
+.process-card-slate .card-step-desc {
   color: #475569;
 }
 
-.process-card-light .card-step-watermark {
+.process-card-slate .card-step-watermark.watermark-slate {
   color: rgba(203, 213, 225, 0.45);
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 2: DEEP SIGNATURE FOREST GREEN CARD (INSTITUTIONAL CORE)             */
+/* THEME 2: MILD BRAND GREEN PROCESS CARD (PHASE 02)                          */
 /* -------------------------------------------------------------------------- */
-.process-card-dark {
-  background: #11281c;
-  border: 1.5px solid #1a422d;
-  box-shadow: 0 8px 24px rgba(17, 40, 28, 0.22);
+.process-card-green {
+  background: #f2f8f4;
+  border: 1.5px solid #8ebaa0;
+  box-shadow: 0 4px 16px rgba(94, 143, 114, 0.05);
 }
 
-.process-card-dark:hover {
-  border-color: #276243;
-  box-shadow: 0 14px 34px rgba(17, 40, 28, 0.32);
+.process-card-green:hover {
+  border-color: #5e8f72;
+  box-shadow: 0 12px 28px rgba(94, 143, 114, 0.12);
 }
 
-.process-card-dark .card-step-badge.badge-accent {
-  background: #1e4531;
-  color: #86efac;
-  border: 1px solid rgba(134, 239, 172, 0.25);
+.process-card-green .card-step-badge.badge-green {
+  background: #e5f7ec;
+  color: #2c4938;
+  border: 1px solid rgba(94, 143, 114, 0.25);
 }
 
-.process-card-dark .card-step-title {
-  color: #ffffff;
+.process-card-green .card-step-title {
+  color: #2c4938;
 }
 
-.process-card-dark .card-step-desc {
-  color: #d1fae5;
-  opacity: 0.92;
+.process-card-green .card-step-desc {
+  color: #3d5a49;
 }
 
-.process-card-dark .card-step-watermark.watermark-dark {
-  color: rgba(255, 255, 255, 0.08);
+.process-card-green .card-step-watermark.watermark-green {
+  color: rgba(94, 143, 114, 0.16);
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 4: WARM OCHRE / GOLD EXECUTION CARD (CLOSING TIER)                   */
+/* THEME 3: MILD BRAND TEAL PROCESS CARD (PHASE 03)                           */
+/* -------------------------------------------------------------------------- */
+.process-card-teal {
+  background: #f0f6f8;
+  border: 1.5px solid #7faab7;
+  box-shadow: 0 4px 16px rgba(15, 59, 74, 0.05);
+}
+
+.process-card-teal:hover {
+  border-color: #0f3b4a;
+  box-shadow: 0 12px 28px rgba(15, 59, 74, 0.12);
+}
+
+.process-card-teal .card-step-badge.badge-teal {
+  background: #e1eff2;
+  color: #0f3b4a;
+  border: 1px solid rgba(15, 59, 74, 0.25);
+}
+
+.process-card-teal .card-step-title {
+  color: #0f3b4a;
+}
+
+.process-card-teal .card-step-desc {
+  color: #264d59;
+}
+
+.process-card-teal .card-step-watermark.watermark-teal {
+  color: rgba(15, 59, 74, 0.16);
+}
+
+/* -------------------------------------------------------------------------- */
+/* THEME 4: MILD BRAND GOLD/SAND PROCESS CARD (PHASE 04)                      */
 /* -------------------------------------------------------------------------- */
 .process-card-gold {
-  background: #c69c3a;
-  border: 1.5px solid #b3892c;
-  box-shadow: 0 8px 24px rgba(198, 156, 58, 0.22);
+  background: #fdfbf6;
+  border: 1.5px solid #dfc886;
+  box-shadow: 0 4px 16px rgba(213, 179, 87, 0.06);
 }
 
 .process-card-gold:hover {
-  border-color: #997321;
-  box-shadow: 0 14px 34px rgba(198, 156, 58, 0.32);
+  border-color: #b89230;
+  box-shadow: 0 12px 28px rgba(213, 179, 87, 0.14);
 }
 
 .process-card-gold .card-step-badge.badge-gold {
-  background: #a47c23;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #f7f0d8;
+  color: #6e5719;
+  border: 1px solid rgba(213, 179, 87, 0.3);
 }
 
 .process-card-gold .card-step-title {
-  color: #1a170e;
+  color: #6e5719;
 }
 
 .process-card-gold .card-step-desc {
-  color: #2f2714;
+  color: #524113;
   font-weight: 500;
 }
 
 .process-card-gold .card-step-watermark.watermark-gold {
-  color: rgba(0, 0, 0, 0.1);
+  color: rgba(213, 179, 87, 0.22);
 }
 
 .spin {
