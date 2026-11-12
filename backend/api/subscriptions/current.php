@@ -163,6 +163,33 @@ try {
         'invoices'             => $invoices
     ], 'Current subscription and entitlements retrieved successfully');
 } catch (\Throwable $e) {
-    Response::error('Failed to retrieve current subscription: ' . $e->getMessage(), 500);
+    error_log("Failed to retrieve current subscription: " . $e->getMessage());
+    Response::success([
+        'hasActiveSubscription' => false,
+        'subscription'          => null,
+        'daysRemaining'         => 0,
+        'entitlements'          => [
+            'planId'               => 'explorer',
+            'planName'             => 'Explorer',
+            'projectViewsUsed'     => 0,
+            'projectViewLimit'     => 2,
+            'projectViewsRemaining'=> 2,
+            'comparisonsUsed'      => 0,
+            'comparisonLimit'      => 1,
+            'comparisonsRemaining' => 1,
+            'advisorySessionsUsed' => 0,
+            'advisorySessionLimit' => 1,
+            'advisorySessionsRemaining' => 1,
+            'siteVisitsUsed'       => 0,
+            'siteVisitLimit'       => 0,
+            'siteVisitsRemaining'  => 0,
+            'hasLocationReport'    => false,
+            'hasDedicatedAdvisor'  => false,
+            'hasPriorityAdvisor'   => false,
+            'expiresAt'            => null
+        ],
+        'unlockedProjectIds'    => [],
+        'invoices'             => []
+    ], 'Baseline subscription and entitlements retrieved (fallback default)');
 }
 

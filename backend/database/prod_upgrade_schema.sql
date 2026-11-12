@@ -142,8 +142,96 @@ CREATE TABLE IF NOT EXISTS `guest_device_views` (
 
 
 -- ----------------------------------------------------------------------------
--- 5. SUBSCRIPTION ENTITLEMENTS & FREEMIUM GATING
+-- 5. SUBSCRIPTION PLANS, ENTITLEMENTS & FREEMIUM GATING
 -- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `subscription_plans` (
+  `id` VARCHAR(50) NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `badge_text` VARCHAR(50) DEFAULT NULL,
+  `price_inr` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `duration_days` INT(11) NOT NULL DEFAULT 30,
+  `project_view_limit` INT(11) NOT NULL DEFAULT 2,
+  `comparison_limit` INT(11) NOT NULL DEFAULT 1,
+  `advisory_session_limit` INT(11) NOT NULL DEFAULT 1,
+  `site_visit_limit` INT(11) NOT NULL DEFAULT 0,
+  `has_location_report` TINYINT(1) NOT NULL DEFAULT 0,
+  `has_dedicated_advisor` TINYINT(1) NOT NULL DEFAULT 0,
+  `has_priority_advisor` TINYINT(1) NOT NULL DEFAULT 0,
+  `description` TEXT DEFAULT NULL,
+  `features_json` TEXT DEFAULT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `sort_order` INT(11) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `subscription_plans` (`id`, `name`, `badge_text`, `price_inr`, `duration_days`, `project_view_limit`, `comparison_limit`, `advisory_session_limit`, `site_visit_limit`, `has_location_report`, `has_dedicated_advisor`, `has_priority_advisor`, `description`, `features_json`, `is_active`, `sort_order`)
+VALUES
+('explorer', 'Explorer', 'Free Forever', 0.00, 365, 2, 1, 1, 0, 0, 0, 0, 'Ideal for initial discovery of plotted developments, layouts and emerging locations across Tamil Nadu.', '["2 Detailed Project Views","1 Side-by-Side Comparison","1 Intro Advisory Session","Direct SRO Regulatory Checklist","Community Support"]', 1, 1),
+('smart_buyer', 'Smart Buyer', 'Most Popular', 750.00, 30, 5, 3, 2, 0, 1, 0, 0, 'For active buyers shortlisting plots in high-growth corridors with location intelligence.', '["5 Detailed Project Views","3 Side-by-Side Comparisons","2 Advisory Sessions","Location & Corridor Growth Report","RERA Document Verification Extract","WhatsApp Concierge Desk"]', 1, 2),
+('priority_buyer', 'Priority Buyer', 'Best Value', 7500.00, 60, 25, 10, 4, 1, 1, 1, 0, 'Comprehensive advisory with dedicated expert and field visit coordination.', '["25 Detailed Project Views","10 Side-by-Side Comparisons","4 Comprehensive Advisory Sessions","1 Chauffeured Physical Site Visit","Dedicated Property Advisor","Patta & Cadastral Verification Dossier","Land Appreciation Intelligence"]', 1, 3),
+('vip_concierge', 'VIP Concierge', 'Executive', 20000.00, 90, 50, 20, 8, 3, 1, 1, 1, 'White-glove advisory, multiple site visits and legal title clearance for high-net-worth investors.', '["50 Detailed Project Views","20 Side-by-Side Comparisons","8 In-Depth Advisory Sessions","3 Chauffeured Physical Site Visits","Priority Advisory Partner (Direct Line)","Full Legal & SRO Title Check Assistance","Custom Layout & Subdivision Analysis","Negotiation & Booking Escort"]', 1, 4)
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `price_inr` = VALUES(`price_inr`), `description` = VALUES(`description`);
+
+CREATE TABLE IF NOT EXISTS `user_subscriptions` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `plan_id` VARCHAR(50) NOT NULL,
+  `status` ENUM('active','expired','cancelled','upgraded') NOT NULL DEFAULT 'active',
+  `amount_paid` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `razorpay_order_id` VARCHAR(100) DEFAULT NULL,
+  `razorpay_payment_id` VARCHAR(100) DEFAULT NULL,
+  `razorpay_signature` VARCHAR(255) DEFAULT NULL,
+  `starts_at` DATETIME NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `subscription_invoices` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `invoice_number` VARCHAR(50) NOT NULL,
+  `user_id` INT(11) NOT NULL,
+  `subscription_id` INT(11) NOT NULL,
+  `plan_id` VARCHAR(50) NOT NULL,
+  `plan_name` VARCHAR(100) NOT NULL,
+  `base_amount` DECIMAL(10,2) NOT NULL,
+  `gst_rate` DECIMAL(5,2) NOT NULL DEFAULT 18.00,
+  `gst_amount` DECIMAL(10,2) NOT NULL,
+  `total_amount` DECIMAL(10,2) NOT NULL,
+  `sac_code` VARCHAR(20) NOT NULL DEFAULT '998313',
+  `gstin` VARCHAR(30) NOT NULL DEFAULT '33AABCF9812K1Z9',
+  `customer_name` VARCHAR(150) NOT NULL,
+  `customer_email` VARCHAR(150) DEFAULT NULL,
+  `customer_phone` VARCHAR(30) DEFAULT NULL,
+  `payment_method` VARCHAR(50) DEFAULT 'Razorpay',
+  `payment_id` VARCHAR(100) DEFAULT NULL,
+  `status` ENUM('paid','refunded','void') NOT NULL DEFAULT 'paid',
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `invoice_number` (`invoice_number`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_invoice` (`invoice_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `subscription_refunds` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `invoice_id` INT(11) NOT NULL,
+  `subscription_id` INT(11) NOT NULL,
+  `user_id` INT(11) NOT NULL,
+  `refund_amount` DECIMAL(10,2) NOT NULL,
+  `refund_reason` TEXT DEFAULT NULL,
+  `status` ENUM('requested','processed','rejected') NOT NULL DEFAULT 'processed',
+  `razorpay_refund_id` VARCHAR(100) DEFAULT NULL,
+  `processed_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_invoice` (`invoice_id`),
+  KEY `idx_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `user_entitlements` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` INT(11) NOT NULL,

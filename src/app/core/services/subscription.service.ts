@@ -23,6 +23,107 @@ declare global {
 const STORAGE_ACTIVE_PLAN_KEY = 'fap_user_active_plan';
 const STORAGE_ENTITLEMENTS_KEY = 'fap_user_entitlements';
 
+export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'explorer',
+    name: 'Explorer',
+    badgeText: 'Free Forever',
+    priceInr: 0,
+    durationDays: 365,
+    projectViewLimit: 2,
+    comparisonLimit: 1,
+    advisorySessionLimit: 1,
+    siteVisitLimit: 0,
+    hasLocationReport: false,
+    hasDedicatedAdvisor: false,
+    hasPriorityAdvisor: false,
+    description: 'Ideal for initial discovery of plotted developments, layouts and emerging locations across Tamil Nadu.',
+    features: [
+      '2 Detailed Project Views',
+      '1 Side-by-Side Comparison',
+      '1 Intro Advisory Session',
+      'Direct SRO Regulatory Checklist',
+      'Community Support'
+    ],
+    sortOrder: 1
+  },
+  {
+    id: 'smart_buyer',
+    name: 'Smart Buyer',
+    badgeText: 'Most Popular',
+    priceInr: 750,
+    durationDays: 30,
+    projectViewLimit: 5,
+    comparisonLimit: 3,
+    advisorySessionLimit: 2,
+    siteVisitLimit: 0,
+    hasLocationReport: true,
+    hasDedicatedAdvisor: false,
+    hasPriorityAdvisor: false,
+    description: 'For active buyers shortlisting plots in high-growth corridors with location intelligence.',
+    features: [
+      '5 Detailed Project Views',
+      '3 Side-by-Side Comparisons',
+      '2 Advisory Sessions',
+      'Location & Corridor Growth Report',
+      'RERA Document Verification Extract',
+      'WhatsApp Concierge Desk'
+    ],
+    sortOrder: 2
+  },
+  {
+    id: 'priority_buyer',
+    name: 'Priority Buyer',
+    badgeText: 'Best Value',
+    priceInr: 7500,
+    durationDays: 60,
+    projectViewLimit: 25,
+    comparisonLimit: 10,
+    advisorySessionLimit: 4,
+    siteVisitLimit: 1,
+    hasLocationReport: true,
+    hasDedicatedAdvisor: true,
+    hasPriorityAdvisor: false,
+    description: 'Comprehensive advisory with dedicated expert and field visit coordination.',
+    features: [
+      '25 Detailed Project Views',
+      '10 Side-by-Side Comparisons',
+      '4 Comprehensive Advisory Sessions',
+      '1 Chauffeured Physical Site Visit',
+      'Dedicated Property Advisor',
+      'Patta & Cadastral Verification Dossier',
+      'Land Appreciation Intelligence'
+    ],
+    sortOrder: 3
+  },
+  {
+    id: 'vip_concierge',
+    name: 'VIP Concierge',
+    badgeText: 'Executive',
+    priceInr: 20000,
+    durationDays: 90,
+    projectViewLimit: 50,
+    comparisonLimit: 20,
+    advisorySessionLimit: 8,
+    siteVisitLimit: 3,
+    hasLocationReport: true,
+    hasDedicatedAdvisor: true,
+    hasPriorityAdvisor: true,
+    description: 'White-glove advisory, multiple site visits and legal title clearance for high-net-worth investors.',
+    features: [
+      '50 Detailed Project Views',
+      '20 Side-by-Side Comparisons',
+      '8 In-Depth Advisory Sessions',
+      '3 Chauffeured Physical Site Visits',
+      'Priority Advisory Partner (Direct Line)',
+      'Full Legal & SRO Title Check Assistance',
+      'Custom Layout & Subdivision Analysis',
+      'Negotiation & Booking Escort'
+    ],
+    sortOrder: 4
+  }
+];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -32,7 +133,7 @@ export class SubscriptionService {
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
 
-  public readonly plans = signal<SubscriptionPlan[]>([]);
+  public readonly plans = signal<SubscriptionPlan[]>(DEFAULT_SUBSCRIPTION_PLANS);
   public readonly currentSubscription = signal<UserSubscription | null>(this.loadStoredSubscription());
   public readonly entitlements = signal<UserEntitlements | null>(this.loadStoredEntitlements());
   public readonly unlockedProjectIds = signal<Set<string>>(new Set<string>());
@@ -71,12 +172,33 @@ export class SubscriptionService {
   }
 
   private loadStoredEntitlements(): UserEntitlements | null {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
+    const defaultExplorer: UserEntitlements = {
+      planId: 'explorer',
+      planName: 'Explorer',
+      projectViewsUsed: 0,
+      projectViewLimit: 2,
+      projectViewsRemaining: 2,
+      comparisonsUsed: 0,
+      comparisonLimit: 1,
+      comparisonsRemaining: 1,
+      advisorySessionsUsed: 0,
+      advisorySessionLimit: 1,
+      advisorySessionsRemaining: 1,
+      siteVisitsUsed: 0,
+      siteVisitLimit: 0,
+      siteVisitsRemaining: 0,
+      hasLocationReport: false,
+      hasDedicatedAdvisor: false,
+      hasPriorityAdvisor: false,
+      expiresAt: null
+    };
+
+    if (typeof window === 'undefined' || !window.localStorage) return defaultExplorer;
     try {
       const raw = localStorage.getItem(STORAGE_ENTITLEMENTS_KEY);
-      return raw ? JSON.parse(raw) : null;
+      return raw ? JSON.parse(raw) : defaultExplorer;
     } catch {
-      return null;
+      return defaultExplorer;
     }
   }
 
