@@ -25,31 +25,14 @@ try {
 
     $stmt = $db->query("
         SELECT 
-            CASE 
-                WHEN LOWER(pmd.corridor) = 'gst road' OR LOWER(pmd.highway_name) LIKE '%gst road%' THEN 'GST Road (NH45)'
-                WHEN LOWER(pmd.corridor) = 'omr' OR LOWER(pmd.corridor) = 'it corridor' THEN 'OMR IT Corridor'
-                WHEN LOWER(pmd.corridor) = 'ecr' OR LOWER(pmd.highway_name) LIKE '%east coast road%' THEN 'East Coast Road (ECR)'
-                WHEN LOWER(pmd.highway_name) LIKE '%chennai%bengaluru%' OR LOWER(pmd.highway_name) LIKE '%nh48%' THEN 'Chennai–Bengaluru Highway (NH48)'
-                WHEN LOWER(pmd.highway_name) LIKE '%salem%kochi%' OR LOWER(pmd.highway_name) LIKE '%nh544%' THEN 'Salem–Kochi Highway (NH544)'
-                WHEN LOWER(pmd.highway_name) LIKE '%avinashi road%' THEN 'Avinashi Road Industrial Belt (NH381)'
-                WHEN LOWER(pmd.highway_name) LIKE '%madurai%kanyakumari%' THEN 'Madurai–Kanyakumari Highway (NH44)'
-                WHEN LOWER(pmd.highway_name) LIKE '%chennai%kolkata%' OR LOWER(pmd.highway_name) LIKE '%nh16%' THEN 'Chennai–Kolkata Highway (NH16)'
-                WHEN LOWER(pmd.highway_name) LIKE '%tiruvannamalai%villupuram%' OR LOWER(pmd.highway_name) LIKE '%nh77%' THEN 'Tiruvannamalai–Villupuram Road (NH77)'
-                WHEN LOWER(pmd.highway_name) LIKE '%salem%chennai%' OR LOWER(pmd.highway_name) LIKE '%nh79%' THEN 'Salem–Chennai Highway (NH79)'
-                WHEN LOWER(pmd.highway_name) LIKE '%trichy%chennai%' OR LOWER(pmd.highway_name) LIKE '%nh38%' THEN 'Trichy–Chennai Highway (NH38)'
-                WHEN LOWER(pmd.highway_name) LIKE '%salem%karur%' THEN 'Salem–Karur Highway (NH44)'
-                WHEN LOWER(pmd.highway_name) LIKE '%thoothukudi%madurai%' THEN 'Thoothukudi–Madurai Highway (NH138)'
-                WHEN LOWER(pmd.district) = 'krishnagiri' OR LOWER(pmd.taluk) = 'hosur' THEN 'Hosur–Bengaluru Corridor (NH44)'
-                ELSE NULL
-            END AS corridor_name,
-            COUNT(DISTINCT p.id) as property_count,
-            GROUP_CONCAT(DISTINCT COALESCE(NULLIF(TRIM(pmd.district), ''), NULLIF(TRIM(p.city_name), '')) SEPARATOR ', ') AS districts,
-            GROUP_CONCAT(DISTINCT NULLIF(TRIM(pmd.taluk), '') SEPARATOR ', ') AS taluks
-        FROM properties p
-        JOIN property_master_details pmd ON p.id = pmd.property_id
+            COALESCE(NULLIF(TRIM(pd.nearby_roads), ''), 'Tamil Nadu Growth Corridor') AS corridor_name,
+            COUNT(DISTINCT p.project_id) as property_count,
+            GROUP_CONCAT(DISTINCT NULLIF(TRIM(p.district), '') SEPARATOR ', ') AS districts
+        FROM projects p
+        LEFT JOIN project_details pd ON p.project_id = pd.project_id
         WHERE (p.status = 'published' OR p.status IS NULL)
+          AND pd.nearby_roads IS NOT NULL AND TRIM(pd.nearby_roads) != ''
         GROUP BY corridor_name
-        HAVING corridor_name IS NOT NULL
         ORDER BY property_count DESC
     ");
 

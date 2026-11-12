@@ -78,23 +78,21 @@ if (strlen($query) === 0) {
             $dClauses = [];
             $dParams = [];
             foreach ($variants as $idx => $v) {
-                $dClauses[] = "pmd.district LIKE :dv{$idx} OR p.city_name LIKE :dv{$idx}";
+                $dClauses[] = "p.district LIKE :dv{$idx} OR p.city LIKE :dv{$idx}";
                 $dParams[":dv{$idx}"] = '%' . $v . '%';
             }
             $dWhere = '(' . implode(' OR ', $dClauses) . ')';
 
             $topStmt = $db->prepare("
                 SELECT 
-                    COALESCE(NULLIF(TRIM(pmd.village_locality), ''), p.locality_name) AS loc_name,
-                    pmd.taluk,
-                    pmd.district,
-                    p.city_name,
-                    COUNT(DISTINCT p.id) AS prop_count
-                FROM properties p
-                LEFT JOIN property_master_details pmd ON p.id = pmd.property_id
+                    p.locality AS loc_name,
+                    p.district,
+                    p.city,
+                    COUNT(DISTINCT p.project_id) AS prop_count
+                FROM projects p
                 WHERE (p.status = 'published' OR p.status IS NULL)
                   AND {$dWhere}
-                GROUP BY loc_name, pmd.taluk, pmd.district, p.city_name
+                GROUP BY loc_name, p.district, p.city
                 ORDER BY prop_count DESC
                 LIMIT 8
             ");
@@ -109,7 +107,7 @@ if (strlen($query) === 0) {
                 $k = strtolower($cleanLoc);
                 if (!isset($seenTop[$k])) {
                     $seenTop[$k] = true;
-                    $sub = ($r['taluk'] ? $r['taluk'] . ' Taluk • ' : '') . $district . ' (' . $r['prop_count'] . ' Verified Plots)';
+                    $sub = $district . ' (' . $r['prop_count'] . ' Verified Plots)';
                     $topList[] = [
                         'label' => $cleanLoc,
                         'sub'   => $sub,
@@ -206,73 +204,50 @@ try {
     // 1. Localities in Selected District (Highest Priority)
     $locSql = "
         SELECT DISTINCT 
-            COALESCE(NULLIF(TRIM(pmd.village_locality), ''), p.locality_name) AS loc_name,
-            p.city_name,
-            pmd.district,
-            pmd.taluk,
-            COUNT(p.id) as prop_count
-        FROM properties p
-        LEFT JOIN property_master_details pmd ON p.id = pmd.property_id
-        WHERE (p.locality_name LIKE :q OR pmd.village_locality LIKE :q OR pmd.taluk LIKE :q)
+            p.locality AS loc_name,
+            p.city,
+            p.district,
+            COUNT(p.project_id) as prop_count
+        FROM projects p
+        WHERE (p.locality LIKE :q OR p.city LIKE :q OR p.district LIKE :q)
     ";
     $locParams = [':q' => $param];
     if (!empty($district)) {
-        $locSql .= " AND (pmd.district LIKE :d OR p.city_name LIKE :d) ";
+        $locSql .= " AND (p.district LIKE :d OR p.city LIKE :d) ";
         $locParams[':d'] = $dParam;
     }
-    $locSql .= " GROUP BY loc_name, p.city_name, pmd.district, pmd.taluk ORDER BY prop_count DESC LIMIT 8 ";
+    $locSql .= " GROUP BY loc_name, p.city, p.district ORDER BY prop_count DESC LIMIT 8 ";
 
     $locStmt = $db->prepare($locSql);
     $locStmt->execute($locParams);
     foreach ($locStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-        $sub = 'Locality in ' . ($r['taluk'] ? $r['taluk'] . ', ' : '') . ($r['district'] ?: $r['city_name'] ?: 'Tamil Nadu');
+        $sub = 'Locality in ' . ($r['district'] ?: $r['city'] ?: 'Tamil Nadu');
         $add($r['loc_name'], $sub, 'locality', 'location_on', $r['loc_name']);
     }
 
-    // 2. Taluks matching query
-    $talukSql = "
-        SELECT DISTINCT pmd.taluk, p.city_name, pmd.district
-        FROM property_master_details pmd
-        LEFT JOIN properties p ON pmd.property_id = p.id
-        WHERE pmd.taluk LIKE :q AND pmd.taluk IS NOT NULL
-    ";
-    $talukParams = [':q' => $param];
-    if (!empty($district)) {
-        $talukSql .= " AND (pmd.district LIKE :d OR p.city_name LIKE :d) ";
-        $talukParams[':d'] = $dParam;
-    }
-    $talukSql .= " LIMIT 4 ";
-    $stmtTaluk = $db->prepare($talukSql);
-    $stmtTaluk->execute($talukParams);
-    foreach ($stmtTaluk->fetchAll(PDO::FETCH_ASSOC) as $r) {
-        $sub = 'Taluk in ' . ($r['district'] ?: ($r['city_name'] ?: 'Tamil Nadu'));
-        $add($r['taluk'], $sub, 'locality', 'location_on', $r['taluk']);
-    }
-
-    // 3. Projects matching query in District
+    // 2. Projects matching query in District
     $projSql = "
-        SELECT DISTINCT pmd.project_name, pmd.developer, p.locality_name, pmd.district
-        FROM property_master_details pmd
-        LEFT JOIN properties p ON pmd.property_id = p.id
-        WHERE pmd.project_name LIKE :q AND pmd.project_name IS NOT NULL
+        SELECT DISTINCT p.project_name, p.developer_name, p.locality, p.district
+        FROM projects p
+        WHERE p.project_name LIKE :q AND p.project_name IS NOT NULL
     ";
     $projParams = [':q' => $param];
     if (!empty($district)) {
-        $projSql .= " AND (pmd.district LIKE :d OR p.city_name LIKE :d) ";
+        $projSql .= " AND (p.district LIKE :d OR p.city LIKE :d) ";
         $projParams[':d'] = $dParam;
     }
     $projSql .= " LIMIT 4 ";
     $stmt3 = $db->prepare($projSql);
     $stmt3->execute($projParams);
     foreach ($stmt3->fetchAll(PDO::FETCH_ASSOC) as $r) {
-        $dev = !empty($r['developer']) ? 'By ' . substr($r['developer'], 0, 25) : 'Cadastral Layout';
+        $dev = !empty($r['developer_name']) ? 'By ' . substr($r['developer_name'], 0, 25) : 'Cadastral Layout';
         $sub = "Project • {$dev}";
         $add($r['project_name'], $sub, 'project', 'domain', $r['project_name']);
     }
 
-    // 4. Cities & Districts Jurisdiction
+    // 3. Cities & Districts Jurisdiction
     if (empty($district)) {
-        $stmtDist = $db->prepare("SELECT DISTINCT district FROM property_master_details WHERE district LIKE :q AND district IS NOT NULL LIMIT 3");
+        $stmtDist = $db->prepare("SELECT DISTINCT district FROM projects WHERE district LIKE :q AND district IS NOT NULL LIMIT 4");
         $stmtDist->execute([':q' => $param]);
         foreach ($stmtDist->fetchAll(PDO::FETCH_ASSOC) as $r) {
             $add($r['district'], 'District Jurisdiction', 'city', 'location_city', $r['district']);

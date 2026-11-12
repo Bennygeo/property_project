@@ -40,85 +40,72 @@ try {
     $targetTaluk    = $talukParam;
     $targetCity     = $cityParam;
 
-    // 1. If propertyId or locality given, locate its taluk and district from DB
-    if (!empty($propId) && (empty($targetDistrict) || empty($targetTaluk))) {
+    // 1. If propertyId or locality given, locate its district and city from DB
+    if (!empty($propId) && empty($targetDistrict)) {
         $pStmt = $db->prepare("
-            SELECT p.locality_name, p.city_name, pmd.village_locality, pmd.district, pmd.taluk
-            FROM properties p
-            LEFT JOIN property_master_details pmd ON p.id = pmd.property_id
-            WHERE p.id = ?
+            SELECT p.locality, p.city, p.district
+            FROM projects p
+            WHERE p.project_id = ?
             LIMIT 1
         ");
         $pStmt->execute([$propId]);
         $row = $pStmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
-            $targetLocality = $targetLocality ?: ($row['village_locality'] ?: $row['locality_name']);
-            $targetDistrict = $row['district'] ?: ($row['city_name'] ?: '');
-            $targetTaluk    = $row['taluk'] ?: '';
-            $targetCity     = $row['city_name'] ?: '';
+            $targetLocality = $targetLocality ?: $row['locality'];
+            $targetDistrict = $row['district'] ?: ($row['city'] ?: '');
+            $targetCity     = $row['city'] ?: '';
         }
-    } elseif (!empty($localityParam) && (empty($targetDistrict) || empty($targetTaluk))) {
+    } elseif (!empty($localityParam) && empty($targetDistrict)) {
         $locStmt = $db->prepare("
-            SELECT p.city_name, pmd.district, pmd.taluk, pmd.village_locality, p.locality_name
-            FROM properties p
-            LEFT JOIN property_master_details pmd ON p.id = pmd.property_id
-            WHERE p.locality_name LIKE :q 
-               OR pmd.village_locality LIKE :q 
-               OR pmd.area_location LIKE :q
-               OR pmd.taluk LIKE :q
-               OR p.city_name LIKE :q
-               OR pmd.district LIKE :q
+            SELECT p.city, p.district, p.locality
+            FROM projects p
+            WHERE p.locality LIKE :q 
+               OR p.city LIKE :q
+               OR p.district LIKE :q
             LIMIT 1
         ");
         $locStmt->execute([':q' => "%{$localityParam}%"]);
         $target = $locStmt->fetch(PDO::FETCH_ASSOC);
         if ($target) {
-            $targetDistrict = $target['district'] ?: ($target['city_name'] ?: '');
-            $targetTaluk    = $target['taluk'] ?: '';
-            $targetCity     = $target['city_name'] ?: '';
+            $targetDistrict = $target['district'] ?: ($target['city'] ?: '');
+            $targetCity     = $target['city'] ?: '';
         }
     }
 
     $nearby = [];
     $seen = [];
 
-    // 2. Fetch nearby sister localities
-    if (!empty($targetDistrict) || !empty($targetTaluk)) {
+    // 2. Fetch nearby sister localities in same District / City
+    if (!empty($targetDistrict) || !empty($targetCity)) {
         $sql = "
             SELECT 
-                COALESCE(NULLIF(TRIM(pmd.village_locality), ''), p.locality_name) AS name,
-                p.city_name AS city,
-                pmd.taluk,
-                pmd.district,
-                COUNT(DISTINCT p.id) AS propertyCount,
-                MIN(p.price) AS minPrice
-            FROM properties p
-            INNER JOIN property_master_details pmd ON p.id = pmd.property_id
+                p.locality AS name,
+                p.city,
+                p.district,
+                COUNT(DISTINCT p.project_id) AS propertyCount,
+                MIN(p.price_from) AS minPrice
+            FROM projects p
             WHERE (p.status = 'published' OR p.status IS NULL)
               AND (
-                  (:taluk != '' AND pmd.taluk = :taluk)
-                  OR (:district != '' AND pmd.district = :district)
-                  OR (:city != '' AND p.city_name = :city)
+                  (:district != '' AND p.district = :district)
+                  OR (:city != '' AND p.city = :city)
               )
         ";
 
         $params = [
-            ':taluk'    => $targetTaluk,
             ':district' => $targetDistrict,
             ':city'     => $targetCity
         ];
 
         if (!empty($targetLocality)) {
-            $sql .= " AND p.locality_name NOT LIKE :targetLoc AND pmd.village_locality NOT LIKE :targetLoc ";
+            $sql .= " AND p.locality NOT LIKE :targetLoc ";
             $params[':targetLoc'] = "%{$targetLocality}%";
         }
 
         $sql .= "
-            GROUP BY name, city, taluk, district
+            GROUP BY name, p.city, p.district
             HAVING propertyCount > 0
-            ORDER BY 
-                CASE WHEN :taluk != '' AND pmd.taluk = :taluk THEN 1 ELSE 2 END ASC,
-                propertyCount DESC
+            ORDER BY propertyCount DESC
             LIMIT 12
         ";
 
@@ -134,20 +121,17 @@ try {
             $key = strtolower($cleanName);
             if (!isset($seen[$key])) {
                 $seen[$key] = true;
-                $isSameTaluk = !empty($targetTaluk) && strcasecmp((string)$r['taluk'], $targetTaluk) === 0;
-                $distanceTag = $isSameTaluk 
-                    ? ("Nearby • " . ($r['taluk'] ?: $r['district'])) 
-                    : ("Nearby District • " . ($r['district'] ?: $r['city']));
+                $distanceTag = "Nearby • " . ($r['district'] ?: $r['city']);
 
                 $nearby[] = [
                     'name'          => $cleanName,
                     'city'          => $r['city'],
-                    'taluk'         => $r['taluk'] ?: '',
+                    'taluk'         => '',
                     'district'      => $r['district'] ?: '',
                     'propertyCount' => (int)$r['propertyCount'],
-                    'minPrice'      => $r['minPrice'] ?: '₹ 25 Lakhs',
+                    'minPrice'      => !empty($r['minPrice']) ? '₹ ' . number_format((float)$r['minPrice']) : 'Price on Request',
                     'distanceTag'   => $distanceTag,
-                    'isSameTaluk'   => $isSameTaluk
+                    'isSameTaluk'   => false
                 ];
             }
         }
@@ -157,16 +141,14 @@ try {
     if (count($nearby) < 8) {
         $popStmt = $db->query("
             SELECT 
-                COALESCE(NULLIF(TRIM(pmd.village_locality), ''), p.locality_name) AS name,
-                p.city_name AS city,
-                pmd.taluk,
-                pmd.district,
-                COUNT(DISTINCT p.id) AS propertyCount,
-                MIN(p.price) AS minPrice
-            FROM properties p
-            INNER JOIN property_master_details pmd ON p.id = pmd.property_id
+                p.locality AS name,
+                p.city,
+                p.district,
+                COUNT(DISTINCT p.project_id) AS propertyCount,
+                MIN(p.price_from) AS minPrice
+            FROM projects p
             WHERE (p.status = 'published' OR p.status IS NULL)
-            GROUP BY name, city, taluk, district
+            GROUP BY name, p.city, p.district
             HAVING propertyCount > 0
             ORDER BY propertyCount DESC
             LIMIT 15
@@ -185,10 +167,10 @@ try {
                 $nearby[] = [
                     'name'          => $cleanName,
                     'city'          => $r['city'],
-                    'taluk'         => $r['taluk'] ?: '',
+                    'taluk'         => '',
                     'district'      => $r['district'] ?: '',
                     'propertyCount' => (int)$r['propertyCount'],
-                    'minPrice'      => $r['minPrice'] ?: '₹ 25 Lakhs',
+                    'minPrice'      => !empty($r['minPrice']) ? '₹ ' . number_format((float)$r['minPrice']) : 'Price on Request',
                     'distanceTag'   => 'Prominent Area • ' . ($r['district'] ?: $r['city']),
                     'isSameTaluk'   => false
                 ];
