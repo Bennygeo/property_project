@@ -18,7 +18,7 @@
 }
 
 /* ==========================================
-   1. ENTERPRISE LEFT SIDEBAR
+   1. ENTERPRISE FIXED LEFT SIDEBAR
    ========================================== */
 .admin-sidebar {
   width: 260px;
@@ -28,15 +28,17 @@
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  position: relative;
-  align-self: stretch;
-  min-height: 100vh;
-  height: auto;
-  z-index: 50;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden; /* Static & fixed to page height, not allowed to scroll */
+  z-index: 200;
   transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
   user-select: none;
-  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -48,9 +50,9 @@
 
 /* Sidebar Brand Header */
 .sidebar-header {
-  height: 64px;
-  min-height: 64px;
-  padding: 0 1rem;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 0.875rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -126,16 +128,22 @@
   font-size: 18px;
 }
 
-/* Sidebar Scrollable Nav */
+/* Sidebar Nav Area (Fixed with zero scrollbars) */
 .sidebar-nav-scroll {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  scrollbar-width: none; /* Seamless, no ugly menu scrollbar */
+  gap: 0.45rem;
+}
+
+@media (max-height: 640px) {
+  .sidebar-nav-scroll {
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
 }
 
 .sidebar-nav-scroll::-webkit-scrollbar {
@@ -151,13 +159,13 @@
 }
 
 .nav-group-title {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #64748B;
-  padding: 0.25rem 0.65rem;
-  margin-bottom: 1px;
+  padding: 0.2rem 0.5rem;
+  margin-bottom: 0px;
 }
 
 /* Nav Item */
@@ -165,12 +173,12 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 0.45rem 0.65rem;
-  border-radius: 8px;
+  padding: 0.38rem 0.6rem;
+  border-radius: 7px;
   background: transparent;
   border: 1px solid transparent;
   color: #94A3B8;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
@@ -277,27 +285,27 @@
 /* Sidebar Footer */
 .sidebar-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 0.875rem 0.875rem;
+  padding: 0.65rem 0.75rem;
   background: rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .admin-user-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-user-card .p-avatar {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
   border-radius: 50%;
   background: #2563EB;
   color: #FFFFFF;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -321,7 +329,7 @@
 }
 
 .admin-name {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #F8FAFC;
   white-space: nowrap;
@@ -330,7 +338,7 @@
 }
 
 .admin-role {
-  font-size: 11px;
+  font-size: 10.5px;
   color: #94A3B8;
   white-space: nowrap;
   overflow: hidden;
@@ -343,12 +351,12 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.65rem;
   border-radius: 6px;
   background: rgba(220, 38, 38, 0.12);
   border: 1px solid rgba(220, 38, 38, 0.25);
   color: #FCA5A5;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -360,7 +368,7 @@
 }
 
 .btn-sidebar-logout .material-symbols-outlined {
-  font-size: 16px;
+  font-size: 15px;
 }
 
 /* ==========================================
@@ -369,18 +377,22 @@
 .admin-app-area {
   flex: 1;
   min-width: 0;
+  margin-left: 260px;
   width: calc(100% - 260px);
-  max-width: 100%;
+  max-width: calc(100% - 260px);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   background-color: #F8FAFC;
   overflow-x: hidden !important;
   box-sizing: border-box;
+  transition: margin-left 0.24s cubic-bezier(0.16, 1, 0.3, 1), width 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .admin-enterprise-shell.sidebar-collapsed .admin-app-area {
+  margin-left: 72px;
   width: calc(100% - 72px);
+  max-width: calc(100% - 72px);
 }
 
 /* Sticky Top Navigation Bar */
