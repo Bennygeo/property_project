@@ -70,6 +70,16 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
           (click)="setCategory('commercial')">
           <span>Commercial</span>
         </button>
+
+        @if (propertyService.hasAgriculturalProperties()) {
+          <button 
+            type="button" 
+            class="filter-chip"
+            [class.active]="propertyService.activeCategoryFilter() === 'agricultural'"
+            (click)="setCategory('agricultural')">
+            <span>Agriculture</span>
+          </button>
+        }
       </div>
 
       <!-- Properties Grid (Capped to 20 on Home Page) -->

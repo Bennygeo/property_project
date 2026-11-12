@@ -176,8 +176,10 @@ if (!empty($localityName)) {
 if (!empty($propertyType) && $propertyType !== 'all') {
     if (strcasecmp($propertyType, 'commercial') === 0 || strcasecmp($propertyType, 'Commercial Spaces') === 0) {
         $whereClauses[] = "(p.category = 'Commercial Spaces' OR p.type = 'commercial' OR p.land_type = 'Commercial' OR p.land_type = 'Industrial')";
+    } else if (strcasecmp($propertyType, 'agricultural') === 0 || strcasecmp($propertyType, 'agriculture') === 0 || strcasecmp($propertyType, 'Agricultural Lands') === 0) {
+        $whereClauses[] = "(p.category = 'Agricultural Lands' OR p.type = 'agricultural' OR p.land_type = 'Agricultural' OR p.land_type = 'Agriculture')";
     } else if (strcasecmp($propertyType, 'plots') === 0 || strcasecmp($propertyType, 'Gated CMDA Plots') === 0) {
-        $whereClauses[] = "(p.category = 'Gated CMDA Plots' OR (p.type = 'plots' AND (p.land_type != 'Commercial' OR p.land_type IS NULL)))";
+        $whereClauses[] = "(p.category = 'Gated CMDA Plots' OR (p.type = 'plots' AND (p.land_type NOT IN ('Commercial', 'Agricultural', 'Agriculture') OR p.land_type IS NULL)))";
     } else {
         $whereClauses[] = '(p.category = :propertyType OR p.type = :propertyType OR p.land_type = :propertyType)';
         $params[':propertyType'] = $propertyType;
@@ -187,8 +189,10 @@ if (!empty($propertyType) && $propertyType !== 'all') {
 if (!empty($listingMode) && $listingMode !== 'all') {
     if (strcasecmp($listingMode, 'commercial') === 0) {
         $whereClauses[] = "(p.type = 'commercial' OR p.category = 'Commercial Spaces' OR p.land_type = 'Commercial')";
+    } else if (strcasecmp($listingMode, 'agricultural') === 0 || strcasecmp($listingMode, 'agriculture') === 0) {
+        $whereClauses[] = "(p.type = 'agricultural' OR p.category = 'Agricultural Lands' OR p.land_type = 'Agricultural' OR p.land_type = 'Agriculture')";
     } else if (strcasecmp($listingMode, 'plots') === 0) {
-        $whereClauses[] = "(p.type = 'plots' AND (p.land_type != 'Commercial' OR p.land_type IS NULL))";
+        $whereClauses[] = "(p.type = 'plots' AND (p.land_type NOT IN ('Commercial', 'Agricultural', 'Agriculture') OR p.land_type IS NULL))";
     } else {
         $whereClauses[] = 'p.type = :listingMode';
         $params[':listingMode'] = $listingMode;
@@ -582,6 +586,13 @@ $formatProjectRow = function(array $r): array {
         'contactPersonPhone'  => $r['whatsapp_number'] ?? '',
     ];
 
+    $isComm = (strcasecmp((string)($r['land_type'] ?? ''), 'Commercial') === 0 || strcasecmp((string)($r['category'] ?? ''), 'Commercial Spaces') === 0 || strcasecmp((string)($r['type'] ?? ''), 'commercial') === 0);
+    $isAgri = (strcasecmp((string)($r['land_type'] ?? ''), 'Agricultural') === 0 || strcasecmp((string)($r['land_type'] ?? ''), 'Agriculture') === 0 || strcasecmp((string)($r['category'] ?? ''), 'Agricultural Lands') === 0 || strcasecmp((string)($r['type'] ?? ''), 'agricultural') === 0);
+
+    $resolvedCategory = $isComm ? 'Commercial Spaces' : ($isAgri ? 'Agricultural Lands' : ($r['category'] ?: 'Gated CMDA Plots'));
+    $resolvedType = $isComm ? 'commercial' : ($isAgri ? 'agricultural' : ($r['type'] ?: 'plots'));
+    $resolvedLandType = !empty($r['land_type']) ? $r['land_type'] : ($isComm ? 'Commercial' : ($isAgri ? 'Agricultural' : 'Residential'));
+
     return [
         // Consolidated Schema Properties
         'id'                     => $pId,
@@ -598,13 +609,13 @@ $formatProjectRow = function(array $r): array {
         'city'                   => $r['city'],
         'locality'               => $r['locality'],
         'cityKey'                => strtolower($r['city'] ?: 'chennai'),
-        'category'               => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['category'], 'Commercial Spaces') === 0) ? 'Commercial Spaces' : ($r['category'] ?: 'Gated CMDA Plots'),
-        'propertyType'           => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['category'], 'Commercial Spaces') === 0) ? 'Commercial Spaces' : ($r['category'] ?: 'Gated CMDA Plots'),
-        'type'                   => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['type'], 'commercial') === 0) ? 'commercial' : ($r['type'] ?: 'plots'),
-        'listingMode'            => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['type'], 'commercial') === 0) ? 'commercial' : ($r['type'] ?: 'plots'),
-        'landType'               => !empty($r['land_type']) ? $r['land_type'] : 'Residential',
-        'land_type'              => !empty($r['land_type']) ? $r['land_type'] : 'Residential',
-        'landUse'                => !empty($r['land_type']) ? $r['land_type'] : 'Residential',
+        'category'               => $resolvedCategory,
+        'propertyType'           => $resolvedCategory,
+        'type'                   => $resolvedType,
+        'listingMode'            => $resolvedType,
+        'landType'               => $resolvedLandType,
+        'land_type'              => $resolvedLandType,
+        'landUse'                => $resolvedLandType,
         'price'                  => $priceFormatted,
         'priceFrom'              => $priceFrom,
         'priceTo'                => $priceTo,
@@ -715,8 +726,12 @@ if ($total === 0 && (!empty($propertyType) || !empty($listingMode)) && !empty($d
     $fallbackWhere = "(p.status = 'published' OR p.status IS NULL)";
     if (!empty($propertyType) && (strcasecmp($propertyType, 'commercial') === 0 || strcasecmp($propertyType, 'Commercial Spaces') === 0)) {
         $fallbackWhere .= " AND (p.category = 'Commercial Spaces' OR p.type = 'commercial' OR p.land_type = 'Commercial' OR p.land_type = 'Industrial')";
+    } else if (!empty($propertyType) && (strcasecmp($propertyType, 'agricultural') === 0 || strcasecmp($propertyType, 'agriculture') === 0 || strcasecmp($propertyType, 'Agricultural Lands') === 0)) {
+        $fallbackWhere .= " AND (p.category = 'Agricultural Lands' OR p.type = 'agricultural' OR p.land_type = 'Agricultural' OR p.land_type = 'Agriculture')";
     } else if (!empty($listingMode) && strcasecmp($listingMode, 'commercial') === 0) {
         $fallbackWhere .= " AND (p.type = 'commercial' OR p.category = 'Commercial Spaces' OR p.land_type = 'Commercial')";
+    } else if (!empty($listingMode) && (strcasecmp($listingMode, 'agricultural') === 0 || strcasecmp($listingMode, 'agriculture') === 0)) {
+        $fallbackWhere .= " AND (p.type = 'agricultural' OR p.category = 'Agricultural Lands' OR p.land_type = 'Agricultural' OR p.land_type = 'Agriculture')";
     }
 
     $fbStmt = $db->query("
@@ -736,6 +751,25 @@ if ($total === 0 && (!empty($propertyType) || !empty($listingMode)) && !empty($d
         $total = count($properties);
     }
 }
+
+// Distinct counts of land types currently available in the database
+$landTypeCounts = [];
+try {
+    $landTypeCountsStmt = $db->query("
+        SELECT 
+            COALESCE(NULLIF(TRIM(p.land_type), ''), 'Residential') AS l_type, 
+            COUNT(*) AS c 
+        FROM projects p 
+        WHERE (p.status = 'published' OR p.status IS NULL) 
+        GROUP BY l_type
+    ");
+    while ($ltr = $landTypeCountsStmt->fetch(PDO::FETCH_ASSOC)) {
+        $landTypeCounts[strtolower($ltr['l_type'])] = (int)$ltr['c'];
+    }
+} catch (\Throwable $e) {}
+
+$hasAgriculture = (!empty($landTypeCounts['agricultural']) || !empty($landTypeCounts['agriculture']));
+$hasCommercial  = (!empty($landTypeCounts['commercial']));
 
 // When no items match, fetch top recommended suggested properties
 $suggestedProperties = [];
@@ -762,5 +796,9 @@ Response::success([
     'limit'               => $limit,
     'offset'              => $offset,
     'isNearbySearch'      => $isNearbyGps,
-    'suggestedProperties' => $suggestedProperties
+    'suggestedProperties' => $suggestedProperties,
+    'landTypeCounts'      => $landTypeCounts,
+    'hasAgriculture'      => $hasAgriculture,
+    'hasAgriculturalProperties' => $hasAgriculture,
+    'hasCommercial'       => $hasCommercial
 ], 'Properties fetched successfully');

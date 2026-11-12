@@ -84,6 +84,16 @@ export interface PropertyTypeOption {
               title="Explore commercial plots and retail spaces">
               <span>Commercial</span>
             </button>
+            @if (propertyService.hasAgriculturalProperties()) {
+              <button 
+                type="button" 
+                class="buy-sell-tab-btn" 
+                [class.active]="activeHeroTab() === 'agricultural'" 
+                (click)="setHeroTab('agricultural')" 
+                title="Explore agricultural land and farm plots">
+                <span>Agriculture</span>
+              </button>
+            }
           </div>
         </div>
 
@@ -427,6 +437,16 @@ export interface PropertyTypeOption {
                     <span class="material-symbols-outlined chip-icon">domain</span>
                     <span>Commercial</span>
                   </button>
+                  @if (propertyService.hasAgriculturalProperties()) {
+                    <button 
+                      type="button" 
+                      class="mobile-q-chip chip-flex" 
+                      [class.active]="selectedMobileCategory() === 'agricultural'"
+                      (click)="setMobileCategory('agricultural')">
+                      <span class="material-symbols-outlined chip-icon">yard</span>
+                      <span>Agriculture</span>
+                    </button>
+                  }
                 </div>
               </div>
 
@@ -2176,15 +2196,15 @@ export class HeroSearchComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
 
-  // Hero Top Mode Tabs (Buy | Post | Commercial)
-  readonly activeHeroTab = signal<'buy' | 'commercial'>('buy');
+  // Hero Top Mode Tabs (Buy | Post | Commercial | Agriculture)
+  readonly activeHeroTab = signal<'buy' | 'commercial' | 'agricultural'>('buy');
 
-  // Mobile Guided Questionnaire State (BUY -> PLOTS | COMMERCIAL, PRICE RANGES, INVESTMENT | READY TO BUILD)
+  // Mobile Guided Questionnaire State (BUY -> PLOTS | COMMERCIAL | AGRICULTURE, PRICE RANGES, INVESTMENT | READY TO BUILD)
   readonly isMobileQuestionnaireOpen = signal<boolean>(false);
-  readonly selectedMobileCategory = signal<'plots' | 'commercial'>('plots');
+  readonly selectedMobileCategory = signal<'plots' | 'commercial' | 'agricultural'>('plots');
   readonly selectedMobileIntent = signal<'investment' | 'ready' | 'all'>('all');
 
-  setHeroTab(mode: 'buy' | 'commercial'): void {
+  setHeroTab(mode: 'buy' | 'commercial' | 'agricultural'): void {
     this.activeHeroTab.set(mode);
     if (mode === 'commercial') {
       this.selectedMobileCategory.set('commercial');
@@ -2192,6 +2212,12 @@ export class HeroSearchComponent implements OnInit {
       this.propertyService.selectedPropertyType.set('Commercial Spaces');
       this.propertyService.setCategoryFilter('commercial');
       this.activeRibbonTab.set('commercial');
+    } else if (mode === 'agricultural') {
+      this.selectedMobileCategory.set('agricultural');
+      this.selectedTypes.set(['Agricultural Lands']);
+      this.propertyService.selectedPropertyType.set('Agricultural Lands');
+      this.propertyService.setCategoryFilter('agricultural');
+      this.activeRibbonTab.set('farmland');
     } else {
       this.selectedMobileCategory.set('plots');
       this.selectedTypes.set([]);
@@ -2217,10 +2243,18 @@ export class HeroSearchComponent implements OnInit {
   readonly selectedStatus = signal<string>('all');
 
   // 3. Multi-Select Property Classes (100acress style)
-  readonly propertyTypes: PropertyTypeOption[] = [
+  readonly basePropertyTypes: PropertyTypeOption[] = [
     { value: 'Gated CMDA Plots', label: 'Gated CMDA / DTCP Plots', icon: 'terrain', desc: 'Sanctioned residential land' },
-    { value: 'Commercial', label: 'Commercial Plots', icon: 'domain', desc: 'Grade-A retail & office parks' }
+    { value: 'Commercial', label: 'Commercial Plots', icon: 'domain', desc: 'Grade-A retail & office parks' },
+    { value: 'Agricultural Lands', label: 'Agricultural & Farm Land', icon: 'yard', desc: 'Agri land & managed farm plots' }
   ];
+
+  get propertyTypes(): PropertyTypeOption[] {
+    if (this.propertyService.hasAgriculturalProperties()) {
+      return this.basePropertyTypes;
+    }
+    return this.basePropertyTypes.filter(t => t.value !== 'Agricultural Lands');
+  }
   readonly selectedTypes = signal<string[]>([]);
   readonly isTypeDropdownOpen = signal<boolean>(false);
 
@@ -2330,6 +2364,8 @@ export class HeroSearchComponent implements OnInit {
     this.activeRibbonTab.set(tabId);
     if (tabId === 'commercial') {
       this.activeHeroTab.set('commercial');
+    } else if (tabId === 'farmland') {
+      this.activeHeroTab.set('agricultural');
     } else {
       this.activeHeroTab.set('buy');
     }
@@ -2341,6 +2377,10 @@ export class HeroSearchComponent implements OnInit {
       this.selectedTypes.set(['Commercial Spaces']);
       this.propertyService.selectedPropertyType.set('Commercial Spaces');
       this.propertyService.setCategoryFilter('commercial');
+    } else if (tabId === 'farmland') {
+      this.selectedTypes.set(['Agricultural Lands']);
+      this.propertyService.selectedPropertyType.set('Agricultural Lands');
+      this.propertyService.setCategoryFilter('agricultural');
     } else if (tabId === 'villas') {
       this.selectedTypes.set(['Independent Villas']);
       this.propertyService.selectedPropertyType.set('Independent Villas');
@@ -2388,13 +2428,18 @@ export class HeroSearchComponent implements OnInit {
     this.isMobileQuestionnaireOpen.set(false);
   }
 
-  setMobileCategory(cat: 'plots' | 'commercial'): void {
+  setMobileCategory(cat: 'plots' | 'commercial' | 'agricultural'): void {
     this.selectedMobileCategory.set(cat);
     if (cat === 'commercial') {
       this.selectedTypes.set(['Commercial Spaces']);
       this.propertyService.selectedPropertyType.set('Commercial Spaces');
       this.propertyService.setCategoryFilter('commercial');
       this.activeHeroTab.set('commercial');
+    } else if (cat === 'agricultural') {
+      this.selectedTypes.set(['Agricultural Lands']);
+      this.propertyService.selectedPropertyType.set('Agricultural Lands');
+      this.propertyService.setCategoryFilter('agricultural');
+      this.activeHeroTab.set('agricultural');
     } else {
       this.selectedTypes.set(['Gated CMDA Plots']);
       this.propertyService.selectedPropertyType.set('Gated CMDA Plots');

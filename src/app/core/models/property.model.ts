@@ -1,8 +1,8 @@
 import { PropertyMasterData } from './property-master.model';
 import { SubdividedPlot } from './subdivided-plot.model';
 
-export type PropertyType = 'Apartments & Flats' | 'Independent Villas' | 'Luxury Penthouses' | 'Gated CMDA Plots' | 'Commercial Spaces';
-export type ListingMode = 'buy' | 'rent' | 'plots' | 'commercial';
+export type PropertyType = 'Apartments & Flats' | 'Independent Villas' | 'Luxury Penthouses' | 'Gated CMDA Plots' | 'Commercial Spaces' | 'Agricultural Lands';
+export type ListingMode = 'buy' | 'rent' | 'plots' | 'commercial' | 'agricultural';
 
 export interface PremiumMediaItem {
   id: string;

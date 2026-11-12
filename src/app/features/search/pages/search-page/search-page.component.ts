@@ -371,11 +371,19 @@ export class SearchPageComponent implements OnInit {
     { value: 'delhi-ncr', label: 'Delhi-NCR', icon: 'corporate_fare' }
   ];
 
-  readonly propertyTypes: FilterOption[] = [
+  readonly basePropertyTypes: FilterOption[] = [
     { value: 'all', label: 'All Classifications', icon: 'apps' },
     { value: 'Gated CMDA Plots', label: 'Gated CMDA Plots', icon: 'terrain' },
-    { value: 'Commercial Spaces', label: 'Commercial Spaces', icon: 'domain' }
+    { value: 'Commercial Spaces', label: 'Commercial Spaces', icon: 'domain' },
+    { value: 'Agricultural Lands', label: 'Agricultural Lands', icon: 'yard' }
   ];
+
+  get propertyTypes(): FilterOption[] {
+    if (this.propertyService.hasAgriculturalProperties()) {
+      return this.basePropertyTypes;
+    }
+    return this.basePropertyTypes.filter(t => t.value !== 'Agricultural Lands');
+  }
 
   readonly budgetOptions: FilterOption[] = [
     { value: 'all', label: 'Any Budget' },

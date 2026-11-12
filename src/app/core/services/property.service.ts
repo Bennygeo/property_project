@@ -173,6 +173,7 @@ export class PropertyService {
   private readonly authService = inject(AuthService);
   public readonly isSqlLoaded = signal<boolean>(false);
   public readonly totalApiProperties = signal<number>(0);
+  public readonly hasAgriculturalProperties = signal<boolean>(false);
   public readonly businessWhatsAppNumber = signal<string>('919486140936');
 
   public getBusinessWhatsAppUrl(title?: string, id?: string): string {
@@ -256,6 +257,16 @@ export class PropertyService {
           p.type?.toLowerCase() === 'commercial' ||
           p.category?.toLowerCase().includes('commercial')
         );
+      } else if (filter === 'agricultural') {
+        filtered = all.filter(p =>
+          p.propertyType === 'Agricultural Lands' ||
+          p.land_type?.toLowerCase() === 'agricultural' ||
+          p.land_type?.toLowerCase() === 'agriculture' ||
+          p.landType?.toLowerCase() === 'agricultural' ||
+          p.masterDetails?.landUse?.toLowerCase() === 'agricultural' ||
+          p.type?.toLowerCase() === 'agricultural' ||
+          p.category?.toLowerCase().includes('agricultural')
+        );
       }
       if (filtered.length > 0 || !q) {
         return filtered;
@@ -282,6 +293,18 @@ export class PropertyService {
         p.category?.toLowerCase().includes('commercial')
       );
       if (comm.length > 0 || !q) return comm;
+    }
+    if (heroTab === 'agricultural') {
+      const agri = all.filter(p =>
+        p.propertyType === 'Agricultural Lands' ||
+        p.land_type?.toLowerCase() === 'agricultural' ||
+        p.land_type?.toLowerCase() === 'agriculture' ||
+        p.landType?.toLowerCase() === 'agricultural' ||
+        p.masterDetails?.landUse?.toLowerCase() === 'agricultural' ||
+        p.type?.toLowerCase() === 'agricultural' ||
+        p.category?.toLowerCase().includes('agricultural')
+      );
+      if (agri.length > 0 || !q) return agri;
     }
 
     return all;
@@ -627,6 +650,20 @@ export class PropertyService {
           : (Array.isArray(res.data?.properties) ? res.data.properties : []);
         const total = typeof res.data?.total === 'number' ? res.data.total : rawList.length;
         this.totalApiProperties.set(total);
+        if (res.data?.hasAgriculture !== undefined) {
+          this.hasAgriculturalProperties.set(Boolean(res.data.hasAgriculture));
+        } else {
+          const hasAgri = rawList.some((p: any) =>
+            p.land_type?.toLowerCase() === 'agricultural' ||
+            p.land_type?.toLowerCase() === 'agriculture' ||
+            p.landType?.toLowerCase() === 'agricultural' ||
+            p.category === 'Agricultural Lands' ||
+            p.type === 'agricultural'
+          );
+          if (hasAgri) {
+            this.hasAgriculturalProperties.set(true);
+          }
+        }
 
         const mockImages = [
           'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
@@ -672,10 +709,18 @@ export class PropertyService {
               p.category === 'Commercial Spaces' ||
               p.type === 'commercial'
             );
+            const isAgri = (
+              p.land_type?.toLowerCase() === 'agricultural' ||
+              p.land_type?.toLowerCase() === 'agriculture' ||
+              p.landType?.toLowerCase() === 'agricultural' ||
+              p.propertyType === 'Agricultural Lands' ||
+              p.category === 'Agricultural Lands' ||
+              p.type === 'agricultural'
+            );
 
             return {
               ...p,
-              propertyType: (isComm ? 'Commercial Spaces' : (p.propertyType || 'Gated CMDA Plots')) as PropertyType,
+              propertyType: (isComm ? 'Commercial Spaces' : (isAgri ? 'Agricultural Lands' : (p.propertyType || 'Gated CMDA Plots'))) as PropertyType,
               price: formatPriceIndian(p.price),
               isShortlisted: this.isShortlisted(p.id),
               imageUrl: resolvedImg,
@@ -760,10 +805,18 @@ export class PropertyService {
               p.category === 'Commercial Spaces' ||
               p.type === 'commercial'
             );
+            const isAgri = (
+              p.land_type?.toLowerCase() === 'agricultural' ||
+              p.land_type?.toLowerCase() === 'agriculture' ||
+              p.landType?.toLowerCase() === 'agricultural' ||
+              p.propertyType === 'Agricultural Lands' ||
+              p.category === 'Agricultural Lands' ||
+              p.type === 'agricultural'
+            );
 
             return {
               ...p,
-              propertyType: (isComm ? 'Commercial Spaces' : (p.propertyType || 'Gated CMDA Plots')) as PropertyType,
+              propertyType: (isComm ? 'Commercial Spaces' : (isAgri ? 'Agricultural Lands' : (p.propertyType || 'Gated CMDA Plots'))) as PropertyType,
               price: formatPriceIndian(p.price),
               isShortlisted: this.isShortlisted(p.id),
               imageUrl: resolvedImg,
