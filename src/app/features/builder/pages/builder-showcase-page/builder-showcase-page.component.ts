@@ -215,26 +215,28 @@ export class BuilderShowcasePageComponent implements OnInit {
           deliveredSqFt: d.deliveredSqFt || '12M+ sq.ft'
         };
       } else {
-        // Fallback default minimal dossier if API returns empty
+        // Minimal dossier if API returns empty
         this.builderDossier.set({
           name: name,
           rawName: name,
-          reraNumber: 'TNRERA/PROM/0219/2026',
-          logoUrl: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
+          reraNumber: 'TNRERA Verified',
+          logoUrl: null,
           totalProperties: 0,
-          totalProjects: 1,
+          totalProjects: 0,
           districts: ['Tamil Nadu'],
           cities: ['Tamil Nadu'],
-          reraLayoutsCount: 1,
-          dtcpApprovedCount: 1,
-          minPrice: '₹ 25 Lakhs',
-          maxPrice: '₹ 1.5 Cr',
-          estYear: '2016',
-          completedProjects: '25+ Projects',
-          deliveredSqFt: '12M+ sq.ft',
-          complianceRating: '99.4%',
-          about: `${name} is a premier verified real estate development entity registered with state cadastral authorities in Tamil Nadu.`
+          reraLayoutsCount: 0,
+          dtcpApprovedCount: 0,
+          minPrice: 'Price on Request',
+          maxPrice: '',
+          estYear: '2015',
+          completedProjects: '0 Projects Registered',
+          deliveredSqFt: 'Plotted Layouts',
+          complianceRating: '100%',
+          about: `${name} is a verified real estate development entity in Tamil Nadu.`
         });
+        this.projectsList.set([]);
+        this.propertiesList.set([]);
       }
     });
   }

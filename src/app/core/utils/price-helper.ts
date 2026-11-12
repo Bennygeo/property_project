@@ -59,14 +59,14 @@ export function formatPriceIndian(price: string | number | undefined | null): st
     return `Starting ₹ ${formatted} L`;
   }
 
-  // Under 1 Lakh: If a sqft rate (e.g. 3200 - 8459) was accidentally passed directly as price,
-  // compute the starting total price for an 800 sq.ft minimum plot so it never shows broken ₹ 6 / ₹ 4.2
-  if (num >= 1000 && num < 100000) {
-    const totalEst = num * 800;
-    const lakhs = totalEst / 100000;
-    const formatted = lakhs.toFixed(2).replace(/\.00$/, '');
-    return `Starting ₹ ${formatted} L`;
-  }
+    // Under 1 Lakh: If a sqft rate (e.g. 3200 - 8459) was accidentally passed directly as price,
+    // compute the starting total price for an 800 sq.ft minimum plot so it never shows broken ₹ 6 / ₹ 4.2
+    if (num >= 1000 && num < 100000) {
+      const totalEst = num * 800;
+      const lakhs = totalEst / 100000;
+      const formatted = lakhs.toFixed(2).replace(/\.00$/, '');
+      return `Starting ₹ ${formatted} L`;
+    }
 
-  return `₹ ${num.toLocaleString('en-IN')}`;
-}
+    return `₹ ${num.toLocaleString('en-IN')}`;
+  }

@@ -86,65 +86,13 @@ export class DevelopersPageComponent implements OnInit {
     this.propertyService.fetchBuilders().subscribe({
       next: (builders) => {
         this.isLoading.set(false);
-        if (builders && builders.length > 0) {
-          this.allDevelopers.set(builders);
-        } else {
-          this.fallbackDevelopers();
-        }
+        this.allDevelopers.set(builders || []);
       },
       error: () => {
         this.isLoading.set(false);
-        this.fallbackDevelopers();
+        this.allDevelopers.set([]);
       }
     });
-  }
-
-  private fallbackDevelopers(): void {
-    const fallbacks: DeveloperSummary[] = [
-      {
-        name: 'Sameeraa Foundations',
-        projectCount: 6,
-        propertyCount: 18,
-        districts: ['Chengalpattu', 'Kancheepuram'],
-        initials: 'SF'
-      },
-      {
-        name: 'G Square Housing',
-        projectCount: 14,
-        propertyCount: 32,
-        districts: ['Chennai', 'Coimbatore', 'Kancheepuram'],
-        initials: 'GS'
-      },
-      {
-        name: 'Casagrand Builder Private Limited',
-        projectCount: 22,
-        propertyCount: 45,
-        districts: ['Chennai', 'Chengalpattu', 'Coimbatore'],
-        initials: 'CB'
-      },
-      {
-        name: 'Puravankara Limited',
-        projectCount: 11,
-        propertyCount: 20,
-        districts: ['Chennai', 'Coimbatore'],
-        initials: 'PL'
-      },
-      {
-        name: 'Wisdom Housing & Properties',
-        projectCount: 5,
-        propertyCount: 12,
-        districts: ['Kancheepuram', 'Thiruvallur'],
-        initials: 'WH'
-      },
-      {
-        name: 'Ashok Leyland Staff Housing',
-        projectCount: 3,
-        propertyCount: 8,
-        districts: ['Dharmapuri', 'Hosur'],
-        initials: 'AL'
-      }
-    ];
-    this.allDevelopers.set(fallbacks);
   }
 
   loadMore(): void {
