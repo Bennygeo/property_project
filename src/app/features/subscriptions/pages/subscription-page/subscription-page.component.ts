@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { SubscriptionService, DEFAULT_SUBSCRIPTION_PLANS } from '../../../../core/services/subscription.service';
@@ -29,6 +29,7 @@ export class SubscriptionPageComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly notificationService = inject(NotificationService);
   readonly route = inject(ActivatedRoute);
+  readonly cdr = inject(ChangeDetectorRef);
 
   readonly defaultPlans = DEFAULT_SUBSCRIPTION_PLANS;
   readonly expandedFaqIndex = signal<number | null>(0);
@@ -212,7 +213,13 @@ export class SubscriptionPageComponent implements OnInit {
         this.closeRazorpayCheckout();
 
         if (res && res.success) {
-          this.subscriptionService.fetchCurrentSubscription();
+          this.subscriptionService.fetchCurrentSubscription().subscribe({
+            next: () => {
+              this.cdr.markForCheck();
+            }
+          });
+          this.cdr.markForCheck();
+
           this.notificationService.show({
             type: 'success',
             title: `🎉 ${plan.name} Subscribed!`,
@@ -282,9 +289,14 @@ export class SubscriptionPageComponent implements OnInit {
       next: () => {
         this.isSubmittingRefund.set(false);
         this.closeRefundModal();
+        this.subscriptionService.fetchCurrentSubscription().subscribe({
+          next: () => this.cdr.markForCheck()
+        });
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isSubmittingRefund.set(false);
+        this.cdr.markForCheck();
       }
     });
   }

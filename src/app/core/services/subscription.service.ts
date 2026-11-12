@@ -157,8 +157,8 @@ export class SubscriptionService {
   });
 
   constructor() {
-    this.fetchPlans();
-    this.fetchCurrentSubscription();
+    this.fetchPlans().subscribe();
+    this.fetchCurrentSubscription().subscribe();
   }
 
   private loadStoredSubscription(): UserSubscription | null {
@@ -416,7 +416,7 @@ export class SubscriptionService {
         // If free Explorer plan, already activated on backend
         if (orderData.isFreePlan) {
           this.isProcessingPayment.set(false);
-          this.fetchCurrentSubscription();
+          this.fetchCurrentSubscription().subscribe();
           this.notificationService.show({
             type: 'success',
             title: 'Explorer Plan Activated',
@@ -468,7 +468,57 @@ export class SubscriptionService {
       catchError(() => tryVerify(`${environment.apacheApiUrl}/subscriptions/verify-payment.php`)),
       tap((vRes) => {
         if (vRes && vRes.success) {
-          this.fetchCurrentSubscription();
+          if (vRes.data) {
+            const d = vRes.data;
+            const planRef = this.plans().find(p => p.id === d.planId) || plan;
+            const durDays = planRef.durationDays || 30;
+
+            const newSub: UserSubscription = {
+              id: d.subscriptionId || Date.now(),
+              userId: uid,
+              planId: d.planId,
+              status: 'active',
+              amountPaid: d.amountPaid || planRef.priceInr,
+              razorpayPaymentId: d.paymentId,
+              razorpayOrderId: orderId,
+              startsAt: new Date().toISOString(),
+              expiresAt: d.expiresAt || new Date(Date.now() + durDays * 86400000).toISOString(),
+              createdAt: new Date().toISOString(),
+              planName: d.planName || planRef.name,
+              durationDays: durDays
+            };
+            this.currentSubscription.set(newSub);
+            this.saveStoredSubscription(newSub);
+
+            if (d.entitlements) {
+              const newEnt: UserEntitlements = {
+                planId: d.planId,
+                planName: d.planName || planRef.name,
+                projectViewsUsed: 0,
+                projectViewLimit: d.entitlements.projectViewLimit ?? planRef.projectViewLimit,
+                projectViewsRemaining: d.entitlements.projectViewLimit ?? planRef.projectViewLimit,
+                comparisonsUsed: 0,
+                comparisonLimit: d.entitlements.comparisonLimit ?? planRef.comparisonLimit,
+                comparisonsRemaining: d.entitlements.comparisonLimit ?? planRef.comparisonLimit,
+                advisorySessionsUsed: 0,
+                advisorySessionLimit: d.entitlements.advisorySessionLimit ?? planRef.advisorySessionLimit,
+                advisorySessionsRemaining: d.entitlements.advisorySessionLimit ?? planRef.advisorySessionLimit,
+                siteVisitsUsed: 0,
+                siteVisitLimit: d.entitlements.siteVisitLimit ?? planRef.siteVisitLimit,
+                siteVisitsRemaining: d.entitlements.siteVisitLimit ?? planRef.siteVisitLimit,
+                hasLocationReport: !!d.entitlements.hasLocationReport,
+                hasDedicatedAdvisor: !!d.entitlements.hasDedicatedAdvisor,
+                hasPriorityAdvisor: !!d.entitlements.hasPriorityAdvisor,
+                expiresAt: d.expiresAt || null
+              };
+              this.entitlements.set(newEnt);
+              this.saveStoredEntitlements(newEnt);
+            }
+            this.daysRemaining.set(durDays);
+          }
+
+          // Complete background sync of invoices & server state
+          this.fetchCurrentSubscription().subscribe();
         }
       })
     ) as Observable<any>);
@@ -594,7 +644,7 @@ export class SubscriptionService {
       map(res => !!(res && res.success)),
       tap(ok => {
         if (ok) {
-          this.fetchCurrentSubscription();
+          this.fetchCurrentSubscription().subscribe();
           this.notificationService.show({
             type: 'success',
             title: 'Refund Processed',
