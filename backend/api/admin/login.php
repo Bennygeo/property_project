@@ -42,17 +42,19 @@ $adminPersonas = [
         'name'           => 'Benny',
         'email'          => 'benny@mannidam.com',
         'phone'          => '+91 94440 00003',
-        'title'          => 'Web Development & Online Customer Handling',
-        'department'     => 'Technology & Online Customer Operations',
-        'responsibility' => 'Web development and online customer handling',
+        'role'           => 'super_admin',
+        'title'          => 'Super Administrator & Technology Director',
+        'department'     => 'Platform Governance & Technology',
+        'responsibility' => 'Platform Architecture, Role Governance & Engineering',
         'passwords'      => ['benny@2026', 'Benny@2026', 'benny123', '1111'],
-        'aliases'        => ['benny', 'benny@mannidam.com', 'bennygeo@gmail.com']
+        'aliases'        => ['benny', 'benny@mannidam.com', 'bennygeo@gmail.com', 'benny_gj@yahoo.co.in']
     ],
     'ezhil' => [
         'id'             => 101,
         'name'           => 'Ezhil',
         'email'          => 'ezhil@mannidam.com',
         'phone'          => '+91 94440 10001',
+        'role'           => 'admin',
         'title'          => 'Photography & Marketing',
         'department'     => 'Media Production & Visual Marketing',
         'responsibility' => 'Photography and marketing',
@@ -64,11 +66,84 @@ $adminPersonas = [
         'name'           => 'Ram',
         'email'          => 'ram@mannidam.com',
         'phone'          => '+91 94440 10002',
+        'role'           => 'co_admin',
         'title'          => 'Marketing, Broker Relations & Site Promotion',
         'department'     => 'Broker Network & Site Promotion',
         'responsibility' => 'Marketing and site promotion',
         'passwords'      => ['ram@2026', 'Ram@2026', 'ram123', '1111'],
         'aliases'        => ['ram', 'ram@mannidam.com']
+    ],
+    'developer' => [
+        'id'             => 108,
+        'name'           => 'Casagrand Partner Director',
+        'email'          => 'developer@casagrand.com',
+        'phone'          => '+91 98400 11004',
+        'role'           => 'developer',
+        'title'          => 'Authorized Builder Promoter',
+        'department'     => 'Casagrand Premier Builder Workspace',
+        'responsibility' => 'Casagrand Project Portfolios & Plot Inventory',
+        'passwords'      => ['developer@2026', 'dev@2026', '1111'],
+        'aliases'        => ['developer', 'developer@casagrand.com']
+    ],
+    'sales' => [
+        'id'             => 109,
+        'name'           => 'Suresh (Sales Executive)',
+        'email'          => 'sales@findaplot.in',
+        'phone'          => '+91 98400 22001',
+        'role'           => 'sales_executive',
+        'title'          => 'Senior Sales & Lead Acquisition Specialist',
+        'department'     => 'Investor Relations & Direct Sales',
+        'responsibility' => 'Manage assigned buyer leads and customer follow-ups',
+        'passwords'      => ['sales@2026', '1111'],
+        'aliases'        => ['sales', 'sales@findaplot.in']
+    ],
+    'advisor' => [
+        'id'             => 110,
+        'name'           => 'Dr. Ananya (Property Advisor)',
+        'email'          => 'advisor@findaplot.in',
+        'phone'          => '+91 98400 33002',
+        'role'           => 'property_advisor',
+        'title'          => 'Principal Land & Property Advisor',
+        'department'     => 'Cadastral & Investment Advisory',
+        'responsibility' => 'Manage investor advisory sessions and property recommendations',
+        'passwords'      => ['advisor@2026', '1111'],
+        'aliases'        => ['advisor', 'advisor@findaplot.in']
+    ],
+    'operations' => [
+        'id'             => 111,
+        'name'           => 'Karthik (Operations Executive)',
+        'email'          => 'operations@findaplot.in',
+        'phone'          => '+91 98400 44003',
+        'role'           => 'operations_executive',
+        'title'          => 'Site Visit Coordinator & Field Officer',
+        'department'     => 'Field Operations & Verification',
+        'responsibility' => 'Manage physical site visits, schedules and promoter coordination',
+        'passwords'      => ['operations@2026', 'ops@2026', '1111'],
+        'aliases'        => ['operations', 'operations@findaplot.in']
+    ],
+    'finance' => [
+        'id'             => 112,
+        'name'           => 'Lakshmi (Finance Admin)',
+        'email'          => 'finance@findaplot.in',
+        'phone'          => '+91 98400 55005',
+        'role'           => 'finance_admin',
+        'title'          => 'Finance Controller & Ledger Auditor',
+        'department'     => 'Corporate Accounts & Settlements',
+        'responsibility' => 'Payments, credit adjustments, subscriptions and commissions',
+        'passwords'      => ['finance@2026', '1111'],
+        'aliases'        => ['finance', 'finance@findaplot.in']
+    ],
+    'gis' => [
+        'id'             => 113,
+        'name'           => 'Venkatesh (Content & GIS Admin)',
+        'email'          => 'gis@findaplot.in',
+        'phone'          => '+91 98400 66006',
+        'role'           => 'content_gis_admin',
+        'title'          => 'GIS Surveyor & Digital Content Administrator',
+        'department'     => 'Spatial Data, GIS & Media Production',
+        'responsibility' => 'Localities, spatial maps, media showcases and project metadata',
+        'passwords'      => ['gis@2026', '1111'],
+        'aliases'        => ['gis', 'gis@findaplot.in']
     ]
 ];
 
@@ -98,13 +173,18 @@ if ($db !== null) {
         // Ignore if already exists
     }
 
-    // 2. Query admin user from database
+    // 2. Query administrative/staff user from database across authorized roles
     try {
         $stmt = $db->prepare("
-            SELECT id, name, email, phone, role, password_hash, points_balance, created_at 
+            SELECT id, name, email, phone, role, department, designation, developer_id, 
+                   permissions, status, password_hash, points_balance, created_at 
             FROM users 
             WHERE (LOWER(email) = :login1 OR LOWER(name) = :login2) 
-              AND role = 'admin'
+              AND role IN (
+                'super_admin', 'admin', 'co_admin', 'developer', 'sales_executive', 
+                'property_advisor', 'operations_executive', 'finance_admin', 
+                'content_gis_admin', 'auditor'
+              )
             LIMIT 1
         ");
         $stmt->execute([':login1' => $loginId, ':login2' => $loginId]);
@@ -214,15 +294,37 @@ if (!$isPasswordValid) {
     Response::error("Invalid administrative password for {$admin['name']}. Please check your credentials.", 401);
 }
 
-// Custom titles & departments
+// Custom titles, departments & dashboard routing
 $adminName = $admin['name'];
 $matched = $adminPersonas[strtolower($adminName)] ?? $matchedPersona;
 
-$title          = $matched['title'] ?? 'Platform Administrator';
-$department     = $matched['department'] ?? 'Operations';
-$responsibility = $matched['responsibility'] ?? 'Administrative Operations';
+$title          = !empty($admin['designation']) ? $admin['designation'] : ($matched['title'] ?? 'Platform Officer');
+$department     = !empty($admin['department']) ? $admin['department'] : ($matched['department'] ?? 'Operations');
+$responsibility = $matched['responsibility'] ?? 'Platform Role Operations';
 
+$roleRoutes = [
+    'super_admin'          => '/admin',
+    'admin'                => '/admin',
+    'co_admin'             => '/admin',
+    'developer'            => '/developer',
+    'sales_executive'      => '/portal/sales',
+    'property_advisor'     => '/portal/advisor',
+    'operations_executive' => '/portal/operations',
+    'finance_admin'        => '/portal/finance',
+    'content_gis_admin'    => '/portal/gis'
+];
+
+$dashboardRoute = $roleRoutes[$admin['role']] ?? '/admin';
 $token = 'adm_' . bin2hex(random_bytes(16));
+
+// Decode permissions if stored as JSON
+$permissions = [];
+if (!empty($admin['permissions'])) {
+    $decoded = json_decode($admin['permissions'], true);
+    if (is_array($decoded)) {
+        $permissions = $decoded;
+    }
+}
 
 Response::success([
     'admin' => [
@@ -234,6 +336,9 @@ Response::success([
         'title'          => $title,
         'department'     => $department,
         'responsibility' => $responsibility,
+        'developer_id'   => !empty($admin['developer_id']) ? (int)$admin['developer_id'] : null,
+        'permissions'    => $permissions,
+        'dashboardRoute' => $dashboardRoute,
         'avatarInitials' => strtoupper(substr($admin['name'], 0, 2)),
         'token'          => $token,
         'authenticatedAt'=> date('Y-m-d H:i:s')

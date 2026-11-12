@@ -9,47 +9,115 @@ export interface AdminCredentialInfo {
   id: number;
   name: string;
   role: string;
+  roleLabel: string;
   title: string;
   avatarInitials: string;
+  badgeColor: string;
   email: string;
   defaultPassword: string;
   department?: string;
   responsibility?: string;
+  dashboardRoute: string;
 }
 
 export const ADMIN_CREDENTIALS: AdminCredentialInfo[] = [
   {
-    id: 101,
-    name: 'Ezhil',
-    role: 'admin',
-    title: 'Photography & Marketing',
-    avatarInitials: 'EZ',
-    email: 'ezhil@mannidam.com',
-    defaultPassword: 'ezhil@2026',
-    department: 'Media Production & Visual Marketing',
-    responsibility: 'Photography and marketing'
-  },
-  {
-    id: 102,
-    name: 'Ram',
-    role: 'co_admin',
-    title: 'Marketing, Broker Relations & Site Promotion',
-    avatarInitials: 'RA',
-    email: 'ram@mannidam.com',
-    defaultPassword: 'ram@2026',
-    department: 'Broker Network & Site Promotion',
-    responsibility: 'Marketing and site promotion'
-  },
-  {
     id: 103,
     name: 'Benny',
-    role: 'admin',
-    title: 'Web Development & Online Customer Handling',
+    role: 'super_admin',
+    roleLabel: 'Super Admin',
+    title: 'Super Administrator & Technology Director',
     avatarInitials: 'BE',
+    badgeColor: 'purple',
     email: 'benny@mannidam.com',
     defaultPassword: 'benny@2026',
-    department: 'Technology & Online Customer Operations',
-    responsibility: 'Web development and online customer handling'
+    department: 'Platform Governance & Technology',
+    responsibility: 'Full platform access & role management',
+    dashboardRoute: '/admin'
+  },
+  {
+    id: 108,
+    name: 'Casagrand Partner Director',
+    role: 'developer',
+    roleLabel: 'Developer',
+    title: 'Authorized Builder Promoter',
+    avatarInitials: 'CB',
+    badgeColor: 'cyan',
+    email: 'developer@casagrand.com',
+    defaultPassword: 'developer@2026',
+    department: 'Casagrand Premier Builder Workspace',
+    responsibility: 'Access only authorized company and projects',
+    dashboardRoute: '/developer'
+  },
+  {
+    id: 109,
+    name: 'Suresh',
+    role: 'sales_executive',
+    roleLabel: 'Sales Executive',
+    title: 'Senior Sales & Lead Acquisition Specialist',
+    avatarInitials: 'SE',
+    badgeColor: 'indigo',
+    email: 'sales@findaplot.in',
+    defaultPassword: 'sales@2026',
+    department: 'Investor Relations & Direct Sales',
+    responsibility: 'Manage assigned leads and customer follow-ups',
+    dashboardRoute: '/portal/sales'
+  },
+  {
+    id: 110,
+    name: 'Dr. Ananya',
+    role: 'property_advisor',
+    roleLabel: 'Property Advisor',
+    title: 'Principal Land & Property Advisor',
+    avatarInitials: 'PA',
+    badgeColor: 'emerald',
+    email: 'advisor@findaplot.in',
+    defaultPassword: 'advisor@2026',
+    department: 'Cadastral & Investment Advisory',
+    responsibility: 'Manage advisory sessions and recommendations',
+    dashboardRoute: '/portal/advisor'
+  },
+  {
+    id: 111,
+    name: 'Karthik',
+    role: 'operations_executive',
+    roleLabel: 'Operations Executive',
+    title: 'Site Visit Coordinator & Field Officer',
+    avatarInitials: 'OE',
+    badgeColor: 'amber',
+    email: 'operations@findaplot.in',
+    defaultPassword: 'operations@2026',
+    department: 'Field Operations & Verification',
+    responsibility: 'Manage site visits and coordination',
+    dashboardRoute: '/portal/operations'
+  },
+  {
+    id: 112,
+    name: 'Lakshmi',
+    role: 'finance_admin',
+    roleLabel: 'Finance Admin',
+    title: 'Finance Controller & Ledger Auditor',
+    avatarInitials: 'FA',
+    badgeColor: 'green',
+    email: 'finance@findaplot.in',
+    defaultPassword: 'finance@2026',
+    department: 'Corporate Accounts & Settlements',
+    responsibility: 'Payments, subscriptions and commissions',
+    dashboardRoute: '/portal/finance'
+  },
+  {
+    id: 113,
+    name: 'Venkatesh',
+    role: 'content_gis_admin',
+    roleLabel: 'Content / GIS Admin',
+    title: 'GIS Surveyor & Digital Content Administrator',
+    avatarInitials: 'GA',
+    badgeColor: 'rose',
+    email: 'gis@findaplot.in',
+    defaultPassword: 'gis@2026',
+    department: 'Spatial Data, GIS & Media Production',
+    responsibility: 'Localities, maps, media and project information',
+    dashboardRoute: '/portal/gis'
   }
 ];
 
@@ -96,7 +164,8 @@ export class AdminLoginComponent {
     this.errorMessage.set('');
     this.adminService.login(this.loginId(), this.password()).subscribe(res => {
       if (res.success) {
-        this.router.navigate(['/admin']);
+        const dest = res.dashboardRoute || (res.admin as any)?.dashboardRoute || '/admin';
+        this.router.navigateByUrl(dest);
       } else {
         this.errorMessage.set(res.message || 'Invalid credentials');
       }

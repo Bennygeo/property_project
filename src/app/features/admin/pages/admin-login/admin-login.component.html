@@ -24,18 +24,26 @@
 
     <!-- Quick Select Admin Persona -->
     <div class="quick-personas-section">
-      <span class="quick-personas-title">Select Administrator Profile:</span>
+      <div class="quick-personas-header">
+        <span class="quick-personas-title">Demo Role Authentication &amp; Instant Access:</span>
+        <span class="demo-pass-hint">Universal Passkey: <code>1111</code></span>
+      </div>
       <div class="quick-personas-grid">
         @for (cred of credentials; track cred.id) {
           <button 
             type="button" 
             class="quick-persona-btn"
+            [class]="cred.badgeColor"
             (click)="quickSelect(cred)"
             [disabled]="adminService.isLoading()">
-            <span class="persona-avatar">{{ cred.avatarInitials }}</span>
+            <span class="persona-avatar" [class]="cred.badgeColor">{{ cred.avatarInitials }}</span>
             <div class="persona-info">
-              <span class="persona-name">{{ cred.name }}</span>
-              <span class="persona-role">{{ cred.title }}</span>
+              <div class="role-title-row">
+                <span class="persona-name">{{ cred.name }}</span>
+                <span class="role-pill-tag" [class]="cred.badgeColor">{{ cred.roleLabel }}</span>
+              </div>
+              <span class="persona-role">{{ cred.responsibility }}</span>
+              <span class="persona-email">{{ cred.email }}</span>
             </div>
             <span class="material-symbols-outlined persona-arrow">login</span>
           </button>

@@ -163,6 +163,47 @@
         </a>
       </div>
 
+      <!-- Section 4: Operational Role Dashboards -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">Role Dashboards</span>
+        }
+        <a routerLink="/portal/sales" class="sidebar-nav-item link-item" title="Sales Executive Desk">
+          <span class="material-symbols-outlined nav-icon text-indigo">point_of_sale</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Sales Executive</span>
+          }
+        </a>
+
+        <a routerLink="/portal/advisor" class="sidebar-nav-item link-item" title="Property Advisor Desk">
+          <span class="material-symbols-outlined nav-icon text-emerald">psychology</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Property Advisor</span>
+          }
+        </a>
+
+        <a routerLink="/portal/operations" class="sidebar-nav-item link-item" title="Operations & Site Visits Desk">
+          <span class="material-symbols-outlined nav-icon text-amber">commute</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Operations Executive</span>
+          }
+        </a>
+
+        <a routerLink="/portal/finance" class="sidebar-nav-item link-item" title="Finance Admin Desk">
+          <span class="material-symbols-outlined nav-icon text-teal">account_balance</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Finance Admin</span>
+          }
+        </a>
+
+        <a routerLink="/portal/gis" class="sidebar-nav-item link-item" title="Content & GIS Admin Studio">
+          <span class="material-symbols-outlined nav-icon text-rose">map</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Content / GIS Admin</span>
+          }
+        </a>
+      </div>
+
     </nav>
 
     <!-- Sidebar Footer -->

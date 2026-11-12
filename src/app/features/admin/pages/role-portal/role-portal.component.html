@@ -1,0 +1,901 @@
+<div class="admin-enterprise-shell" [class.sidebar-collapsed]="isSidebarCollapsed()">
+
+  <!-- ============================================================ -->
+  <!-- 1. ENTERPRISE STICKY LEFT SIDEBAR                            -->
+  <!-- ============================================================ -->
+  <aside class="admin-sidebar" aria-label="Role Portal Navigation">
+
+    <!-- Sidebar Header & Brand -->
+    <div class="sidebar-header">
+      <div class="sidebar-brand" routerLink="/admin" role="button" tabindex="0">
+        <div class="brand-shield-icon" [class]="currentRoleMeta().badgeColor">
+          <span class="material-symbols-outlined">{{ currentRoleMeta().icon }}</span>
+        </div>
+        @if (!isSidebarCollapsed()) {
+          <div class="brand-text-wrap">
+            <span class="brand-title">FindAPlot</span>
+            <span class="brand-tag">{{ currentRoleMeta().name }}</span>
+          </div>
+        }
+      </div>
+      <button 
+        type="button" 
+        class="btn-sidebar-collapse" 
+        (click)="toggleSidebar()" 
+        [title]="isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        aria-label="Toggle sidebar width">
+        <span class="material-symbols-outlined">{{ isSidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+      </button>
+    </div>
+
+    <!-- Navigation Groups -->
+    <nav class="sidebar-nav-scroll">
+
+      <!-- Section: Dedicated Role Operations -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">{{ currentRoleMeta().name }} Core Desk</span>
+        }
+
+        <!-- 1. SALES EXECUTIVE NAV -->
+        @if (activeRole() === 'sales_executive') {
+          <button type="button" class="sidebar-nav-item active">
+            <span class="material-symbols-outlined nav-icon">groups</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Assigned Buyer Leads</span>
+              <span class="nav-badge subtle">{{ dashboardData()?.leads?.length || 0 }}</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item" (click)="triggerQuickAction('whatsapp', {clientName: 'All Active Leads'})">
+            <span class="material-symbols-outlined nav-icon text-emerald">chat</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">WhatsApp Concierge</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon">call_log</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Follow-up Schedule</span>
+              <span class="nav-badge alert">8 DUE</span>
+            }
+          </button>
+        }
+
+        <!-- 2. PROPERTY ADVISOR NAV -->
+        @if (activeRole() === 'property_advisor') {
+          <button type="button" class="sidebar-nav-item active">
+            <span class="material-symbols-outlined nav-icon">psychology</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Advisory Consultations</span>
+              <span class="nav-badge live">LIVE</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-amber">insights</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Buyer Mindset AI</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-teal">verified</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Patta &amp; Legal Clearance</span>
+            }
+          </button>
+        }
+
+        <!-- 3. OPERATIONS EXECUTIVE NAV -->
+        @if (activeRole() === 'operations_executive') {
+          <button type="button" class="sidebar-nav-item active">
+            <span class="material-symbols-outlined nav-icon">commute</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Site Visits &amp; Logistics</span>
+              <span class="nav-badge alert">4 TODAY</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-blue">pin_drop</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">GPS Coordinate Markers</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-emerald">domain</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Promoter Field Contacts</span>
+            }
+          </button>
+        }
+
+        <!-- 4. FINANCE ADMIN NAV -->
+        @if (activeRole() === 'finance_admin') {
+          <button type="button" class="sidebar-nav-item active">
+            <span class="material-symbols-outlined nav-icon">account_balance</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Razorpay &amp; Revenues</span>
+              <span class="nav-badge rev">₹2.45L</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-purple">workspace_premium</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Paid Subscriptions</span>
+            }
+          </button>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-amber">handshake</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Broker Commissions</span>
+            }
+          </button>
+        }
+
+        <!-- 5. CONTENT & GIS ADMIN NAV -->
+        @if (activeRole() === 'content_gis_admin') {
+          <button type="button" class="sidebar-nav-item active">
+            <span class="material-symbols-outlined nav-icon">map</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Localities &amp; Spatial GIS</span>
+              <span class="nav-badge db">124 ZONES</span>
+            }
+          </button>
+
+          <a routerLink="/admin" [queryParams]="{tab: 'plot_studio'}" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-teal">terrain</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">3D Plot Partition Studio</span>
+            }
+          </a>
+
+          <button type="button" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-rose">photo_camera</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Drone &amp; Media Gallery</span>
+            }
+          </button>
+        }
+
+      </div>
+
+      <!-- Section: Super Admin Master Navigation (Only for Super Admin) -->
+      @if (isSuperAdmin()) {
+        <div class="nav-group">
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-group-title">Super Admin Master Access</span>
+          }
+          <a routerLink="/admin" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon">dashboard</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Master Admin Portal</span>
+            }
+          </a>
+
+          <a routerLink="/admin/roles" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon">manage_accounts</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Role Governance (RBAC)</span>
+              <span class="nav-badge alert">SUPER</span>
+            }
+          </a>
+
+          <a routerLink="/developer" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon">domain</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Developer Portal View</span>
+            }
+          </a>
+        </div>
+      }
+
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      @if (!isSidebarCollapsed()) {
+        <div class="admin-user-card">
+          <span class="p-avatar" [class]="currentRoleMeta().badgeColor">
+            {{ (adminService.currentAdmin()?.name || currentRoleMeta().name).substring(0, 2).toUpperCase() }}
+          </span>
+          <div class="admin-user-info">
+            <div class="name-row">
+              <span class="admin-name">{{ adminService.currentAdmin()?.name || currentRoleMeta().name }}</span>
+              <span class="status-live-dot" title="Authenticated Session"></span>
+            </div>
+            <span class="admin-role">{{ currentRoleMeta().name }}</span>
+          </div>
+        </div>
+      }
+      <button type="button" class="btn-sidebar-logout" (click)="signOut()" title="Sign out session">
+        <span class="material-symbols-outlined">logout</span>
+        @if (!isSidebarCollapsed()) {
+          <span>Sign Out</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================================================ -->
+  <!-- 2. MAIN APP CONTENT CANVAS                                   -->
+  <!-- ============================================================ -->
+  <div class="admin-app-area">
+
+    <!-- STICKY TOPNAV -->
+    <header class="admin-topnav">
+      <div class="topnav-left">
+        <button type="button" class="btn-topnav-toggle" (click)="toggleSidebar()" aria-label="Toggle navigation sidebar">
+          <span class="material-symbols-outlined">{{ isSidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+        </button>
+
+        <div class="breadcrumb-trail">
+          <span class="bc-root">Operational Workspaces</span>
+          <span class="bc-sep">/</span>
+          <span class="bc-current">{{ currentRoleMeta().name }} Dashboard</span>
+        </div>
+      </div>
+
+      <!-- SUPER ADMIN ROLE SWITCHER BAR -->
+      @if (isSuperAdmin()) {
+        <div class="role-perspective-switcher">
+          <span class="switch-label">
+            <span class="material-symbols-outlined switch-icon">visibility</span>
+            <span>Role View:</span>
+          </span>
+          <select 
+            class="role-switch-dropdown" 
+            [ngModel]="activeRole()" 
+            (ngModelChange)="switchRoleView($event)">
+            @for (opt of allRoleOptions; track opt.id) {
+              <option [value]="opt.id">{{ opt.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="topnav-search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input 
+          type="text" 
+          class="topnav-search-input" 
+          placeholder="Search records, clients, localities..."
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="onSearchChange($event)" />
+        <span class="search-kbd-shortcut">⌘K</span>
+      </div>
+
+      <div class="topnav-right">
+        @if (isSuperAdmin()) {
+          <a routerLink="/admin" class="btn-topnav-pill" title="Return to Super Admin Central Dashboard">
+            <span class="material-symbols-outlined">shield</span>
+            <span>Super Admin</span>
+          </a>
+        }
+
+        <a routerLink="/" class="btn-topnav-icon" title="Open Public Marketplace">
+          <span class="material-symbols-outlined">storefront</span>
+        </a>
+
+        <div class="topnav-profile-pill" [title]="adminService.currentAdmin()?.name || currentRoleMeta().name">
+          <span class="p-avatar-mini" [class]="currentRoleMeta().badgeColor">
+            {{ (adminService.currentAdmin()?.name || currentRoleMeta().name).substring(0, 2).toUpperCase() }}
+          </span>
+          <span class="pill-name">{{ (adminService.currentAdmin()?.name || currentRoleMeta().name).split(' ')[0] }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SCROLLABLE BODY AREA -->
+    <div class="admin-scrollable-body">
+
+      <main class="admin-main-container">
+
+        <!-- ROLE HEADER HERO BANNER -->
+        <div class="role-hero-banner" [class]="currentRoleMeta().badgeColor">
+          <div class="role-icon-box" [class]="currentRoleMeta().badgeColor">
+            <span class="material-symbols-outlined">{{ currentRoleMeta().icon }}</span>
+          </div>
+          <div class="role-hero-text">
+            <div class="role-badge-row">
+              <span class="role-badge-tag" [class]="currentRoleMeta().badgeColor">{{ currentRoleMeta().badge }}</span>
+              @if (isSuperAdmin()) {
+                <span class="super-badge-tag">SUPER ADMIN OVERRIDE ACTIVE</span>
+              }
+            </div>
+            <h2>{{ currentRoleMeta().title }}</h2>
+            <p>{{ currentRoleMeta().description }}</p>
+          </div>
+        </div>
+
+        <!-- ROLE KPI STRIP -->
+        <section class="role-kpis-grid">
+          
+          <!-- 1. SALES EXECUTIVE KPIS -->
+          @if (activeRole() === 'sales_executive') {
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#e0e7ff;color:#4338ca;">
+                <span class="material-symbols-outlined">groups</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Assigned Buyer Leads</span>
+                <span class="kpi-val">{{ dashboardData()?.kpis?.totalAssignedLeads || 25 }}</span>
+                <span class="kpi-meta">Active Prospects</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
+                <span class="material-symbols-outlined">local_fire_department</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Hot Prospects</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.hotProspects || 12 }}</span>
+                <span class="kpi-meta">Site Visits / Negotiating</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fee2e2;color:#b91c1c;">
+                <span class="material-symbols-outlined">notification_important</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Pending Follow-Ups</span>
+                <span class="kpi-val text-red">{{ dashboardData()?.kpis?.pendingFollowUps || 8 }}</span>
+                <span class="kpi-meta">Action Required Today</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#dcfce7;color:#15803d;">
+                <span class="material-symbols-outlined">task_alt</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Conversions This Month</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.conversionsThisMonth || 5 }}</span>
+                <span class="kpi-meta">Plot Bookings Closed</span>
+              </div>
+            </div>
+          }
+
+          <!-- 2. PROPERTY ADVISOR KPIS -->
+          @if (activeRole() === 'property_advisor') {
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ecfdf5;color:#047857;">
+                <span class="material-symbols-outlined">psychology</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Advisory Sessions</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.advisorySessions || 14 }}</span>
+                <span class="kpi-meta">Investor Consultations</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#f0fdf4;color:#16a34a;">
+                <span class="material-symbols-outlined">verified</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Legal Patta Clearances</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.legalPattaClearances || 19 }}</span>
+                <span class="kpi-meta">Cadastral Audits Done</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#eff6ff;color:#2563eb;">
+                <span class="material-symbols-outlined">match_word</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Dossier Matches</span>
+                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.activeDossierMatches || 28 }}</span>
+                <span class="kpi-meta">Portfolio Alignment</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
+                <span class="material-symbols-outlined">hotel_class</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Client Satisfaction</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.clientSatisfaction || '98.5%' }}</span>
+                <span class="kpi-meta">High Investor Trust</span>
+              </div>
+            </div>
+          }
+
+          <!-- 3. OPERATIONS EXECUTIVE KPIS -->
+          @if (activeRole() === 'operations_executive') {
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fff7ed;color:#c2410c;">
+                <span class="material-symbols-outlined">commute</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Site Visits Today</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.visitsToday || 4 }}</span>
+                <span class="kpi-meta">Confirmed On Schedule</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
+                <span class="material-symbols-outlined">event_upcoming</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Upcoming This Week</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.upcomingThisWeek || 12 }}</span>
+                <span class="kpi-meta">Field Officer Dispatches</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#eff6ff;color:#2563eb;">
+                <span class="material-symbols-outlined">pin_drop</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">GPS Boundary Surveys</span>
+                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.gpsSurveysCompleted || 38 }}</span>
+                <span class="kpi-meta">DTCP Stones Verified</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ecfdf5;color:#047857;">
+                <span class="material-symbols-outlined">handshake</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Promoter Confirmation</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.promoterConfirmations || '100%' }}</span>
+                <span class="kpi-meta">Gate Keys Authorized</span>
+              </div>
+            </div>
+          }
+
+          <!-- 4. FINANCE ADMIN KPIS -->
+          @if (activeRole() === 'finance_admin') {
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ccfbf1;color:#0f766e;">
+                <span class="material-symbols-outlined">payments</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total Revenue</span>
+                <span class="kpi-val text-teal">₹{{ dashboardData()?.kpis?.totalRevenue | number:'1.0-0' }}</span>
+                <span class="kpi-meta">Captured Ledger Total</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#eff6ff;color:#2563eb;">
+                <span class="material-symbols-outlined">credit_card</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Razorpay Share</span>
+                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.razorpayShare || '91.4%' }}</span>
+                <span class="kpi-meta">Automated UPI &amp; Cards</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#f3e8ff;color:#7e22ce;">
+                <span class="material-symbols-outlined">workspace_premium</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Paid Subscriptions</span>
+                <span class="kpi-val text-purple">{{ dashboardData()?.kpis?.activeSubscriptions || 18 }}</span>
+                <span class="kpi-meta">Recurring Investor Tiers</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
+                <span class="material-symbols-outlined">handshake</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Pending Commissions</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.pendingCommissions || '₹42,500' }}</span>
+                <span class="kpi-meta">Awaiting Settlement</span>
+              </div>
+            </div>
+          }
+
+          <!-- 5. CONTENT / GIS ADMIN KPIS -->
+          @if (activeRole() === 'content_gis_admin') {
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ffe4e6;color:#be123c;">
+                <span class="material-symbols-outlined">map</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Managed Localities</span>
+                <span class="kpi-val text-rose">{{ dashboardData()?.kpis?.managedLocalities || 124 }}</span>
+                <span class="kpi-meta">Spatial Zones Active</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#eff6ff;color:#2563eb;">
+                <span class="material-symbols-outlined">location_city</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total Projects with GIS</span>
+                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.totalProjectsGIS || 350 }}</span>
+                <span class="kpi-meta">Cadastral Boundary Linked</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#f0fdf4;color:#16a34a;">
+                <span class="material-symbols-outlined">flight</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Drone Aerial Tours</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.droneMediaTours || 46 }}</span>
+                <span class="kpi-meta">4K Visual Showcases</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ccfbf1;color:#0f766e;">
+                <span class="material-symbols-outlined">terrain</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">3D Plot Studios</span>
+                <span class="kpi-val text-teal">{{ dashboardData()?.kpis?.plotPartitions || 18 }}</span>
+                <span class="kpi-meta">Interactive Partition Layouts</span>
+              </div>
+            </div>
+          }
+
+        </section>
+
+        <!-- ROLE INTERACTIVE WORKSPACE DATA TABLES -->
+        <div class="role-data-section">
+          
+          <!-- 1. SALES EXECUTIVE TABLE: ASSIGNED LEADS & FOLLOW-UPS -->
+          @if (activeRole() === 'sales_executive') {
+            <div class="table-card">
+              <div class="card-header">
+                <div class="header-text">
+                  <h3>Assigned Buyer Leads &amp; Customer Pipelines</h3>
+                  <p>Follow up with prospective land and property buyers across assigned regional districts.</p>
+                </div>
+                <div class="header-actions">
+                  <span class="record-count">{{ dashboardData()?.leads?.length || 0 }} Leads</span>
+                </div>
+              </div>
+
+              <div class="table-responsive-box">
+                <table class="role-table">
+                  <thead>
+                    <tr>
+                      <th>Buyer Name &amp; Contact</th>
+                      <th>Pipeline Stage</th>
+                      <th>Investor Tier</th>
+                      <th>Property Interest</th>
+                      <th>Budget Range</th>
+                      <th>Next Follow-Up</th>
+                      <th style="text-align: right;">Sales Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (lead of dashboardData()?.leads; track lead.id) {
+                      <tr>
+                        <td>
+                          <div class="cell-user">
+                            <span class="avatar-circle indigo">{{ lead.name.substring(0, 2).toUpperCase() }}</span>
+                            <div class="user-details">
+                              <span class="user-main-name">{{ lead.name }}</span>
+                              <span class="user-sub-email">{{ lead.email }} &bull; {{ lead.phone }}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="stage-tag" [class]="lead.stage.toLowerCase().replace(' ', '-')">
+                            {{ lead.stage }}
+                          </span>
+                        </td>
+                        <td>
+                          <span class="tier-pill">{{ lead.investorTier }}</span>
+                        </td>
+                        <td>
+                          <span class="interest-text">{{ lead.interest }}</span>
+                        </td>
+                        <td>
+                          <span class="budget-badge">{{ lead.budget }}</span>
+                        </td>
+                        <td>
+                          <span class="followup-due">{{ lead.nextFollowUp }}</span>
+                        </td>
+                        <td style="text-align: right;">
+                          <div class="action-buttons-wrap">
+                            <button type="button" class="btn-action-icon call" (click)="triggerQuickAction('call', lead)" title="Call Client">
+                              <span class="material-symbols-outlined">call</span>
+                            </button>
+                            <button type="button" class="btn-action-icon whatsapp" (click)="triggerQuickAction('whatsapp', lead)" title="Send WhatsApp Dossier">
+                              <span class="material-symbols-outlined">chat</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- 2. PROPERTY ADVISOR TABLE: CONSULTATIONS & RECOMMENDATIONS -->
+          @if (activeRole() === 'property_advisor') {
+            <div class="table-card">
+              <div class="card-header">
+                <div class="header-text">
+                  <h3>Investor Advisory Consultations &amp; Legal Clearance Queue</h3>
+                  <p>Cadastral Patta analysis, risk profiling, and personalized parcel recommendations.</p>
+                </div>
+              </div>
+
+              <div class="table-responsive-box">
+                <table class="role-table">
+                  <thead>
+                    <tr>
+                      <th>Client Details</th>
+                      <th>Mindset Profile</th>
+                      <th>Target Corridor</th>
+                      <th>Budget &amp; Risk Class</th>
+                      <th>Consultation Status</th>
+                      <th>Recommended Dossier</th>
+                      <th style="text-align: right;">Advisory Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of dashboardData()?.consultations; track c.id) {
+                      <tr>
+                        <td>
+                          <div class="cell-user">
+                            <span class="avatar-circle emerald">{{ c.clientName.substring(0, 2).toUpperCase() }}</span>
+                            <div class="user-details">
+                              <span class="user-main-name">{{ c.clientName }}</span>
+                              <span class="user-sub-email">{{ c.phone }}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="mindset-pill">{{ c.mindset }}</span>
+                        </td>
+                        <td>
+                          <span class="corridor-text">{{ c.targetArea }}</span>
+                        </td>
+                        <td>
+                          <div class="risk-cell">
+                            <span class="budget-val">{{ c.budget }}</span>
+                            <span class="risk-sub">{{ c.riskProfile }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="status-pill emerald">{{ c.status }} &bull; {{ c.time }}</span>
+                        </td>
+                        <td>
+                          <span class="rec-dossier">{{ c.recommended }}</span>
+                        </td>
+                        <td style="text-align: right;">
+                          <button type="button" class="btn-primary-action emerald" (click)="triggerQuickAction('verify_patta', c)">
+                            <span class="material-symbols-outlined">verified</span>
+                            <span>Verify Patta</span>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- 3. OPERATIONS EXECUTIVE TABLE: SITE VISITS & LOGISTICS -->
+          @if (activeRole() === 'operations_executive') {
+            <div class="table-card">
+              <div class="card-header">
+                <div class="header-text">
+                  <h3>Physical Site Visits &amp; DTCP Boundary Coordination</h3>
+                  <p>Field visit scheduling, GPS survey markers, road access checks, and gate approvals.</p>
+                </div>
+              </div>
+
+              <div class="table-responsive-box">
+                <table class="role-table">
+                  <thead>
+                    <tr>
+                      <th>Visit ID &amp; Property</th>
+                      <th>Visitor &amp; Phone</th>
+                      <th>Date &amp; Time Slot</th>
+                      <th>Assigned Field Rep</th>
+                      <th>DTCP Boundary Check</th>
+                      <th>GPS Coordinates</th>
+                      <th style="text-align: right;">Status &amp; Coordination</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (v of dashboardData()?.siteVisits; track v.id) {
+                      <tr>
+                        <td>
+                          <div class="visit-prop-cell">
+                            <span class="visit-id">{{ v.id }}</span>
+                            <span class="visit-prop-title">{{ v.propertyTitle }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="user-details">
+                            <span class="user-main-name">{{ v.visitorName }}</span>
+                            <span class="user-sub-email">{{ v.visitorPhone }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="date-time-pill">{{ v.scheduledDate }} &bull; {{ v.timeSlot }}</span>
+                        </td>
+                        <td>
+                          <span class="field-rep-text">{{ v.fieldExecutive }}</span>
+                        </td>
+                        <td>
+                          <span class="marker-check-tag">{{ v.dtcpMarkerCheck }}</span>
+                        </td>
+                        <td>
+                          <code class="gps-code">{{ v.gpsCoords }}</code>
+                        </td>
+                        <td style="text-align: right;">
+                          @if (v.status !== 'Confirmed') {
+                            <button type="button" class="btn-primary-action amber" (click)="triggerQuickAction('confirm_visit', v)">
+                              <span class="material-symbols-outlined">check_circle</span>
+                              <span>Confirm Visit</span>
+                            </button>
+                          } @else {
+                            <span class="confirmed-tag">CONFIRMED</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- 4. FINANCE ADMIN TABLE: REVENUE & SETTLEMENTS -->
+          @if (activeRole() === 'finance_admin') {
+            <div class="table-card">
+              <div class="card-header">
+                <div class="header-text">
+                  <h3>Financial Transactions, Subscriptions &amp; Broker Settlements</h3>
+                  <p>Audit Razorpay payment gateways, investor credit wallet adjustments, and payout ledger.</p>
+                </div>
+              </div>
+
+              <div class="table-responsive-box">
+                <table class="role-table">
+                  <thead>
+                    <tr>
+                      <th>Transaction ID</th>
+                      <th>Client / Promoter</th>
+                      <th>Type &amp; Purpose</th>
+                      <th>Amount (INR)</th>
+                      <th>Gateway Method</th>
+                      <th>Settlement Date</th>
+                      <th style="text-align: right;">Status &amp; Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (t of dashboardData()?.transactions; track t.id) {
+                      <tr>
+                        <td>
+                          <span class="txn-code">{{ t.id }}</span>
+                        </td>
+                        <td>
+                          <span class="client-name">{{ t.client }}</span>
+                        </td>
+                        <td>
+                          <span class="txn-type">{{ t.type }}</span>
+                        </td>
+                        <td>
+                          <span class="amount-rupee">₹{{ t.amount | number:'1.0-0' }}</span>
+                        </td>
+                        <td>
+                          <span class="method-tag">{{ t.method }}</span>
+                        </td>
+                        <td>
+                          <span class="date-sub">{{ t.date }}</span>
+                        </td>
+                        <td style="text-align: right;">
+                          @if (t.status === 'Captured') {
+                            <span class="status-pill green">CAPTURED</span>
+                          } @else if (t.status === 'Paid Out') {
+                            <span class="status-pill blue">PAID OUT</span>
+                          } @else {
+                            <button type="button" class="btn-primary-action teal" (click)="triggerQuickAction('settle_commission', t)">
+                              <span>Settle Payout</span>
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- 5. CONTENT & GIS ADMIN TABLE: LOCALITIES & SPATIAL DATA -->
+          @if (activeRole() === 'content_gis_admin') {
+            <div class="table-card">
+              <div class="card-header">
+                <div class="header-text">
+                  <h3>Regional Spatial Grids, Drone Showcases &amp; 3D Plots</h3>
+                  <p>Coordinate survey bounds, cadastral deed overlays, and visual media production pipelines.</p>
+                </div>
+                <div class="header-actions">
+                  <a routerLink="/admin" [queryParams]="{tab: 'plot_studio'}" class="btn-primary-action rose">
+                    <span class="material-symbols-outlined">terrain</span>
+                    <span>Launch 3D Studio</span>
+                  </a>
+                </div>
+              </div>
+
+              <div class="table-responsive-box">
+                <table class="role-table">
+                  <thead>
+                    <tr>
+                      <th>Spatial Grid Zone</th>
+                      <th>District</th>
+                      <th>Partitioned Plots</th>
+                      <th>Survey Coverage</th>
+                      <th>Media Format</th>
+                      <th style="text-align: right;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (g of dashboardData()?.gisItems; track g.name) {
+                      <tr>
+                        <td>
+                          <span class="grid-name">{{ g.name }}</span>
+                        </td>
+                        <td>
+                          <span class="district-badge">{{ g.district }}</span>
+                        </td>
+                        <td>
+                          <span class="plot-count">{{ g.plots }} Plots</span>
+                        </td>
+                        <td>
+                          <div class="survey-cell">
+                            <span class="survey-pct">{{ g.surveyCoverage }}</span>
+                            <div class="survey-bar-wrap">
+                              <div class="survey-bar" [style.width]="g.surveyCoverage"></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="media-badge">{{ g.media }}</span>
+                        </td>
+                        <td style="text-align: right;">
+                          <span class="status-pill" [class.green]="g.status === 'Published'" [class.amber]="g.status === 'Under Review'">
+                            {{ g.status | uppercase }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+</div>
+

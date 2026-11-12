@@ -45,12 +45,15 @@ export interface AdminStats {
 export interface AdminPersona {
   id: number;
   name: string;
-  role: 'admin' | 'co_admin';
+  role: string;
   title: string;
   avatarInitials: string;
   email: string;
   department?: string;
   responsibility?: string;
+  developer_id?: number | null;
+  permissions?: string[];
+  dashboardRoute?: string;
 }
 
 export interface PostPropertyPayload {

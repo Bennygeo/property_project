@@ -77,6 +77,41 @@ export const routes: Routes = [
     title: 'Admin Officer Profile & Audit Logs — Find a Plot Portal'
   },
   {
+    path: 'portal/sales',
+    loadComponent: () => import('./features/admin/pages/role-portal/role-portal.component').then(m => m.RolePortalComponent),
+    data: { role: 'sales_executive' },
+    title: 'Sales Executive Workspace — Find a Plot'
+  },
+  {
+    path: 'portal/advisor',
+    loadComponent: () => import('./features/admin/pages/role-portal/role-portal.component').then(m => m.RolePortalComponent),
+    data: { role: 'property_advisor' },
+    title: 'Property Advisor Desk — Find a Plot'
+  },
+  {
+    path: 'portal/operations',
+    loadComponent: () => import('./features/admin/pages/role-portal/role-portal.component').then(m => m.RolePortalComponent),
+    data: { role: 'operations_executive' },
+    title: 'Operations & Site Visits — Find a Plot'
+  },
+  {
+    path: 'portal/finance',
+    loadComponent: () => import('./features/admin/pages/role-portal/role-portal.component').then(m => m.RolePortalComponent),
+    data: { role: 'finance_admin' },
+    title: 'Finance & Revenue Controller — Find a Plot'
+  },
+  {
+    path: 'portal/gis',
+    loadComponent: () => import('./features/admin/pages/role-portal/role-portal.component').then(m => m.RolePortalComponent),
+    data: { role: 'content_gis_admin' },
+    title: 'Content & Spatial GIS Studio — Find a Plot'
+  },
+  {
+    path: 'portal',
+    loadComponent: () => import('./features/admin/pages/role-portal/role-portal.component').then(m => m.RolePortalComponent),
+    title: 'Operational Workspace Portal — Find a Plot'
+  },
+  {
     path: 'admin/roles',
     loadComponent: () => import('./features/admin/pages/admin-roles/admin-roles.component').then(m => m.AdminRolesComponent),
     title: 'Role & Staff Access Governance — Find a Plot Super Admin'

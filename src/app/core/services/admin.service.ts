@@ -237,7 +237,7 @@ export class AdminService {
   }
 
   // Admin Login via Backend API
-  login(loginId: string, password: string): Observable<{ success: boolean; message?: string }> {
+  login(loginId: string, password: string): Observable<{ success: boolean; message?: string; admin?: AdminPersona; dashboardRoute?: string }> {
     this.isLoading.set(true);
     const body = { email: loginId, password };
     const tryLogin = (url: string) => this.http.post<{ success: boolean; data: { admin: any }; message: string }>(url, body);
@@ -259,7 +259,12 @@ export class AdminService {
             role: res.data.admin.role,
             title: res.data.admin.title,
             avatarInitials: res.data.admin.avatarInitials,
-            email: res.data.admin.email
+            email: res.data.admin.email,
+            department: res.data.admin.department,
+            responsibility: res.data.admin.responsibility,
+            developer_id: res.data.admin.developer_id,
+            permissions: res.data.admin.permissions,
+            dashboardRoute: res.data.admin.dashboardRoute || '/admin'
           };
           this.currentAdmin.set(admData);
           this.activePersona.set(admData);
@@ -271,7 +276,7 @@ export class AdminService {
             icon: 'verified_user'
           });
           this.loadAdminData();
-          return { success: true };
+          return { success: true, admin: admData, dashboardRoute: admData.dashboardRoute };
         }
         return { success: false, message: 'Invalid credentials' };
       }),
@@ -866,6 +871,22 @@ export class AdminService {
         });
         return throwError(() => err);
       })
+    );
+  }
+
+  fetchRoleDashboard(role: string): Observable<any> {
+    const active = this.activePersona();
+    const queryString = `?role=${role}&admin_id=${active?.id || 104}`;
+
+    const tryGet = (url: string) => this.http.get<{ success: boolean; data: any; message: string }>(url);
+
+    return tryGet(`${environment.apiUrl}/admin/role-dashboards.php${queryString}`).pipe(
+      catchError(() => tryGet(`/P_demo_5/backend/api/admin/role-dashboards.php${queryString}`)),
+      catchError(() => tryGet(`/p_demo_5/backend/api/admin/role-dashboards.php${queryString}`)),
+      catchError(() => tryGet(`/P_demo_4/backend/api/admin/role-dashboards.php${queryString}`)),
+      catchError(() => tryGet(`/api/admin/role-dashboards.php${queryString}`)),
+      catchError(() => tryGet(`http://localhost/the-property-project/backend/api/admin/role-dashboards.php${queryString}`)),
+      map(res => res.data)
     );
   }
 }
