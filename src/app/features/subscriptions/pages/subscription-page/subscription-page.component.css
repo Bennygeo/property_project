@@ -132,7 +132,7 @@
 
 .sub-hero-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--brand-teal);
   letter-spacing: -0.25px;
   margin: 0 0 0.5rem 0;
@@ -429,6 +429,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
   transition: border-color 0.2s ease;
   box-shadow: none !important;
   box-sizing: border-box;
@@ -436,6 +437,36 @@
 
 .plan-card:hover:not(.is-downgrade-disabled) {
   transform: none !important;
+}
+
+.plan-card-watermark {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 4.25rem;
+  font-size: 5.75rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  font-family: inherit;
+  letter-spacing: -3px;
+  z-index: 1;
+}
+
+.plan-card.plan-explorer .plan-card-watermark {
+  color: rgba(203, 213, 225, 0.45);
+}
+
+.plan-card.plan-smart-buyer .plan-card-watermark {
+  color: rgba(94, 143, 114, 0.16);
+}
+
+.plan-card.plan-priority-buyer .plan-card-watermark {
+  color: rgba(15, 59, 74, 0.16);
+}
+
+.plan-card.plan-vip-concierge .plan-card-watermark {
+  color: rgba(213, 179, 87, 0.22);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -460,20 +491,37 @@
   box-shadow: none !important;
 }
 
-.plan-card.plan-explorer .plan-name { color: #0f172a; }
-.plan-card.plan-explorer .plan-price { color: #0f172a; }
+.plan-card.plan-explorer .plan-name {
+  color: #0f172a;
+}
+
+.plan-card.plan-explorer .plan-price {
+  color: #0f172a;
+}
+
 .plan-card.plan-explorer .plan-quotas-box {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
 }
-.plan-card.plan-explorer .quota-icon { color: #64748b; }
-.plan-card.plan-explorer .quota-text strong { color: #0f172a; }
-.plan-card.plan-explorer .check-icon { color: #64748b; }
+
+.plan-card.plan-explorer .quota-icon {
+  color: #64748b;
+}
+
+.plan-card.plan-explorer .quota-text strong {
+  color: #0f172a;
+}
+
+.plan-card.plan-explorer .check-icon {
+  color: #64748b;
+}
+
 .plan-card.plan-explorer .btn-plan-cta {
   background: #1e293b;
   color: #ffffff;
   box-shadow: none !important;
 }
+
 .plan-card.plan-explorer .btn-plan-cta:hover:not(:disabled) {
   background: #0f172a;
 }
@@ -500,20 +548,37 @@
   box-shadow: none !important;
 }
 
-.plan-card.plan-smart-buyer .plan-name { color: #2c4938; }
-.plan-card.plan-smart-buyer .plan-price { color: #2c4938; }
+.plan-card.plan-smart-buyer .plan-name {
+  color: #2c4938;
+}
+
+.plan-card.plan-smart-buyer .plan-price {
+  color: #2c4938;
+}
+
 .plan-card.plan-smart-buyer .plan-quotas-box {
   background: #e5f7ec;
   border: 1px solid #c4e8d1;
 }
-.plan-card.plan-smart-buyer .quota-icon { color: #5e8f72; }
-.plan-card.plan-smart-buyer .quota-text strong { color: #2c4938; }
-.plan-card.plan-smart-buyer .check-icon { color: #5e8f72; }
+
+.plan-card.plan-smart-buyer .quota-icon {
+  color: #5e8f72;
+}
+
+.plan-card.plan-smart-buyer .quota-text strong {
+  color: #2c4938;
+}
+
+.plan-card.plan-smart-buyer .check-icon {
+  color: #5e8f72;
+}
+
 .plan-card.plan-smart-buyer .btn-plan-cta {
   background: #5e8f72;
   color: #ffffff;
   box-shadow: none !important;
 }
+
 .plan-card.plan-smart-buyer .btn-plan-cta:hover:not(:disabled) {
   background: #497259;
 }
@@ -547,23 +612,36 @@
 .plan-card.plan-priority-buyer .plan-name {
   color: #0f3b4a;
 }
+
 .plan-card.plan-priority-buyer .plan-price {
   color: #0f3b4a;
 }
+
 .plan-card.plan-priority-buyer .plan-quotas-box {
   background: #e1eff2;
   border: 1px solid #c2e0e5;
   padding: 0.95rem;
 }
-.plan-card.plan-priority-buyer .quota-icon { color: #0f3b4a; }
-.plan-card.plan-priority-buyer .quota-text strong { color: #0f3b4a; }
-.plan-card.plan-priority-buyer .check-icon { color: #0f3b4a; }
+
+.plan-card.plan-priority-buyer .quota-icon {
+  color: #0f3b4a;
+}
+
+.plan-card.plan-priority-buyer .quota-text strong {
+  color: #0f3b4a;
+}
+
+.plan-card.plan-priority-buyer .check-icon {
+  color: #0f3b4a;
+}
+
 .plan-card.plan-priority-buyer .btn-plan-cta {
   background: #0f3b4a;
   color: #ffffff;
   box-shadow: none !important;
   padding: 0.825rem 1.25rem;
 }
+
 .plan-card.plan-priority-buyer .btn-plan-cta:hover:not(:disabled) {
   background: #144f63;
 }
@@ -595,21 +673,34 @@
 .plan-card.plan-vip-concierge .plan-name {
   color: #6e5719;
 }
+
 .plan-card.plan-vip-concierge .plan-price {
   color: #6e5719;
 }
+
 .plan-card.plan-vip-concierge .plan-quotas-box {
   background: #f7f0d8;
   border: 1px solid #ebdcb0;
 }
-.plan-card.plan-vip-concierge .quota-icon { color: #b89230; }
-.plan-card.plan-vip-concierge .quota-text strong { color: #6e5719; }
-.plan-card.plan-vip-concierge .check-icon { color: #b89230; }
+
+.plan-card.plan-vip-concierge .quota-icon {
+  color: #b89230;
+}
+
+.plan-card.plan-vip-concierge .quota-text strong {
+  color: #6e5719;
+}
+
+.plan-card.plan-vip-concierge .check-icon {
+  color: #b89230;
+}
+
 .plan-card.plan-vip-concierge .btn-plan-cta {
   background: linear-gradient(135deg, #d5b357 0%, #b89230 100%);
   color: #ffffff;
   box-shadow: none !important;
 }
+
 .plan-card.plan-vip-concierge .btn-plan-cta:hover:not(:disabled) {
   background: #a68124;
 }
@@ -618,6 +709,7 @@
 /* RESPONSIVE RESET FOR TABLET & MOBILE (<1040px)                             */
 /* -------------------------------------------------------------------------- */
 @media (max-width: 1039px) {
+
   .plan-card.plan-explorer,
   .plan-card.plan-smart-buyer,
   .plan-card.plan-priority-buyer,
@@ -643,6 +735,7 @@
   border-color: rgba(213, 179, 87, 0.45) !important;
   box-shadow: none !important;
 }
+
 .plan-card.plan-vip-concierge.is-current .btn-plan-cta.current-cta {
   background: #b89230 !important;
   color: #ffffff !important;
@@ -653,6 +746,7 @@
   border-color: rgba(15, 59, 74, 0.3) !important;
   box-shadow: none !important;
 }
+
 .plan-card.plan-priority-buyer.is-current .btn-plan-cta.current-cta {
   background: #0f3b4a !important;
   color: #ffffff !important;
@@ -663,6 +757,7 @@
   border-color: rgba(94, 143, 114, 0.38) !important;
   box-shadow: none !important;
 }
+
 .plan-card.plan-smart-buyer.is-current .btn-plan-cta.current-cta {
   background: #5e8f72 !important;
   color: #ffffff !important;
@@ -673,6 +768,7 @@
   border-color: rgba(30, 41, 59, 0.25) !important;
   box-shadow: none !important;
 }
+
 .plan-card.plan-explorer.is-current .btn-plan-cta.current-cta {
   background: #1e293b !important;
   color: #ffffff !important;
@@ -860,6 +956,8 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 2.25rem;
+  position: relative;
+  z-index: 2;
 }
 
 .features-label {
@@ -900,6 +998,8 @@
 .plan-cta-wrapper {
   margin-top: auto;
   padding-top: 1.25rem;
+  position: relative;
+  z-index: 2;
 }
 
 .btn-plan-cta {
@@ -957,7 +1057,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ========================================== */
@@ -1237,8 +1339,15 @@
 }
 
 @keyframes modalEnter {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .refund-modal-header {
@@ -1407,6 +1516,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1430,6 +1540,7 @@
     opacity: 0;
     transform: translateY(18px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -1805,7 +1916,8 @@
   transition: all 0.15s ease;
 }
 
-.rzp-app-chip.active, .rzp-app-chip:hover {
+.rzp-app-chip.active,
+.rzp-app-chip:hover {
   border-color: #0c2340;
   color: #0c2340;
   background: #f0f7ff;
@@ -1955,7 +2067,8 @@
   transform: none !important;
 }
 
-.rzp-btn-success:disabled, .rzp-btn-fail:disabled {
+.rzp-btn-success:disabled,
+.rzp-btn-fail:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -2016,7 +2129,7 @@
 
 .process-subtitle {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-muted);
   line-height: 1.6;
   margin: 0;
@@ -2103,7 +2216,7 @@
 
 .card-step-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.25px;
   margin: 1.25rem 0 0.85rem 0;
   line-height: 1.35;
@@ -2111,7 +2224,7 @@
 
 .card-step-desc {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.6;
   margin: 0;
   position: relative;
@@ -2239,12 +2352,6 @@
   box-shadow: none !important;
 }
 
-.process-card-gold:hover {
-  border-color: #b89230;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
 .process-card-gold .card-step-badge.badge-gold {
   background: #f7f0d8;
   color: #6e5719;
@@ -2257,7 +2364,6 @@
 
 .process-card-gold .card-step-desc {
   color: #524113;
-  font-weight: 500;
 }
 
 .process-card-gold .card-step-watermark.watermark-gold {
@@ -2273,4 +2379,3 @@
     transform: rotate(360deg);
   }
 }
-
