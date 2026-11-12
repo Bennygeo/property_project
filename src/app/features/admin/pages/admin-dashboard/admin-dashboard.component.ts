@@ -213,8 +213,31 @@ export class AdminDashboardComponent {
     this.router.navigate(['/admin/login']);
   }
 
-  // Active Tab View
+  // Active Tab View & Modern Enterprise Sidebar State
   readonly activeTab = signal<AdminActiveTab>('review_queue');
+  readonly isSidebarCollapsed = signal<boolean>(false);
+  readonly globalAdminSearch = signal<string>('');
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed.update(v => !v);
+  }
+
+  readonly activeTabTitle = computed<string>(() => {
+    const map: Record<AdminActiveTab, string> = {
+      review_queue: 'Project Review Queue',
+      post_property: 'Post New Property',
+      plot_studio: 'Plot Partition Studio 3D',
+      all_directory: 'All Properties & Audit Trail',
+      developers: 'Developer Portfolios & RERA',
+      financials: 'Credits & Revenue Ledger',
+      user_mindset: 'Buyer Mindset & AI Intel',
+      bulk_upload: 'Bulk Excel Upload',
+      buyer_workspaces: 'Buyer Workspaces & CRM',
+      subscription_buyers: 'Subscription Buyers & Entitlements',
+      whatsapp_messages: 'WhatsApp Inquiries & Concierge'
+    };
+    return map[this.activeTab()] || 'Admin Dashboard';
+  });
 
   setTab(tab: AdminActiveTab): void {
     this.activeTab.set(tab);

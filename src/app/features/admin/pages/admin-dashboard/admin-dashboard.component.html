@@ -1,225 +1,400 @@
-<div class="admin-layout">
+<div class="admin-enterprise-shell" [class.sidebar-collapsed]="isSidebarCollapsed()">
 
-  <!-- ========================================== -->
-  <!-- TOP ADMIN HEADER & PERSONA SWITCHER       -->
-  <!-- ========================================== -->
-  <header class="admin-topbar">
-    <div class="topbar-left">
-      <div class="admin-brand">
+  <!-- ============================================================ -->
+  <!-- 1. MODERN ENTERPRISE STICKY LEFT SIDEBAR (LINEAR / STRIPE)   -->
+  <!-- ============================================================ -->
+  <aside class="admin-sidebar" aria-label="Enterprise Navigation">
+
+    <!-- Sidebar Header & Brand -->
+    <div class="sidebar-header">
+      <div class="sidebar-brand" (click)="setTab('review_queue')" role="button" tabindex="0">
         <div class="brand-shield-icon">
           <span class="material-symbols-outlined">security</span>
         </div>
-        <div class="brand-titles">
-          <h1 class="brand-title">FIND A PLOT ADMIN PORTAL</h1>
-          <span class="brand-sub">Four-Eyes Architectural Registry &amp; Peer Review System</span>
-        </div>
+        @if (!isSidebarCollapsed()) {
+          <div class="brand-text-wrap">
+            <span class="brand-title">FindAPlot</span>
+            <span class="brand-tag">Enterprise SaaS</span>
+          </div>
+        }
       </div>
+      <button 
+        type="button" 
+        class="btn-sidebar-collapse" 
+        (click)="toggleSidebar()" 
+        [title]="isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        aria-label="Toggle sidebar width">
+        <span class="material-symbols-outlined">{{ isSidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+      </button>
     </div>
 
-    <!-- Authenticated Administrator Badge -->
-    <div class="topbar-right">
-      <div class="active-admin-badge"
-        [title]="'Authenticated Administrator: ' + (adminService.currentAdmin()?.name || adminService.activePersona().name)">
-        <span class="material-symbols-outlined badge-shield-icon">verified_user</span>
-        <span class="p-avatar"
-          [class.ez]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'EZ'"
-          [class.ra]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'RA'"
-          [class.be]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'BE'">
-          {{ adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials }}
-        </span>
-        <div class="p-info">
-          <div class="p-name-row">
-            <span class="p-name">{{ adminService.currentAdmin()?.name || adminService.activePersona().name }}</span>
-            <span class="status-live-dot" title="Authenticated Session Active"></span>
-          </div>
-          <span class="p-role">{{ adminService.currentAdmin()?.title || adminService.activePersona().title }}</span>
-        </div>
+    <!-- Navigation Groups -->
+    <nav class="sidebar-nav-scroll">
+
+      <!-- Section 1: Core Registry & Audit -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">Registry &amp; Reviews</span>
+        }
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'review_queue'" (click)="setTab('review_queue')">
+          <span class="material-symbols-outlined nav-icon">fact_check</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Review Queue</span>
+            @if (adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews > 0) {
+              <span class="nav-badge alert">
+                {{ adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews }}
+              </span>
+            }
+          }
+        </button>
+
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'all_directory'" (click)="setTab('all_directory')">
+          <span class="material-symbols-outlined nav-icon">table_view</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">All Projects</span>
+            <span class="nav-badge subtle">{{ adminService.stats().total }}</span>
+          }
+        </button>
+
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'post_property'" (click)="setTab('post_property')">
+          <span class="material-symbols-outlined nav-icon">add_business</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Post New Property</span>
+          }
+        </button>
+
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'plot_studio'" (click)="setTab('plot_studio')">
+          <span class="material-symbols-outlined nav-icon text-teal">terrain</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Plot Studio 3D</span>
+            <span class="nav-badge live">3D LIVE</span>
+          }
+        </button>
+
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'bulk_upload'" (click)="setTab('bulk_upload')">
+          <span class="material-symbols-outlined nav-icon text-cyan">upload_file</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Bulk Excel Import</span>
+            <span class="nav-badge db">BULK DB</span>
+          }
+        </button>
       </div>
 
-      <a routerLink="/admin/compare" class="btn-topbar-financials"
-        style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); color: #6ee7b7;"
-        title="Search Registry Properties & Benchmark Side-by-Side">
-        <span class="material-symbols-outlined">compare_arrows</span>
-        <span>Search &amp; Compare</span>
-      </a>
+      <!-- Section 2: CRM & Clients -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">CRM &amp; Stakeholders</span>
+        }
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'buyer_workspaces'" (click)="setTab('buyer_workspaces')">
+          <span class="material-symbols-outlined nav-icon">groups</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Buyer CRM &amp; Leads</span>
+          }
+        </button>
 
-      <button type="button" class="btn-topbar-financials" [class.active]="activeTab() === 'financials'"
-        (click)="setTab('financials')" title="View Razorpay & Financial Credits Ledger">
-        <span class="material-symbols-outlined">payments</span>
-        <span>Credits &amp; Revenue</span>
-      </button>
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'subscription_buyers'" (click)="setTab('subscription_buyers')">
+          <span class="material-symbols-outlined nav-icon text-purple">workspace_premium</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Subscribers</span>
+            <span class="nav-badge paid">{{ dashboardMetrics().totalSubscriptionBuyers }} PAID</span>
+          }
+        </button>
 
-      <a routerLink="/developer" class="btn-topbar-financials"
-        style="background: rgba(94, 143, 114, 0.2); border-color: rgba(94, 143, 114, 0.4); color: #5e8f72;"
-        title="Open Developer Workspace & Manage Company Projects">
-        <span class="material-symbols-outlined">domain</span>
-        <span>Developer Portal</span>
-      </a>
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'developers'" (click)="setTab('developers')">
+          <span class="material-symbols-outlined nav-icon">domain</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Developers &amp; RERA</span>
+          }
+        </button>
 
-      <a routerLink="/admin/profile" class="btn-admin-profile" title="View Admin Profile & Audit Logs">
-        <span class="material-symbols-outlined">shield_person</span>
-        <span>Profile &amp; Logs</span>
-      </a>
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'whatsapp_messages'" (click)="setTab('whatsapp_messages')">
+          <span class="material-symbols-outlined nav-icon text-emerald">chat</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">WhatsApp Inquiries</span>
+            <span class="nav-badge chat">{{ dashboardMetrics().totalWhatsappRequests }}</span>
+          }
+        </button>
 
-      <a routerLink="/" class="btn-goto-market" title="Visit Public Marketplace">
-        <span class="material-symbols-outlined">storefront</span>
-        <span>Marketplace</span>
-      </a>
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'user_mindset'" (click)="setTab('user_mindset')">
+          <span class="material-symbols-outlined nav-icon text-amber">psychology</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Buyer Mindset AI</span>
+          }
+        </button>
+      </div>
 
-      <button type="button" class="btn-admin-signout" (click)="onSignOut()" title="Sign out of administrative session">
+      <!-- Section 3: Finance & Tools -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">Finance &amp; Audit</span>
+        }
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'financials'" (click)="setTab('financials')">
+          <span class="material-symbols-outlined nav-icon">payments</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Credits &amp; Revenue</span>
+            @if (adminService.financialData()?.summary?.totalRevenueRupees) {
+              <span class="nav-badge rev">
+                ₹{{ adminService.financialData()?.summary?.totalRevenueRupees | number:'1.0-0' }}
+              </span>
+            }
+          }
+        </button>
+
+        <a routerLink="/admin/compare" class="sidebar-nav-item link-item" title="Administrative Property Search & Side-by-Side Comparison Matrix">
+          <span class="material-symbols-outlined nav-icon">compare_arrows</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Search &amp; Compare</span>
+          }
+        </a>
+
+        <a routerLink="/admin/profile" class="sidebar-nav-item link-item" title="View Admin Profile & Audit Logs">
+          <span class="material-symbols-outlined nav-icon">shield_person</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Profile &amp; Audit Logs</span>
+          }
+        </a>
+      </div>
+
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      @if (!isSidebarCollapsed()) {
+        <div class="admin-user-card">
+          <span class="p-avatar"
+            [class.ez]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'EZ'"
+            [class.ra]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'RA'"
+            [class.be]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'BE'">
+            {{ adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials }}
+          </span>
+          <div class="admin-user-info">
+            <div class="name-row">
+              <span class="admin-name">{{ adminService.currentAdmin()?.name || adminService.activePersona().name }}</span>
+              <span class="status-live-dot" title="Authenticated Session Active"></span>
+            </div>
+            <span class="admin-role">{{ adminService.currentAdmin()?.title || adminService.activePersona().title }}</span>
+          </div>
+        </div>
+      }
+      <button type="button" class="btn-sidebar-logout" (click)="onSignOut()" [title]="'Sign out ' + (adminService.currentAdmin()?.name || adminService.activePersona().name)">
         <span class="material-symbols-outlined">logout</span>
-        <span>Sign Out</span>
+        @if (!isSidebarCollapsed()) {
+          <span>Sign Out</span>
+        }
       </button>
     </div>
-  </header>
+  </aside>
 
-  <!-- ========================================== -->
-  <!-- METRICS & KPI STRIP (10 MANDATORY ADMIN METRICS) -->
-  <!-- ========================================== -->
-  <section class="admin-kpi-strip">
-    <div class="kpi-grid">
+  <!-- ============================================================ -->
+  <!-- 2. MAIN APP CONTENT CANVAS                                   -->
+  <!-- ============================================================ -->
+  <div class="admin-app-area">
 
-      <!-- 1. Visitors Today -->
-      <div class="kpi-card" title="Total visits recorded across web platform today">
-        <div class="kpi-icon-box total" style="background:#e0f2fe;color:#0284c7;">
-          <span class="material-symbols-outlined">visibility</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-slate">{{ dashboardMetrics().visitorsToday }}</span>
-          <span class="kpi-label">Visitors Today</span>
-          <span class="kpi-sub-text">Active daily sessions</span>
+    <!-- STICKY TOPNAV -->
+    <header class="admin-topnav">
+      <div class="topnav-left">
+        <button type="button" class="btn-topnav-toggle" (click)="toggleSidebar()" aria-label="Toggle navigation sidebar">
+          <span class="material-symbols-outlined">{{ isSidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+        </button>
+
+        <div class="breadcrumb-trail">
+          <span class="bc-root">Admin Workspace</span>
+          <span class="bc-sep">/</span>
+          <span class="bc-current">{{ activeTabTitle() }}</span>
         </div>
       </div>
 
-      <!-- 2. Unique Visitors -->
-      <div class="kpi-card" title="Distinct unique visitors tracked by IP and device finger-print">
-        <div class="kpi-icon-box peer" style="background:#f1f5f9;color:#475569;">
-          <span class="material-symbols-outlined">fingerprint</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-slate">{{ dashboardMetrics().uniqueVisitors }}</span>
-          <span class="kpi-label">Unique Visitors</span>
-          <span class="kpi-sub-text">Distinct verified browsers</span>
-        </div>
+      <div class="topnav-search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input 
+          type="text" 
+          class="topnav-search-input" 
+          placeholder="Search projects, builders, buyers, RERA, city..."
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="onSearchChange($event)" />
+        <span class="search-kbd-shortcut">⌘K</span>
       </div>
 
-      <!-- 3. Users Online -->
-      <div class="kpi-card highlight-emerald" title="Concurrent users active in the last 15 minutes">
-        <div class="kpi-icon-box" style="background:#dcfce7;color:#15803d;">
-          <span class="material-symbols-outlined">sensors</span>
-        </div>
-        <div class="kpi-details">
-          <div class="kpi-val-row">
-            <span class="kpi-value text-emerald">{{ dashboardMetrics().usersOnline }}</span>
-            <span class="kpi-tag-pulse" style="background:#e5f7ec;color:#166534;">
-              <span class="live-dot"></span>LIVE
-            </span>
-          </div>
-          <span class="kpi-label">Users Online</span>
-          <span class="kpi-sub-text">Concurrent active traffic</span>
-        </div>
-      </div>
+      <div class="topnav-right">
+        <button type="button" class="btn-quick-create" (click)="setTab('post_property')">
+          <span class="material-symbols-outlined">add</span>
+          <span>Post Property</span>
+        </button>
 
-      <!-- 4. Properties Viewed -->
-      <div class="kpi-card" title="Total listing dossiers and project views tracked">
-        <div class="kpi-icon-box" style="background:#fef3c7;color:#b45309;">
-          <span class="material-symbols-outlined">preview</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-amber">{{ dashboardMetrics().propertiesViewed }}</span>
-          <span class="kpi-label">Properties Viewed</span>
-          <span class="kpi-sub-text">Total project interactions</span>
-        </div>
-      </div>
+        <a routerLink="/admin/compare" class="btn-topnav-icon" title="Search & Benchmark Registry Properties">
+          <span class="material-symbols-outlined">compare_arrows</span>
+        </a>
 
-      <!-- 5. Total Subscription Buyers (Clickable -> Dedicated Page) -->
-      <div class="kpi-card is-clickable highlight-tier" (click)="setTab('subscription_buyers')" title="Click to open dedicated Subscription Buyers dashboard">
-        <div class="kpi-icon-box" style="background:#ede9fe;color:#6d28d9;">
-          <span class="material-symbols-outlined">workspace_premium</span>
-        </div>
-        <div class="kpi-details">
-          <div class="kpi-val-row">
-            <span class="kpi-value text-purple">{{ dashboardMetrics().totalSubscriptionBuyers }}</span>
-            <span class="kpi-tag-pulse" style="background:#ede9fe;color:#6d28d9;">PAID</span>
-          </div>
-          <span class="kpi-label">Subscription Buyers</span>
-          <span class="kpi-action-link">View Subscribers Dedicated Page →</span>
-        </div>
-      </div>
-
-      <!-- 6. Total WhatsApp Requests (Clickable -> Dedicated Page & Message List) -->
-      <div class="kpi-card is-clickable highlight-emerald" (click)="setTab('whatsapp_messages')" title="Click to view WhatsApp inquiry messages list">
-        <div class="kpi-icon-box" style="background:#dcfce7;color:#16a34a;">
-          <span class="material-symbols-outlined">chat</span>
-        </div>
-        <div class="kpi-details">
-          <div class="kpi-val-row">
-            <span class="kpi-value text-emerald">{{ dashboardMetrics().totalWhatsappRequests }}</span>
-            <span class="kpi-tag-pulse" style="background:#e5f7ec;color:#166534;">CHAT</span>
-          </div>
-          <span class="kpi-label">WhatsApp Requests</span>
-          <span class="kpi-action-link" style="color:#16a34a;">Open Messages List →</span>
-        </div>
-      </div>
-
-      <!-- 7. Calls Attempted from Website (Clickable -> Daily Visitors & Call Logs) -->
-      <div class="kpi-card is-clickable" (click)="openVisitorCallLogs()" title="Click to view Call Tracking & Visitor Escalation Logs">
-        <div class="kpi-icon-box" style="background:#e0e7ff;color:#4338ca;">
-          <span class="material-symbols-outlined">call</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-blue">{{ dashboardMetrics().totalCallsAttempted }}</span>
-          <span class="kpi-label">Website Call Attempts</span>
-          <span class="kpi-action-link">Track Visitor Logs →</span>
-        </div>
-      </div>
-
-      <!-- 8. Total Developers (Clickable -> Developer Portfolios) -->
-      <div class="kpi-card is-clickable" (click)="setTab('developers')" title="Click to manage authorized Developer Portfolios">
-        <div class="kpi-icon-box" style="background:#e5f7ec;color:#2c4938;">
+        <a routerLink="/developer" class="btn-topnav-icon" title="Open Developer Workspace">
           <span class="material-symbols-outlined">domain</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-emerald">{{ dashboardMetrics().totalDevelopers }}</span>
-          <span class="kpi-label">Total Developers</span>
-          <span class="kpi-action-link">View Promoters &amp; RERA →</span>
+        </a>
+
+        <a routerLink="/" class="btn-topnav-icon" title="Open Public Marketplace">
+          <span class="material-symbols-outlined">storefront</span>
+        </a>
+
+        <div class="topnav-profile-pill" [title]="adminService.currentAdmin()?.name || adminService.activePersona().name">
+          <span class="p-avatar-mini"
+            [class.ez]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'EZ'"
+            [class.ra]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'RA'"
+            [class.be]="(adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials) === 'BE'">
+            {{ adminService.currentAdmin()?.avatarInitials || adminService.activePersona().avatarInitials }}
+          </span>
+          <span class="pill-name">{{ (adminService.currentAdmin()?.name || adminService.activePersona().name).split(' ')[0] }}</span>
         </div>
       </div>
+    </header>
 
-      <!-- 9. Total Projects (Clickable -> Property Registry) -->
-      <div class="kpi-card is-clickable" (click)="setTab('all_directory')" title="Click to view all registry projects & audit trails">
-        <div class="kpi-icon-box total" style="background:#eff6ff;color:#2563eb;">
-          <span class="material-symbols-outlined">holiday_village</span>
-        </div>
-        <div class="kpi-details">
-          <span class="kpi-value text-blue">{{ dashboardMetrics().totalProjects || adminService.stats().total }}</span>
-          <span class="kpi-label">Total Projects</span>
-          <span class="kpi-action-link">All Properties Audit Trail →</span>
-        </div>
-      </div>
+    <!-- SCROLLABLE BODY AREA -->
+    <div class="admin-scrollable-body">
 
-      <!-- 10. Projects Awaiting Approval (Clickable -> Review Queue) -->
-      <div class="kpi-card is-clickable highlight-peer" (click)="setTab('review_queue')" title="Click to review pending user & peer submissions">
-        <div class="kpi-icon-box peer" style="background:#fee2e2;color:#dc2626;">
-          <span class="material-symbols-outlined">pending_actions</span>
-        </div>
-        <div class="kpi-details">
-          <div class="kpi-val-row">
-            <span class="kpi-value text-red">{{ dashboardMetrics().projectsAwaitingApproval || (adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews) }}</span>
-            <span class="kpi-tag-pulse" style="background:#fee2e2;color:#991b1b;">MAKER-CHECKER</span>
+      <!-- ========================================== -->
+      <!-- METRICS & KPI STRIP (10 MANDATORY ADMIN METRICS) -->
+      <!-- ========================================== -->
+      <section class="admin-kpi-strip">
+        <div class="kpi-grid">
+
+          <!-- 1. Visitors Today -->
+          <div class="kpi-card" title="Total visits recorded across web platform today">
+            <div class="kpi-icon-box total" style="background:#e0f2fe;color:#0284c7;">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+            <div class="kpi-details">
+              <span class="kpi-label">Visitors Today</span>
+              <span class="kpi-value text-slate">{{ dashboardMetrics().visitorsToday }}</span>
+              <span class="kpi-sub-text">Active daily sessions</span>
+            </div>
           </div>
-          <span class="kpi-label">Awaiting Approval</span>
-          <span class="kpi-action-link text-red">Open Review Queue →</span>
+
+          <!-- 2. Unique Visitors -->
+          <div class="kpi-card" title="Distinct unique visitors tracked by IP and device fingerprint">
+            <div class="kpi-icon-box peer" style="background:#f1f5f9;color:#475569;">
+              <span class="material-symbols-outlined">fingerprint</span>
+            </div>
+            <div class="kpi-details">
+              <span class="kpi-label">Unique Visitors</span>
+              <span class="kpi-value text-slate">{{ dashboardMetrics().uniqueVisitors }}</span>
+              <span class="kpi-sub-text">Distinct verified browsers</span>
+            </div>
+          </div>
+
+          <!-- 3. Users Online -->
+          <div class="kpi-card highlight-emerald" title="Concurrent users active in the last 15 minutes">
+            <div class="kpi-icon-box" style="background:#dcfce7;color:#15803d;">
+              <span class="material-symbols-outlined">sensors</span>
+            </div>
+            <div class="kpi-details">
+              <div class="kpi-label-row">
+                <span class="kpi-label">Users Online</span>
+                <span class="kpi-tag-pulse" style="background:#e5f7ec;color:#166534;">
+                  <span class="live-dot"></span>LIVE
+                </span>
+              </div>
+              <span class="kpi-value text-emerald">{{ dashboardMetrics().usersOnline }}</span>
+              <span class="kpi-sub-text">Concurrent active traffic</span>
+            </div>
+          </div>
+
+          <!-- 4. Properties Viewed -->
+          <div class="kpi-card" title="Total listing dossiers and project views tracked">
+            <div class="kpi-icon-box" style="background:#fef3c7;color:#b45309;">
+              <span class="material-symbols-outlined">preview</span>
+            </div>
+            <div class="kpi-details">
+              <span class="kpi-label">Properties Viewed</span>
+              <span class="kpi-value text-amber">{{ dashboardMetrics().propertiesViewed }}</span>
+              <span class="kpi-sub-text">Total project interactions</span>
+            </div>
+          </div>
+
+          <!-- 5. Total Subscription Buyers (Clickable -> Dedicated Page) -->
+          <div class="kpi-card is-clickable highlight-tier" (click)="setTab('subscription_buyers')" title="Click to open dedicated Subscription Buyers dashboard">
+            <div class="kpi-icon-box" style="background:#ede9fe;color:#6d28d9;">
+              <span class="material-symbols-outlined">workspace_premium</span>
+            </div>
+            <div class="kpi-details">
+              <div class="kpi-label-row">
+                <span class="kpi-label">Subscription Buyers</span>
+                <span class="kpi-tag-pulse" style="background:#ede9fe;color:#6d28d9;">PAID</span>
+              </div>
+              <span class="kpi-value text-purple">{{ dashboardMetrics().totalSubscriptionBuyers }}</span>
+              <span class="kpi-action-link">View Subscribers →</span>
+            </div>
+          </div>
+
+          <!-- 6. Total WhatsApp Requests (Clickable -> Dedicated Page & Message List) -->
+          <div class="kpi-card is-clickable highlight-emerald" (click)="setTab('whatsapp_messages')" title="Click to view WhatsApp inquiry messages list">
+            <div class="kpi-icon-box" style="background:#dcfce7;color:#16a34a;">
+              <span class="material-symbols-outlined">chat</span>
+            </div>
+            <div class="kpi-details">
+              <div class="kpi-label-row">
+                <span class="kpi-label">WhatsApp Inquiries</span>
+                <span class="kpi-tag-pulse" style="background:#e5f7ec;color:#166534;">CHAT</span>
+              </div>
+              <span class="kpi-value text-emerald">{{ dashboardMetrics().totalWhatsappRequests }}</span>
+              <span class="kpi-action-link" style="color:#16a34a;">Open Messages List →</span>
+            </div>
+          </div>
+
+          <!-- 7. Calls Attempted from Website (Clickable -> Daily Visitors & Call Logs) -->
+          <div class="kpi-card is-clickable" (click)="openVisitorCallLogs()" title="Click to view Call Tracking & Visitor Escalation Logs">
+            <div class="kpi-icon-box" style="background:#e0e7ff;color:#4338ca;">
+              <span class="material-symbols-outlined">call</span>
+            </div>
+            <div class="kpi-details">
+              <span class="kpi-label">Website Call Attempts</span>
+              <span class="kpi-value text-blue">{{ dashboardMetrics().totalCallsAttempted }}</span>
+              <span class="kpi-action-link">Track Visitor Logs →</span>
+            </div>
+          </div>
+
+          <!-- 8. Total Developers (Clickable -> Developer Portfolios) -->
+          <div class="kpi-card is-clickable" (click)="setTab('developers')" title="Click to manage authorized Developer Portfolios">
+            <div class="kpi-icon-box" style="background:#e5f7ec;color:#2c4938;">
+              <span class="material-symbols-outlined">domain</span>
+            </div>
+            <div class="kpi-details">
+              <span class="kpi-label">Total Developers</span>
+              <span class="kpi-value text-emerald">{{ dashboardMetrics().totalDevelopers }}</span>
+              <span class="kpi-action-link">View Promoters &amp; RERA →</span>
+            </div>
+          </div>
+
+          <!-- 9. Total Projects (Clickable -> Property Registry) -->
+          <div class="kpi-card is-clickable" (click)="setTab('all_directory')" title="Click to view all registry projects & audit trails">
+            <div class="kpi-icon-box total" style="background:#eff6ff;color:#2563eb;">
+              <span class="material-symbols-outlined">holiday_village</span>
+            </div>
+            <div class="kpi-details">
+              <span class="kpi-label">Total Projects</span>
+              <span class="kpi-value text-blue">{{ dashboardMetrics().totalProjects || adminService.stats().total }}</span>
+              <span class="kpi-action-link">All Projects Audit Trail →</span>
+            </div>
+          </div>
+
+          <!-- 10. Projects Awaiting Approval (Clickable -> Review Queue) -->
+          <div class="kpi-card is-clickable highlight-peer" (click)="setTab('review_queue')" title="Click to review pending user & peer submissions">
+            <div class="kpi-icon-box peer" style="background:#fee2e2;color:#dc2626;">
+              <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+            <div class="kpi-details">
+              <div class="kpi-label-row">
+                <span class="kpi-label">Awaiting Approval</span>
+                <span class="kpi-tag-pulse" style="background:#fee2e2;color:#991b1b;">MAKER-CHECKER</span>
+              </div>
+              <span class="kpi-value text-red">{{ dashboardMetrics().projectsAwaitingApproval || (adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews) }}</span>
+              <span class="kpi-action-link text-red">Open Review Queue →</span>
+            </div>
+          </div>
+
         </div>
-      </div>
+      </section>
 
-    </div>
-  </section>
-
-  <!-- ========================================== -->
-  <!-- MAIN WORKSPACE & NAVIGATION TABS          -->
-  <!-- ========================================== -->
-  <main class="admin-main-container">
+      <!-- ========================================== -->
+      <!-- MAIN WORKSPACE & NAVIGATION TABS          -->
+      <!-- ========================================== -->
+      <main class="admin-main-container">
 
     <!-- Tab Controls -->
     <div class="admin-tab-nav">
@@ -5430,7 +5605,10 @@
   </div>
   }
 
+    </div> <!-- Close .admin-scrollable-body -->
+  </div> <!-- Close .admin-app-area -->
+
   <!-- Toast Notifications -->
   <app-toast />
 
-</div>
+</div> <!-- Close .admin-enterprise-shell -->
