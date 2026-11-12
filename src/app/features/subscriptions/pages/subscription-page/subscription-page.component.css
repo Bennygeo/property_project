@@ -438,17 +438,17 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 1: EXPLORER (MILD SLATE / PURE ARCHITECTURAL WHITE)                   */
-/* Height: Compact Baseline (height: 610px on desktop)                        */
+/* Height: Compact Baseline (min-height: 690px on desktop)                    */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-explorer {
   background: #ffffff;
   border: 1.5px solid #cbd5e1;
-  padding: 1.5rem 1.25rem;
+  padding: 1.65rem 1.35rem 2rem 1.35rem;
 }
 
 @media (min-width: 1040px) {
   .plan-card.plan-explorer {
-    height: 610px;
+    min-height: 690px;
     align-self: end;
   }
 }
@@ -478,17 +478,17 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 2: SMART BUYER (THEME BRAND GREEN MILD PASTEL)                        */
-/* Height: Medium Step (height: 660px on desktop)                             */
+/* Height: Medium Step (min-height: 750px on desktop)                         */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-smart-buyer {
   background: #f2f8f4;
   border: 1.5px solid #8ebaa0;
-  padding: 1.65rem 1.35rem;
+  padding: 1.75rem 1.35rem 2rem 1.35rem;
 }
 
 @media (min-width: 1040px) {
   .plan-card.plan-smart-buyer {
-    height: 660px;
+    min-height: 750px;
     align-self: end;
   }
 }
@@ -518,12 +518,12 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 3: PRIORITY BUYER (THEME BRAND TEAL MILD PASTEL)                      */
-/* Height: Tall Prominent Step (height: 715px on desktop)                     */
+/* Height: Tall Prominent Step (min-height: 825px on desktop)                 */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-priority-buyer {
   background: #f0f6f8;
   border: 2px solid #7faab7;
-  padding: 1.85rem 1.45rem;
+  padding: 1.85rem 1.45rem 2.15rem 1.45rem;
   box-shadow: 0 8px 24px rgba(15, 59, 74, 0.08);
   position: relative;
   z-index: 2;
@@ -531,7 +531,7 @@
 
 @media (min-width: 1040px) {
   .plan-card.plan-priority-buyer {
-    height: 715px;
+    min-height: 825px;
     align-self: end;
   }
 }
@@ -570,18 +570,18 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 4: VIP CONCIERGE (THEME BRAND GOLD/SAND MILD PASTEL)                  */
-/* Height: Tallest Luxury Step (height: 770px on desktop)                     */
+/* Height: Tallest Luxury Step (min-height: 900px on desktop)                 */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-vip-concierge {
   background: #fdfbf6;
   border: 2px solid #dfc886;
-  padding: 2.05rem 1.45rem;
+  padding: 2.05rem 1.45rem 2.35rem 1.45rem;
   box-shadow: 0 8px 26px rgba(213, 179, 87, 0.1);
 }
 
 @media (min-width: 1040px) {
   .plan-card.plan-vip-concierge {
-    height: 770px;
+    min-height: 900px;
     align-self: end;
   }
 }
@@ -855,7 +855,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.25rem;
 }
 
 .features-label {
@@ -868,11 +868,11 @@
 
 .plan-features-list ul {
   list-style: none;
-  padding: 0;
+  padding: 0 0 0.5rem 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.75rem;
 }
 
 .plan-features-list li {
@@ -894,6 +894,7 @@
 /* CALL TO ACTION BUTTON */
 .plan-cta-wrapper {
   margin-top: auto;
+  padding-top: 1.25rem;
 }
 
 .btn-plan-cta {
@@ -905,7 +906,7 @@
   background: var(--brand-green);
   color: #ffffff;
   border: none;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.15rem;
   font-size: 0.875rem;
   font-weight: 700;
   border-radius: 8px;
