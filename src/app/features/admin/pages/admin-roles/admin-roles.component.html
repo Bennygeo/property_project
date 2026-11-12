@@ -260,12 +260,12 @@
 
           <div class="roles-kpi-card">
             <div class="kpi-icon-wrap" style="background:#ccfbf1;color:#0f766e;">
-              <span class="material-symbols-outlined">supervisor_account</span>
+              <span class="material-symbols-outlined">domain</span>
             </div>
             <div class="kpi-info">
-              <span class="kpi-label">Platform &amp; Co-Admins</span>
-              <span class="kpi-value text-teal">{{ (roleData()?.stats?.platformAdmins || 0) + (roleData()?.stats?.coAdmins || 0) }}</span>
-              <span class="kpi-sub">Maker-Checker Reviews</span>
+              <span class="kpi-label">Developers &amp; Sales</span>
+              <span class="kpi-value text-teal">{{ (roleData()?.stats?.developers || 0) + (roleData()?.stats?.salesExecutives || 0) }}</span>
+              <span class="kpi-sub">Promoters &amp; Lead Executives</span>
             </div>
           </div>
 
@@ -274,9 +274,9 @@
               <span class="material-symbols-outlined">badge</span>
             </div>
             <div class="kpi-info">
-              <span class="kpi-label">Compliance &amp; CRM</span>
-              <span class="kpi-value text-blue">{{ (roleData()?.stats?.auditors || 0) + (roleData()?.stats?.crmManagers || 0) }}</span>
-              <span class="kpi-sub">Field &amp; Advisory Staff</span>
+              <span class="kpi-label">Ops, Advisory &amp; GIS</span>
+              <span class="kpi-value text-blue">{{ (roleData()?.stats?.operationsExecutives || 0) + (roleData()?.stats?.propertyAdvisors || 0) + (roleData()?.stats?.contentGisAdmins || 0) + (roleData()?.stats?.financeAdmins || 0) }}</span>
+              <span class="kpi-sub">Specialized Workspace Roles</span>
             </div>
           </div>
 
@@ -291,42 +291,63 @@
                 class="filter-pill" 
                 [class.active]="selectedRoleFilter() === 'all'"
                 (click)="setRoleFilter('all')">
-                All Roles ({{ roleData()?.stats?.totalStaff || 0 }})
+                All ({{ roleData()?.stats?.totalStaff || 0 }})
               </button>
               <button 
                 type="button" 
                 class="filter-pill" 
                 [class.active]="selectedRoleFilter() === 'super_admin'"
                 (click)="setRoleFilter('super_admin')">
-                Super Admins ({{ roleData()?.stats?.superAdmins || 0 }})
+                Super admin
               </button>
               <button 
                 type="button" 
                 class="filter-pill" 
-                [class.active]="selectedRoleFilter() === 'admin'"
-                (click)="setRoleFilter('admin')">
-                Admins ({{ roleData()?.stats?.platformAdmins || 0 }})
+                [class.active]="selectedRoleFilter() === 'developer'"
+                (click)="setRoleFilter('developer')">
+                Developer
               </button>
               <button 
                 type="button" 
                 class="filter-pill" 
-                [class.active]="selectedRoleFilter() === 'co_admin'"
-                (click)="setRoleFilter('co_admin')">
-                Co-Admins
+                [class.active]="selectedRoleFilter() === 'sales_executive'"
+                (click)="setRoleFilter('sales_executive')">
+                Sales executive
               </button>
               <button 
                 type="button" 
                 class="filter-pill" 
-                [class.active]="selectedRoleFilter() === 'auditor'"
-                (click)="setRoleFilter('auditor')">
-                Auditors
+                [class.active]="selectedRoleFilter() === 'property_advisor'"
+                (click)="setRoleFilter('property_advisor')">
+                Property advisor
               </button>
               <button 
                 type="button" 
                 class="filter-pill" 
-                [class.active]="selectedRoleFilter() === 'crm_manager'"
-                (click)="setRoleFilter('crm_manager')">
-                CRM Staff
+                [class.active]="selectedRoleFilter() === 'operations_executive'"
+                (click)="setRoleFilter('operations_executive')">
+                Operations executive
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'finance_admin'"
+                (click)="setRoleFilter('finance_admin')">
+                Finance admin
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'content_gis_admin'"
+                (click)="setRoleFilter('content_gis_admin')">
+                Content / GIS admin
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'public_visitor'"
+                (click)="setRoleFilter('public_visitor')">
+                Public visitor
               </button>
             </div>
           </div>
@@ -406,7 +427,7 @@
                     <td>
                       <span class="role-badge" [class]="user.badgeColor">
                         <span class="material-symbols-outlined role-icon">
-                          {{ user.role === 'super_admin' ? 'stars' : user.role === 'admin' ? 'shield' : user.role === 'auditor' ? 'gavel' : 'badge' }}
+                          {{ user.role === 'super_admin' ? 'stars' : user.role === 'developer' ? 'domain' : user.role === 'sales_executive' ? 'trending_up' : user.role === 'property_advisor' ? 'psychology' : user.role === 'operations_executive' ? 'commute' : user.role === 'finance_admin' ? 'payments' : user.role === 'content_gis_admin' ? 'map' : 'person' }}
                         </span>
                         <span>{{ user.roleName }}</span>
                       </span>
@@ -606,7 +627,7 @@
                 id="cDesig" 
                 type="text" 
                 class="form-input" 
-                placeholder="e.g. Senior Compliance Auditor" 
+                placeholder="e.g. Senior Sales Specialist" 
                 [(ngModel)]="createForm.designation" 
                 name="designation" />
             </div>

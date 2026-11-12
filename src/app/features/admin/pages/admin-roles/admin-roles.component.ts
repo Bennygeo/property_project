@@ -40,7 +40,7 @@ export class AdminRolesComponent implements OnInit {
     name: '',
     email: '',
     phone: '',
-    role: 'admin',
+    role: 'sales_executive',
     department: '',
     designation: '',
     password: '',
@@ -131,7 +131,7 @@ export class AdminRolesComponent implements OnInit {
   // Create Modal Actions
   // -----------------------------------------------------------------
   openCreateModal(): void {
-    const defaultRole = 'admin';
+    const defaultRole = 'sales_executive';
     const catalog = this.roleData()?.availableRoles || [];
     const roleMeta = catalog.find(r => r.id === defaultRole);
 
@@ -140,8 +140,8 @@ export class AdminRolesComponent implements OnInit {
       email: '',
       phone: '',
       role: defaultRole,
-      department: 'Platform Operations',
-      designation: roleMeta?.name || 'Platform Administrator',
+      department: 'Sales & Lead Acquisition',
+      designation: roleMeta?.name || 'Sales executive',
       password: this.generateRandomPassword(),
       permissions: [...(roleMeta?.defaultPermissions || [])]
     };

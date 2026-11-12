@@ -115,10 +115,13 @@ export interface AdminRoleData {
   stats: {
     totalStaff: number;
     superAdmins: number;
-    platformAdmins: number;
-    coAdmins: number;
-    auditors: number;
-    crmManagers: number;
+    developers?: number;
+    salesExecutives?: number;
+    propertyAdvisors?: number;
+    operationsExecutives?: number;
+    financeAdmins?: number;
+    contentGisAdmins?: number;
+    publicVisitors?: number;
     activeAccounts: number;
   };
   users: AdminStaffUser[];
@@ -128,34 +131,74 @@ export interface AdminRoleData {
 
 export const ADMIN_PERSONAS: AdminPersona[] = [
   {
-    id: 101,
-    name: 'Ezhil',
-    role: 'admin',
-    title: 'Photography & Marketing',
-    avatarInitials: 'EZ',
-    email: 'ezhil@mannidam.com',
-    department: 'Media Production & Visual Marketing',
-    responsibility: 'Photography and marketing'
-  },
-  {
-    id: 102,
-    name: 'Ram',
-    role: 'co_admin',
-    title: 'Marketing, Broker Relations & Site Promotion',
-    avatarInitials: 'RA',
-    email: 'ram@mannidam.com',
-    department: 'Broker Network & Site Promotion',
-    responsibility: 'Marketing and site promotion'
-  },
-  {
     id: 104,
     name: 'Benny',
-    role: 'admin',
-    title: 'Super Admin, Technology & Developer Director',
+    role: 'super_admin',
+    title: 'Super admin, Full Platform Access',
     avatarInitials: 'BE',
     email: 'benny_gj@yahoo.co.in',
-    department: 'Full Access & Developer Operations',
-    responsibility: 'Full Super Admin Access, Developer Management & Registry Operations'
+    department: 'Platform Governance & Technology',
+    responsibility: 'Full platform access: Total governance, user provisioning, database & settings'
+  },
+  {
+    id: 108,
+    name: 'Casagrand Partner Director',
+    role: 'developer',
+    title: 'Developer Partner Director',
+    avatarInitials: 'CG',
+    email: 'developer@casagrand.com',
+    department: 'Casagrand Premier Builder Workspace',
+    responsibility: 'Access only their authorised company and projects'
+  },
+  {
+    id: 109,
+    name: 'Suresh',
+    role: 'sales_executive',
+    title: 'Sales executive',
+    avatarInitials: 'SU',
+    email: 'sales@findaplot.in',
+    department: 'Sales & Lead Acquisition',
+    responsibility: 'Manage assigned leads and customer follow-ups'
+  },
+  {
+    id: 110,
+    name: 'Dr. Ananya',
+    role: 'property_advisor',
+    title: 'Property advisor',
+    avatarInitials: 'AN',
+    email: 'advisor@findaplot.in',
+    department: 'Advisory Sessions & Recommendations',
+    responsibility: 'Manage advisory sessions and recommendations'
+  },
+  {
+    id: 111,
+    name: 'Karthik',
+    role: 'operations_executive',
+    title: 'Operations executive',
+    avatarInitials: 'KA',
+    email: 'operations@findaplot.in',
+    department: 'Site Visits & Coordination',
+    responsibility: 'Manage site visits and coordination'
+  },
+  {
+    id: 112,
+    name: 'Lakshmi',
+    role: 'finance_admin',
+    title: 'Finance admin',
+    avatarInitials: 'LA',
+    email: 'finance@findaplot.in',
+    department: 'Payments, Subscriptions & Commissions',
+    responsibility: 'Payments, subscriptions and commissions'
+  },
+  {
+    id: 113,
+    name: 'Venkatesh',
+    role: 'content_gis_admin',
+    title: 'Content / GIS admin',
+    avatarInitials: 'VE',
+    email: 'gis@findaplot.in',
+    department: 'Localities, Maps & Media Content',
+    responsibility: 'Localities, maps, media and project information'
   }
 ];
 

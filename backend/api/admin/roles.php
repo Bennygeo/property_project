@@ -2,7 +2,15 @@
 /**
  * /api/admin/roles.php
  * Administrative Role & Access Governance API for Super Admin.
- * Allows Super Admin to view, create, edit, and assign roles (including Admin, Co-Admin, Auditor, CRM Manager).
+ * Strictly maintains ONLY the authorized platform roles:
+ * 1. Super admin - Full platform access
+ * 2. Developer - Access only their authorised company and projects
+ * 3. Sales executive - Manage assigned leads and customer follow-ups
+ * 4. Property advisor - Manage advisory sessions and recommendations
+ * 5. Operations executive - Manage site visits and coordination
+ * 6. Finance admin - Payments, subscriptions and commissions
+ * 7. Content / GIS admin - Localities, maps, media and project information
+ * 8. Public visitor - Browse permitted public project information
  */
 
 declare(strict_types=1);
@@ -18,102 +26,117 @@ Response::initCors();
 $method = $_SERVER['REQUEST_METHOD'];
 $db = (new Database())->getConnection();
 
-// Available Roles Catalog with default permissions & metadata
+// Explicit Platform Roles Catalog
 $ROLES_CATALOG = [
     'super_admin' => [
         'id'          => 'super_admin',
-        'name'        => 'Super Administrator',
+        'name'        => 'Super admin',
         'badgeColor'  => 'purple',
-        'description' => 'Unrestricted platform authority: Role governance, database schema, financials, audit trails & security policies.',
+        'description' => 'Full platform access: Total governance, user provisioning, database, projects, financials & settings.',
         'level'       => 1,
+        'dashboardRoute' => '/admin',
         'defaultPermissions' => [
-            'role_governance', 'review_queue', 'property_approval', 'post_property',
-            'plot_studio', 'bulk_upload', 'master_directory', 'developer_mgmt',
-            'buyer_crm', 'financial_audit', 'whatsapp_concierge', 'system_settings'
+            'all_access', 'role_governance', 'developer_access', 'sales_leads',
+            'advisory_sessions', 'site_visits', 'finance_payments', 'gis_content'
         ]
     ],
-    'admin' => [
-        'id'          => 'admin',
-        'name'        => 'Platform Administrator',
-        'badgeColor'  => 'teal',
-        'description' => 'Full administrative access: Review queue maker-checker, directory oversight, plot studio, and bulk uploads.',
+    'developer' => [
+        'id'          => 'developer',
+        'name'        => 'Developer',
+        'badgeColor'  => 'indigo',
+        'description' => 'Access only their authorised company and projects.',
         'level'       => 2,
+        'dashboardRoute' => '/portal/developer',
         'defaultPermissions' => [
-            'review_queue', 'property_approval', 'post_property', 'plot_studio',
-            'bulk_upload', 'master_directory', 'developer_mgmt', 'buyer_crm',
-            'whatsapp_concierge'
+            'developer_access', 'company_projects', 'developer_inventory'
         ]
     ],
-    'co_admin' => [
-        'id'          => 'co_admin',
-        'name'        => 'Co-Admin & Marketing Director',
+    'sales_executive' => [
+        'id'          => 'sales_executive',
+        'name'        => 'Sales executive',
         'badgeColor'  => 'blue',
-        'description' => 'Marketing outreach, broker network orchestration, peer review verification, and site promotion.',
+        'description' => 'Manage assigned leads and customer follow-ups.',
         'level'       => 3,
+        'dashboardRoute' => '/portal/sales',
         'defaultPermissions' => [
-            'review_queue', 'post_property', 'developer_mgmt', 'buyer_crm',
-            'whatsapp_concierge'
+            'sales_leads', 'lead_followups', 'customer_communication'
         ]
     ],
-    'auditor' => [
-        'id'          => 'auditor',
-        'name'        => 'Compliance & Legal Auditor',
+    'property_advisor' => [
+        'id'          => 'property_advisor',
+        'name'        => 'Property advisor',
         'badgeColor'  => 'emerald',
-        'description' => 'Four-eyes verification, cadastral Patta audits, RERA regulatory compliance, and document validation.',
+        'description' => 'Manage advisory sessions and recommendations.',
         'level'       => 3,
+        'dashboardRoute' => '/portal/advisor',
         'defaultPermissions' => [
-            'review_queue', 'master_directory'
+            'advisory_sessions', 'property_recommendations', 'buyer_consultation'
         ]
     ],
-    'crm_manager' => [
-        'id'          => 'crm_manager',
-        'name'        => 'CRM & Investor Relations Manager',
+    'operations_executive' => [
+        'id'          => 'operations_executive',
+        'name'        => 'Operations executive',
         'badgeColor'  => 'amber',
-        'description' => 'Buyer lead tracking, investor advisory requests, WhatsApp concierge communications, and site visits.',
-        'level'       => 4,
+        'description' => 'Manage site visits and coordination.',
+        'level'       => 3,
+        'dashboardRoute' => '/portal/operations',
         'defaultPermissions' => [
-            'buyer_crm', 'whatsapp_concierge'
+            'site_visits', 'field_coordination', 'visit_verification'
         ]
     ],
-    'content_manager' => [
-        'id'          => 'content_manager',
-        'name'        => 'Media & Content Specialist',
-        'badgeColor'  => 'rose',
-        'description' => 'Visual media production, property drone photography review, architectural showcases, and spotlight management.',
-        'level'       => 4,
+    'finance_admin' => [
+        'id'          => 'finance_admin',
+        'name'        => 'Finance admin',
+        'badgeColor'  => 'teal',
+        'description' => 'Payments, subscriptions and commissions.',
+        'level'       => 2,
+        'dashboardRoute' => '/portal/finance',
         'defaultPermissions' => [
-            'post_property', 'master_directory'
+            'finance_payments', 'subscription_ledger', 'commission_payouts'
+        ]
+    ],
+    'content_gis_admin' => [
+        'id'          => 'content_gis_admin',
+        'name'        => 'Content / GIS admin',
+        'badgeColor'  => 'rose',
+        'description' => 'Localities, maps, media and project information.',
+        'level'       => 2,
+        'dashboardRoute' => '/portal/gis',
+        'defaultPermissions' => [
+            'gis_content', 'localities_maps', 'media_assets', 'project_information'
+        ]
+    ],
+    'public_visitor' => [
+        'id'          => 'public_visitor',
+        'name'        => 'Public visitor',
+        'badgeColor'  => 'slate',
+        'description' => 'Browse permitted public project information.',
+        'level'       => 4,
+        'dashboardRoute' => '/home',
+        'defaultPermissions' => [
+            'public_browse'
         ]
     ]
 ];
 
-// Available Granular Permissions
+// Explicit Granular Permissions Catalog
 $PERMISSIONS_CATALOG = [
-    ['key' => 'role_governance',    'label' => 'Role & Staff Governance',     'category' => 'Security',   'desc' => 'Create, edit and manage administrator roles & permissions'],
-    ['key' => 'review_queue',       'label' => 'Review Queue Inspector',      'category' => 'Audit',      'desc' => 'Inspect submitted property dossiers in the Maker-Checker queue'],
-    ['key' => 'property_approval',  'label' => 'Publish / Reject Clearance',  'category' => 'Audit',      'desc' => 'Approve or reject property dossiers to live registry'],
-    ['key' => 'post_property',      'label' => 'Direct Property Ingestion',   'category' => 'Registry',   'desc' => 'Publish new property dossiers with maker attribution'],
-    ['key' => 'plot_studio',        'label' => '3D Plot Partition Studio',    'category' => 'Registry',   'desc' => 'Partition land layouts and manage cadastral plots'],
-    ['key' => 'bulk_upload',        'label' => 'Bulk CSV/Excel Upload',       'category' => 'Registry',   'desc' => 'Import bulk property listings from Excel into database'],
-    ['key' => 'master_directory',   'label' => 'Master Directory Oversight',   'category' => 'Registry',   'desc' => 'Edit, filter, and audit all live registry properties'],
-    ['key' => 'developer_mgmt',     'label' => 'Developer Portfolio Control', 'category' => 'CRM',        'desc' => 'Authorize promoters and manage developer workspaces'],
-    ['key' => 'buyer_crm',          'label' => 'Buyer CRM & Mindset AI',      'category' => 'CRM',        'desc' => 'Access buyer leads, investor mindsets, and inquiries'],
-    ['key' => 'financial_audit',    'label' => 'Razorpay & Financial Ledger', 'category' => 'Finance',    'desc' => 'View credit ledger, payment gateways, and wallet transactions'],
-    ['key' => 'whatsapp_concierge', 'label' => 'WhatsApp Concierge Dispatch', 'category' => 'Comms',      'desc' => 'Live chat with leads and dispatch WhatsApp templates'],
-    ['key' => 'system_settings',    'label' => 'Platform Settings & Config',  'category' => 'Security',   'desc' => 'Configure platform parameters and compliance policies']
+    ['key' => 'all_access',         'label' => 'Full Platform Access',             'category' => 'Governance', 'desc' => 'Unrestricted super admin authority across entire system'],
+    ['key' => 'role_governance',    'label' => 'User & Role Provisioning',         'category' => 'Governance', 'desc' => 'Create, edit, authorize and revoke team member roles'],
+    ['key' => 'developer_access',   'label' => 'Developer Company & Projects',     'category' => 'Developer',  'desc' => 'Access only authorised company portfolio and inventory'],
+    ['key' => 'sales_leads',        'label' => 'Assigned Leads & Follow-ups',      'category' => 'Sales',      'desc' => 'Manage assigned buyer leads and customer follow-ups'],
+    ['key' => 'advisory_sessions',  'label' => 'Advisory Sessions & Advice',       'category' => 'Advisory',   'desc' => 'Manage buyer advisory sessions and recommendations'],
+    ['key' => 'site_visits',        'label' => 'Site Visits & Coordination',       'category' => 'Operations', 'desc' => 'Manage scheduled property site visits and field coordination'],
+    ['key' => 'finance_payments',   'label' => 'Payments, Subscriptions & Comm',   'category' => 'Finance',    'desc' => 'Manage payments, subscription plans, and commission payouts'],
+    ['key' => 'gis_content',        'label' => 'Localities, Maps & Media',         'category' => 'GIS/Media',  'desc' => 'Manage localities, GIS maps, media assets, and project info'],
+    ['key' => 'public_browse',      'label' => 'Permitted Public Information',      'category' => 'Public',     'desc' => 'Browse verified public marketplace dossiers']
 ];
 
 // -------------------------------------------------------------
-// Helper: Verify Super Admin / Admin Request
+// Helper: Verify Super Admin Request
 // -------------------------------------------------------------
 function getRequesterAdmin(PDO $db): ?array {
     $reqAdminId = (int)($_GET['admin_id'] ?? $_POST['admin_id'] ?? 0);
-    
-    // Check Authorization header or query parameter
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-        // Bearer token handling if provided
-    }
 
     if ($reqAdminId > 0) {
         $stmt = $db->prepare("SELECT id, name, email, role, status FROM users WHERE id = :id LIMIT 1");
@@ -122,13 +145,12 @@ function getRequesterAdmin(PDO $db): ?array {
         if ($row) return $row;
     }
 
-    // Default to Benny (Super Admin) if running in trusted local intranet
-    $stmt = $db->query("SELECT id, name, email, role, status FROM users WHERE id IN (104, 103) OR role = 'super_admin' ORDER BY id DESC LIMIT 1");
+    $stmt = $db->query("SELECT id, name, email, role, status FROM users WHERE id = 104 OR role = 'super_admin' ORDER BY id DESC LIMIT 1");
     return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
 
 // -------------------------------------------------------------
-// GET: Fetch Staff / Administrative Users & Stats
+// GET: Fetch Staff / Users by Specified Roles
 // -------------------------------------------------------------
 if ($method === 'GET') {
     $requester = getRequesterAdmin($db);
@@ -137,8 +159,9 @@ if ($method === 'GET') {
     $roleFilter = trim($_GET['role'] ?? 'all');
     $statusFilter = trim($_GET['status'] ?? 'all');
 
-    // Build query
-    $where = ["role IN ('super_admin', 'admin', 'co_admin', 'auditor', 'crm_manager', 'content_manager', 'sales_executive')"];
+    $validRoles = array_keys($ROLES_CATALOG);
+
+    $where = ["role IN ('" . implode("','", $validRoles) . "')"];
     $params = [];
 
     if ($roleFilter !== 'all' && !empty($roleFilter)) {
@@ -167,22 +190,24 @@ if ($method === 'GET') {
         ORDER BY 
             CASE role 
                 WHEN 'super_admin' THEN 1 
-                WHEN 'admin' THEN 2 
-                WHEN 'co_admin' THEN 3 
-                WHEN 'auditor' THEN 4 
-                ELSE 5 
+                WHEN 'developer' THEN 2 
+                WHEN 'sales_executive' THEN 3 
+                WHEN 'property_advisor' THEN 4 
+                WHEN 'operations_executive' THEN 5 
+                WHEN 'finance_admin' THEN 6 
+                WHEN 'content_gis_admin' THEN 7 
+                ELSE 8 
             END, id ASC
     ");
     $stmt->execute($params);
     $rawUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format users with avatar initials, permissions array, and role details
     $users = array_map(function($u) use ($ROLES_CATALOG) {
         $roleInfo = $ROLES_CATALOG[$u['role']] ?? [
             'id' => $u['role'],
             'name' => ucfirst(str_replace('_', ' ', $u['role'])),
-            'badgeColor' => 'gray',
-            'description' => 'Custom Administrative Role'
+            'badgeColor' => 'slate',
+            'description' => 'Platform Role'
         ];
 
         $perms = [];
@@ -204,12 +229,12 @@ if ($method === 'GET') {
             'role'           => $u['role'],
             'roleName'       => $roleInfo['name'],
             'badgeColor'     => $roleInfo['badgeColor'],
-            'department'     => $u['department'] ?: 'Operations & Compliance',
+            'department'     => $u['department'] ?: 'FindAPlot.in Workspace',
             'designation'    => $u['designation'] ?: $roleInfo['name'],
             'status'         => $u['status'] ?: 'active',
             'permissions'    => $perms,
             'avatarInitials' => strtoupper(substr(trim($u['name']), 0, 2)),
-            'lastLogin'      => $u['last_login_at'] ? date('d M Y, h:i A', strtotime($u['last_login_at'])) : 'Never logged in',
+            'lastLogin'      => $u['last_login_at'] ? date('d M Y, h:i A', strtotime($u['last_login_at'])) : 'Active workspace',
             'createdAt'      => date('d M Y', strtotime($u['created_at']))
         ];
     }, $rawUsers);
@@ -219,13 +244,16 @@ if ($method === 'GET') {
         SELECT 
             COUNT(*) AS total_staff,
             SUM(CASE WHEN role = 'super_admin' THEN 1 ELSE 0 END) AS super_admins,
-            SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) AS platform_admins,
-            SUM(CASE WHEN role = 'co_admin' THEN 1 ELSE 0 END) AS co_admins,
-            SUM(CASE WHEN role IN ('auditor', 'compliance') THEN 1 ELSE 0 END) AS auditors,
-            SUM(CASE WHEN role = 'crm_manager' THEN 1 ELSE 0 END) AS crm_managers,
+            SUM(CASE WHEN role = 'developer' THEN 1 ELSE 0 END) AS developers,
+            SUM(CASE WHEN role = 'sales_executive' THEN 1 ELSE 0 END) AS sales_executives,
+            SUM(CASE WHEN role = 'property_advisor' THEN 1 ELSE 0 END) AS property_advisors,
+            SUM(CASE WHEN role = 'operations_executive' THEN 1 ELSE 0 END) AS operations_executives,
+            SUM(CASE WHEN role = 'finance_admin' THEN 1 ELSE 0 END) AS finance_admins,
+            SUM(CASE WHEN role = 'content_gis_admin' THEN 1 ELSE 0 END) AS content_gis_admins,
+            SUM(CASE WHEN role = 'public_visitor' THEN 1 ELSE 0 END) AS public_visitors,
             SUM(CASE WHEN status = 'active' OR status IS NULL THEN 1 ELSE 0 END) AS active_accounts
         FROM users
-        WHERE role IN ('super_admin', 'admin', 'co_admin', 'auditor', 'crm_manager', 'content_manager', 'sales_executive')
+        WHERE role IN ('" . implode("','", $validRoles) . "')
     ");
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -237,13 +265,16 @@ if ($method === 'GET') {
             'isSuperAdmin'=> in_array($requester['role'] ?? '', ['super_admin'], true) || ($requester['id'] ?? 0) === 104
         ],
         'stats' => [
-            'totalStaff'     => (int)($stats['total_staff'] ?? 0),
-            'superAdmins'    => (int)($stats['super_admins'] ?? 0),
-            'platformAdmins' => (int)($stats['platform_admins'] ?? 0),
-            'coAdmins'       => (int)($stats['co_admins'] ?? 0),
-            'auditors'       => (int)($stats['auditors'] ?? 0),
-            'crmManagers'    => (int)($stats['crm_managers'] ?? 0),
-            'activeAccounts' => (int)($stats['active_accounts'] ?? 0)
+            'totalStaff'           => (int)($stats['total_staff'] ?? 0),
+            'superAdmins'          => (int)($stats['super_admins'] ?? 0),
+            'developers'           => (int)($stats['developers'] ?? 0),
+            'salesExecutives'      => (int)($stats['sales_executives'] ?? 0),
+            'propertyAdvisors'     => (int)($stats['property_advisors'] ?? 0),
+            'operationsExecutives' => (int)($stats['operations_executives'] ?? 0),
+            'financeAdmins'        => (int)($stats['finance_admins'] ?? 0),
+            'contentGisAdmins'     => (int)($stats['content_gis_admins'] ?? 0),
+            'publicVisitors'       => (int)($stats['public_visitors'] ?? 0),
+            'activeAccounts'       => (int)($stats['active_accounts'] ?? 0)
         ],
         'users'                => $users,
         'availableRoles'       => array_values($ROLES_CATALOG),
@@ -252,7 +283,7 @@ if ($method === 'GET') {
 }
 
 // -------------------------------------------------------------
-// POST: Create a New Role / Administrative User
+// POST: Provision New User with Specified Role
 // -------------------------------------------------------------
 if ($method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -263,7 +294,7 @@ if ($method === 'POST') {
     $name        = trim((string)($input['name'] ?? ''));
     $email       = strtolower(trim((string)($input['email'] ?? '')));
     $phone       = trim((string)($input['phone'] ?? ''));
-    $role        = trim((string)($input['role'] ?? 'admin'));
+    $role        = trim((string)($input['role'] ?? 'sales_executive'));
     $password    = trim((string)($input['password'] ?? ''));
     $department  = trim((string)($input['department'] ?? ''));
     $designation = trim((string)($input['designation'] ?? ''));
@@ -297,7 +328,7 @@ if ($method === 'POST') {
     $permissionsJson = !empty($permissions) ? json_encode(array_values($permissions)) : null;
 
     if ($existing) {
-        // Upgrade existing user to administrative role
+        // Upgrade existing user to role
         $updateStmt = $db->prepare("
             UPDATE users 
             SET name = :name,
@@ -314,16 +345,16 @@ if ($method === 'POST') {
             ':name'  => $name,
             ':phone' => $phone ?: null,
             ':role'  => $role,
-            ':dept'  => $department ?: ($ROLES_CATALOG[$role]['name'] . ' Operations'),
+            ':dept'  => $department ?: ($ROLES_CATALOG[$role]['name'] . ' Department'),
             ':desig' => $designation ?: $ROLES_CATALOG[$role]['name'],
             ':perms' => $permissionsJson,
             ':hash'  => $bcrypt,
             ':id'    => $existing['id']
         ]);
         $newUserId = (int)$existing['id'];
-        $actionDesc = "Promoted existing user '{$name}' (ID: {$newUserId}) to {$ROLES_CATALOG[$role]['name']}";
+        $actionDesc = "Provisioned user '{$name}' (ID: {$newUserId}) with role {$ROLES_CATALOG[$role]['name']}";
     } else {
-        // Insert new administrative user
+        // Insert new user
         $insertStmt = $db->prepare("
             INSERT INTO users (name, email, phone, role, department, designation, permissions, password_hash, status, points_balance, created_by)
             VALUES (:name, :email, :phone, :role, :dept, :desig, :perms, :hash, 'active', 5000, :cby)
@@ -333,14 +364,14 @@ if ($method === 'POST') {
             ':email' => $email,
             ':phone' => $phone ?: null,
             ':role'  => $role,
-            ':dept'  => $department ?: ($ROLES_CATALOG[$role]['name'] . ' Operations'),
+            ':dept'  => $department ?: ($ROLES_CATALOG[$role]['name'] . ' Department'),
             ':desig' => $designation ?: $ROLES_CATALOG[$role]['name'],
             ':perms' => $permissionsJson,
             ':hash'  => $bcrypt,
             ':cby'   => $adminId
         ]);
         $newUserId = (int)$db->lastInsertId();
-        $actionDesc = "Created new {$ROLES_CATALOG[$role]['name']} account for '{$name}' ({$email})";
+        $actionDesc = "Provisioned new {$ROLES_CATALOG[$role]['name']} account for '{$name}' ({$email})";
     }
 
     // Log administrative action
@@ -356,9 +387,7 @@ if ($method === 'POST') {
             ':tuid'   => $newUserId,
             ':tuname' => $name
         ]);
-    } catch (\Throwable $e) {
-        // Non-fatal logging
-    }
+    } catch (\Throwable $e) {}
 
     Response::success([
         'userId'    => $newUserId,
@@ -367,7 +396,7 @@ if ($method === 'POST') {
         'role'      => $role,
         'roleName'  => $ROLES_CATALOG[$role]['name'],
         'status'    => 'active'
-    ], "{$ROLES_CATALOG[$role]['name']} '{$name}' created successfully!");
+    ], "{$ROLES_CATALOG[$role]['name']} '{$name}' provisioned successfully!");
 }
 
 // -------------------------------------------------------------
@@ -399,7 +428,7 @@ if ($method === 'PUT') {
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        Response::error('Administrative user not found', 404);
+        Response::error('User not found', 404);
     }
 
     $updates = [];
@@ -468,12 +497,11 @@ if ($method === 'DELETE') {
         Response::error('Platform safety violation: Super Administrator accounts cannot be revoked', 403);
     }
 
-    // Demote role to 'buyer' and mark inactive
-    $stmt = $db->prepare("UPDATE users SET role = 'buyer', status = 'inactive' WHERE id = :id");
+    // Mark user inactive
+    $stmt = $db->prepare("UPDATE users SET status = 'inactive' WHERE id = :id");
     $stmt->execute([':id' => $targetId]);
 
-    Response::success(['id' => $targetId], 'Administrative role revoked and user set to standard buyer account.');
+    Response::success(['id' => $targetId], 'User access has been suspended/deactivated.');
 }
 
 Response::error('Method not allowed', 405);
-
