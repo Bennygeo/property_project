@@ -228,6 +228,7 @@ try {
                 $updProjSql = "
                     UPDATE projects SET
                         developer_id   = CASE WHEN :devId IS NOT NULL THEN :devId ELSE developer_id END,
+                        developer_name = CASE WHEN :devName != '' THEN :devName ELSE developer_name END,
                         submitted_by   = CASE WHEN :devName != '' THEN :devName ELSE submitted_by END,
                         project_name   = CASE WHEN project_name = 'Verified Cadastral Layout' AND :pName != '' THEN :pName ELSE project_name END,
                         district       = CASE WHEN (district = '' OR district = 'Chennai') AND :district != '' THEN :district ELSE district END,
@@ -358,13 +359,13 @@ try {
 
                 $insProj = $db->prepare("
                     INSERT INTO projects (
-                        project_id, project_name, developer_id, district, city, locality,
+                        project_id, project_name, developer_id, developer_name, district, city, locality,
                         category, type, price_from, price_to, sqft_rate, min_plot_size, max_plot_size,
                         project_stage, possession_date, rera_no, brokerage, no_brokerage, featured,
                         whatsapp_number, cover_image, interactive_map, total_units, project_status,
                         submitted_by, status, created_at, updated_at
                     ) VALUES (
-                        :pId, :pName, :devId, :district, :city, :locality,
+                        :pId, :pName, :devId, :devName, :district, :city, :locality,
                         'Gated CMDA Plots', 'plots', :priceFrom, :priceTo, :sqftRate, :minSize, :maxSize,
                         'Ready to Register', 'Immediate', :rera, '0% Direct SRO Deed', 1, 0,
                         :waNum, 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
@@ -376,6 +377,7 @@ try {
                     ':pId'        => $newId,
                     ':pName'      => $titleDisplay,
                     ':devId'      => $devId,
+                    ':devName'    => $rawDeveloper ?: 'Registry Admin',
                     ':district'   => $district,
                     ':city'       => $city,
                     ':locality'   => $locality,

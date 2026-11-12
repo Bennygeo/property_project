@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `projects` (
   `project_id` VARCHAR(50) NOT NULL,
   `project_name` VARCHAR(255) NOT NULL,
   `developer_id` INT(11) DEFAULT NULL,
+  `developer_name` VARCHAR(255) DEFAULT NULL,
   `district` VARCHAR(100) NOT NULL DEFAULT 'Chennai',
   `city` VARCHAR(100) NOT NULL DEFAULT 'Chennai',
   `locality` VARCHAR(150) NOT NULL DEFAULT 'OMR',
@@ -58,6 +59,16 @@ CREATE TABLE IF NOT EXISTS `projects` (
   KEY `idx_proj_developer` (`developer_id`),
   KEY `idx_proj_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ensure developer_name exists if projects table already existed previously
+SET @col_dev_name_exists = (
+  SELECT COUNT(*) FROM information_schema.COLUMNS 
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'projects' AND COLUMN_NAME = 'developer_name'
+);
+SET @sql_dev_name = IF(@col_dev_name_exists = 0, 'ALTER TABLE `projects` ADD COLUMN `developer_name` VARCHAR(255) DEFAULT NULL AFTER `developer_id`', 'SELECT 1');
+PREPARE stmt_dev FROM @sql_dev_name;
+EXECUTE stmt_dev;
+DEALLOCATE PREPARE stmt_dev;
 
 -- ----------------------------------------------------------------------------
 -- 2. CREATE 'project_details' TABLE (1:1 Specification, Approvals & Media)
@@ -115,7 +126,7 @@ BEGIN
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'properties'
   ) THEN
     INSERT IGNORE INTO `projects` (
-      `project_id`, `project_name`, `developer_id`, `district`, `city`, `locality`, `category`, `type`,
+      `project_id`, `project_name`, `developer_id`, `developer_name`, `district`, `city`, `locality`, `category`, `type`,
       `price_from`, `price_to`, `sqft_rate`, `min_plot_size`, `max_plot_size`, `project_stage`,
       `launch_date`, `possession_date`, `rera_no`, `brokerage`, `no_brokerage`, `featured`, `free_access`,
       `whatsapp_number`, `cover_image`, `interactive_map`, `total_units`, `units_sold`, `project_status`,
@@ -126,6 +137,7 @@ BEGIN
       p.id AS project_id,
       p.title AS project_name,
       p.developer_id,
+      COALESCE(dev.name, p.submitted_by_name, 'Developer Portal') AS developer_name,
       COALESCE(p.city_name, 'Chennai') AS district,
       COALESCE(p.city_name, 'Chennai') AS city,
       COALESCE(p.locality_name, 'OMR') AS locality,
@@ -159,6 +171,7 @@ BEGIN
       p.created_at,
       p.updated_at
     FROM `properties` p
+    LEFT JOIN `developers` dev ON p.developer_id = dev.id
     WHERE p.id != 'id';
 
     -- Insert corresponding project_details

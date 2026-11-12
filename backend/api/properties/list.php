@@ -134,7 +134,7 @@ if (!empty($localitiesParam)) {
 }
 
 if (!empty($developer) && $developer !== 'all') {
-    $whereClauses[] = '(d.name = :developer OR p.submitted_by = :developer)';
+    $whereClauses[] = '(p.developer_name = :developer OR d.name = :developer OR p.submitted_by = :developer)';
     $params[':developer'] = trim($developer);
 }
 
@@ -195,6 +195,7 @@ if (!empty($searchQuery)) {
         $fields = [
             'p.project_name',
             'p.project_id',
+            'p.developer_name',
             'p.locality',
             'p.city',
             'p.district',
@@ -242,6 +243,7 @@ $selectFields = "
     p.project_id,
     p.project_name,
     p.developer_id,
+    p.developer_name,
     p.district,
     p.city,
     p.locality,
@@ -302,7 +304,7 @@ $selectFields = "
     pd.drone_videos,
     pd.layout_pdf,
     pd.brochure,
-    d.name AS developer_name,
+    d.name AS dev_name,
     d.established_year AS dev_est_year,
     d.projects_completed AS dev_projects_completed,
     d.delivered_sqft AS dev_delivered_sqft,
@@ -524,7 +526,7 @@ $formatProjectRow = function(array $r): array {
     $masterDetails = [
         'propertyId'          => $pId,
         'projectName'         => $r['project_name'],
-        'developer'           => $r['developer_name'] ?? $r['submitted_by'] ?? '',
+        'developer'           => !empty($r['developer_name']) ? $r['developer_name'] : (!empty($r['dev_name']) ? $r['dev_name'] : ($r['submitted_by'] ?? '')),
         'reraNumber'          => $r['rera_no'] ?? '',
         'dtcpApproved'        => !empty($r['approval_authority']) ? 'Yes' : 'Pending',
         'dtcpApprovalNo'      => $r['approval_reference'] ?? '',
@@ -571,8 +573,8 @@ $formatProjectRow = function(array $r): array {
         'project_name'           => $r['project_name'],
         'developerId'            => $r['developer_id'],
         'developer_id'           => $r['developer_id'],
-        'developerName'          => $r['developer_name'] ?? $r['submitted_by'] ?? '',
-        'developer_name'         => $r['developer_name'] ?? $r['submitted_by'] ?? '',
+        'developerName'          => !empty($r['developer_name']) ? $r['developer_name'] : (!empty($r['dev_name']) ? $r['dev_name'] : ($r['submitted_by'] ?? '')),
+        'developer_name'         => !empty($r['developer_name']) ? $r['developer_name'] : (!empty($r['dev_name']) ? $r['dev_name'] : ($r['submitted_by'] ?? '')),
         'district'               => $r['district'],
         'city'                   => $r['city'],
         'locality'               => $r['locality'],

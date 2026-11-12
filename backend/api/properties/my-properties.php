@@ -27,6 +27,8 @@ $stmt = $db->prepare("
         p.project_id AS projectId,
         p.project_name AS title,
         p.project_name AS projectName,
+        p.developer_name AS developerName,
+        p.developer_name,
         p.category AS propertyType,
         p.type AS listingMode,
         p.locality AS localityName,

@@ -398,7 +398,7 @@ if (empty($highlights)) {
 $masterDetails = [
     'propertyId'          => $id,
     'projectName'         => $prop['project_name'],
-    'developer'           => $prop['dev_name'] ?? $prop['submitted_by'] ?? '',
+    'developer'           => !empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? ''),
     'reraNumber'          => $prop['rera_no'] ?? '',
     'dtcpApproved'        => !empty($prop['approval_authority']) ? 'Yes' : 'Pending',
     'dtcpApprovalNo'      => $prop['approval_reference'] ?? '',
@@ -439,14 +439,15 @@ $masterDetails = [
 ];
 
 // Developer Profile
-$developer = !empty($prop['dev_id']) ? [
-    'name'              => $prop['dev_name'],
-    'establishedYear'   => $prop['dev_est_year'] ?? '2012',
-    'projectsCompleted' => $prop['dev_projects_completed'] ?? '18',
+$devDisplayName = !empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? '');
+$developer = !empty($devDisplayName) ? [
+    'name'              => $devDisplayName,
+    'establishedYear'   => $prop['dev_est_year'] ?? '2015',
+    'projectsCompleted' => $prop['dev_projects_completed'] ?? '12',
     'deliveredSqFt'     => $prop['dev_delivered_sqft'] ?? '1.2M sq.ft',
     'onTimeTrack'       => $prop['dev_on_time'] ?? '98%',
     'corporateOffice'   => $prop['dev_office'] ?? ($prop['city'] . ', Tamil Nadu'),
-    'aboutText'         => $prop['dev_about'] ?? 'Premier layout and infrastructure developer with verified RERA approvals.'
+    'aboutText'         => $prop['dev_about'] ?? 'Premier layout and plotted development builder with verified approvals and clear titles.'
 ] : null;
 
 // Amenities List derived from project_details columns
@@ -605,8 +606,8 @@ $response = [
     'project_name'           => $prop['project_name'],
     'developerId'            => $prop['developer_id'],
     'developer_id'           => $prop['developer_id'],
-    'developerName'          => $prop['dev_name'] ?? $prop['submitted_by'] ?? '',
-    'developer_name'         => $prop['dev_name'] ?? $prop['submitted_by'] ?? '',
+    'developerName'          => !empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? ''),
+    'developer_name'         => !empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? ''),
     'district'               => $prop['district'],
     'city'                   => $prop['city'],
     'locality'               => $prop['locality'],

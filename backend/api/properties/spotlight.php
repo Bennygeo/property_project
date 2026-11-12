@@ -56,6 +56,7 @@ $stmt = $db->query("
         p.project_id,
         p.project_name,
         p.developer_id,
+        p.developer_name,
         p.district,
         p.city,
         p.locality,
@@ -80,7 +81,7 @@ $stmt = $db->query("
         pd.road_width,
         pd.approval_authority,
         pd.total_layout_area,
-        d.name AS developer_name
+        d.name AS dev_name
     FROM projects p
     LEFT JOIN project_details pd ON p.project_id = pd.project_id
     LEFT JOIN developers d ON p.developer_id = d.id
@@ -142,7 +143,8 @@ foreach ($rows as $r) {
         'project_id'    => $pId,
         'title'         => $r['project_name'],
         'projectName'   => $r['project_name'],
-        'developerName' => $r['developer_name'] ?? '',
+        'developerName'  => !empty($r['developer_name']) ? $r['developer_name'] : ($r['dev_name'] ?? ''),
+        'developer_name' => !empty($r['developer_name']) ? $r['developer_name'] : ($r['dev_name'] ?? ''),
         'propertyType'  => $r['category'] ?: 'Gated CMDA Plots',
         'locality'      => $r['locality'],
         'city'          => $r['city'],
