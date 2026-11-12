@@ -58,9 +58,13 @@
 
       <div class="plans-grid">
         @for (plan of (plans() && plans().length ? plans() : defaultPlans); track plan.id) {
-        <article class="plan-card" 
+        <article class="plan-card plan-card-{{ plan.id }}" 
+          [class.plan-explorer]="plan.id === 'explorer'"
+          [class.plan-smart-buyer]="plan.id === 'smart_buyer'"
+          [class.plan-priority-buyer]="plan.id === 'priority_buyer'"
+          [class.plan-vip-concierge]="plan.id === 'vip_concierge'"
           [class.is-current]="activePlanId() === plan.id"
-          [class.is-popular]="plan.id === 'smart_buyer' && !isPlanDowngrade(plan.id)"
+          [class.is-popular]="plan.id === 'priority_buyer' && !isPlanDowngrade(plan.id)"
           [class.is-downgrade-disabled]="isPlanDowngrade(plan.id)"
           (click)="onSubscribe(plan)">
 
