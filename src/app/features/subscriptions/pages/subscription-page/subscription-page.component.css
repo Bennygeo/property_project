@@ -489,7 +489,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  align-items: stretch;
+  align-items: end;
 }
 
 @media (min-width: 640px) {
@@ -502,7 +502,7 @@
   .plans-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
-    align-items: stretch;
+    align-items: end;
   }
 }
 
@@ -516,7 +516,6 @@
   transition: border-color 0.2s ease;
   box-shadow: none !important;
   box-sizing: border-box;
-  height: 100%;
 }
 
 .plan-card:hover:not(.is-downgrade-disabled) {
@@ -571,7 +570,7 @@
 
 @media (min-width: 1040px) {
   .plan-card.plan-explorer {
-    min-height: 690px;
+    min-height: 770px;
     align-self: end;
   }
 }
@@ -628,7 +627,7 @@
 
 @media (min-width: 1040px) {
   .plan-card.plan-smart-buyer {
-    min-height: 750px;
+    min-height: 800px;
     align-self: end;
   }
 }
@@ -688,7 +687,7 @@
 
 @media (min-width: 1040px) {
   .plan-card.plan-priority-buyer {
-    min-height: 825px;
+    min-height: 830px;
     align-self: end;
   }
 }
@@ -749,7 +748,7 @@
 
 @media (min-width: 1040px) {
   .plan-card.plan-vip-concierge {
-    min-height: 900px;
+    min-height: 860px;
     align-self: end;
   }
 }
