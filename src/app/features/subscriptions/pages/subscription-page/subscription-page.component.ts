@@ -145,6 +145,15 @@ export class SubscriptionPageComponent implements OnInit {
     }
   }
 
+  scrollToFaqs(): void {
+    if (typeof document !== 'undefined') {
+      const el = document.querySelector('.sub-faq-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }
+
   onSubscribe(plan: SubscriptionPlan): void {
     if (this.activePlanId() === plan.id) {
       this.notificationService.show({

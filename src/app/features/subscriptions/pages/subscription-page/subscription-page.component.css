@@ -1950,6 +1950,265 @@
   font-size: 17px;
 }
 
+/* ========================================================================== */
+/* HOW WE WORK WITH YOU: 4-PHASE ADVISORY FRAMEWORK SECTION                   */
+/* Distinctive Editorial Architecture: Light, Dark Forest, Light, Warm Ochre  */
+/* ========================================================================== */
+.advisory-process-section {
+  margin: 3.5rem 0 1rem 0;
+  padding-top: 1rem;
+}
+
+.process-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2.25rem;
+}
+
+.process-header-left {
+  max-width: 680px;
+}
+
+.process-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: var(--brand-green-subtle);
+  color: var(--brand-green-dark);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.75px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(94, 143, 114, 0.25);
+  margin-bottom: 0.75rem;
+}
+
+.process-badge-icon {
+  font-size: 15px;
+}
+
+.process-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--brand-teal);
+  letter-spacing: -0.5px;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.process-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.btn-process-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1.5px solid var(--border-subtle);
+  color: var(--brand-teal);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.btn-process-details:hover {
+  border-color: var(--brand-teal);
+  background: var(--surface-slate-50);
+  transform: translateY(-1px);
+}
+
+.btn-process-details .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--brand-green);
+}
+
+/* 4-Column Step Cards Grid */
+.process-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .process-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1040px) {
+  .process-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Base Process Card */
+.process-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 2.15rem 1.65rem 1.85rem 1.65rem;
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  box-sizing: border-box;
+}
+
+.process-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-step-badge {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.75px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  display: inline-block;
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.card-step-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.25px;
+  margin: 1.25rem 0 0.85rem 0;
+  line-height: 1.3;
+}
+
+.card-step-desc {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.card-step-watermark {
+  position: absolute;
+  right: 0.75rem;
+  bottom: -0.5rem;
+  font-size: 5.75rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  font-family: inherit;
+  letter-spacing: -3px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* THEME 1 & 3: WARM ALABASTER LIGHT CARD                                     */
+/* -------------------------------------------------------------------------- */
+.process-card-light {
+  background: #fbf9f5;
+  border: 1.5px solid #ece6db;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+}
+
+.process-card-light:hover {
+  border-color: #dcd3c3;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.process-card-light .card-step-badge {
+  background: #ebe6dc;
+  color: #57534e;
+}
+
+.process-card-light .card-step-title {
+  color: #0f172a;
+}
+
+.process-card-light .card-step-desc {
+  color: #475569;
+}
+
+.process-card-light .card-step-watermark {
+  color: rgba(203, 213, 225, 0.45);
+}
+
+/* -------------------------------------------------------------------------- */
+/* THEME 2: DEEP SIGNATURE FOREST GREEN CARD (INSTITUTIONAL CORE)             */
+/* -------------------------------------------------------------------------- */
+.process-card-dark {
+  background: #11281c;
+  border: 1.5px solid #1a422d;
+  box-shadow: 0 8px 24px rgba(17, 40, 28, 0.22);
+}
+
+.process-card-dark:hover {
+  border-color: #276243;
+  box-shadow: 0 14px 34px rgba(17, 40, 28, 0.32);
+}
+
+.process-card-dark .card-step-badge.badge-accent {
+  background: #1e4531;
+  color: #86efac;
+  border: 1px solid rgba(134, 239, 172, 0.25);
+}
+
+.process-card-dark .card-step-title {
+  color: #ffffff;
+}
+
+.process-card-dark .card-step-desc {
+  color: #d1fae5;
+  opacity: 0.92;
+}
+
+.process-card-dark .card-step-watermark.watermark-dark {
+  color: rgba(255, 255, 255, 0.08);
+}
+
+/* -------------------------------------------------------------------------- */
+/* THEME 4: WARM OCHRE / GOLD EXECUTION CARD (CLOSING TIER)                   */
+/* -------------------------------------------------------------------------- */
+.process-card-gold {
+  background: #c69c3a;
+  border: 1.5px solid #b3892c;
+  box-shadow: 0 8px 24px rgba(198, 156, 58, 0.22);
+}
+
+.process-card-gold:hover {
+  border-color: #997321;
+  box-shadow: 0 14px 34px rgba(198, 156, 58, 0.32);
+}
+
+.process-card-gold .card-step-badge.badge-gold {
+  background: #a47c23;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.process-card-gold .card-step-title {
+  color: #1a170e;
+}
+
+.process-card-gold .card-step-desc {
+  color: #2f2714;
+  font-weight: 500;
+}
+
+.process-card-gold .card-step-watermark.watermark-gold {
+  color: rgba(0, 0, 0, 0.1);
+}
+
 .spin {
   animation: rzpSpin 1s linear infinite;
 }
