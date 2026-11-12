@@ -2349,26 +2349,27 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 1: CRISP ARCHITECTURAL NEUTRAL (PHASE 01: SUBMIT BRIEF)              */
+/* THEME 1: MILD MINERAL SKY / ICE SLATE (PHASE 01: SUBMIT BRIEF)            */
+/* Distinct mild palette — completely differentiated from membership plans    */
 /* -------------------------------------------------------------------------- */
 .process-card-slate {
-  background: #ffffff;
-  border: 10px solid #e2e8f0;
+  background: #f3f7f9;
+  border: 10px solid #d5e2ea;
 }
 
 .process-card-slate:hover {
-  border-color: #cbd5e1;
+  border-color: #b8cdd9;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-slate .card-step-badge.badge-slate {
-  background: #e2e8f0;
-  color: #334155;
+  background: #e2ecf2;
+  color: #1c3545;
 }
 
 .process-card-slate .card-step-title {
-  color: #0f172a;
+  color: #1c3545;
 }
 
 .process-card-slate .card-step-desc {
@@ -2376,127 +2377,139 @@
 }
 
 .process-card-slate .card-step-watermark.watermark-slate {
-  color: #e2e8f0;
+  color: #dfeaf0;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 2: DEEP FOREST GREEN HIGHLIGHT (PHASE 02: FORENSIC AUDIT)            */
-/* High-Contrast Action Card: Firm Audits 30-Yr Encumbrance & Patta           */
+/* THEME 2: MILD WARM TERRACOTTA / SANDSTONE (PHASE 02: FORENSIC AUDIT)      */
+/* Cadastral ground survey & title integrity tone                            */
 /* -------------------------------------------------------------------------- */
 .process-card-green {
-  background: #1b382b;
-  border: 10px solid #29523f;
+  background: #faf5f2;
+  border: 10px solid #ebdcd5;
 }
 
 .process-card-green:hover {
-  border-color: #35664f;
+  border-color: #dcbebe;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-green .card-step-badge.badge-green {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #f5ebe6;
+  color: #54362b;
+  border: 1px solid rgba(84, 54, 43, 0.15);
 }
 
 .process-card-green .card-step-title {
-  color: #ffffff;
+  color: #54362b;
 }
 
 .process-card-green .card-draft-hatch {
   background: repeating-linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.22),
-    rgba(255, 255, 255, 0.22) 3px,
+    #ebdcd5,
+    #ebdcd5 3px,
     transparent 3px,
     transparent 7px
   );
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .process-card-green .card-step-desc {
-  color: #d1e2d7;
+  color: #5c4d47;
 }
 
 .process-card-green .card-step-watermark.watermark-green {
-  color: rgba(255, 255, 255, 0.1);
+  color: #f5e9e3;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 3: CRISP ARCHITECTURAL NEUTRAL (PHASE 03: INFORMED VERDICT)          */
+/* THEME 3: MILD PERIWINKLE / HEATHER LAVENDER (PHASE 03: INFORMED VERDICT)  */
+/* Independent fiduciary legal & notary review tone                          */
 /* -------------------------------------------------------------------------- */
 .process-card-teal {
-  background: #ffffff;
-  border: 10px solid #e2e8f0;
+  background: #f7f6fc;
+  border: 10px solid #dedbf0;
 }
 
 .process-card-teal:hover {
-  border-color: #cbd5e1;
+  border-color: #c8c2e6;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-teal .card-step-badge.badge-teal {
-  background: #e2e8f0;
-  color: #334155;
-  border: 1px solid rgba(15, 59, 74, 0.15);
+  background: #edeaf7;
+  color: #383058;
+  border: 1px solid rgba(56, 48, 88, 0.15);
 }
 
 .process-card-teal .card-step-title {
-  color: #0f172a;
+  color: #383058;
+}
+
+.process-card-teal .card-draft-hatch {
+  background: repeating-linear-gradient(
+    45deg,
+    #dedbf0,
+    #dedbf0 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  opacity: 0.85;
 }
 
 .process-card-teal .card-step-desc {
-  color: #475569;
+  color: #4c4663;
 }
 
 .process-card-teal .card-step-watermark.watermark-teal {
-  color: #e2e8f0;
+  color: #eae7f5;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 4: DEEP CHARCOAL MOCHA HIGHLIGHT (PHASE 04: GUARDED CLOSING)         */
-/* High-Contrast Action Card: Advocates Escort Biometric SRO Registration     */
+/* THEME 4: MILD WARM LINEN / PEBBLE (PHASE 04: GUARDED CLOSING)              */
+/* Grounded closing & biometric government registration tone                 */
 /* -------------------------------------------------------------------------- */
 .process-card-gold {
-  background: #2b2520;
-  border: 10px solid #453c33;
+  background: #faf8f4;
+  border: 10px solid #e8e2d5;
 }
 
 .process-card-gold:hover {
-  border-color: #554a40;
+  border-color: #d8cebc;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-gold .card-step-badge.badge-gold {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #f3efe6;
+  color: #4c4233;
+  border: 1px solid rgba(76, 66, 51, 0.15);
 }
 
 .process-card-gold .card-step-title {
-  color: #ffffff;
+  color: #4c4233;
 }
 
 .process-card-gold .card-draft-hatch {
   background: repeating-linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.22),
-    rgba(255, 255, 255, 0.22) 3px,
+    #e8e2d5,
+    #e8e2d5 3px,
     transparent 3px,
     transparent 7px
   );
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .process-card-gold .card-step-desc {
-  color: #ded5cc;
+  color: #595144;
 }
 
 .process-card-gold .card-step-watermark.watermark-gold {
-  color: rgba(255, 255, 255, 0.1);
+  color: #f2ebe0;
 }
 
 .spin {
