@@ -174,13 +174,25 @@ if (!empty($localityName)) {
 }
 
 if (!empty($propertyType) && $propertyType !== 'all') {
-    $whereClauses[] = '(p.category = :propertyType OR p.type = :propertyType)';
-    $params[':propertyType'] = $propertyType;
+    if (strcasecmp($propertyType, 'commercial') === 0 || strcasecmp($propertyType, 'Commercial Spaces') === 0) {
+        $whereClauses[] = "(p.category = 'Commercial Spaces' OR p.type = 'commercial' OR p.land_type = 'Commercial' OR p.land_type = 'Industrial')";
+    } else if (strcasecmp($propertyType, 'plots') === 0 || strcasecmp($propertyType, 'Gated CMDA Plots') === 0) {
+        $whereClauses[] = "(p.category = 'Gated CMDA Plots' OR (p.type = 'plots' AND (p.land_type != 'Commercial' OR p.land_type IS NULL)))";
+    } else {
+        $whereClauses[] = '(p.category = :propertyType OR p.type = :propertyType OR p.land_type = :propertyType)';
+        $params[':propertyType'] = $propertyType;
+    }
 }
 
 if (!empty($listingMode) && $listingMode !== 'all') {
-    $whereClauses[] = 'p.type = :listingMode';
-    $params[':listingMode'] = $listingMode;
+    if (strcasecmp($listingMode, 'commercial') === 0) {
+        $whereClauses[] = "(p.type = 'commercial' OR p.category = 'Commercial Spaces' OR p.land_type = 'Commercial')";
+    } else if (strcasecmp($listingMode, 'plots') === 0) {
+        $whereClauses[] = "(p.type = 'plots' AND (p.land_type != 'Commercial' OR p.land_type IS NULL))";
+    } else {
+        $whereClauses[] = 'p.type = :listingMode';
+        $params[':listingMode'] = $listingMode;
+    }
 }
 
 // Multi-Token Intelligent Search Engine
@@ -586,10 +598,10 @@ $formatProjectRow = function(array $r): array {
         'city'                   => $r['city'],
         'locality'               => $r['locality'],
         'cityKey'                => strtolower($r['city'] ?: 'chennai'),
-        'category'               => $r['category'] ?: 'Gated CMDA Plots',
-        'propertyType'           => $r['category'] ?: 'Gated CMDA Plots',
-        'type'                   => $r['type'] ?: 'plots',
-        'listingMode'            => $r['type'] ?: 'plots',
+        'category'               => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['category'], 'Commercial Spaces') === 0) ? 'Commercial Spaces' : ($r['category'] ?: 'Gated CMDA Plots'),
+        'propertyType'           => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['category'], 'Commercial Spaces') === 0) ? 'Commercial Spaces' : ($r['category'] ?: 'Gated CMDA Plots'),
+        'type'                   => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['type'], 'commercial') === 0) ? 'commercial' : ($r['type'] ?: 'plots'),
+        'listingMode'            => (strcasecmp((string)$r['land_type'], 'Commercial') === 0 || strcasecmp((string)$r['type'], 'commercial') === 0) ? 'commercial' : ($r['type'] ?: 'plots'),
         'landType'               => !empty($r['land_type']) ? $r['land_type'] : 'Residential',
         'land_type'              => !empty($r['land_type']) ? $r['land_type'] : 'Residential',
         'landUse'                => !empty($r['land_type']) ? $r['land_type'] : 'Residential',
@@ -695,6 +707,34 @@ $formatProjectRow = function(array $r): array {
 $properties = [];
 foreach ($rows as $row) {
     $properties[] = $formatProjectRow($row);
+}
+
+// Intelligent Graceful Fallback: If district was specified but yielded 0 results for a specific category (e.g. Commercial),
+// seamlessly fetch state-wide verified properties of that classification so the user is never shown a dead-end
+if ($total === 0 && (!empty($propertyType) || !empty($listingMode)) && !empty($district)) {
+    $fallbackWhere = "(p.status = 'published' OR p.status IS NULL)";
+    if (!empty($propertyType) && (strcasecmp($propertyType, 'commercial') === 0 || strcasecmp($propertyType, 'Commercial Spaces') === 0)) {
+        $fallbackWhere .= " AND (p.category = 'Commercial Spaces' OR p.type = 'commercial' OR p.land_type = 'Commercial' OR p.land_type = 'Industrial')";
+    } else if (!empty($listingMode) && strcasecmp($listingMode, 'commercial') === 0) {
+        $fallbackWhere .= " AND (p.type = 'commercial' OR p.category = 'Commercial Spaces' OR p.land_type = 'Commercial')";
+    }
+
+    $fbStmt = $db->query("
+        SELECT {$selectFields}
+        FROM projects p
+        LEFT JOIN project_details pd ON p.project_id = pd.project_id
+        LEFT JOIN developers d ON p.developer_id = d.id
+        WHERE {$fallbackWhere}
+        ORDER BY p.featured DESC, p.created_at DESC
+        LIMIT {$limit}
+    ");
+    $fbRows = $fbStmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($fbRows)) {
+        foreach ($fbRows as $r) {
+            $properties[] = $formatProjectRow($r);
+        }
+        $total = count($properties);
+    }
 }
 
 // When no items match, fetch top recommended suggested properties

@@ -239,11 +239,23 @@ export class PropertyService {
       if (filter === 'apartments') {
         filtered = all.filter(p => p.propertyType === 'Apartments & Flats');
       } else if (filter === 'plots') {
-        filtered = all.filter(p => p.propertyType === 'Gated CMDA Plots');
+        filtered = all.filter(p =>
+          (p.propertyType === 'Gated CMDA Plots' || p.type === 'plots') &&
+          p.land_type?.toLowerCase() !== 'commercial' &&
+          p.landType?.toLowerCase() !== 'commercial' &&
+          p.propertyType !== 'Commercial Spaces'
+        );
       } else if (filter === 'villas') {
         filtered = all.filter(p => p.propertyType === 'Independent Villas' || p.propertyType === 'Luxury Penthouses');
       } else if (filter === 'commercial') {
-        filtered = all.filter(p => p.propertyType === 'Commercial Spaces');
+        filtered = all.filter(p =>
+          p.propertyType === 'Commercial Spaces' ||
+          p.land_type?.toLowerCase() === 'commercial' ||
+          p.landType?.toLowerCase() === 'commercial' ||
+          p.masterDetails?.landUse?.toLowerCase() === 'commercial' ||
+          p.type?.toLowerCase() === 'commercial' ||
+          p.category?.toLowerCase().includes('commercial')
+        );
       }
       if (filtered.length > 0 || !q) {
         return filtered;
@@ -252,11 +264,23 @@ export class PropertyService {
 
     // 3. Secondary check against hero search bar tabs if category filter is 'all'
     if (heroTab === 'plots') {
-      const plots = all.filter(p => p.propertyType === 'Gated CMDA Plots');
+      const plots = all.filter(p =>
+        (p.propertyType === 'Gated CMDA Plots' || p.type === 'plots') &&
+        p.land_type?.toLowerCase() !== 'commercial' &&
+        p.landType?.toLowerCase() !== 'commercial' &&
+        p.propertyType !== 'Commercial Spaces'
+      );
       if (plots.length > 0 || !q) return plots;
     }
     if (heroTab === 'commercial') {
-      const comm = all.filter(p => p.propertyType === 'Commercial Spaces');
+      const comm = all.filter(p =>
+        p.propertyType === 'Commercial Spaces' ||
+        p.land_type?.toLowerCase() === 'commercial' ||
+        p.landType?.toLowerCase() === 'commercial' ||
+        p.masterDetails?.landUse?.toLowerCase() === 'commercial' ||
+        p.type?.toLowerCase() === 'commercial' ||
+        p.category?.toLowerCase().includes('commercial')
+      );
       if (comm.length > 0 || !q) return comm;
     }
 
@@ -641,9 +665,17 @@ export class PropertyService {
             const resolvedLat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
             const resolvedLng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
             const isGpsValid = (p.isGpsValid === true) || (gpsRes.isValid && (resolvedLat != null || gpsRes.coordinates != null)) || (p.isGpsValid !== false && (resolvedLat != null || gpsRes.coordinates != null));
+            const isComm = (
+              p.land_type?.toLowerCase() === 'commercial' ||
+              p.landType?.toLowerCase() === 'commercial' ||
+              p.propertyType === 'Commercial Spaces' ||
+              p.category === 'Commercial Spaces' ||
+              p.type === 'commercial'
+            );
 
             return {
               ...p,
+              propertyType: (isComm ? 'Commercial Spaces' : (p.propertyType || 'Gated CMDA Plots')) as PropertyType,
               price: formatPriceIndian(p.price),
               isShortlisted: this.isShortlisted(p.id),
               imageUrl: resolvedImg,
@@ -721,9 +753,17 @@ export class PropertyService {
             const resolvedLat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
             const resolvedLng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
             const isGpsValid = (p.isGpsValid === true) || (gpsRes.isValid && (resolvedLat != null || gpsRes.coordinates != null)) || (p.isGpsValid !== false && (resolvedLat != null || gpsRes.coordinates != null));
+            const isComm = (
+              p.land_type?.toLowerCase() === 'commercial' ||
+              p.landType?.toLowerCase() === 'commercial' ||
+              p.propertyType === 'Commercial Spaces' ||
+              p.category === 'Commercial Spaces' ||
+              p.type === 'commercial'
+            );
 
             return {
               ...p,
+              propertyType: (isComm ? 'Commercial Spaces' : (p.propertyType || 'Gated CMDA Plots')) as PropertyType,
               price: formatPriceIndian(p.price),
               isShortlisted: this.isShortlisted(p.id),
               imageUrl: resolvedImg,

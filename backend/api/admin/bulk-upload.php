@@ -243,6 +243,8 @@ try {
                         city           = CASE WHEN (city = '' OR city = 'Chennai') AND :city != '' THEN :city ELSE city END,
                         locality       = CASE WHEN locality = '' AND :locality != '' THEN :locality ELSE locality END,
                         land_type      = CASE WHEN :landType != '' THEN :landType ELSE land_type END,
+                        category       = CASE WHEN :landType = 'Commercial' THEN 'Commercial Spaces' ELSE category END,
+                        type           = CASE WHEN :landType = 'Commercial' THEN 'commercial' ELSE type END,
                         price_from     = CASE WHEN (price_from = 0.00 OR price_from < 1000) AND :priceFrom > 0 THEN :priceFrom ELSE price_from END,
                         price_to       = CASE WHEN (price_to = 0.00 OR price_to < 1000) AND :priceTo > 0 THEN :priceTo ELSE price_to END,
                         sqft_rate      = CASE WHEN sqft_rate = 0.00 AND :sqftRate > 0 THEN :sqftRate ELSE sqft_rate END,
@@ -369,6 +371,9 @@ try {
                 // Case B: Project does not exist -> Insert new project and project_details
                 $newId = !empty($rawId) ? $rawId : ('PRJ-' . str_pad((string)(2001 + $index), 4, '0', STR_PAD_LEFT));
                 $titleDisplay = $projectName . (!empty($rawPlotNo) ? " - Plot {$rawPlotNo}" : '');
+                $isCommercial = (strcasecmp($rawLandType, 'Commercial') === 0 || strcasecmp($rawLandType, 'Industrial') === 0);
+                $projCategory = $isCommercial ? 'Commercial Spaces' : 'Gated CMDA Plots';
+                $projType = $isCommercial ? 'commercial' : 'plots';
 
                 $insProj = $db->prepare("
                     INSERT INTO projects (
@@ -379,7 +384,7 @@ try {
                         submitted_by, status, created_at, updated_at
                     ) VALUES (
                         :pId, :pName, :devId, :devName, :district, :city, :locality,
-                        'Gated CMDA Plots', 'plots', :landType, :priceFrom, :priceTo, :sqftRate, :minSize, :maxSize,
+                        :projCategory, :projType, :landType, :priceFrom, :priceTo, :sqftRate, :minSize, :maxSize,
                         'Ready to Register', 'Immediate', :rera, '0% Direct SRO Deed', 1, 0,
                         :waNum, 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
                         'assets/secura-masterplan-3d.html', 'Individual Plots', 'Ready to Register',
@@ -387,15 +392,17 @@ try {
                     )
                 ");
                 $insProj->execute([
-                    ':pId'        => $newId,
-                    ':pName'      => $titleDisplay,
-                    ':devId'      => $devId,
-                    ':devName'    => $rawDeveloper ?: 'Registry Admin',
-                    ':district'   => $district,
-                    ':city'       => $city,
-                    ':locality'   => $locality,
-                    ':landType'   => $rawLandType,
-                    ':priceFrom'  => $rawTotalPrice > 0 ? $rawTotalPrice : 3800000.00,
+                    ':pId'          => $newId,
+                    ':pName'        => $titleDisplay,
+                    ':devId'        => $devId,
+                    ':devName'      => $rawDeveloper ?: 'Registry Admin',
+                    ':district'     => $district,
+                    ':city'         => $city,
+                    ':locality'     => $locality,
+                    ':projCategory' => $projCategory,
+                    ':projType'     => $projType,
+                    ':landType'     => $rawLandType,
+                    ':priceFrom'    => $rawTotalPrice > 0 ? $rawTotalPrice : 3800000.00,
                     ':priceTo'    => $rawTotalPrice > 0 ? round($rawTotalPrice * 1.4) : 5500000.00,
                     ':sqftRate'   => $rawPricePerSqft > 0 ? $rawPricePerSqft : 3200.00,
                     ':minSize'    => $rawPlotSizeSqft > 0 ? (int)$rawPlotSizeSqft : 1200,
