@@ -25,6 +25,7 @@ import {
   BrochureDownloadItem
 } from '../../../../core/models/user.model';
 import { Property, PropertyType } from '../../../../core/models/property.model';
+import { SubscriptionInvoice, UserEntitlements } from '../../../../core/models/subscription.model';
 
 export type ProfileDashboardSection =
   | 'profile'
@@ -149,6 +150,56 @@ export class UserProfilePageComponent implements OnInit {
   readonly myProperties = signal<any[]>([]);
   readonly myPropertiesCount = computed<number>(() => this.myProperties().length);
 
+  // Membership, Entitlements & GST Invoices
+  readonly activePlanName = computed(() => this.subscriptionService.activePlanName());
+  readonly activePlanId = computed(() => this.subscriptionService.activePlanId());
+  readonly entitlements = computed(() => this.subscriptionService.entitlements());
+  readonly daysRemaining = computed(() => this.subscriptionService.daysRemaining());
+  readonly invoices = computed(() => this.subscriptionService.invoices());
+
+  readonly selectedInvoiceForRefund = signal<SubscriptionInvoice | null>(null);
+  readonly isRefundModalOpen = signal<boolean>(false);
+  readonly refundReason = signal<string>('Not satisfied with project discovery');
+  readonly isSubmittingRefund = signal<boolean>(false);
+
+  calculatePercentage(used: any, limit: any): number {
+    const u = Number(used) || 0;
+    const l = Number(limit) || 0;
+    if (l <= 0) return 0;
+    return Math.min(100, Math.round((u / l) * 100));
+  }
+
+  downloadInvoice(invoiceNumber: string): void {
+    this.subscriptionService.viewInvoice(invoiceNumber);
+  }
+
+  openRefundModal(inv: SubscriptionInvoice): void {
+    this.selectedInvoiceForRefund.set(inv);
+    this.isRefundModalOpen.set(true);
+  }
+
+  closeRefundModal(): void {
+    this.isRefundModalOpen.set(false);
+    this.selectedInvoiceForRefund.set(null);
+  }
+
+  submitRefund(): void {
+    const inv = this.selectedInvoiceForRefund();
+    if (!inv) return;
+
+    this.isSubmittingRefund.set(true);
+    this.subscriptionService.requestRefund(inv.id, this.refundReason()).subscribe({
+      next: () => {
+        this.isSubmittingRefund.set(false);
+        this.closeRefundModal();
+        this.subscriptionService.fetchCurrentSubscription().subscribe();
+      },
+      error: () => {
+        this.isSubmittingRefund.set(false);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
@@ -178,6 +229,7 @@ export class UserProfilePageComponent implements OnInit {
 
     // Load full PRD workspace (Membership, Site Visits, Consultations, Saved Searches, Bookings)
     this.workspaceService.fetchUserWorkspace(userId).subscribe();
+    this.subscriptionService.fetchCurrentSubscription(userId).subscribe();
 
     // Refresh shortlists immediately from backend for the active user
     this.propertyService.fetchShortlistsFromBackend(userId);

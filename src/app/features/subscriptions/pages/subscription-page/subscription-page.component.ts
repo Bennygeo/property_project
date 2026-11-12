@@ -80,6 +80,7 @@ export class SubscriptionPageComponent implements OnInit {
   readonly currentSub = computed(() => this.subscriptionService.currentSubscription());
   readonly activePlanId = computed(() => this.subscriptionService.activePlanId());
   readonly activePlanName = computed(() => this.subscriptionService.activePlanName());
+  readonly daysRemaining = computed(() => this.subscriptionService.daysRemaining());
   readonly invoices = computed(() => this.subscriptionService.invoices());
 
   getPlanRank(planId: string | null | undefined): number {

@@ -33,111 +33,18 @@
       </p>
     </header>
 
-    <!-- Real-time Active Entitlements HUD (Shown for all users) -->
-    @if (entitlements(); as ent) {
-    <section class="entitlements-hud-card" aria-label="Your Active Entitlements">
-      <div class="hud-top-bar">
-        <div class="hud-status-left">
-          <div class="hud-plan-badge" [class.is-paid]="subscriptionService.isPaidSubscriber()">
-            <span class="material-symbols-outlined">{{ subscriptionService.isPaidSubscriber() ? 'workspace_premium' :
-              'explore' }}</span>
-            <span>{{ ent.planName.toUpperCase() }} PLAN</span>
-          </div>
-          @if (subscriptionService.daysRemaining() > 0) {
-          <span class="hud-days-chip">{{ subscriptionService.daysRemaining() }} Days Remaining</span>
-          } @else if (subscriptionService.isPaidSubscriber()) {
-          <span class="hud-days-chip">Active Subscription</span>
-          } @else {
-          <span class="hud-days-chip">Free Tier</span>
-          }
-        </div>
-        <div class="hud-action-right">
-          <span class="hud-user-label">
-            Signed in as <strong>{{ authService.currentUser()?.name || 'Verified Investor' }}</strong>
-          </span>
-        </div>
+    <!-- Active Plan Notice with direct link to Profile Dashboard -->
+    @if (subscriptionService.isPaidSubscriber()) {
+    <div class="active-plan-profile-banner">
+      <div class="banner-left">
+        <span class="material-symbols-outlined">workspace_premium</span>
+        <span>Active Tier: <strong>{{ activePlanName() }}</strong> ({{ daysRemaining() }} Days Remaining)</span>
       </div>
-
-      <!-- 4 Core Entitlement Meters Grid -->
-      <div class="hud-meters-grid">
-        <!-- 1. Unique Project Views -->
-        <div class="meter-box">
-          <div class="meter-header">
-            <span class="meter-title">
-              <span class="material-symbols-outlined meter-icon">apartment</span>
-              <span>Project Views</span>
-            </span>
-            <span class="meter-counts">{{ ent.projectViewsUsed }} / {{ ent.projectViewLimit }}</span>
-          </div>
-          <div class="meter-progress-track">
-            <div class="meter-progress-fill"
-              [style.width.%]="calculatePercentage(ent.projectViewsUsed, ent.projectViewLimit)"></div>
-          </div>
-          <div class="meter-footer">
-            <span>{{ ent.projectViewsRemaining }} remaining</span>
-            <span class="meter-tip" title="Repeated visits to unlocked projects never burn credits">Re-visits
-              Free</span>
-          </div>
-        </div>
-
-        <!-- 2. Side-by-Side Comparisons -->
-        <div class="meter-box">
-          <div class="meter-header">
-            <span class="meter-title">
-              <span class="material-symbols-outlined meter-icon">compare_arrows</span>
-              <span>Comparisons</span>
-            </span>
-            <span class="meter-counts">{{ ent.comparisonsUsed }} / {{ ent.comparisonLimit }}</span>
-          </div>
-          <div class="meter-progress-track">
-            <div class="meter-progress-fill"
-              [style.width.%]="calculatePercentage(ent.comparisonsUsed, ent.comparisonLimit)"></div>
-          </div>
-          <div class="meter-footer">
-            <span>{{ ent.comparisonsRemaining }} remaining</span>
-            <span class="meter-tip">Matrix Workspace</span>
-          </div>
-        </div>
-
-        <!-- 3. Advisory Consultations -->
-        <div class="meter-box">
-          <div class="meter-header">
-            <span class="meter-title">
-              <span class="material-symbols-outlined meter-icon">support_agent</span>
-              <span>Advisory Sessions</span>
-            </span>
-            <span class="meter-counts">{{ ent.advisorySessionsUsed }} / {{ ent.advisorySessionLimit }}</span>
-          </div>
-          <div class="meter-progress-track">
-            <div class="meter-progress-fill"
-              [style.width.%]="calculatePercentage(ent.advisorySessionsUsed, ent.advisorySessionLimit)"></div>
-          </div>
-          <div class="meter-footer">
-            <span>{{ ent.advisorySessionsRemaining }} remaining</span>
-            <span class="meter-tip">1-on-1 Guidance</span>
-          </div>
-        </div>
-
-        <!-- 4. Chauffeured Site Visits -->
-        <div class="meter-box">
-          <div class="meter-header">
-            <span class="meter-title">
-              <span class="material-symbols-outlined meter-icon">directions_car</span>
-              <span>Site Visits</span>
-            </span>
-            <span class="meter-counts">{{ ent.siteVisitsUsed }} / {{ ent.siteVisitLimit }}</span>
-          </div>
-          <div class="meter-progress-track">
-            <div class="meter-progress-fill"
-              [style.width.%]="calculatePercentage(ent.siteVisitsUsed, ent.siteVisitLimit)"></div>
-          </div>
-          <div class="meter-footer">
-            <span>{{ ent.siteVisitsRemaining }} remaining</span>
-            <span class="meter-tip">Escorted Visit</span>
-          </div>
-        </div>
-      </div>
-    </section>
+      <a routerLink="/profile" [queryParams]="{ tab: 'membership' }" class="btn-profile-link">
+        <span>View Quota Balances &amp; Tax Invoices in Profile</span>
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </a>
+    </div>
     }
 
     <!-- 4-Tier Membership Plans Grid -->
@@ -255,75 +162,6 @@
       </div>
     </section>
 
-    <!-- GST Invoices & Payment Ledger Section -->
-    <section class="invoices-section" aria-label="GST Invoices &amp; Payment Ledger">
-      <div class="invoices-header-bar">
-        <div>
-          <h2 class="invoices-title">GST Tax Invoices &amp; Payment Ledger</h2>
-          <p class="invoices-sub">Download compliance-ready GST invoices with 18% tax breakdown (SAC 998313).</p>
-        </div>
-        <div class="invoices-chip">
-          <span>{{ invoices().length }} Invoices Recorded</span>
-        </div>
-      </div>
-
-      @if (invoices().length > 0) {
-      <div class="table-responsive">
-        <table class="inv-table">
-          <thead>
-            <tr>
-              <th>Invoice Number</th>
-              <th>Plan</th>
-              <th>Date</th>
-              <th>Base Amount</th>
-              <th>GST (18%)</th>
-              <th>Total (INR)</th>
-              <th>Payment ID</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (inv of invoices(); track inv.id) {
-            <tr>
-              <td class="inv-num-cell">
-                <span class="material-symbols-outlined inv-cell-icon">receipt_long</span>
-                <strong>{{ inv.invoiceNumber }}</strong>
-              </td>
-              <td>{{ inv.planName }}</td>
-              <td>{{ inv.createdAt | date:'mediumDate' }}</td>
-              <td>₹{{ inv.baseAmount | number:'1.2-2' }}</td>
-              <td>₹{{ inv.gstAmount | number:'1.2-2' }}</td>
-              <td class="inv-total-cell">₹{{ inv.totalAmount | number:'1.2-2' }}</td>
-              <td class="inv-pay-cell">{{ inv.paymentId || 'Prepaid' }}</td>
-              <td class="inv-action-cell">
-                <button type="button" class="btn-inv-download" (click)="downloadInvoice(inv.invoiceNumber)"
-                  title="Print or Download GST Tax Invoice">
-                  <span class="material-symbols-outlined">download</span>
-                  <span>Invoice</span>
-                </button>
-                @if (inv.status === 'paid' && inv.totalAmount > 0) {
-                <button type="button" class="btn-inv-refund" (click)="openRefundModal(inv)"
-                  title="Request Refund / Cancellation">
-                  <span class="material-symbols-outlined">restart_alt</span>
-                </button>
-                } @else if (inv.status === 'refunded') {
-                <span class="status-refunded-badge">Refunded</span>
-                }
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      } @else {
-      <div class="no-invoices-box">
-        <span class="material-symbols-outlined no-inv-icon">receipt</span>
-        <p>No payment invoices generated yet. Upgrading to any paid tier will automatically produce your official tax
-          invoice here.</p>
-      </div>
-      }
-    </section>
-
     <!-- Frequently Asked Questions -->
     <section class="sub-faq-section" aria-label="Frequently Asked Questions">
       <h2 class="faq-heading">Frequently Asked Questions</h2>
@@ -346,53 +184,6 @@
     </section>
 
   </main>
-
-  <!-- Refund Request Confirmation Modal -->
-  @if (isRefundModalOpen() && selectedInvoiceForRefund(); as curInv) {
-  <div class="refund-modal-backdrop" (click)="closeRefundModal()">
-    <div class="refund-modal-card" (click)="$event.stopPropagation()">
-      <div class="refund-modal-header">
-        <div class="refund-title-wrap">
-          <span class="material-symbols-outlined refund-header-icon">restart_alt</span>
-          <h3>Request Subscription Refund</h3>
-        </div>
-        <button type="button" class="btn-close-modal" (click)="closeRefundModal()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <div class="refund-modal-body">
-        <p class="refund-info-text">
-          You are requesting a refund for Invoice <strong>{{ curInv.invoiceNumber }}</strong> ({{ curInv.planName }} —
-          ₹{{ curInv.totalAmount }}).
-        </p>
-        <div class="refund-form-group">
-          <label for="refund-reason-select">Select Reason for Cancellation:</label>
-          <select id="refund-reason-select" class="refund-select" [value]="refundReason()"
-            (change)="refundReason.set($any($event.target).value)">
-            <option value="Not satisfied with project discovery">Not satisfied with project discovery</option>
-            <option value="Purchased plot outside platform">Purchased plot outside platform</option>
-            <option value="Duplicate payment initiated">Duplicate payment initiated</option>
-            <option value="Other / Change of mind">Other / Change of mind</option>
-          </select>
-        </div>
-        <p class="refund-notice">
-          Upon refund processing, your active plan will be reverted to Explorer tier, and unused credits will be revoked
-          under statutory norms.
-        </p>
-      </div>
-      <div class="refund-modal-actions">
-        <button type="button" class="btn-cancel" (click)="closeRefundModal()">Keep Plan</button>
-        <button type="button" class="btn-confirm-refund" (click)="submitRefund()" [disabled]="isSubmittingRefund()">
-          @if (isSubmittingRefund()) {
-          <span>Processing...</span>
-          } @else {
-          <span>Confirm Refund</span>
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-  }
 
   <!-- ========================================== -->
   <!-- MODAL: RAZORPAY PAYMENT GATEWAY DEMO       -->
