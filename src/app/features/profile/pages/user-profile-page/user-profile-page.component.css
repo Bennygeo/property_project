@@ -3519,100 +3519,100 @@ input:checked+.toggle-slider:before {
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 1: MILD SAGE / EMERALD (HERO DOSSIERS - LARGEST BOX SIZE)            */
+/* THEME 1: BRAND GREEN #5e8f72 (HERO DOSSIERS - LARGEST BOX SIZE)            */
 /* -------------------------------------------------------------------------- */
 .meter-box-sage {
-  background: linear-gradient(145deg, #f3faf5 0%, #eaf6ef 100%);
-  border: 1px solid #c8e7d5;
+  background: linear-gradient(145deg, #f2f8f4 0%, #e5f7ec 100%);
+  border: 1.5px solid #5e8f72;
   padding: 1.15rem 1.25rem;
-  box-shadow: 0 1px 3px rgba(45, 106, 79, 0.04);
+  box-shadow: 0 1px 3px rgba(94, 143, 114, 0.08);
 }
 
 .meter-box-sage:hover {
-  border-color: #9bd6b2;
-  box-shadow: 0 6px 18px rgba(45, 106, 79, 0.08);
+  border-color: #497259;
+  box-shadow: 0 6px 18px rgba(94, 143, 114, 0.16);
 }
 
-.kicker-sage { color: #1e6b45; }
-.title-sage { color: #165334; }
-.count-sage { color: #0d3822; font-size: 1.0625rem; }
-.icon-sage { background: #d7f1e2; color: #1b633e; }
-.track-sage { background: #d2edd9; }
-.fill-sage { background: linear-gradient(90deg, #48bb78 0%, #2f855a 100%); }
-.text-sage { color: #22543d; }
-.tip-sage { background: #d7f1e2; border: 1px solid #b3e3c6; color: #1b633e; }
+.kicker-sage { color: #2c4938; }
+.title-sage { color: #2c4938; }
+.count-sage { color: #2c4938; font-size: 1.0625rem; }
+.icon-sage { background: rgba(94, 143, 114, 0.2); color: #2c4938; }
+.track-sage { background: rgba(94, 143, 114, 0.2); }
+.fill-sage { background: linear-gradient(90deg, #5e8f72 0%, #2c4938 100%); }
+.text-sage { color: #2c4938; }
+.tip-sage { background: rgba(94, 143, 114, 0.2); border: 1px solid rgba(94, 143, 114, 0.35); color: #2c4938; }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 2: MILD SKY / OCEAN BLUE (ANALYTICS - COMPACT BOX SIZE)              */
+/* THEME 2: BRAND TEAL #0f3b4a (ANALYTICS - COMPACT BOX SIZE)                 */
 /* -------------------------------------------------------------------------- */
 .meter-box-blue {
-  background: linear-gradient(145deg, #f2f7fc 0%, #e9f2fa 100%);
-  border: 1px solid #c6def5;
+  background: linear-gradient(145deg, #f0f6f8 0%, #e8f3f6 100%);
+  border: 1.5px solid #0f3b4a;
   padding: 0.95rem 1.1rem;
-  box-shadow: 0 1px 3px rgba(30, 64, 175, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 59, 74, 0.08);
 }
 
 .meter-box-blue:hover {
-  border-color: #9ec5f0;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
+  border-color: #144f63;
+  box-shadow: 0 6px 18px rgba(15, 59, 74, 0.16);
 }
 
-.kicker-blue { color: #1e40af; }
-.title-blue { color: #1e3a8a; }
-.count-blue { color: #172554; }
-.icon-blue { background: #dbeafe; color: #1d4ed8; }
-.track-blue { background: #d4e5f8; }
-.fill-blue { background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%); }
-.text-blue { color: #1e40af; }
-.tip-blue { background: #dbeafe; border: 1px solid #bfdbfe; color: #1e40af; }
+.kicker-blue { color: #0f3b4a; }
+.title-blue { color: #0f3b4a; }
+.count-blue { color: #0f3b4a; }
+.icon-blue { background: rgba(15, 59, 74, 0.15); color: #0f3b4a; }
+.track-blue { background: rgba(15, 59, 74, 0.18); }
+.fill-blue { background: linear-gradient(90deg, #144f63 0%, #0f3b4a 100%); }
+.text-blue { color: #0f3b4a; }
+.tip-blue { background: rgba(15, 59, 74, 0.15); border: 1px solid rgba(15, 59, 74, 0.3); color: #0f3b4a; }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 3: MILD WARM AMBER / HONEY (CONSULTING - COMPACT BOX SIZE)           */
+/* THEME 3: BRAND GOLD / SAND #d5b357 (CONSULTING - COMPACT BOX SIZE)         */
 /* -------------------------------------------------------------------------- */
 .meter-box-amber {
-  background: linear-gradient(145deg, #fdf9f0 0%, #faf2e3 100%);
-  border: 1px solid #f8e1b6;
+  background: linear-gradient(145deg, #fdfbf5 0%, #f9f2df 100%);
+  border: 1.5px solid #d5b357;
   padding: 0.95rem 1.1rem;
-  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.04);
+  box-shadow: 0 1px 3px rgba(213, 179, 87, 0.08);
 }
 
 .meter-box-amber:hover {
-  border-color: #f6cd85;
-  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.08);
+  border-color: #b89230;
+  box-shadow: 0 6px 18px rgba(213, 179, 87, 0.18);
 }
 
-.kicker-amber { color: #92400e; }
-.title-amber { color: #78350f; }
-.count-amber { color: #451a03; }
-.icon-amber { background: #fef3c7; color: #d97706; }
-.track-amber { background: #fae4bb; }
-.fill-amber { background: linear-gradient(90deg, #fbbf24 0%, #d97706 100%); }
-.text-amber { color: #92400e; }
-.tip-amber { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+.kicker-amber { color: #80631b; }
+.title-amber { color: #695011; }
+.count-amber { color: #695011; }
+.icon-amber { background: rgba(213, 179, 87, 0.22); color: #80631b; }
+.track-amber { background: rgba(213, 179, 87, 0.25); }
+.fill-amber { background: linear-gradient(90deg, #d5b357 0%, #b89230 100%); }
+.text-amber { color: #80631b; }
+.tip-amber { background: rgba(213, 179, 87, 0.2); border: 1px solid rgba(213, 179, 87, 0.35); color: #80631b; }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 4: MILD ROYAL LAVENDER / PLUM (VIP CONCIERGE - EXECUTIVE BOX SIZE)    */
+/* THEME 4: ARCHITECTURAL SLATE #334155 (VIP CONCIERGE - EXECUTIVE BOX SIZE)   */
 /* -------------------------------------------------------------------------- */
 .meter-box-purple {
-  background: linear-gradient(145deg, #f8f4fc 0%, #f1e9fa 100%);
-  border: 1px solid #e1cef5;
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1.5px solid #cbd5e1;
   padding: 1.1rem 1.2rem;
-  box-shadow: 0 1px 3px rgba(109, 40, 217, 0.04);
+  box-shadow: 0 1px 3px rgba(51, 65, 85, 0.08);
 }
 
 .meter-box-purple:hover {
-  border-color: #cca9f0;
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.08);
+  border-color: #94a3b8;
+  box-shadow: 0 6px 18px rgba(51, 65, 85, 0.16);
 }
 
-.kicker-purple { color: #6b21a8; }
-.title-purple { color: #581c87; }
-.count-purple { color: #3b0764; font-size: 1.02rem; }
-.icon-purple { background: #f3e8ff; color: #7c3aed; }
-.track-purple { background: #ead6f8; }
-.fill-purple { background: linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%); }
-.text-purple { color: #6b21a8; }
-.tip-purple { background: #f3e8ff; border: 1px solid #ddd6fe; color: #6b21a8; }
+.kicker-purple { color: #334155; }
+.title-purple { color: #1e293b; }
+.count-purple { color: #0f172a; font-size: 1.02rem; }
+.icon-purple { background: rgba(51, 65, 85, 0.12); color: #334155; }
+.track-purple { background: #e2e8f0; }
+.fill-purple { background: linear-gradient(90deg, #64748b 0%, #334155 100%); }
+.text-purple { color: #334155; }
+.tip-purple { background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; }
 
 /* INVOICES SECTION */
 .invoices-section {

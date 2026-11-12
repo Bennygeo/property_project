@@ -397,13 +397,14 @@
 }
 
 /* ========================================================================== */
-/* 4-TIER PLANS: 4 MILD COLORS & ASYMMETRIC PROFESSIONAL BOX SIZING           */
+/* 4-TIER PLANS: 4 THEME COLORS & ESCALATING STAIRCASE BOX SIZES              */
+/* Colors directly from project theme: Slate, Brand Green, Brand Teal, Brand Gold */
 /* ========================================================================== */
 .plans-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  align-items: stretch;
+  align-items: center;
 }
 
 @media (min-width: 640px) {
@@ -414,8 +415,7 @@
 
 @media (min-width: 1040px) {
   .plans-grid {
-    /* Professional pricing ladder: Explorer 0.95fr, Smart Buyer 1fr, Priority Buyer 1.12fr, VIP Concierge 1.05fr */
-    grid-template-columns: 0.95fr 1fr 1.12fr 1.05fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
     align-items: center;
   }
@@ -436,153 +436,169 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 1: EXPLORER (MILD OYSTER / SLATE — COMPACT BASELINE BOX SIZE)         */
+/* TIER 1: EXPLORER (THEME COLOR: MINIMALIST ARCHITECTURAL SLATE)             */
+/* Height: Compact Baseline (min-height: 590px)                               */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-explorer {
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #cbd5e1;
+  border: 1.5px solid #cbd5e1;
   padding: 1.45rem 1.25rem;
+  min-height: 590px;
 }
 
 .plan-card.plan-explorer:hover:not(.is-downgrade-disabled) {
   border-color: #94a3b8;
-  box-shadow: 0 8px 24px rgba(100, 116, 139, 0.12);
+  box-shadow: 0 8px 24px rgba(71, 85, 105, 0.12);
 }
 
 .plan-card.plan-explorer .plan-name { color: #334155; }
 .plan-card.plan-explorer .plan-price { color: #1e293b; }
 .plan-card.plan-explorer .plan-quotas-box {
-  background: rgba(241, 245, 249, 0.75);
+  background: rgba(241, 245, 249, 0.85);
   border: 1px solid #e2e8f0;
 }
 .plan-card.plan-explorer .quota-icon { color: #64748b; }
+.plan-card.plan-explorer .quota-text strong { color: #334155; }
+.plan-card.plan-explorer .check-icon { color: #64748b; }
 .plan-card.plan-explorer .btn-plan-cta {
-  background: #475569;
-  box-shadow: 0 2px 6px rgba(71, 85, 105, 0.25);
+  background: #334155;
+  box-shadow: 0 2px 6px rgba(51, 65, 85, 0.25);
 }
 .plan-card.plan-explorer .btn-plan-cta:hover:not(:disabled) {
-  background: #334155;
+  background: #1e293b;
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 2: SMART BUYER (MILD SAGE / EMERALD MINT — STANDARD BOX SIZE)         */
+/* TIER 2: SMART BUYER (THEME COLOR: BRAND GREEN #5e8f72)                     */
+/* Height: Medium Step (min-height: 630px)                                    */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-smart-buyer {
-  background: linear-gradient(180deg, #f3faf6 0%, #eaf6ef 100%);
-  border: 1.5px solid #a4d7bc;
+  background: linear-gradient(180deg, #f2f8f4 0%, #e5f7ec 100%);
+  border: 1.5px solid #5e8f72;
   padding: 1.65rem 1.35rem;
+  min-height: 630px;
 }
 
 .plan-card.plan-smart-buyer:hover:not(.is-downgrade-disabled) {
-  border-color: #52b788;
-  box-shadow: 0 10px 28px rgba(45, 106, 79, 0.12);
+  border-color: #497259;
+  box-shadow: 0 10px 28px rgba(94, 143, 114, 0.18);
 }
 
-.plan-card.plan-smart-buyer .plan-name { color: #1b4332; }
-.plan-card.plan-smart-buyer .plan-price { color: #164e32; }
+.plan-card.plan-smart-buyer .plan-name { color: #2c4938; }
+.plan-card.plan-smart-buyer .plan-price { color: #2c4938; }
 .plan-card.plan-smart-buyer .plan-quotas-box {
-  background: rgba(216, 243, 226, 0.5);
-  border: 1px solid #b7e4c7;
+  background: rgba(94, 143, 114, 0.1);
+  border: 1px solid rgba(94, 143, 114, 0.3);
 }
-.plan-card.plan-smart-buyer .quota-icon { color: #2d6a4f; }
+.plan-card.plan-smart-buyer .quota-icon { color: #5e8f72; }
+.plan-card.plan-smart-buyer .quota-text strong { color: #2c4938; }
+.plan-card.plan-smart-buyer .check-icon { color: #5e8f72; }
 .plan-card.plan-smart-buyer .btn-plan-cta {
-  background: #2d6a4f;
-  box-shadow: 0 2px 6px rgba(45, 106, 79, 0.25);
+  background: #5e8f72;
+  box-shadow: 0 2px 6px rgba(94, 143, 114, 0.3);
 }
 .plan-card.plan-smart-buyer .btn-plan-cta:hover:not(:disabled) {
-  background: #1b4332;
+  background: #497259;
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 3: PRIORITY BUYER (MILD COASTAL AZURE — FEATURED HERO BOX SIZE)       */
+/* TIER 3: PRIORITY BUYER (THEME COLOR: BRAND TEAL #0f3b4a — HERO TIER)       */
+/* Height: Tall Prominent Step (min-height: 670px)                            */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-priority-buyer {
-  background: linear-gradient(180deg, #f0f7ff 0%, #e5f1fe 100%);
-  border: 2px solid #60a5fa;
-  padding: 2.15rem 1.5rem;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+  background: linear-gradient(180deg, #f0f6f8 0%, #e8f3f6 100%);
+  border: 2px solid #0f3b4a;
+  padding: 1.95rem 1.45rem;
+  min-height: 670px;
+  box-shadow: 0 8px 26px rgba(15, 59, 74, 0.1);
   position: relative;
   z-index: 2;
 }
 
-@media (min-width: 1040px) {
-  .plan-card.plan-priority-buyer {
-    margin-top: -0.65rem;
-    margin-bottom: -0.65rem;
-  }
-}
-
 .plan-card.plan-priority-buyer:hover:not(.is-downgrade-disabled) {
-  border-color: #2563eb;
-  box-shadow: 0 14px 38px rgba(37, 99, 235, 0.18);
-  transform: translateY(-6px);
+  border-color: #144f63;
+  box-shadow: 0 14px 38px rgba(15, 59, 74, 0.2);
+  transform: translateY(-5px);
 }
 
 .plan-card.plan-priority-buyer .plan-name {
-  color: #1e3a8a;
-  font-size: 1.5rem;
+  color: #0f3b4a;
+  font-size: 1.45rem;
 }
 .plan-card.plan-priority-buyer .plan-price {
-  color: #1d4ed8;
-  font-size: 2.15rem;
+  color: #0f3b4a;
+  font-size: 2.1rem;
 }
 .plan-card.plan-priority-buyer .plan-quotas-box {
-  background: rgba(219, 234, 254, 0.6);
-  border: 1px solid #bfdbfe;
-  padding: 1rem;
+  background: rgba(15, 59, 74, 0.1);
+  border: 1px solid rgba(15, 59, 74, 0.28);
+  padding: 0.95rem;
 }
-.plan-card.plan-priority-buyer .quota-icon { color: #2563eb; }
+.plan-card.plan-priority-buyer .quota-icon { color: #0f3b4a; }
+.plan-card.plan-priority-buyer .quota-text strong { color: #0f3b4a; }
+.plan-card.plan-priority-buyer .check-icon { color: #0f3b4a; }
 .plan-card.plan-priority-buyer .btn-plan-cta {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
-  padding: 0.85rem 1.25rem;
-  font-size: 0.9375rem;
+  background: #0f3b4a;
+  box-shadow: 0 3px 10px rgba(15, 59, 74, 0.35);
+  padding: 0.825rem 1.25rem;
 }
 .plan-card.plan-priority-buyer .btn-plan-cta:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  background: #144f63;
 }
 
 /* -------------------------------------------------------------------------- */
-/* TIER 4: VIP CONCIERGE (MILD ROYAL ORCHID / PLUM — EXECUTIVE LUXURY BOX)    */
+/* TIER 4: VIP CONCIERGE (THEME COLOR: BRAND GOLD / SAND #d5b357)             */
+/* Height: Tallest Luxury Step (min-height: 710px)                            */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-vip-concierge {
-  background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%);
-  border: 1.5px solid #d8b4fe;
-  padding: 1.85rem 1.45rem;
+  background: linear-gradient(180deg, #fdfbf5 0%, #f9f2df 100%);
+  border: 2px solid #d5b357;
+  padding: 2.15rem 1.45rem;
+  min-height: 710px;
+  box-shadow: 0 6px 22px rgba(213, 179, 87, 0.12);
 }
 
 .plan-card.plan-vip-concierge:hover:not(.is-downgrade-disabled) {
-  border-color: #9333ea;
-  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.14);
+  border-color: #b89230;
+  box-shadow: 0 12px 34px rgba(213, 179, 87, 0.22);
 }
 
 .plan-card.plan-vip-concierge .plan-name {
-  color: #4c1d95;
-  font-size: 1.42rem;
+  color: #695011;
+  font-size: 1.45rem;
 }
 .plan-card.plan-vip-concierge .plan-price {
-  color: #6d28d9;
-  font-size: 2rem;
+  color: #695011;
+  font-size: 2.1rem;
 }
 .plan-card.plan-vip-concierge .plan-quotas-box {
-  background: rgba(243, 232, 255, 0.6);
-  border: 1px solid #e9d5ff;
+  background: rgba(213, 179, 87, 0.14);
+  border: 1px solid rgba(213, 179, 87, 0.35);
 }
-.plan-card.plan-vip-concierge .quota-icon { color: #7c3aed; }
+.plan-card.plan-vip-concierge .quota-icon { color: #a07f2a; }
+.plan-card.plan-vip-concierge .quota-text strong { color: #695011; }
+.plan-card.plan-vip-concierge .check-icon { color: #a07f2a; }
 .plan-card.plan-vip-concierge .btn-plan-cta {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, #d5b357 0%, #b89230 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(213, 179, 87, 0.35);
 }
 .plan-card.plan-vip-concierge .btn-plan-cta:hover:not(:disabled) {
-  background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+  background: linear-gradient(135deg, #b89230 0%, #99741e 100%);
 }
 
 /* -------------------------------------------------------------------------- */
 /* CURRENT ACTIVE PLAN HIGHLIGHT                                              */
 /* -------------------------------------------------------------------------- */
 .plan-card.is-current {
-  border: 2.5px solid var(--brand-teal) !important;
-  box-shadow: 0 8px 24px rgba(15, 59, 74, 0.15) !important;
+  border: 3px solid var(--brand-teal) !important;
+  box-shadow: 0 12px 36px rgba(15, 59, 74, 0.22) !important;
+}
+
+.plan-card.is-current .btn-plan-cta.current-cta {
+  background: var(--brand-teal) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(15, 59, 74, 0.3) !important;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -624,14 +640,34 @@
   color: var(--text-secondary);
 }
 
+.plan-card.plan-explorer .plan-tag:not(.downgrade-tag):not(.active-tag) {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.plan-card.plan-smart-buyer .plan-tag:not(.downgrade-tag):not(.active-tag) {
+  background: #5e8f72;
+  color: #ffffff;
+}
+
+.plan-card.plan-priority-buyer .plan-tag:not(.downgrade-tag):not(.active-tag) {
+  background: #0f3b4a;
+  color: #ffffff;
+}
+
+.plan-card.plan-vip-concierge .plan-tag:not(.downgrade-tag):not(.active-tag) {
+  background: #d5b357;
+  color: #ffffff;
+}
+
 .plan-tag.popular-tag {
   background: var(--brand-green);
   color: #ffffff;
 }
 
 .plan-tag.active-tag {
-  background: var(--brand-teal);
-  color: #ffffff;
+  background: var(--brand-teal) !important;
+  color: #ffffff !important;
 }
 
 .plan-tag.downgrade-tag {
