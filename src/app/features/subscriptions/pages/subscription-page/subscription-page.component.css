@@ -632,14 +632,17 @@
 
 /* -------------------------------------------------------------------------- */
 /* CURRENT ACTIVE PLAN HIGHLIGHT                                              */
+/* Tactile 10px mild architectural border: noticeable yet elegant & restrained */
 /* -------------------------------------------------------------------------- */
 .plan-card.is-current {
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.15) !important;
+  border-width: 10px !important;
+  border-style: solid !important;
+  background-clip: padding-box;
 }
 
 .plan-card.plan-vip-concierge.is-current {
-  border: 2.5px solid #b89230 !important;
-  box-shadow: 0 14px 40px rgba(184, 146, 48, 0.22) !important;
+  border-color: rgba(213, 179, 87, 0.35) !important;
+  box-shadow: 0 14px 40px rgba(184, 146, 48, 0.18), inset 0 0 0 1.5px rgba(184, 146, 48, 0.75) !important;
 }
 .plan-card.plan-vip-concierge.is-current .btn-plan-cta.current-cta {
   background: #b89230 !important;
@@ -648,8 +651,8 @@
 }
 
 .plan-card.plan-priority-buyer.is-current {
-  border: 2.5px solid #0f3b4a !important;
-  box-shadow: 0 14px 40px rgba(15, 59, 74, 0.22) !important;
+  border-color: rgba(15, 59, 74, 0.22) !important;
+  box-shadow: 0 14px 40px rgba(15, 59, 74, 0.18), inset 0 0 0 1.5px rgba(15, 59, 74, 0.75) !important;
 }
 .plan-card.plan-priority-buyer.is-current .btn-plan-cta.current-cta {
   background: #0f3b4a !important;
@@ -658,8 +661,8 @@
 }
 
 .plan-card.plan-smart-buyer.is-current {
-  border: 2.5px solid #5e8f72 !important;
-  box-shadow: 0 14px 40px rgba(94, 143, 114, 0.22) !important;
+  border-color: rgba(94, 143, 114, 0.28) !important;
+  box-shadow: 0 14px 40px rgba(94, 143, 114, 0.18), inset 0 0 0 1.5px rgba(94, 143, 114, 0.75) !important;
 }
 .plan-card.plan-smart-buyer.is-current .btn-plan-cta.current-cta {
   background: #5e8f72 !important;
@@ -668,8 +671,8 @@
 }
 
 .plan-card.plan-explorer.is-current {
-  border: 2.5px solid #1e293b !important;
-  box-shadow: 0 14px 40px rgba(30, 41, 59, 0.18) !important;
+  border-color: rgba(30, 41, 59, 0.18) !important;
+  box-shadow: 0 14px 40px rgba(30, 41, 59, 0.15), inset 0 0 0 1.5px rgba(30, 41, 59, 0.75) !important;
 }
 .plan-card.plan-explorer.is-current .btn-plan-cta.current-cta {
   background: #1e293b !important;
