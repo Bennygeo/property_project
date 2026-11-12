@@ -1,16 +1,14 @@
 /**
  * Indian Currency & Real Estate Price Formatter
  * Converts numerical prices into human-readable Lakhs and Crores.
- * e.g. "3,896,000" or 3896000 -> "₹ 38.96 Lakhs"
- * e.g. "15,000,000" or 15000000 -> "₹ 1.50 Cr"
- * e.g. "₹5.40 Cr" -> "₹ 5.40 Cr" (already formatted, preserved cleanly)
+ * Displays clean starting price format: e.g. "Starting ₹ 47.70 L"
  */
 
 export function parsePriceToNumber(priceStr: string | number | undefined | null): number {
   if (priceStr === undefined || priceStr === null || priceStr === '') return 0;
   if (typeof priceStr === 'number') return isNaN(priceStr) ? 0 : priceStr;
 
-  const clean = String(priceStr).replace(/[₹,]/g, '').trim().toLowerCase();
+  const clean = String(priceStr).replace(/starting/gi, '').replace(/[₹,]/g, '').trim().toLowerCase();
   if (clean.includes('cr') || clean.includes('crore')) {
     const num = parseFloat(clean.replace(/cr|crore/g, '').trim());
     return isNaN(num) ? 0 : num * 10000000;
@@ -32,14 +30,18 @@ export function formatPriceIndian(price: string | number | undefined | null): st
   const str = String(price).trim();
   if (!str) return 'Price on Request';
 
-  // If already formatted with Cr / Crore / Lakhs / Lakh / Lac / L, standardize ₹ prefix
+  // If already formatted with Cr / Crore / Lakhs / Lakh / Lac / L
   if (/(?:cr|crore|lakh|lac|\bL\b)/i.test(str)) {
+    if (/^starting\s+/i.test(str)) {
+      const rest = str.replace(/^starting\s+/i, '').replace(/^[?₹]\s*/, '').trim();
+      return `Starting ₹ ${rest}`;
+    }
     const clean = str.replace(/^[?₹]\s*/, '').trim();
-    return `₹ ${clean}`;
+    return `Starting ₹ ${clean}`;
   }
 
   // Extract raw digits
-  const cleanStr = str.replace(/[₹,\s]/g, '');
+  const cleanStr = str.replace(/starting/gi, '').replace(/[₹,\s]/g, '');
   const num = parseFloat(cleanStr);
   if (isNaN(num) || num <= 0) return str;
 
@@ -47,23 +49,24 @@ export function formatPriceIndian(price: string | number | undefined | null): st
   if (num >= 10000000) {
     const cr = num / 10000000;
     const formatted = cr.toFixed(2).replace(/\.00$/, '');
-    return `₹ ${formatted} Cr`;
+    return `Starting ₹ ${formatted} Cr`;
   }
 
   // >= 1 Lakh (100,000)
   if (num >= 100000) {
     const lakhs = num / 100000;
     const formatted = lakhs.toFixed(2).replace(/\.00$/, '');
-    return `₹ ${formatted} Lakhs`;
+    return `Starting ₹ ${formatted} L`;
   }
 
-  // >= 1 Thousand (1,000)
-  if (num >= 1000) {
-    const k = num / 1000;
-    const formatted = k.toFixed(1).replace(/\.0$/, '');
-    return `₹ ${formatted} K`;
+  // Under 1 Lakh: If a sqft rate (e.g. 3200 - 8459) was accidentally passed directly as price,
+  // compute the starting total price for an 800 sq.ft minimum plot so it never shows broken ₹ 6 / ₹ 4.2
+  if (num >= 1000 && num < 100000) {
+    const totalEst = num * 800;
+    const lakhs = totalEst / 100000;
+    const formatted = lakhs.toFixed(2).replace(/\.00$/, '');
+    return `Starting ₹ ${formatted} L`;
   }
 
   return `₹ ${num.toLocaleString('en-IN')}`;
 }
-

@@ -91,33 +91,31 @@ if (!$prop) {
  */
 function formatSingleAmount(float $num): string {
     if ($num <= 0) return '';
-    if ($num < 1000) {
-        $num = $num * 100000;
-    }
     if ($num >= 10000000) {
         $cr = $num / 10000000;
-        return '₹' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
+        return '₹ ' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
     }
     if ($num >= 100000) {
         $lakhs = $num / 100000;
-        return '₹' . (round($lakhs, 2) == round($lakhs, 0) ? number_format($lakhs, 0) : number_format($lakhs, 2)) . ' L';
+        $val = round($lakhs, 2);
+        return '₹ ' . ($val == round($lakhs, 0) ? number_format($val, 0) : number_format($val, 2)) . ' L';
     }
-    return '₹' . number_format($num);
+    return '₹ ' . number_format($num);
 }
 
-/**
- * Format price range from price_from and price_to
- */
-function formatPriceRange(?float $from, ?float $to): string {
+function formatStartingPrice(?float $from, ?float $to = null, ?float $sqftRate = null, ?int $minPlotSize = null): string {
     $f = (float)($from ?? 0);
-    $t = (float)($to ?? 0);
-    if ($f > 0 && $t > 0) {
-        if ($f == $t) return formatSingleAmount($f);
-        return formatSingleAmount($f) . ' - ' . formatSingleAmount($t);
+    if ($f < 100000 && $sqftRate !== null && $sqftRate > 0) {
+        $f = $sqftRate * ($minPlotSize ?: 800);
     }
-    if ($f > 0) return 'Starting ' . formatSingleAmount($f);
-    if ($t > 0) return 'Up to ' . formatSingleAmount($t);
+    if ($f > 0) {
+        return 'Starting ' . formatSingleAmount($f);
+    }
     return 'Price on Request';
+}
+
+function formatPriceRange(?float $from, ?float $to): string {
+    return formatStartingPrice($from, $to);
 }
 
 function parseCadastralCoords(?string $str): ?array {
@@ -291,11 +289,11 @@ $priceFrom = $prop['price_from'] !== null ? (float)$prop['price_from'] : null;
 $priceTo   = $prop['price_to'] !== null ? (float)$prop['price_to'] : null;
 $sqftRate  = $prop['sqft_rate'] !== null ? (float)$prop['sqft_rate'] : null;
 
-$priceFormatted = formatPriceRange($priceFrom, $priceTo);
-$rateFormatted  = $sqftRate && $sqftRate > 0 ? ('₹ ' . number_format($sqftRate, 0) . ' / sq.ft') : '';
-
 $minSz = (int)($prop['min_plot_size'] ?? 0);
 $maxSz = (int)($prop['max_plot_size'] ?? 0);
+
+$priceFormatted = formatStartingPrice($priceFrom, $priceTo, $sqftRate, $minSz);
+$rateFormatted  = $sqftRate && $sqftRate > 0 ? ('₹ ' . number_format($sqftRate, 0) . ' / sq.ft') : '';
 $sqftFormatted = '';
 if ($minSz > 0 && $maxSz > 0 && $minSz !== $maxSz) {
     $sqftFormatted = number_format($minSz) . ' - ' . number_format($maxSz) . ' sq.ft';

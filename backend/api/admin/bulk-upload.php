@@ -155,6 +155,10 @@ try {
             $rawCornerPlot = trim((string)($item['cornerPlot'] ?? $item['Corner Plot'] ?? ''));
             $rawPricePerSqft = (float)($item['pricePerSqft'] ?? $item['Price per sq.ft (₹)'] ?? $item['sqft_rate'] ?? 0);
             $rawTotalPrice = (float)($item['totalPrice'] ?? $item['Total Price (₹)'] ?? $item['price_from'] ?? 0);
+            if ($rawTotalPrice < 100000 && $rawPricePerSqft > 0) {
+                $plotSz = $rawPlotSizeSqft > 0 ? $rawPlotSizeSqft : 800;
+                $rawTotalPrice = $rawPricePerSqft * $plotSz;
+            }
             $rawSchools = trim((string)($item['schoolsNearby'] ?? $item['Schools (Name & km)'] ?? $item['schools'] ?? ''));
             $rawHospitals = trim((string)($item['hospitalNearby'] ?? $item['Hospital (Name & km)'] ?? $item['hospitals'] ?? ''));
             $rawRailway = trim((string)($item['railwayStationNearby'] ?? $item['Railway Station (Name & km)'] ?? $item['railway_station'] ?? ''));

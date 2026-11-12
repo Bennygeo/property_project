@@ -226,6 +226,13 @@ DELIMITER ;
 CALL `MigratePropertiesToProjects`();
 DROP PROCEDURE `MigratePropertiesToProjects`;
 
+-- Standardize starting & max prices (min_plot_size * sqft_rate)
+UPDATE `projects` 
+SET 
+  `price_from` = `sqft_rate` * COALESCE(NULLIF(`min_plot_size`, 0), 800),
+  `price_to`   = `sqft_rate` * COALESCE(NULLIF(`max_plot_size`, 0), 1200)
+WHERE `price_from` < 100000 AND `sqft_rate` > 0;
+
 -- Standardize sample development prices
 UPDATE `projects` SET `price_from` = 4800000.00, `price_to` = 6960000.00 WHERE `project_id` = 'PRJ-8889';
 
