@@ -72,6 +72,60 @@ export interface AdminFinancialData {
   };
 }
 
+export interface AdminRoleItem {
+  id: string;
+  name: string;
+  badgeColor: string;
+  description: string;
+  level: number;
+  defaultPermissions: string[];
+}
+
+export interface AdminPermissionItem {
+  key: string;
+  label: string;
+  category: string;
+  desc: string;
+}
+
+export interface AdminStaffUser {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  roleName: string;
+  badgeColor: string;
+  department: string;
+  designation: string;
+  status: 'active' | 'inactive' | 'suspended';
+  permissions: string[];
+  avatarInitials: string;
+  lastLogin: string;
+  createdAt: string;
+}
+
+export interface AdminRoleData {
+  requester: {
+    id: number;
+    name: string;
+    role: string;
+    isSuperAdmin: boolean;
+  };
+  stats: {
+    totalStaff: number;
+    superAdmins: number;
+    platformAdmins: number;
+    coAdmins: number;
+    auditors: number;
+    crmManagers: number;
+    activeAccounts: number;
+  };
+  users: AdminStaffUser[];
+  availableRoles: AdminRoleItem[];
+  availablePermissions: AdminPermissionItem[];
+}
+
 export const ADMIN_PERSONAS: AdminPersona[] = [
   {
     id: 101,
@@ -646,6 +700,171 @@ export class AdminService {
           icon: 'error'
         });
         return of(false);
+      })
+    );
+  }
+
+  // ==========================================
+  // SUPER ADMIN ROLE GOVERNANCE
+  // ==========================================
+
+  fetchRolesAndStaff(search: string = '', role: string = 'all', status: string = 'all'): Observable<AdminRoleData> {
+    const active = this.activePersona();
+    const params = new URLSearchParams();
+    params.set('admin_id', String(active?.id || 104));
+    if (search) params.set('q', search);
+    if (role && role !== 'all') params.set('role', role);
+    if (status && status !== 'all') params.set('status', status);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
+    const tryGet = (url: string) => this.http.get<{ success: boolean; data: AdminRoleData }>(url);
+
+    return tryGet(`${environment.apiUrl}/admin/roles.php${queryString}`).pipe(
+      catchError(() => tryGet(`/P_demo_5/backend/api/admin/roles.php${queryString}`)),
+      catchError(() => tryGet(`/p_demo_5/backend/api/admin/roles.php${queryString}`)),
+      catchError(() => tryGet(`/P_demo_4/backend/api/admin/roles.php${queryString}`)),
+      catchError(() => tryGet(`/api/admin/roles.php${queryString}`)),
+      catchError(() => tryGet(`http://localhost/the-property-project/backend/api/admin/roles.php${queryString}`)),
+      map(res => res.data)
+    );
+  }
+
+  createStaffRole(payload: {
+    name: string;
+    email: string;
+    phone?: string;
+    role: string;
+    password: string;
+    department?: string;
+    designation?: string;
+    permissions?: string[];
+  }): Observable<{ success: boolean; message: string; data?: any }> {
+    this.isSubmitting.set(true);
+    const active = this.activePersona();
+    const body = {
+      ...payload,
+      creator_admin_id: active?.id || 104
+    };
+
+    const tryPost = (url: string) => this.http.post<{ success: boolean; message: string; data: any }>(url, body);
+
+    return tryPost(`${environment.apiUrl}/admin/roles.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/roles.php')),
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/roles.php')),
+      catchError(() => tryPost('/P_demo_4/backend/api/admin/roles.php')),
+      catchError(() => tryPost('/api/admin/roles.php')),
+      catchError(() => tryPost('http://localhost/the-property-project/backend/api/admin/roles.php')),
+      tap(res => {
+        this.isSubmitting.set(false);
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Staff Role Created',
+            message: res.message || 'Administrative role created successfully',
+            icon: 'verified_user'
+          });
+        }
+      }),
+      catchError(err => {
+        this.isSubmitting.set(false);
+        const msg = err?.error?.error || err?.message || 'Failed to create administrative user';
+        this.notificationService.show({
+          type: 'error',
+          title: 'Role Creation Failed',
+          message: msg,
+          icon: 'error'
+        });
+        return throwError(() => err);
+      })
+    );
+  }
+
+  updateStaffRole(payload: {
+    id: number;
+    name?: string;
+    phone?: string;
+    role?: string;
+    department?: string;
+    designation?: string;
+    status?: string;
+    new_password?: string;
+    permissions?: string[];
+  }): Observable<{ success: boolean; message: string; data?: any }> {
+    this.isSubmitting.set(true);
+    const active = this.activePersona();
+    const body = {
+      ...payload,
+      updater_admin_id: active?.id || 104
+    };
+
+    const tryPut = (url: string) => this.http.put<{ success: boolean; message: string; data: any }>(url, body);
+
+    return tryPut(`${environment.apiUrl}/admin/roles.php`).pipe(
+      catchError(() => tryPut('/P_demo_5/backend/api/admin/roles.php')),
+      catchError(() => tryPut('/p_demo_5/backend/api/admin/roles.php')),
+      catchError(() => tryPut('/P_demo_4/backend/api/admin/roles.php')),
+      catchError(() => tryPut('/api/admin/roles.php')),
+      catchError(() => tryPut('http://localhost/the-property-project/backend/api/admin/roles.php')),
+      tap(res => {
+        this.isSubmitting.set(false);
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Role Updated',
+            message: res.message || 'Staff role details updated successfully',
+            icon: 'check_circle'
+          });
+        }
+      }),
+      catchError(err => {
+        this.isSubmitting.set(false);
+        const msg = err?.error?.error || err?.message || 'Failed to update administrative user';
+        this.notificationService.show({
+          type: 'error',
+          title: 'Update Failed',
+          message: msg,
+          icon: 'error'
+        });
+        return throwError(() => err);
+      })
+    );
+  }
+
+  revokeStaffRole(userId: number): Observable<{ success: boolean; message: string }> {
+    this.isSubmitting.set(true);
+    const active = this.activePersona();
+    const queryString = `?id=${userId}&admin_id=${active?.id || 104}`;
+
+    const tryDelete = (url: string) => this.http.delete<{ success: boolean; message: string }>(url);
+
+    return tryDelete(`${environment.apiUrl}/admin/roles.php${queryString}`).pipe(
+      catchError(() => tryDelete(`/P_demo_5/backend/api/admin/roles.php${queryString}`)),
+      catchError(() => tryDelete(`/p_demo_5/backend/api/admin/roles.php${queryString}`)),
+      catchError(() => tryDelete(`/P_demo_4/backend/api/admin/roles.php${queryString}`)),
+      catchError(() => tryDelete(`/api/admin/roles.php${queryString}`)),
+      catchError(() => tryDelete(`http://localhost/the-property-project/backend/api/admin/roles.php${queryString}`)),
+      tap(res => {
+        this.isSubmitting.set(false);
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Role Revoked',
+            message: res.message || 'Administrative role revoked successfully',
+            icon: 'person_remove'
+          });
+        }
+      }),
+      catchError(err => {
+        this.isSubmitting.set(false);
+        const msg = err?.error?.error || err?.message || 'Failed to revoke role';
+        this.notificationService.show({
+          type: 'error',
+          title: 'Revoke Failed',
+          message: msg,
+          icon: 'error'
+        });
+        return throwError(() => err);
       })
     );
   }

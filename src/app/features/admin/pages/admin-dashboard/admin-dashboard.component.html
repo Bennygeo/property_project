@@ -140,6 +140,14 @@
           }
         </button>
 
+        <a routerLink="/admin/roles" class="sidebar-nav-item link-item" title="Super Admin Role & Access Governance">
+          <span class="material-symbols-outlined nav-icon text-amber">manage_accounts</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Roles &amp; Permissions</span>
+            <span class="nav-badge alert">SUPER</span>
+          }
+        </a>
+
         <a routerLink="/admin/compare" class="sidebar-nav-item link-item" title="Administrative Property Search & Side-by-Side Comparison Matrix">
           <span class="material-symbols-outlined nav-icon">compare_arrows</span>
           @if (!isSidebarCollapsed()) {

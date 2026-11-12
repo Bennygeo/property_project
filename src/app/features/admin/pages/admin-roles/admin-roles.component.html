@@ -1,0 +1,866 @@
+<div class="admin-enterprise-shell" [class.sidebar-collapsed]="isSidebarCollapsed()">
+
+  <!-- ============================================================ -->
+  <!-- 1. ENTERPRISE STICKY LEFT SIDEBAR                            -->
+  <!-- ============================================================ -->
+  <aside class="admin-sidebar" aria-label="Enterprise Navigation">
+
+    <!-- Sidebar Header & Brand -->
+    <div class="sidebar-header">
+      <div class="sidebar-brand" routerLink="/admin" role="button" tabindex="0">
+        <div class="brand-shield-icon">
+          <span class="material-symbols-outlined">security</span>
+        </div>
+        @if (!isSidebarCollapsed()) {
+          <div class="brand-text-wrap">
+            <span class="brand-title">FindAPlot</span>
+            <span class="brand-tag">Enterprise SaaS</span>
+          </div>
+        }
+      </div>
+      <button 
+        type="button" 
+        class="btn-sidebar-collapse" 
+        (click)="toggleSidebar()" 
+        [title]="isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        aria-label="Toggle sidebar width">
+        <span class="material-symbols-outlined">{{ isSidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+      </button>
+    </div>
+
+    <!-- Navigation Groups -->
+    <nav class="sidebar-nav-scroll">
+
+      <!-- Section 1: Core Registry & Audit -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">Registry &amp; Reviews</span>
+        }
+        <a routerLink="/admin" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">dashboard</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Dashboard Home</span>
+          }
+        </a>
+
+        <a routerLink="/admin" [queryParams]="{tab: 'review_queue'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">fact_check</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Review Queue</span>
+          }
+        </a>
+
+        <a routerLink="/admin" [queryParams]="{tab: 'all_directory'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">table_view</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">All Projects</span>
+          }
+        </a>
+
+        <a routerLink="/admin" [queryParams]="{tab: 'plot_studio'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon text-teal">terrain</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Plot Studio 3D</span>
+          }
+        </a>
+      </div>
+
+      <!-- Section 2: CRM & Stakeholders -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">CRM &amp; Stakeholders</span>
+        }
+        <a routerLink="/admin" [queryParams]="{tab: 'developers'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon text-emerald">domain</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Developers &amp; RERA</span>
+          }
+        </a>
+
+        <a routerLink="/admin" [queryParams]="{tab: 'buyer_workspaces'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">groups</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Buyer CRM &amp; Leads</span>
+          }
+        </a>
+
+        <a routerLink="/admin" [queryParams]="{tab: 'whatsapp_messages'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon text-emerald">chat</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">WhatsApp Concierge</span>
+          }
+        </a>
+      </div>
+
+      <!-- Section 3: Governance & Security (Super Admin) -->
+      <div class="nav-group">
+        @if (!isSidebarCollapsed()) {
+          <span class="nav-group-title">Governance &amp; Security</span>
+        }
+        <a routerLink="/admin/roles" class="sidebar-nav-item active">
+          <span class="material-symbols-outlined nav-icon">manage_accounts</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Roles &amp; Permissions</span>
+            <span class="nav-badge alert">SUPER</span>
+          }
+        </a>
+
+        <a routerLink="/admin" [queryParams]="{tab: 'financials'}" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">payments</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Credits &amp; Revenue</span>
+          }
+        </a>
+
+        <a routerLink="/admin/compare" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">compare_arrows</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Search &amp; Compare</span>
+          }
+        </a>
+
+        <a routerLink="/admin/profile" class="sidebar-nav-item">
+          <span class="material-symbols-outlined nav-icon">shield_person</span>
+          @if (!isSidebarCollapsed()) {
+            <span class="nav-label">Profile &amp; Audit Logs</span>
+          }
+        </a>
+      </div>
+
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      @if (!isSidebarCollapsed()) {
+        <div class="admin-user-card">
+          <span class="p-avatar ez">BE</span>
+          <div class="admin-user-info">
+            <div class="name-row">
+              <span class="admin-name">{{ adminService.currentAdmin()?.name || 'Benny' }}</span>
+              <span class="status-live-dot" title="Authenticated Super Admin"></span>
+            </div>
+            <span class="admin-role">Super Administrator</span>
+          </div>
+        </div>
+      }
+      <button type="button" class="btn-sidebar-logout" (click)="signOut()" title="Sign out administrative session">
+        <span class="material-symbols-outlined">logout</span>
+        @if (!isSidebarCollapsed()) {
+          <span>Sign Out</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================================================ -->
+  <!-- 2. MAIN APP CONTENT CANVAS                                   -->
+  <!-- ============================================================ -->
+  <div class="admin-app-area">
+
+    <!-- STICKY TOPNAV -->
+    <header class="admin-topnav">
+      <div class="topnav-left">
+        <button type="button" class="btn-topnav-toggle" (click)="toggleSidebar()" aria-label="Toggle navigation sidebar">
+          <span class="material-symbols-outlined">{{ isSidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+        </button>
+
+        <div class="breadcrumb-trail">
+          <a routerLink="/admin" class="bc-root">Admin Workspace</a>
+          <span class="bc-sep">/</span>
+          <span class="bc-current">Roles &amp; Access Governance</span>
+        </div>
+      </div>
+
+      <div class="topnav-search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input 
+          type="text" 
+          class="topnav-search-input" 
+          placeholder="Filter staff by name, email, designation, role..."
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="onSearchChange($event)" />
+        <span class="search-kbd-shortcut">⌘K</span>
+      </div>
+
+      <div class="topnav-right">
+        <button type="button" class="btn-quick-create" (click)="openCreateModal()">
+          <span class="material-symbols-outlined">person_add</span>
+          <span>Create New Role</span>
+        </button>
+
+        <a routerLink="/admin" class="btn-topnav-icon" title="Return to Admin Dashboard">
+          <span class="material-symbols-outlined">dashboard</span>
+        </a>
+
+        <a routerLink="/" class="btn-topnav-icon" title="Open Public Marketplace">
+          <span class="material-symbols-outlined">storefront</span>
+        </a>
+
+        <div class="topnav-profile-pill" title="Super Administrator">
+          <span class="p-avatar-mini">BE</span>
+          <span class="pill-name">Benny</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SCROLLABLE BODY AREA -->
+    <div class="admin-scrollable-body">
+
+      <!-- MAIN CONTAINER -->
+      <main class="admin-main-container">
+
+        <!-- GOVERNANCE CALLOUT BANNER -->
+        <div class="governance-banner">
+          <div class="banner-icon-col">
+            <span class="material-symbols-outlined">admin_panel_settings</span>
+          </div>
+          <div class="banner-content">
+            <div class="banner-title-row">
+              <h3>Role-Based Access Control (RBAC) Governance</h3>
+              <span class="gov-pulse-badge">SUPER ADMIN CLEARANCE</span>
+            </div>
+            <p>
+              As Super Administrator, you have exclusive platform authority to provision, modify, and revoke administrative credentials. 
+              Assign predefined security clearance tiers or configure fine-grained permissions for audits, project review queues, 
+              developer portals, financial ledgers, and CRM operations.
+            </p>
+          </div>
+          <div class="banner-action-col">
+            <button type="button" class="btn-banner-action" (click)="openCreateModal()">
+              <span class="material-symbols-outlined">add_moderator</span>
+              <span>Provision User</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI METRICS STRIP -->
+        <section class="roles-kpi-grid">
+          
+          <div class="roles-kpi-card">
+            <div class="kpi-icon-wrap" style="background:#f3e8ff;color:#7e22ce;">
+              <span class="material-symbols-outlined">verified_user</span>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Staff Accounts</span>
+              <span class="kpi-value">{{ roleData()?.stats?.totalStaff || 0 }}</span>
+              <span class="kpi-sub">{{ roleData()?.stats?.activeAccounts || 0 }} Active</span>
+            </div>
+          </div>
+
+          <div class="roles-kpi-card">
+            <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
+              <span class="material-symbols-outlined">shield_person</span>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Super Administrators</span>
+              <span class="kpi-value text-amber">{{ roleData()?.stats?.superAdmins || 0 }}</span>
+              <span class="kpi-sub">Tier 1 Unrestricted</span>
+            </div>
+          </div>
+
+          <div class="roles-kpi-card">
+            <div class="kpi-icon-wrap" style="background:#ccfbf1;color:#0f766e;">
+              <span class="material-symbols-outlined">supervisor_account</span>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Platform &amp; Co-Admins</span>
+              <span class="kpi-value text-teal">{{ (roleData()?.stats?.platformAdmins || 0) + (roleData()?.stats?.coAdmins || 0) }}</span>
+              <span class="kpi-sub">Maker-Checker Reviews</span>
+            </div>
+          </div>
+
+          <div class="roles-kpi-card">
+            <div class="kpi-icon-wrap" style="background:#e0f2fe;color:#0284c7;">
+              <span class="material-symbols-outlined">badge</span>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Compliance &amp; CRM</span>
+              <span class="kpi-value text-blue">{{ (roleData()?.stats?.auditors || 0) + (roleData()?.stats?.crmManagers || 0) }}</span>
+              <span class="kpi-sub">Field &amp; Advisory Staff</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- FILTER & TOOLBAR BAR -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="filter-pill-group">
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'all'"
+                (click)="setRoleFilter('all')">
+                All Roles ({{ roleData()?.stats?.totalStaff || 0 }})
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'super_admin'"
+                (click)="setRoleFilter('super_admin')">
+                Super Admins ({{ roleData()?.stats?.superAdmins || 0 }})
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'admin'"
+                (click)="setRoleFilter('admin')">
+                Admins ({{ roleData()?.stats?.platformAdmins || 0 }})
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'co_admin'"
+                (click)="setRoleFilter('co_admin')">
+                Co-Admins
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'auditor'"
+                (click)="setRoleFilter('auditor')">
+                Auditors
+              </button>
+              <button 
+                type="button" 
+                class="filter-pill" 
+                [class.active]="selectedRoleFilter() === 'crm_manager'"
+                (click)="setRoleFilter('crm_manager')">
+                CRM Staff
+              </button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <select 
+              class="status-select" 
+              [ngModel]="selectedStatusFilter()" 
+              (ngModelChange)="setStatusFilter($event)">
+              <option value="all">All Statuses</option>
+              <option value="active">Active Only</option>
+              <option value="suspended">Suspended Only</option>
+            </select>
+
+            <button type="button" class="btn-refresh" (click)="loadData()" title="Reload staff roster">
+              <span class="material-symbols-outlined" [class.spinning]="isLoading()">refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STAFF ROSTER TABLE -->
+        <div class="table-container">
+          @if (isLoading()) {
+            <div class="loading-state">
+              <span class="material-symbols-outlined spinning">sync</span>
+              <p>Fetching authorized administrative personnel and clearance levels...</p>
+            </div>
+          } @else if (filteredUsers().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined">person_off</span>
+              <h4>No Administrative Accounts Match Filter</h4>
+              <p>Adjust your search query or provision a new role using the button below.</p>
+              <button type="button" class="btn-empty-action" (click)="openCreateModal()">
+                <span class="material-symbols-outlined">person_add</span>
+                <span>Create Role</span>
+              </button>
+            </div>
+          } @else {
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th>Administrator / Staff</th>
+                  <th>Assigned Role</th>
+                  <th>Department &amp; Designation</th>
+                  <th>Key Permissions</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th style="text-align: right;">Governance Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of filteredUsers(); track user.id) {
+                  <tr [class.is-super]="user.role === 'super_admin'">
+                    
+                    <!-- 1. User Name & Contact -->
+                    <td>
+                      <div class="user-meta-cell">
+                        <div class="user-avatar" [style.background]="getInitialsBg(user.avatarInitials)">
+                          {{ user.avatarInitials }}
+                        </div>
+                        <div class="user-text">
+                          <div class="name-line">
+                            <span class="user-name">{{ user.name }}</span>
+                            @if (user.id === 104 || user.id === 103) {
+                              <span class="crown-badge" title="Platform Founder & Primary Super Admin">★ FOUNDER</span>
+                            }
+                          </div>
+                          <span class="user-email">{{ user.email }}</span>
+                          @if (user.phone && user.phone !== '—') {
+                            <span class="user-phone">{{ user.phone }}</span>
+                          }
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- 2. Role Badge -->
+                    <td>
+                      <span class="role-badge" [class]="user.badgeColor">
+                        <span class="material-symbols-outlined role-icon">
+                          {{ user.role === 'super_admin' ? 'stars' : user.role === 'admin' ? 'shield' : user.role === 'auditor' ? 'gavel' : 'badge' }}
+                        </span>
+                        <span>{{ user.roleName }}</span>
+                      </span>
+                    </td>
+
+                    <!-- 3. Department & Title -->
+                    <td>
+                      <div class="dept-cell">
+                        <span class="desig-text">{{ user.designation }}</span>
+                        <span class="dept-text">{{ user.department }}</span>
+                      </div>
+                    </td>
+
+                    <!-- 4. Permissions Summary -->
+                    <td>
+                      <div class="permissions-pill-wrap">
+                        @if (user.role === 'super_admin') {
+                          <span class="perm-pill super">ALL PRIVILEGES (UNRESTRICTED)</span>
+                        } @else {
+                          @for (p of user.permissions.slice(0, 3); track p) {
+                            <span class="perm-pill">{{ p.replace('_', ' ') }}</span>
+                          }
+                          @if (user.permissions.length > 3) {
+                            <span class="perm-pill more">+{{ user.permissions.length - 3 }} more</span>
+                          }
+                        }
+                      </div>
+                    </td>
+
+                    <!-- 5. Status Toggle -->
+                    <td>
+                      <button 
+                        type="button" 
+                        class="status-badge-btn" 
+                        [class.active]="user.status === 'active'"
+                        [class.suspended]="user.status === 'suspended'"
+                        [disabled]="user.id === 104 || user.id === 103"
+                        (click)="quickStatusToggle(user)"
+                        [title]="(user.id === 104 || user.id === 103) ? 'Super Admin account is permanently active' : 'Click to toggle status'">
+                        <span class="status-indicator-dot"></span>
+                        <span>{{ user.status | uppercase }}</span>
+                      </button>
+                    </td>
+
+                    <!-- 6. Created Date -->
+                    <td>
+                      <span class="date-text">{{ user.createdAt }}</span>
+                    </td>
+
+                    <!-- 7. Actions -->
+                    <td style="text-align: right;">
+                      <div class="row-actions">
+                        <button 
+                          type="button" 
+                          class="btn-row-action edit" 
+                          (click)="openEditModal(user)" 
+                          title="Edit role, designation, and permissions">
+                          <span class="material-symbols-outlined">edit</span>
+                          <span>Edit</span>
+                        </button>
+
+                        @if (user.id !== 104 && user.id !== 103) {
+                          <button 
+                            type="button" 
+                            class="btn-row-action revoke" 
+                            (click)="confirmRevoke(user)" 
+                            title="Revoke administrative access">
+                            <span class="material-symbols-outlined">person_remove</span>
+                          </button>
+                        }
+                      </div>
+                    </td>
+
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <!-- PREDEFINED ROLES CATALOG OVERVIEW -->
+        <section class="roles-catalog-section">
+          <div class="section-header">
+            <h4>Platform Security Clearance Matrix</h4>
+            <p>Standardized operational tiers available for provisioning staff members.</p>
+          </div>
+
+          <div class="catalog-grid">
+            @for (role of roleData()?.availableRoles; track role.id) {
+              <div class="catalog-card">
+                <div class="catalog-top">
+                  <span class="role-badge" [class]="role.badgeColor">
+                    {{ role.name }}
+                  </span>
+                  <span class="tier-tag">TIER {{ role.level }}</span>
+                </div>
+                <p class="catalog-desc">{{ role.description }}</p>
+                <div class="catalog-perms-count">
+                  <span class="material-symbols-outlined">lock_open</span>
+                  <span>{{ role.defaultPermissions.length }} Default Capabilities</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 3. MODAL: PROVISION NEW ADMINISTRATIVE ROLE                  -->
+<!-- ============================================================ -->
+@if (isCreateModalOpen()) {
+  <div class="modal-backdrop" (click)="closeCreateModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <span class="material-symbols-outlined">person_add</span>
+        </div>
+        <div class="modal-title-wrap">
+          <h3>Provision Administrative Role</h3>
+          <p>Create credentials and assign security clearance to a team member</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeCreateModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="submitCreate()" class="role-form">
+          
+          <!-- Row 1: Full Name & Official Email -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cName">Full Legal Name <span class="req">*</span></label>
+              <input 
+                id="cName" 
+                type="text" 
+                class="form-input" 
+                placeholder="e.g. Senthil Kumar" 
+                [(ngModel)]="createForm.name" 
+                name="name" 
+                required />
+            </div>
+
+            <div class="form-group">
+              <label for="cEmail">Official Email (Login ID) <span class="req">*</span></label>
+              <input 
+                id="cEmail" 
+                type="email" 
+                class="form-input" 
+                placeholder="e.g. senthil@findaplot.in" 
+                [(ngModel)]="createForm.email" 
+                name="email" 
+                required />
+            </div>
+          </div>
+
+          <!-- Row 2: Phone & Role Selection -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cPhone">Contact Phone Number</label>
+              <input 
+                id="cPhone" 
+                type="tel" 
+                class="form-input" 
+                placeholder="+91 98400 12345" 
+                [(ngModel)]="createForm.phone" 
+                name="phone" />
+            </div>
+
+            <div class="form-group">
+              <label for="cRole">Administrative Role &amp; Clearance <span class="req">*</span></label>
+              <select 
+                id="cRole" 
+                class="form-input select" 
+                [ngModel]="createForm.role" 
+                (ngModelChange)="onRoleSelectionChange($event)" 
+                name="role" 
+                required>
+                @for (r of roleData()?.availableRoles; track r.id) {
+                  <option [value]="r.id">{{ r.name }} (Tier {{ r.level }})</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 3: Designation & Department -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cDesig">Official Designation / Title</label>
+              <input 
+                id="cDesig" 
+                type="text" 
+                class="form-input" 
+                placeholder="e.g. Senior Compliance Auditor" 
+                [(ngModel)]="createForm.designation" 
+                name="designation" />
+            </div>
+
+            <div class="form-group">
+              <label for="cDept">Assigned Department</label>
+              <input 
+                id="cDept" 
+                type="text" 
+                class="form-input" 
+                placeholder="e.g. Regulatory Compliance & Patta Verification" 
+                [(ngModel)]="createForm.department" 
+                name="department" />
+            </div>
+          </div>
+
+          <!-- Row 4: Initial Password with Generator -->
+          <div class="form-group password-group">
+            <label for="cPassword">
+              Initial Secure Password <span class="req">*</span>
+              <span class="label-sub">(Share securely with user upon provisioning)</span>
+            </label>
+            <div class="password-input-wrap">
+              <input 
+                id="cPassword" 
+                [type]="showPassword() ? 'text' : 'password'" 
+                class="form-input font-mono" 
+                [(ngModel)]="createForm.password" 
+                name="password" 
+                required />
+              <button 
+                type="button" 
+                class="btn-input-icon" 
+                (click)="showPassword.set(!showPassword())" 
+                title="Toggle password visibility">
+                <span class="material-symbols-outlined">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+              <button 
+                type="button" 
+                class="btn-input-action" 
+                (click)="createForm.password = generateRandomPassword()" 
+                title="Generate new strong random password">
+                <span class="material-symbols-outlined">casino</span>
+                <span>Generate</span>
+              </button>
+              <button 
+                type="button" 
+                class="btn-input-action" 
+                (click)="copyPassword(createForm.password)" 
+                title="Copy password to clipboard">
+                <span class="material-symbols-outlined">content_copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Granular Permissions Checklist -->
+          <div class="permissions-matrix-box">
+            <div class="matrix-header">
+              <div class="matrix-title">
+                <span class="material-symbols-outlined">checklist</span>
+                <span>Granular Capability Grants</span>
+              </div>
+              <span class="matrix-count">{{ createForm.permissions.length }} permissions active</span>
+            </div>
+
+            <div class="permissions-grid">
+              @for (perm of roleData()?.availablePermissions; track perm.key) {
+                <label class="perm-checkbox-item" [class.selected]="hasPermission(perm.key)">
+                  <input 
+                    type="checkbox" 
+                    [checked]="hasPermission(perm.key)" 
+                    (change)="togglePermission(perm.key)" />
+                  <div class="perm-info">
+                    <span class="perm-title">{{ perm.label }}</span>
+                    <span class="perm-desc">{{ perm.desc }}</span>
+                  </div>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-modal-cancel" (click)="closeCreateModal()">Cancel</button>
+            <button type="submit" class="btn-modal-submit" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="material-symbols-outlined spinning">sync</span>
+                <span>Provisioning...</span>
+              } @else {
+                <span class="material-symbols-outlined">verified</span>
+                <span>Authorize &amp; Create Role</span>
+              }
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ============================================================ -->
+<!-- 4. MODAL: EDIT ROLE & PERMISSIONS                            -->
+<!-- ============================================================ -->
+@if (isEditModalOpen()) {
+  <div class="modal-backdrop" (click)="closeEditModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <div class="modal-header-icon edit">
+          <span class="material-symbols-outlined">manage_accounts</span>
+        </div>
+        <div class="modal-title-wrap">
+          <h3>Edit Administrator: {{ editForm.name }}</h3>
+          <p>{{ editForm.email }} &bull; User ID: #{{ editForm.id }}</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeEditModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="submitEdit()" class="role-form">
+
+          <!-- Row 1: Name & Phone -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eName">Legal Name</label>
+              <input id="eName" type="text" class="form-input" [(ngModel)]="editForm.name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="ePhone">Phone Number</label>
+              <input id="ePhone" type="tel" class="form-input" [(ngModel)]="editForm.phone" name="phone" />
+            </div>
+          </div>
+
+          <!-- Row 2: Role & Status -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eRole">Role Tier</label>
+              <select 
+                id="eRole" 
+                class="form-input select" 
+                [(ngModel)]="editForm.role" 
+                name="role"
+                [disabled]="editForm.id === 104 || editForm.id === 103">
+                @for (r of roleData()?.availableRoles; track r.id) {
+                  <option [value]="r.id">{{ r.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="eStatus">Account Operational Status</label>
+              <select 
+                id="eStatus" 
+                class="form-input select" 
+                [(ngModel)]="editForm.status" 
+                name="status"
+                [disabled]="editForm.id === 104 || editForm.id === 103">
+                <option value="active">Active (Full Access)</option>
+                <option value="suspended">Suspended (Access Temporarily Blocked)</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 3: Designation & Department -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eDesig">Designation</label>
+              <input id="eDesig" type="text" class="form-input" [(ngModel)]="editForm.designation" name="designation" />
+            </div>
+
+            <div class="form-group">
+              <label for="eDept">Department</label>
+              <input id="eDept" type="text" class="form-input" [(ngModel)]="editForm.department" name="department" />
+            </div>
+          </div>
+
+          <!-- Row 4: Reset Password (Optional) -->
+          <div class="form-group">
+            <label for="eNewPassword">
+              Reset Password (Optional)
+              <span class="label-sub">Leave blank to keep existing password</span>
+            </label>
+            <div class="password-input-wrap">
+              <input 
+                id="eNewPassword" 
+                [type]="showEditPassword() ? 'text' : 'password'" 
+                class="form-input font-mono" 
+                placeholder="Enter new password to reset..." 
+                [(ngModel)]="editForm.newPassword" 
+                name="newPassword" />
+              <button 
+                type="button" 
+                class="btn-input-icon" 
+                (click)="showEditPassword.set(!showEditPassword())">
+                <span class="material-symbols-outlined">{{ showEditPassword() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+              <button 
+                type="button" 
+                class="btn-input-action" 
+                (click)="editForm.newPassword = generateRandomPassword()">
+                <span class="material-symbols-outlined">casino</span>
+                <span>Generate</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Permissions Checklist -->
+          <div class="permissions-matrix-box">
+            <div class="matrix-header">
+              <div class="matrix-title">
+                <span class="material-symbols-outlined">checklist</span>
+                <span>Active Capability Grants</span>
+              </div>
+              <span class="matrix-count">{{ editForm.permissions.length }} permissions active</span>
+            </div>
+
+            <div class="permissions-grid">
+              @for (perm of roleData()?.availablePermissions; track perm.key) {
+                <label class="perm-checkbox-item" [class.selected]="hasPermission(perm.key, true)">
+                  <input 
+                    type="checkbox" 
+                    [checked]="hasPermission(perm.key, true)" 
+                    (change)="togglePermission(perm.key, true)" />
+                  <div class="perm-info">
+                    <span class="perm-title">{{ perm.label }}</span>
+                    <span class="perm-desc">{{ perm.desc }}</span>
+                  </div>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-modal-cancel" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn-modal-submit" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="material-symbols-outlined spinning">sync</span>
+                <span>Saving Changes...</span>
+              } @else {
+                <span class="material-symbols-outlined">save</span>
+                <span>Save Updates</span>
+              }
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+}
+
