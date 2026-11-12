@@ -151,8 +151,10 @@
 
       <div class="plans-grid">
         @for (plan of (plans() && plans().length ? plans() : defaultPlans); track plan.id) {
-        <article class="plan-card" [class.is-current]="activePlanId() === plan.id"
-          [class.is-popular]="plan.id === 'smart_buyer'">
+        <article class="plan-card" 
+          [class.is-current]="activePlanId() === plan.id"
+          [class.is-popular]="plan.id === 'smart_buyer'"
+          (click)="onSubscribe(plan)">
 
           <!-- Top Tag Badge -->
           <div class="plan-badge-wrapper">
@@ -224,7 +226,7 @@
               <span>Active Plan</span>
             </button>
             } @else {
-            <button type="button" class="btn-plan-cta" (click)="onSubscribe(plan)"
+            <button type="button" class="btn-plan-cta" (click)="$event.stopPropagation(); onSubscribe(plan)"
               [disabled]="subscriptionService.isProcessingPayment()">
               @if (subscriptionService.isProcessingPayment()) {
               <span class="spinner-inline"></span>
@@ -377,6 +379,247 @@
           }
         </button>
       </div>
+    </div>
+  </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: RAZORPAY PAYMENT GATEWAY DEMO       -->
+  <!-- ========================================== -->
+  @if (isRazorpayModalOpen() && selectedPlanForCheckout()) {
+  <div class="rzp-modal-backdrop" (click)="closeRazorpayCheckout()">
+    <div class="rzp-modal-frame" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="rzp-title">
+
+      <!-- Razorpay Header Bar -->
+      <div class="rzp-modal-header">
+        <div class="rzp-header-top">
+          <div class="rzp-brand-badge">
+            <span class="material-symbols-outlined rzp-brand-bolt">bolt</span>
+            <span class="rzp-brand-name">Razorpay</span>
+            <span class="rzp-badge-sandbox">TEST SANDBOX</span>
+          </div>
+          <button type="button" class="rzp-close-btn" (click)="closeRazorpayCheckout()" aria-label="Close Razorpay checkout">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="rzp-merchant-strip">
+          <div class="rzp-merchant-info">
+            <h3 id="rzp-title" class="rzp-merchant-title">FindAPlot.in Real Estate Registry</h3>
+            <p class="rzp-merchant-purpose">
+              {{ selectedPlanForCheckout()?.name }} • {{ selectedPlanForCheckout()?.durationDays }} Days Membership
+            </p>
+          </div>
+          <div class="rzp-amount-badge">
+            <span class="rzp-currency-symbol">₹</span>
+            <span class="rzp-amount-digits">{{ selectedPlanForCheckout()?.priceInr?.toLocaleString('en-IN') }}.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Contact Strip -->
+      <div class="rzp-user-strip">
+        <div class="rzp-user-meta">
+          <span class="material-symbols-outlined rzp-user-icon">account_circle</span>
+          <div class="rzp-user-text">
+            <span class="rzp-user-name">{{ authService.currentUser()?.name || 'Verified Investor' }}</span>
+            <span class="rzp-user-contact">
+              {{ authService.currentUser()?.phone || '+91 94441 00000' }} • {{ authService.currentUser()?.email || 'investor@findaplot.in' }}
+            </span>
+          </div>
+        </div>
+        <span class="rzp-verified-pill">
+          <span class="material-symbols-outlined">verified</span>
+          <span>Prefilled</span>
+        </span>
+      </div>
+
+      <!-- Checkout Body with Payment Options -->
+      <div class="rzp-modal-body">
+        <div class="rzp-body-layout">
+
+          <!-- Left Payment Method Tabs Sidebar -->
+          <div class="rzp-methods-nav">
+            <button type="button" class="rzp-method-btn" [class.active]="activeRazorpayTab() === 'upi'"
+              (click)="setRazorpayTab('upi')">
+              <span class="material-symbols-outlined">qr_code_2</span>
+              <div class="rzp-btn-text">
+                <span class="rzp-method-label">UPI / QR</span>
+                <span class="rzp-method-hint">GPay, PhonePe, Paytm</span>
+              </div>
+            </button>
+
+            <button type="button" class="rzp-method-btn" [class.active]="activeRazorpayTab() === 'card'"
+              (click)="setRazorpayTab('card')">
+              <span class="material-symbols-outlined">credit_card</span>
+              <div class="rzp-btn-text">
+                <span class="rzp-method-label">Card</span>
+                <span class="rzp-method-hint">Visa, MasterCard, RuPay</span>
+              </div>
+            </button>
+
+            <button type="button" class="rzp-method-btn" [class.active]="activeRazorpayTab() === 'netbanking'"
+              (click)="setRazorpayTab('netbanking')">
+              <span class="material-symbols-outlined">account_balance</span>
+              <div class="rzp-btn-text">
+                <span class="rzp-method-label">Netbanking</span>
+                <span class="rzp-method-hint">All Major Indian Banks</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Right Tab Panel Content -->
+          <div class="rzp-tab-viewport">
+
+            <!-- TAB 1: UPI -->
+            @if (activeRazorpayTab() === 'upi') {
+            <div class="rzp-tab-content">
+              <div class="rzp-tab-headline">
+                <span class="material-symbols-outlined headline-icon">smartphone</span>
+                <div>
+                  <h4 class="rzp-tab-title">Instant UPI Verification</h4>
+                  <p class="rzp-tab-desc">Simulated Razorpay VPA with zero OTP friction</p>
+                </div>
+              </div>
+
+              <div class="rzp-input-box">
+                <label class="rzp-input-label">Razorpay Demo Virtual Payment Address (VPA)</label>
+                <div class="rzp-input-wrap">
+                  <input type="text" class="rzp-input-field" [value]="testUpiId()"
+                    (input)="testUpiId.set($any($event.target).value)" placeholder="success@razorpay" />
+                  <span class="rzp-input-tag">DEMO VPA</span>
+                </div>
+                <span class="rzp-input-help">Use <code>success@razorpay</code> for automatic success approval.</span>
+              </div>
+
+              <!-- Popular UPI Apps Quick Select -->
+              <div class="rzp-upi-apps-row">
+                <div class="rzp-app-chip active">
+                  <span class="material-symbols-outlined">flash_on</span>
+                  <span>Google Pay</span>
+                </div>
+                <div class="rzp-app-chip">
+                  <span class="material-symbols-outlined">account_balance_wallet</span>
+                  <span>PhonePe</span>
+                </div>
+                <div class="rzp-app-chip">
+                  <span class="material-symbols-outlined">payments</span>
+                  <span>Paytm</span>
+                </div>
+                <div class="rzp-app-chip">
+                  <span class="material-symbols-outlined">qr_code</span>
+                  <span>BHIM</span>
+                </div>
+              </div>
+
+              <div class="rzp-sandbox-notice">
+                <span class="material-symbols-outlined">info</span>
+                <span>Test Mode Active: No real money deducted. Instantly activates {{ selectedPlanForCheckout()?.name }} membership.</span>
+              </div>
+            </div>
+            }
+
+            <!-- TAB 2: CARDS -->
+            @if (activeRazorpayTab() === 'card') {
+            <div class="rzp-tab-content">
+              <div class="rzp-tab-headline">
+                <span class="material-symbols-outlined headline-icon">credit_card</span>
+                <div>
+                  <h4 class="rzp-tab-title">Test Debit / Credit Card</h4>
+                  <p class="rzp-tab-desc">Preloaded with Razorpay Official Test Card</p>
+                </div>
+              </div>
+
+              <div class="rzp-input-box">
+                <label class="rzp-input-label">Card Number</label>
+                <div class="rzp-input-wrap">
+                  <input type="text" class="rzp-input-field" [value]="testCardNumber()"
+                    (input)="testCardNumber.set($any($event.target).value)" />
+                  <span class="rzp-input-tag">VISA TEST</span>
+                </div>
+              </div>
+
+              <div class="rzp-input-grid-2">
+                <div class="rzp-input-box">
+                  <label class="rzp-input-label">Expiry Date</label>
+                  <input type="text" class="rzp-input-field" [value]="testCardExpiry()"
+                    (input)="testCardExpiry.set($any($event.target).value)" />
+                </div>
+                <div class="rzp-input-box">
+                  <label class="rzp-input-label">CVV / CVC</label>
+                  <input type="password" class="rzp-input-field" [value]="testCardCvv()"
+                    (input)="testCardCvv.set($any($event.target).value)" />
+                </div>
+              </div>
+
+              <div class="rzp-sandbox-notice">
+                <span class="material-symbols-outlined">verified_user</span>
+                <span>Demo Card: Pre-approved for instant sandbox checkout without 3D Secure OTP.</span>
+              </div>
+            </div>
+            }
+
+            <!-- TAB 3: NETBANKING -->
+            @if (activeRazorpayTab() === 'netbanking') {
+            <div class="rzp-tab-content">
+              <div class="rzp-tab-headline">
+                <span class="material-symbols-outlined headline-icon">account_balance</span>
+                <div>
+                  <h4 class="rzp-tab-title">Test Netbanking Portal</h4>
+                  <p class="rzp-tab-desc">Select bank to simulate gateway redirect</p>
+                </div>
+              </div>
+
+              <div class="rzp-banks-grid">
+                @for (b of ['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra', 'Punjab National']; track b) {
+                <button type="button" class="rzp-bank-card" [class.selected]="selectedBank() === b"
+                  (click)="selectBank(b)">
+                  <span class="material-symbols-outlined">apartment</span>
+                  <span class="bank-name">{{ b }}</span>
+                  @if (selectedBank() === b) {
+                  <span class="material-symbols-outlined check-icon">check_circle</span>
+                  }
+                </button>
+                }
+              </div>
+
+              <div class="rzp-sandbox-notice">
+                <span class="material-symbols-outlined">info</span>
+                <span>Simulated Bank Portal: Auto-authorizes without netbanking login credentials.</span>
+              </div>
+            </div>
+            }
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Checkout Footer Actions -->
+      <div class="rzp-modal-footer">
+        <div class="rzp-footer-security">
+          <span class="material-symbols-outlined">lock</span>
+          <span>Razorpay 256-Bit SSL Encrypted Sandbox</span>
+        </div>
+
+        <div class="rzp-footer-actions">
+          <button type="button" class="rzp-btn-fail" [disabled]="isProcessingRazorpay()" (click)="simulateFailure()"
+            title="Test payment decline scenario">
+            <span>Simulate Decline</span>
+          </button>
+
+          <button type="button" class="rzp-btn-success" [disabled]="isProcessingRazorpay()"
+            (click)="confirmRazorpayPayment()">
+            @if (isProcessingRazorpay()) {
+            <span class="material-symbols-outlined spin">sync</span>
+            <span>Authorizing with Razorpay...</span>
+            } @else {
+            <span class="material-symbols-outlined">verified</span>
+            <span>Pay ₹{{ selectedPlanForCheckout()?.priceInr?.toLocaleString('en-IN') }}.00</span>
+            }
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
   }

@@ -441,32 +441,49 @@ export class SubscriptionService {
     });
   }
 
+  /**
+   * Verify Razorpay payment and activate plan entitlements
+   */
+  public verifyPayment(
+    plan: SubscriptionPlan, 
+    paymentId: string, 
+    orderId: string, 
+    signature: string
+  ): Observable<{ success: boolean; data: any; message: string }> {
+    const uid = this.getEffectiveUserId();
+    const payload = {
+      userId: uid,
+      planId: plan.id,
+      razorpay_order_id: orderId,
+      razorpay_payment_id: paymentId,
+      razorpay_signature: signature
+    };
+
+    const tryVerify = (baseUrl: string) => 
+      this.http.post<{ success: boolean; data: any; message: string }>(baseUrl, payload);
+
+    return (tryVerify(`${environment.apiUrl}/subscriptions/verify-payment.php`).pipe(
+      catchError(() => tryVerify('/p_demo_5/backend/api/subscriptions/verify-payment.php')),
+      catchError(() => tryVerify('/api/subscriptions/verify-payment.php')),
+      catchError(() => tryVerify(`${environment.apacheApiUrl}/subscriptions/verify-payment.php`)),
+      tap((vRes) => {
+        if (vRes && vRes.success) {
+          this.fetchCurrentSubscription();
+        }
+      })
+    ) as Observable<any>);
+  }
+
   private openRazorpayCheckout(plan: SubscriptionPlan, orderData: any, user: any): void {
     const uid = this.getEffectiveUserId();
     const keyId = orderData.keyId || 'rzp_test_51MockMannidam';
     const amountPaise = orderData.amountPaise || (plan.priceInr * 100);
 
     const completeVerification = (razorpayPaymentId: string, razorpayOrderId: string, signature: string) => {
-      const payload = {
-        userId: uid,
-        planId: plan.id,
-        razorpay_order_id: razorpayOrderId,
-        razorpay_payment_id: razorpayPaymentId,
-        razorpay_signature: signature
-      };
-
-      const tryVerify = (baseUrl: string) => 
-        this.http.post<{ success: boolean; data: any; message: string }>(baseUrl, payload);
-
-      (tryVerify(`${environment.apiUrl}/subscriptions/verify-payment.php`).pipe(
-        catchError(() => tryVerify('/p_demo_5/backend/api/subscriptions/verify-payment.php')),
-        catchError(() => tryVerify('/api/subscriptions/verify-payment.php')),
-        catchError(() => tryVerify(`${environment.apacheApiUrl}/subscriptions/verify-payment.php`))
-      ) as Observable<any>).subscribe({
+      this.verifyPayment(plan, razorpayPaymentId, razorpayOrderId, signature).subscribe({
         next: (vRes) => {
           this.isProcessingPayment.set(false);
           if (vRes && vRes.success) {
-            this.fetchCurrentSubscription();
             this.notificationService.show({
               type: 'success',
               title: `${plan.name} Subscribed!`,

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { SubscriptionService, DEFAULT_SUBSCRIPTION_PLANS } from '../../../../core/services/subscription.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -28,6 +28,7 @@ export class SubscriptionPageComponent implements OnInit {
   readonly subscriptionService = inject(SubscriptionService);
   readonly authService = inject(AuthService);
   readonly notificationService = inject(NotificationService);
+  readonly route = inject(ActivatedRoute);
 
   readonly defaultPlans = DEFAULT_SUBSCRIPTION_PLANS;
   readonly expandedFaqIndex = signal<number | null>(0);
@@ -35,6 +36,17 @@ export class SubscriptionPageComponent implements OnInit {
   readonly isRefundModalOpen = signal<boolean>(false);
   readonly refundReason = signal<string>('Not satisfied with project discovery');
   readonly isSubmittingRefund = signal<boolean>(false);
+
+  // Razorpay Payment Gateway Demo Modal Signals
+  readonly isRazorpayModalOpen = signal<boolean>(false);
+  readonly selectedPlanForCheckout = signal<SubscriptionPlan | null>(null);
+  readonly activeRazorpayTab = signal<'upi' | 'card' | 'netbanking'>('upi');
+  readonly selectedBank = signal<string>('HDFC Bank');
+  readonly testUpiId = signal<string>('success@razorpay');
+  readonly testCardNumber = signal<string>('4000 0000 0000 0002');
+  readonly testCardExpiry = signal<string>('12/28');
+  readonly testCardCvv = signal<string>('123');
+  readonly isProcessingRazorpay = signal<boolean>(false);
 
   readonly plans = computed<SubscriptionPlan[]>(() => {
     const p = this.subscriptionService.plans();
@@ -90,6 +102,19 @@ export class SubscriptionPageComponent implements OnInit {
   ngOnInit(): void {
     this.subscriptionService.fetchPlans().subscribe();
     this.subscriptionService.fetchCurrentSubscription().subscribe();
+
+    // Check for plan query param from other pages
+    this.route.queryParams.subscribe(params => {
+      const planQuery = params['plan'];
+      if (planQuery) {
+        setTimeout(() => {
+          const found = this.plans().find(p => p.id === planQuery || p.id.toLowerCase() === planQuery.toLowerCase());
+          if (found && found.id !== this.activePlanId()) {
+            this.onSubscribe(found);
+          }
+        }, 300);
+      }
+    });
   }
 
   toggleFaq(index: number): void {
@@ -101,17 +126,6 @@ export class SubscriptionPageComponent implements OnInit {
   }
 
   onSubscribe(plan: SubscriptionPlan): void {
-    if (!this.authService.isLoggedIn()) {
-      this.notificationService.show({
-        type: 'info',
-        title: 'Sign In Required',
-        message: 'Please sign in or enter your mobile number to link your membership.',
-        icon: 'login'
-      });
-      this.authService.openOtpModal('general');
-      return;
-    }
-
     if (this.activePlanId() === plan.id) {
       this.notificationService.show({
         type: 'info',
@@ -122,7 +136,99 @@ export class SubscriptionPageComponent implements OnInit {
       return;
     }
 
-    this.subscriptionService.subscribeToPlan(plan);
+    // Free Explorer plan activates immediately
+    if (plan.priceInr <= 0) {
+      this.subscriptionService.subscribeToPlan(plan);
+      return;
+    }
+
+    // Paid Plan: Launch Razorpay Payment Gateway with Demo Credentials
+    this.openRazorpayCheckout(plan);
+  }
+
+  openRazorpayCheckout(plan: SubscriptionPlan): void {
+    this.selectedPlanForCheckout.set(plan);
+    this.activeRazorpayTab.set('upi');
+    this.isRazorpayModalOpen.set(true);
+  }
+
+  closeRazorpayCheckout(): void {
+    this.isRazorpayModalOpen.set(false);
+    this.isProcessingRazorpay.set(false);
+    this.selectedPlanForCheckout.set(null);
+  }
+
+  setRazorpayTab(tab: 'upi' | 'card' | 'netbanking'): void {
+    this.activeRazorpayTab.set(tab);
+  }
+
+  selectBank(bank: string): void {
+    this.selectedBank.set(bank);
+  }
+
+  confirmRazorpayPayment(): void {
+    const plan = this.selectedPlanForCheckout();
+    if (!plan) return;
+
+    this.isProcessingRazorpay.set(true);
+
+    // Generate standard Razorpay test payment ID and test signature
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const paymentId = `pay_rzp_test_${Date.now().toString().slice(-6)}${randomSuffix}`;
+    const orderId = `order_test_${Date.now().toString().slice(-8)}`;
+    const signature = `sig_test_${Date.now()}`;
+
+    this.subscriptionService.verifyPayment(plan, paymentId, orderId, signature).subscribe({
+      next: (res) => {
+        this.isProcessingRazorpay.set(false);
+        this.closeRazorpayCheckout();
+
+        if (res && res.success) {
+          this.subscriptionService.fetchCurrentSubscription();
+          this.notificationService.show({
+            type: 'success',
+            title: `🎉 ${plan.name} Subscribed!`,
+            message: `Razorpay payment authorized successfully. GST Invoice ${res.data?.invoiceNumber || ''} generated.`,
+            icon: 'verified'
+          });
+
+          // Navigate/scroll smoothly back to top of the page
+          if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        } else {
+          this.notificationService.show({
+            type: 'warning',
+            title: 'Payment Awaiting Settlement',
+            message: 'Transaction captured on Razorpay. Entitlements are syncing.',
+            icon: 'hourglass_empty'
+          });
+        }
+      },
+      error: (err) => {
+        this.isProcessingRazorpay.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Verification Failed',
+          message: err?.error?.error || 'Could not verify payment signature.',
+          icon: 'gpp_bad'
+        });
+      }
+    });
+  }
+
+  simulateFailure(): void {
+    this.isProcessingRazorpay.set(true);
+    setTimeout(() => {
+      this.isProcessingRazorpay.set(false);
+      this.closeRazorpayCheckout();
+      this.notificationService.show({
+        type: 'error',
+        title: 'Payment Declined',
+        message: 'Razorpay Sandbox: Transaction was declined by the simulated bank gateway.',
+        icon: 'credit_card_off'
+      });
+    }, 600);
   }
 
   downloadInvoice(invoiceNumber: string): void {
