@@ -2349,67 +2349,78 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 1: MILD MINERAL SKY / ICE SLATE (PHASE 01: SUBMIT BRIEF)            */
-/* Distinct mild palette — completely differentiated from membership plans    */
+/* THEME 1: MILD THEME TERRACOTTA (PHASE 01: SUBMIT BRIEF)                    */
+/* Selected from Brand Theme: --brand-sold (#c76f56)                         */
 /* -------------------------------------------------------------------------- */
 .process-card-slate {
-  background: #f3f7f9;
-  border: 10px solid #d5e2ea;
+  background: #fdf6f4;
+  border: 10px solid #f0d5ce;
 }
 
 .process-card-slate:hover {
-  border-color: #b8cdd9;
+  border-color: #e5b9ae;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-slate .card-step-badge.badge-slate {
-  background: #e2ecf2;
-  color: #1c3545;
+  background: #fcece8;
+  color: #7b3422;
 }
 
 .process-card-slate .card-step-title {
-  color: #1c3545;
+  color: #7b3422;
+}
+
+.process-card-slate .card-draft-hatch {
+  background: repeating-linear-gradient(
+    45deg,
+    #f0d5ce,
+    #f0d5ce 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  opacity: 0.85;
 }
 
 .process-card-slate .card-step-desc {
-  color: #475569;
+  color: #5c4742;
 }
 
 .process-card-slate .card-step-watermark.watermark-slate {
-  color: #dfeaf0;
+  color: #f7e5e0;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 2: MILD WARM TERRACOTTA / SANDSTONE (PHASE 02: FORENSIC AUDIT)      */
-/* Cadastral ground survey & title integrity tone                            */
+/* THEME 2: MILD THEME TEAL (PHASE 02: FORENSIC AUDIT)                       */
+/* Selected from Brand Theme: --brand-teal (#0f3b4a)                         */
 /* -------------------------------------------------------------------------- */
 .process-card-green {
-  background: #faf5f2;
-  border: 10px solid #ebdcd5;
+  background: #f2f7f9;
+  border: 10px solid #c2dbe3;
 }
 
 .process-card-green:hover {
-  border-color: #dcbebe;
+  border-color: #9ec5d1;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-green .card-step-badge.badge-green {
-  background: #f5ebe6;
-  color: #54362b;
-  border: 1px solid rgba(84, 54, 43, 0.15);
+  background: #e4eff3;
+  color: #0f3b4a;
+  border: 1px solid rgba(15, 59, 74, 0.2);
 }
 
 .process-card-green .card-step-title {
-  color: #54362b;
+  color: #0f3b4a;
 }
 
 .process-card-green .card-draft-hatch {
   background: repeating-linear-gradient(
     45deg,
-    #ebdcd5,
-    #ebdcd5 3px,
+    #c2dbe3,
+    #c2dbe3 3px,
     transparent 3px,
     transparent 7px
   );
@@ -2417,43 +2428,43 @@
 }
 
 .process-card-green .card-step-desc {
-  color: #5c4d47;
+  color: #334e5a;
 }
 
 .process-card-green .card-step-watermark.watermark-green {
-  color: #f5e9e3;
+  color: #dae9ef;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 3: MILD PERIWINKLE / HEATHER LAVENDER (PHASE 03: INFORMED VERDICT)  */
-/* Independent fiduciary legal & notary review tone                          */
+/* THEME 3: MILD THEME AMBER SAND (PHASE 03: INFORMED VERDICT)                */
+/* Selected from Brand Theme: --brand-booked (#d5b357)                       */
 /* -------------------------------------------------------------------------- */
 .process-card-teal {
-  background: #f7f6fc;
-  border: 10px solid #dedbf0;
+  background: #fdfbf6;
+  border: 10px solid #f1e4c5;
 }
 
 .process-card-teal:hover {
-  border-color: #c8c2e6;
+  border-color: #e5cf9f;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-teal .card-step-badge.badge-teal {
-  background: #edeaf7;
-  color: #383058;
-  border: 1px solid rgba(56, 48, 88, 0.15);
+  background: #f7f0dc;
+  color: #6e5719;
+  border: 1px solid rgba(213, 179, 87, 0.25);
 }
 
 .process-card-teal .card-step-title {
-  color: #383058;
+  color: #6e5719;
 }
 
 .process-card-teal .card-draft-hatch {
   background: repeating-linear-gradient(
     45deg,
-    #dedbf0,
-    #dedbf0 3px,
+    #f1e4c5,
+    #f1e4c5 3px,
     transparent 3px,
     transparent 7px
   );
@@ -2461,43 +2472,43 @@
 }
 
 .process-card-teal .card-step-desc {
-  color: #4c4663;
+  color: #5a4b22;
 }
 
 .process-card-teal .card-step-watermark.watermark-teal {
-  color: #eae7f5;
+  color: #f5ebd3;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 4: MILD WARM LINEN / PEBBLE (PHASE 04: GUARDED CLOSING)              */
-/* Grounded closing & biometric government registration tone                 */
+/* THEME 4: MILD THEME SAGE GREEN (PHASE 04: GUARDED CLOSING)                 */
+/* Selected from Brand Theme: --brand-green (#5e8f72) — "Greenlit" Escort    */
 /* -------------------------------------------------------------------------- */
 .process-card-gold {
-  background: #faf8f4;
-  border: 10px solid #e8e2d5;
+  background: #f3f8f5;
+  border: 10px solid #cbe4d5;
 }
 
 .process-card-gold:hover {
-  border-color: #d8cebc;
+  border-color: #aed3bc;
   box-shadow: none !important;
   transform: none !important;
 }
 
 .process-card-gold .card-step-badge.badge-gold {
-  background: #f3efe6;
-  color: #4c4233;
-  border: 1px solid rgba(76, 66, 51, 0.15);
+  background: #e6f3eb;
+  color: #2c4938;
+  border: 1px solid rgba(94, 143, 114, 0.25);
 }
 
 .process-card-gold .card-step-title {
-  color: #4c4233;
+  color: #2c4938;
 }
 
 .process-card-gold .card-draft-hatch {
   background: repeating-linear-gradient(
     45deg,
-    #e8e2d5,
-    #e8e2d5 3px,
+    #cbe4d5,
+    #cbe4d5 3px,
     transparent 3px,
     transparent 7px
   );
@@ -2505,11 +2516,11 @@
 }
 
 .process-card-gold .card-step-desc {
-  color: #595144;
+  color: #3d5a49;
 }
 
 .process-card-gold .card-step-watermark.watermark-gold {
-  color: #f2ebe0;
+  color: #def0e5;
 }
 
 .spin {
