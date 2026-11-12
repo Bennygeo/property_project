@@ -139,7 +139,8 @@ function formatShortlistApiToProperty(raw: any): Property {
     propertyType: (raw.propertyType || raw.property_type || 'Gated CMDA Plots') as PropertyType,
     locality: raw.locality || raw.locality_name || 'Kanyakumari',
     city: raw.city || raw.city_name || 'Kanyakumari',
-    cityKey: 'chennai',
+    district: raw.district || raw.city || '',
+    cityKey: (raw.cityKey || (raw.city ? raw.city.toLowerCase() : 'chennai')),
     price: formatPriceIndian(rawPrice),
     pricePerSqFt: raw.pricePerSqFt || (raw.price_per_sqft ? `₹ ${raw.price_per_sqft}/sq.ft` : '₹ 4,500/sq.ft'),
     sqft: raw.sqft || '800 sq.ft (1.84 Cents)',
@@ -229,14 +230,14 @@ export class PropertyService {
     if (q) {
       const words = q.split(/\s+/).filter(Boolean);
       all = all.filter(p => {
-        const fullText = `${p.title || ''} ${p.locality || ''} ${p.city || ''} ${p.propertyType || ''} ${p.bhkBadge || ''} ${p.badges?.rera || ''}`.toLowerCase();
+        const fullText = `${p.title || ''} ${p.locality || ''} ${p.city || ''} ${p.district || ''} ${p.propertyType || ''} ${p.bhkBadge || ''} ${p.badges?.rera || ''}`.toLowerCase();
         return words.every(w => fullText.includes(w));
       });
     }
 
     // 2. Category filter pill selection
     if (filter !== 'all') {
-      let filtered = all;
+      let filtered: Property[] = [];
       if (filter === 'apartments') {
         filtered = all.filter(p => p.propertyType === 'Apartments & Flats');
       } else if (filter === 'plots') {
@@ -268,23 +269,20 @@ export class PropertyService {
           p.category?.toLowerCase().includes('agricultural')
         );
       }
-      if (filtered.length > 0 || !q) {
-        return filtered;
-      }
+      return filtered;
     }
 
     // 3. Secondary check against hero search bar tabs if category filter is 'all'
     if (heroTab === 'plots') {
-      const plots = all.filter(p =>
+      return all.filter(p =>
         (p.propertyType === 'Gated CMDA Plots' || p.type === 'plots') &&
         p.land_type?.toLowerCase() !== 'commercial' &&
         p.landType?.toLowerCase() !== 'commercial' &&
         p.propertyType !== 'Commercial Spaces'
       );
-      if (plots.length > 0 || !q) return plots;
     }
     if (heroTab === 'commercial') {
-      const comm = all.filter(p =>
+      return all.filter(p =>
         p.propertyType === 'Commercial Spaces' ||
         p.land_type?.toLowerCase() === 'commercial' ||
         p.landType?.toLowerCase() === 'commercial' ||
@@ -292,10 +290,9 @@ export class PropertyService {
         p.type?.toLowerCase() === 'commercial' ||
         p.category?.toLowerCase().includes('commercial')
       );
-      if (comm.length > 0 || !q) return comm;
     }
     if (heroTab === 'agricultural') {
-      const agri = all.filter(p =>
+      return all.filter(p =>
         p.propertyType === 'Agricultural Lands' ||
         p.land_type?.toLowerCase() === 'agricultural' ||
         p.land_type?.toLowerCase() === 'agriculture' ||
@@ -304,7 +301,6 @@ export class PropertyService {
         p.type?.toLowerCase() === 'agricultural' ||
         p.category?.toLowerCase().includes('agricultural')
       );
-      if (agri.length > 0 || !q) return agri;
     }
 
     return all;

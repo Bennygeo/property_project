@@ -720,47 +720,25 @@ foreach ($rows as $row) {
     $properties[] = $formatProjectRow($row);
 }
 
-// Intelligent Graceful Fallback: If district was specified but yielded 0 results for a specific category (e.g. Commercial),
-// seamlessly fetch state-wide verified properties of that classification so the user is never shown a dead-end
-if ($total === 0 && (!empty($propertyType) || !empty($listingMode)) && !empty($district)) {
-    $fallbackWhere = "(p.status = 'published' OR p.status IS NULL)";
-    if (!empty($propertyType) && (strcasecmp($propertyType, 'commercial') === 0 || strcasecmp($propertyType, 'Commercial Spaces') === 0)) {
-        $fallbackWhere .= " AND (p.category = 'Commercial Spaces' OR p.type = 'commercial' OR p.land_type = 'Commercial' OR p.land_type = 'Industrial')";
-    } else if (!empty($propertyType) && (strcasecmp($propertyType, 'agricultural') === 0 || strcasecmp($propertyType, 'agriculture') === 0 || strcasecmp($propertyType, 'Agricultural Lands') === 0)) {
-        $fallbackWhere .= " AND (p.category = 'Agricultural Lands' OR p.type = 'agricultural' OR p.land_type = 'Agricultural' OR p.land_type = 'Agriculture')";
-    } else if (!empty($listingMode) && strcasecmp($listingMode, 'commercial') === 0) {
-        $fallbackWhere .= " AND (p.type = 'commercial' OR p.category = 'Commercial Spaces' OR p.land_type = 'Commercial')";
-    } else if (!empty($listingMode) && (strcasecmp($listingMode, 'agricultural') === 0 || strcasecmp($listingMode, 'agriculture') === 0)) {
-        $fallbackWhere .= " AND (p.type = 'agricultural' OR p.category = 'Agricultural Lands' OR p.land_type = 'Agricultural' OR p.land_type = 'Agriculture')";
-    }
-
-    $fbStmt = $db->query("
-        SELECT {$selectFields}
-        FROM projects p
-        LEFT JOIN project_details pd ON p.project_id = pd.project_id
-        LEFT JOIN developers d ON p.developer_id = d.id
-        WHERE {$fallbackWhere}
-        ORDER BY p.featured DESC, p.created_at DESC
-        LIMIT {$limit}
-    ");
-    $fbRows = $fbStmt->fetchAll(PDO::FETCH_ASSOC);
-    if (!empty($fbRows)) {
-        foreach ($fbRows as $r) {
-            $properties[] = $formatProjectRow($r);
-        }
-        $total = count($properties);
-    }
-}
-
-// Distinct counts of land types currently available in the database
+// Distinct counts of land types currently available in the database (scoped to district if selected)
 $landTypeCounts = [];
 try {
+    $ltWhere = "(p.status = 'published' OR p.status IS NULL)";
+    if (!empty($district) && $district !== 'all') {
+        $dClean = strtolower(trim($district));
+        $variants = $variantDistricts[$dClean] ?? [trim($district)];
+        $dOr = [];
+        foreach ($variants as $v) {
+            $dOr[] = "LOWER(p.district) = LOWER(" . $db->quote($v) . ") OR LOWER(p.city) = LOWER(" . $db->quote($v) . ")";
+        }
+        $ltWhere .= " AND (" . implode(' OR ', $dOr) . ")";
+    }
     $landTypeCountsStmt = $db->query("
         SELECT 
             COALESCE(NULLIF(TRIM(p.land_type), ''), 'Residential') AS l_type, 
             COUNT(*) AS c 
         FROM projects p 
-        WHERE (p.status = 'published' OR p.status IS NULL) 
+        WHERE {$ltWhere}
         GROUP BY l_type
     ");
     while ($ltr = $landTypeCountsStmt->fetch(PDO::FETCH_ASSOC)) {
@@ -771,9 +749,9 @@ try {
 $hasAgriculture = (!empty($landTypeCounts['agricultural']) || !empty($landTypeCounts['agriculture']));
 $hasCommercial  = (!empty($landTypeCounts['commercial']));
 
-// When no items match, fetch top recommended suggested properties
+// When no items match, fetch top recommended suggested properties ONLY if no specific district was requested
 $suggestedProperties = [];
-if ($total === 0) {
+if ($total === 0 && empty($district)) {
     $sugStmt = $db->query("
         SELECT {$selectFields}
         FROM projects p

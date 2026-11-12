@@ -490,6 +490,36 @@ export class SearchPageComponent implements OnInit {
 
     // Helper to evaluate facet toggles
     const matchesFacets = (p: Property): boolean => {
+      // 0. Strict District Filter
+      if (this.selectedDistrict()) {
+        const d = this.selectedDistrict().toLowerCase().trim();
+        const propDist = (p.district || '').toLowerCase().trim();
+        const propCity = (p.city || '').toLowerCase().trim();
+        if (propDist !== d && propCity !== d) return false;
+      }
+
+      // 0.1 Strict Property Type / Category Filter
+      if (this.selectedType() !== 'all') {
+        const t = this.selectedType();
+        if (t === 'Agricultural Lands') {
+          const isAgri = p.propertyType === 'Agricultural Lands' ||
+            p.land_type?.toLowerCase() === 'agricultural' ||
+            p.land_type?.toLowerCase() === 'agriculture' ||
+            p.landType?.toLowerCase() === 'agricultural' ||
+            p.type?.toLowerCase() === 'agricultural' ||
+            p.category?.toLowerCase().includes('agricultural');
+          if (!isAgri) return false;
+        } else if (t === 'Commercial Spaces') {
+          const isComm = p.propertyType === 'Commercial Spaces' ||
+            p.land_type?.toLowerCase() === 'commercial' ||
+            p.landType?.toLowerCase() === 'commercial' ||
+            p.type?.toLowerCase() === 'commercial' ||
+            p.category?.toLowerCase().includes('commercial');
+          if (!isComm) return false;
+        } else if (t === 'Gated CMDA Plots') {
+          if (p.propertyType !== 'Gated CMDA Plots' && p.type !== 'plots') return false;
+        }
+      }
       // 1. Budget Bracket Filter (Presets or Custom Range Slider)
       if (this.isCustomBudgetActive() || budget === 'custom') {
         const priceNum = parsePriceToNumber(p.price);
@@ -587,6 +617,11 @@ export class SearchPageComponent implements OnInit {
 
   // Suggested Properties when exact search returns 0 matching results
   readonly suggestedProperties = computed<Property[]>(() => {
+    // If a specific district is explicitly targeted, do not show suggested properties from other districts
+    if (this.selectedDistrict()) {
+      return [];
+    }
+
     // 1. If backend API provided suggested properties from MySQL
     const apiSuggested = this.propertyService.suggestedProperties();
     if (apiSuggested && apiSuggested.length > 0) {

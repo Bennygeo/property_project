@@ -118,7 +118,7 @@ try {
 
     // Always ensure Chennai is represented
     if (!isset($counts['Chennai'])) {
-        $counts['Chennai'] = (int)($db->query("SELECT COUNT(*) FROM projects WHERE (city = 'Chennai' OR district = 'Chennai') AND (status = 'published' OR status IS NULL)")->fetchColumn() ?: 1);
+        $counts['Chennai'] = (int)($db->query("SELECT COUNT(*) FROM projects WHERE (city = 'Chennai' OR district = 'Chennai') AND (status = 'published' OR status IS NULL)")->fetchColumn() ?: 0);
     }
 
     // Build 1. Top 10 Main Hubs

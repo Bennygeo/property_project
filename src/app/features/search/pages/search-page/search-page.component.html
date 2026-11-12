@@ -886,8 +886,11 @@
             <h2 class="no-items-title">No Matching Properties Found</h2>
             <p class="no-items-desc">
               We couldn't find any verified cadastral records matching
+              @if (selectedDistrict()) {
+              <span> in district <strong>"{{ selectedDistrict() }}"</strong></span>
+              }
               @if (selectedLocalities().length > 0) {
-              <span>locality <strong>"{{ selectedLocalities().join(', ') }}"</strong></span>
+              <span> locality <strong>"{{ selectedLocalities().join(', ') }}"</strong></span>
               }
               @if (searchQuery()) {
               <span> query <strong>"{{ searchQuery() }}"</strong></span>
