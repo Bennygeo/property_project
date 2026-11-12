@@ -254,6 +254,57 @@ export class SubscriptionService {
   }
 
   /**
+   * Super Admin: Fetch all plans (active & inactive) with subscription stats
+   */
+  public fetchAdminPlans(): Observable<SubscriptionPlan[]> {
+    const tryGet = (url: string) => this.http.get<{ success: boolean; data: { plans: SubscriptionPlan[] } }>(url);
+    return tryGet(`${environment.apiUrl}/admin/subscription-plans.php`).pipe(
+      catchError(() => tryGet('/p_demo_5/backend/api/admin/subscription-plans.php')),
+      catchError(() => tryGet('/api/admin/subscription-plans.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/admin/subscription-plans.php`)),
+      map(res => (res && res.success && res.data?.plans) ? res.data.plans : []),
+      catchError(err => {
+        console.warn('[SubscriptionService] Could not load admin plans:', err);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Super Admin: Save / Update plan parameters, pricing, and entitlement limits
+   */
+  public saveAdminPlan(plan: Partial<SubscriptionPlan>): Observable<{ success: boolean; message?: string; data?: any }> {
+    const tryPost = (url: string) => this.http.post<{ success: boolean; message?: string; data?: any }>(url, plan);
+    return tryPost(`${environment.apiUrl}/admin/subscription-plans.php`).pipe(
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/subscription-plans.php')),
+      catchError(() => tryPost('/api/admin/subscription-plans.php')),
+      catchError(() => tryPost(`${environment.apacheApiUrl}/admin/subscription-plans.php`)),
+      tap(res => {
+        if (res && res.success) {
+          this.fetchPlans().subscribe();
+        }
+      })
+    );
+  }
+
+  /**
+   * Super Admin: Toggle plan active status
+   */
+  public toggleAdminPlan(planId: string): Observable<{ success: boolean; message?: string }> {
+    const tryDelete = (url: string) => this.http.delete<{ success: boolean; message?: string }>(`${url}?id=${encodeURIComponent(planId)}`);
+    return tryDelete(`${environment.apiUrl}/admin/subscription-plans.php`).pipe(
+      catchError(() => tryDelete('/p_demo_5/backend/api/admin/subscription-plans.php')),
+      catchError(() => tryDelete('/api/admin/subscription-plans.php')),
+      catchError(() => tryDelete(`${environment.apacheApiUrl}/admin/subscription-plans.php`)),
+      tap(res => {
+        if (res && res.success) {
+          this.fetchPlans().subscribe();
+        }
+      })
+    );
+  }
+
+  /**
    * Fetch current subscription and real-time entitlements
    */
   public fetchCurrentSubscription(userId?: number): Observable<any> {

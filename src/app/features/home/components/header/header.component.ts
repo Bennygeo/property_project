@@ -48,7 +48,6 @@ import { LocationService } from '../../../../core/services/location.service';
           <a class="nav-link" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }">Commercial</a>
           <a class="nav-link" routerLink="/developers">Developers</a>
           <a class="nav-link" routerLink="/subscriptions">Membership Plans</a>
-          <a class="nav-link" routerLink="/search">Search Registry</a>
         </nav>
 
         <!-- Right Actions -->

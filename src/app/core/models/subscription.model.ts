@@ -14,6 +14,9 @@ export interface SubscriptionPlan {
   description: string;
   features: string[];
   sortOrder: number;
+  isActive?: boolean;
+  activeSubscribers?: number;
+  totalRevenueInr?: number;
 }
 
 export interface UserSubscription {

@@ -98,6 +98,8 @@ import {
   AdminChannelItem
 } from '../../../../core/services/admin.service';
 import { WorkspaceService } from '../../../../core/services/workspace.service';
+import { SubscriptionService } from '../../../../core/services/subscription.service';
+import { SubscriptionPlan } from '../../../../core/models/subscription.model';
 import {
   SiteVisitItem,
   AdvisoryConsultationItem,
@@ -116,6 +118,7 @@ export type AdminActiveTab =
   | 'bulk_upload' 
   | 'buyer_workspaces'
   | 'subscription_buyers'
+  | 'subscription_plans'
   | 'whatsapp_messages';
 
 export interface UploadedImageItem {
@@ -185,6 +188,7 @@ export class AdminDashboardComponent {
   readonly adminService = inject(AdminService);
   readonly propertyService = inject(PropertyService);
   readonly workspaceService = inject(WorkspaceService);
+  readonly subscriptionService = inject(SubscriptionService);
   readonly notificationService = inject(NotificationService);
   readonly userBehaviorService = inject(UserBehaviorService);
   private readonly http = inject(HttpClient);
@@ -202,7 +206,7 @@ export class AdminDashboardComponent {
     this.loadWhatsappSettings();
 
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'whatsapp_messages'].includes(params['tab'])) {
+      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
         this.setTab(params['tab'] as AdminActiveTab);
       }
     });
@@ -234,6 +238,7 @@ export class AdminDashboardComponent {
       bulk_upload: 'Bulk Excel Upload',
       buyer_workspaces: 'Buyer Workspaces & CRM',
       subscription_buyers: 'Subscription Buyers & Entitlements',
+      subscription_plans: 'Membership Plans & Pricing',
       whatsapp_messages: 'WhatsApp Inquiries & Concierge'
     };
     return map[this.activeTab()] || 'Admin Dashboard';
@@ -246,6 +251,9 @@ export class AdminDashboardComponent {
       if (tab === 'whatsapp_messages') {
         this.loadWhatsappSettings();
       }
+    }
+    if (tab === 'subscription_plans') {
+      this.loadSubscriptionPlans();
     }
     if (tab === 'developers') {
       this.loadAdminDevelopers();
@@ -976,6 +984,118 @@ export class AdminDashboardComponent {
   getTotalSubscriptionRevenue(): number {
     const list = this.dashboardMetrics().subscriptionBuyers || [];
     return list.reduce((sum, b) => sum + (parseFloat(b.amountPaid) || 0), 0);
+  }
+
+  // =========================================================================
+  // SUPER ADMIN: MEMBERSHIP PLANS & ENTITLEMENTS CUSTOMIZATION
+  // =========================================================================
+  readonly adminSubscriptionPlans = signal<SubscriptionPlan[]>([]);
+  readonly isPlansLoading = signal<boolean>(false);
+  readonly isSavingPlan = signal<boolean>(false);
+  readonly editingPlan = signal<SubscriptionPlan | null>(null);
+  readonly newFeatureBullet = signal<string>('');
+
+  loadSubscriptionPlans(): void {
+    this.isPlansLoading.set(true);
+    this.subscriptionService.fetchAdminPlans().subscribe({
+      next: (plans) => {
+        this.adminSubscriptionPlans.set(plans);
+        this.isPlansLoading.set(false);
+      },
+      error: (err) => {
+        console.warn('Failed to load admin subscription plans', err);
+        this.isPlansLoading.set(false);
+      }
+    });
+  }
+
+  openEditPlanModal(plan: SubscriptionPlan): void {
+    this.editingPlan.set({
+      ...plan,
+      features: [...(plan.features || [])]
+    });
+    this.newFeatureBullet.set('');
+  }
+
+  closeEditPlanModal(): void {
+    this.editingPlan.set(null);
+    this.newFeatureBullet.set('');
+  }
+
+  addFeatureBullet(): void {
+    const text = this.newFeatureBullet().trim();
+    const curr = this.editingPlan();
+    if (!text || !curr) return;
+    this.editingPlan.set({
+      ...curr,
+      features: [...curr.features, text]
+    });
+    this.newFeatureBullet.set('');
+  }
+
+  removeFeatureBullet(index: number): void {
+    const curr = this.editingPlan();
+    if (!curr) return;
+    const feats = [...curr.features];
+    feats.splice(index, 1);
+    this.editingPlan.set({
+      ...curr,
+      features: feats
+    });
+  }
+
+  savePlanChanges(): void {
+    const plan = this.editingPlan();
+    if (!plan) return;
+
+    this.isSavingPlan.set(true);
+    this.subscriptionService.saveAdminPlan(plan).subscribe({
+      next: (res) => {
+        this.isSavingPlan.set(false);
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Plan Updated',
+            message: `Membership plan "${plan.name}" has been updated live in database.`,
+            icon: 'verified'
+          });
+          this.closeEditPlanModal();
+          this.loadSubscriptionPlans();
+        } else {
+          this.notificationService.show({
+            type: 'error',
+            title: 'Save Failed',
+            message: res?.message || 'Could not update plan',
+            icon: 'error'
+          });
+        }
+      },
+      error: (err) => {
+        this.isSavingPlan.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Save Failed',
+          message: err?.error?.message || err?.message || 'Server error',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  togglePlanStatus(plan: SubscriptionPlan): void {
+    this.subscriptionService.toggleAdminPlan(plan.id).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: 'Plan Status Toggled',
+            message: `Plan "${plan.name}" status updated.`,
+            icon: 'toggle_on'
+          });
+          this.loadSubscriptionPlans();
+        }
+      }
+    });
   }
 
   readonly callStatusFilter = signal<string>('all');

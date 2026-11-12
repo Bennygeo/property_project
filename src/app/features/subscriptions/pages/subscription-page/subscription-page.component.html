@@ -148,8 +148,10 @@
             }
           </div>
 
-          <!-- Subtle Big Numerals Watermark Backdrop -->
-          <div class="plan-card-watermark" aria-hidden="true">0{{ i + 1 }}</div>
+          <!-- Subtle Word Watermark Backdrop -->
+          <div class="plan-card-watermark" aria-hidden="true">
+            {{ plan.id === 'smart_buyer' ? 'Smart' : (plan.id === 'priority_buyer' ? 'Priority' : (plan.id === 'vip_concierge' ? 'VIP' : 'Explorer')) }}
+          </div>
 
         </article>
         }
