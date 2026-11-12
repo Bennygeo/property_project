@@ -2281,6 +2281,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: #ffffff;
   background-clip: padding-box;
   transition: border-color 0.2s ease;
   box-shadow: none !important;
@@ -2353,7 +2354,7 @@
 /* Selected from Brand Theme: --brand-sold (#c76f56)                         */
 /* -------------------------------------------------------------------------- */
 .process-card-slate {
-  background: #fdf6f4;
+  background: #ffffff;
   border: 10px solid #f0d5ce;
 }
 
@@ -2396,7 +2397,7 @@
 /* Selected from Brand Theme: --brand-teal (#0f3b4a)                         */
 /* -------------------------------------------------------------------------- */
 .process-card-green {
-  background: #f2f7f9;
+  background: #ffffff;
   border: 10px solid #c2dbe3;
 }
 
@@ -2440,7 +2441,7 @@
 /* Selected from Brand Theme: --brand-booked (#d5b357)                       */
 /* -------------------------------------------------------------------------- */
 .process-card-teal {
-  background: #fdfbf6;
+  background: #ffffff;
   border: 10px solid #f1e4c5;
 }
 
@@ -2484,7 +2485,7 @@
 /* Selected from Brand Theme: --brand-green (#5e8f72) — "Greenlit" Escort    */
 /* -------------------------------------------------------------------------- */
 .process-card-gold {
-  background: #f3f8f5;
+  background: #ffffff;
   border: 10px solid #cbe4d5;
 }
 
