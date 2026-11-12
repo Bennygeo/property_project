@@ -23,6 +23,7 @@
     <!-- Hero Title & Value Proposition -->
     <header class="sub-hero-header">
       <h1 class="sub-hero-title">Membership &amp; Advisory Subscriptions</h1>
+      <div class="header-spectrum-rule hero-spectrum-rule" aria-hidden="true"></div>
       <p class="sub-hero-subtitle">
         Discover verified plotted developments, explore emerging growth corridors, compare layouts, and receive
         professional advisory with physical site coordination.
@@ -165,6 +166,7 @@
       <div class="process-section-header">
         <div class="process-header-left">
           <h2 class="process-title">How We Work With You</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="process-subtitle">
             An institutional, conflict-free methodology designed to safeguard your capital across every stage of plotted
             land acquisition.
@@ -183,6 +185,7 @@
         <!-- STEP 01 (Theme Slate Mild Card) -->
         <article class="process-card process-card-slate">
           <h3 class="card-step-title">Submit Your Brief</h3>
+          <div class="card-draft-hatch" aria-hidden="true"></div>
           <p class="card-step-desc">
             Detail your investment thesis, target growth corridor, capital outlay, or shortlisted layout. If a
             prospective parcel does not meet baseline title integrity, we will state it transparently upfront.
@@ -193,6 +196,7 @@
         <!-- STEP 02 (Theme Brand Green Mild Card) -->
         <article class="process-card process-card-green">
           <h3 class="card-step-title">Forensic Audit</h3>
+          <div class="card-draft-hatch" aria-hidden="true"></div>
           <p class="card-step-desc">
             We cross-examine 30-year Encumbrance Certificates, Patta cadastral coordinates, DTCP/CMDA approvals, and
             master plan zoning with satellite terrain mapping and corridor infrastructure pipelines.
@@ -203,6 +207,7 @@
         <!-- STEP 03 (Theme Brand Teal Mild Card) -->
         <article class="process-card process-card-teal">
           <h3 class="card-step-title">Informed Verdict</h3>
+          <div class="card-draft-hatch" aria-hidden="true"></div>
           <p class="card-step-desc">
             You receive an executive intelligence dossier with legal opinions, fair valuation benchmarks, and
             uncompromised recommendations—including an explicit directive when to walk away from a flawed asset.
@@ -213,6 +218,7 @@
         <!-- STEP 04 (Theme Brand Gold/Sand Mild Card) -->
         <article class="process-card process-card-gold">
           <h3 class="card-step-title">Guarded Closing</h3>
+          <div class="card-draft-hatch" aria-hidden="true"></div>
           <p class="card-step-desc">
             Once greenlit, our senior property advocates handle developer negotiations, protective agreement
             covenants, and in-person biometric registration escort at the Sub-Registrar Office (SRO).
@@ -224,7 +230,10 @@
 
     <!-- Frequently Asked Questions -->
     <section class="sub-faq-section" aria-label="Frequently Asked Questions">
-      <h2 class="faq-heading">Frequently Asked Questions</h2>
+      <div class="faq-header-wrap">
+        <h2 class="faq-heading">Frequently Asked Questions</h2>
+        <div class="header-spectrum-rule faq-spectrum-rule" aria-hidden="true"></div>
+      </div>
       <div class="faq-accordion">
         @for (item of faqs; track item.q; let idx = $index) {
         <div class="faq-item" [class.is-expanded]="expandedFaqIndex() === idx">

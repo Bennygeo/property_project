@@ -131,6 +131,31 @@
   line-height: 1.35;
 }
 
+/* Architectural Spectrum Rule (Motif B) - Matching Other Pages */
+.header-spectrum-rule {
+  height: 3.5px;
+  width: 140px;
+  border-radius: 2px;
+  margin: 0.5rem 0 0.85rem 0;
+  background: linear-gradient(
+    90deg,
+    #dc3522 0%, #dc3522 16.66%,
+    #f58220 16.66%, #f58220 33.33%,
+    #82c341 33.33%, #82c341 50%,
+    #00a8e8 50%, #00a8e8 66.66%,
+    #96a5b5 66.66%, #96a5b5 83.33%,
+    #293b4c 83.33%, #293b4c 100%
+  );
+}
+
+.hero-spectrum-rule {
+  margin: 0.5rem 0 1rem 0;
+}
+
+.faq-spectrum-rule {
+  margin: 0.5rem 0 1.5rem 0;
+}
+
 .sub-hero-subtitle {
   font-size: 13px;
   font-weight: 500;
@@ -2217,8 +2242,23 @@
   font-size: 1.25rem;
   font-weight: 500;
   letter-spacing: -0.2px;
-  margin: 0 0 1.15rem 0;
+  margin: 0 0 0.25rem 0;
   line-height: 1.35;
+}
+
+/* Architectural Technical Drafting Hatch (Motif C) - Matching Other Pages */
+.card-draft-hatch {
+  height: 5px;
+  width: 100%;
+  margin: 6px 0 12px 0;
+  background: repeating-linear-gradient(
+    45deg,
+    #e2e8f0,
+    #e2e8f0 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  opacity: 0.85;
 }
 
 .card-step-desc {
