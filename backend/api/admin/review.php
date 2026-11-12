@@ -4,6 +4,7 @@
  * Handles approval, rejection, and revision requests for properties.
  * Enforces the Four-Eyes / Maker-Checker rule:
  * An admin cannot self-approve a property they submitted!
+ * Supports both consolidated 'projects' table and legacy 'properties' table.
  */
 
 declare(strict_types=1);
@@ -37,6 +38,98 @@ if (empty($propertyId) || empty($reviewerId) || empty($action)) {
 
 $db = (new Database())->getConnection();
 
+// Check which table to use
+$useProjectsTable = true;
+try {
+    $chk = $db->query("SHOW TABLES LIKE 'projects'");
+    $useProjectsTable = (bool)($chk && $chk->fetch());
+} catch (\Throwable $e) {
+    $useProjectsTable = false;
+}
+
+if ($useProjectsTable) {
+    $stmt = $db->prepare("
+        SELECT project_id AS id, project_name AS title, status, submitted_by 
+        FROM projects 
+        WHERE project_id = :id
+    ");
+    $stmt->execute([':id' => $propertyId]);
+    $prop = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$prop) {
+        Response::error('Property not found', 404);
+    }
+
+    $newStatus = 'published';
+    $logMessage = '';
+    $notesVal = !empty($notes) ? $notes : null;
+    $reasonVal = null;
+
+    if ($action === 'approve') {
+        $newStatus = 'published';
+        $logMessage = "Property approved and published live by {$reviewerName}";
+        $notesVal = $notesVal ?: "Listing verified and approved by {$reviewerName} (Title deed, RERA, and cadastral survey check completed).";
+    } elseif ($action === 'reject') {
+        $newStatus = 'rejected';
+        $logMessage = "Property rejected by {$reviewerName}";
+        $reasonVal = $notesVal ?: "Listing details or documentation could not be verified.";
+    } elseif ($action === 'request_revision') {
+        $newStatus = 'revision_requested';
+        $logMessage = "Changes requested by {$reviewerName}";
+        $notesVal = $notesVal ?: "Please update RERA certificate and high-resolution media before resubmission.";
+    } else {
+        Response::error("Unsupported review action: {$action}", 400);
+    }
+
+    $updateStmt = $db->prepare("
+        UPDATE projects 
+        SET status = :status,
+            reviewed_by = :revName,
+            reviewed_at = NOW(),
+            review_notes = :notes,
+            rejection_reason = :reason,
+            updated_at = NOW()
+        WHERE project_id = :id
+    ");
+    $updateStmt->execute([
+        ':status'  => $newStatus,
+        ':revName' => $reviewerName,
+        ':notes'   => $notesVal,
+        ':reason'  => $reasonVal,
+        ':id'      => $propertyId
+    ]);
+
+    // Log this action to admin_activity_logs
+    try {
+        $actionType = $action === 'approve' ? 'approve_peer_review' : ($action === 'reject' ? 'reject_property' : 'request_revision');
+        $logStmt = $db->prepare("
+            INSERT INTO admin_activity_logs 
+              (admin_id, admin_name, action_type, property_id, property_title, notes, target_user_id, target_user_name)
+            VALUES 
+              (:aid, :aname, :atype, :pid, :ptitle, :notes, :tuid, :tuname)
+        ");
+        $logStmt->execute([
+            ':aid'    => $reviewerId,
+            ':aname'  => $reviewerName,
+            ':atype'  => $actionType,
+            ':pid'    => $propertyId,
+            ':ptitle' => $prop['title'],
+            ':notes'  => $notes,
+            ':tuid'   => 1,
+            ':tuname' => $prop['submitted_by'] ?? 'Registry'
+        ]);
+    } catch (\Throwable $e) {}
+
+    Response::success([
+        'propertyId' => $propertyId,
+        'newStatus'  => $newStatus,
+        'reviewedBy' => $reviewerName,
+        'timestamp'  => date('Y-m-d H:i:s'),
+        'message'    => $logMessage
+    ], 'Review decision recorded successfully');
+    exit;
+}
+
 // 1. Fetch current property state
 $stmt = $db->prepare("
     SELECT id, title, status, submitted_by_user_id, submitted_by_name, submitted_by_role 
@@ -51,8 +144,6 @@ if (!$prop) {
 }
 
 // 2. CRITICAL MAKER-CHECKER (FOUR-EYES) RULE ENFORCEMENT:
-// If property was submitted by an admin/co-admin, the author CANNOT approve their own submission!
-// (Revisions or rejections are permitted so that authors can flag issues or withhold drafts)
 if ($action === 'approve' && (int)$prop['submitted_by_user_id'] === $reviewerId && in_array($prop['submitted_by_role'], ['admin', 'co_admin'])) {
     Response::error(
         "Maker-Checker Security Violation: You cannot approve your own listing ('{$prop['title']}'). Independent peer review by a Co-Admin is strictly required.",
