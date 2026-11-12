@@ -2119,7 +2119,17 @@
 }
 
 .card-step-watermark {
-  display: none !important;
+  position: absolute;
+  right: 0.75rem;
+  bottom: -0.5rem;
+  font-size: 5.75rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  font-family: inherit;
+  letter-spacing: -3px;
+  z-index: 1;
 }
 
 /* -------------------------------------------------------------------------- */
