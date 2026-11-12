@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { SubscriptionService } from '../../../../core/services/subscription.service';
+import { SubscriptionService, DEFAULT_SUBSCRIPTION_PLANS } from '../../../../core/services/subscription.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { SubscriptionPlan, SubscriptionInvoice } from '../../../../core/models/subscription.model';
+import { SubscriptionPlan, SubscriptionInvoice, UserEntitlements } from '../../../../core/models/subscription.model';
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -29,14 +29,41 @@ export class SubscriptionPageComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly notificationService = inject(NotificationService);
 
+  readonly defaultPlans = DEFAULT_SUBSCRIPTION_PLANS;
   readonly expandedFaqIndex = signal<number | null>(0);
   readonly selectedInvoiceForRefund = signal<SubscriptionInvoice | null>(null);
   readonly isRefundModalOpen = signal<boolean>(false);
   readonly refundReason = signal<string>('Not satisfied with project discovery');
   readonly isSubmittingRefund = signal<boolean>(false);
 
-  readonly plans = computed(() => this.subscriptionService.plans());
-  readonly entitlements = computed(() => this.subscriptionService.entitlements());
+  readonly plans = computed<SubscriptionPlan[]>(() => {
+    const p = this.subscriptionService.plans();
+    return (p && p.length > 0) ? p : this.defaultPlans;
+  });
+
+  readonly entitlements = computed<UserEntitlements>(() => {
+    return this.subscriptionService.entitlements() || {
+      planId: 'explorer',
+      planName: 'Explorer',
+      projectViewsUsed: 0,
+      projectViewLimit: 2,
+      projectViewsRemaining: 2,
+      comparisonsUsed: 0,
+      comparisonLimit: 1,
+      comparisonsRemaining: 1,
+      advisorySessionsUsed: 0,
+      advisorySessionLimit: 1,
+      advisorySessionsRemaining: 1,
+      siteVisitsUsed: 0,
+      siteVisitLimit: 0,
+      siteVisitsRemaining: 0,
+      hasLocationReport: false,
+      hasDedicatedAdvisor: false,
+      hasPriorityAdvisor: false,
+      expiresAt: null
+    };
+  });
+
   readonly currentSub = computed(() => this.subscriptionService.currentSubscription());
   readonly activePlanId = computed(() => this.subscriptionService.activePlanId());
   readonly invoices = computed(() => this.subscriptionService.invoices());
@@ -128,14 +155,17 @@ export class SubscriptionPageComponent implements OnInit {
     });
   }
 
-  formatPrice(num: number): string {
-    if (num <= 0) return 'Free';
-    return `₹${num.toLocaleString('en-IN')}`;
+  formatPrice(num: any): string {
+    const val = Number(num);
+    if (isNaN(val) || val <= 0) return 'Free';
+    return `₹${val.toLocaleString('en-IN')}`;
   }
 
-  calculatePercentage(used: number, limit: number): number {
-    if (limit <= 0) return 0;
-    return Math.min(100, Math.round((used / limit) * 100));
+  calculatePercentage(used: any, limit: any): number {
+    const u = Number(used) || 0;
+    const l = Number(limit) || 0;
+    if (l <= 0) return 0;
+    return Math.min(100, Math.round((u / l) * 100));
   }
 }
 

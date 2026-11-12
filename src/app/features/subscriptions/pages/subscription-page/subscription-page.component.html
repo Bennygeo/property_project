@@ -142,7 +142,7 @@
       <p class="section-sub-center">All paid plans include 18% GST with automated tax invoice generation and statutory refund protections.</p>
 
       <div class="plans-grid">
-        @for (plan of plans(); track plan.id) {
+        @for (plan of (plans() && plans().length ? plans() : defaultPlans); track plan.id) {
         <article class="plan-card" [class.is-current]="activePlanId() === plan.id" [class.is-popular]="plan.id === 'smart_buyer'">
           
           <!-- Top Tag Badge -->
@@ -197,7 +197,7 @@
           <div class="plan-features-list">
             <div class="features-label">INCLUDED ENTITLEMENTS:</div>
             <ul>
-              @for (feat of plan.features; track feat) {
+              @for (feat of (plan.features || []); track feat) {
               <li>
                 <span class="material-symbols-outlined check-icon">check_circle</span>
                 <span>{{ feat }}</span>
