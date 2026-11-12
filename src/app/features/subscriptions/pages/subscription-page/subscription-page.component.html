@@ -22,10 +22,6 @@
 
     <!-- Hero Title & Value Proposition -->
     <header class="sub-hero-header">
-      <div class="sub-hero-pill">
-        <span class="material-symbols-outlined hero-pill-icon">verified_user</span>
-        <span>FINDAPLOT PRD M06 ENTITLEMENT ENGINE</span>
-      </div>
       <h1 class="sub-hero-title">Membership &amp; Advisory Subscriptions</h1>
       <p class="sub-hero-subtitle">
         Discover verified plotted developments, explore emerging growth corridors, compare layouts, and receive
@@ -58,15 +54,12 @@
 
       <div class="plans-grid">
         @for (plan of (plans() && plans().length ? plans() : defaultPlans); track plan.id) {
-        <article class="plan-card plan-card-{{ plan.id }}" 
-          [class.plan-explorer]="plan.id === 'explorer'"
+        <article class="plan-card plan-card-{{ plan.id }}" [class.plan-explorer]="plan.id === 'explorer'"
           [class.plan-smart-buyer]="plan.id === 'smart_buyer'"
           [class.plan-priority-buyer]="plan.id === 'priority_buyer'"
-          [class.plan-vip-concierge]="plan.id === 'vip_concierge'"
-          [class.is-current]="activePlanId() === plan.id"
+          [class.plan-vip-concierge]="plan.id === 'vip_concierge'" [class.is-current]="activePlanId() === plan.id"
           [class.is-popular]="plan.id === 'priority_buyer' && !isPlanDowngrade(plan.id)"
-          [class.is-downgrade-disabled]="isPlanDowngrade(plan.id)"
-          (click)="onSubscribe(plan)">
+          [class.is-downgrade-disabled]="isPlanDowngrade(plan.id)" (click)="onSubscribe(plan)">
 
           <!-- Top Tag Badge -->
           <div class="plan-badge-wrapper">
@@ -143,7 +136,8 @@
               <span>Active Plan</span>
             </button>
             } @else if (isPlanDowngrade(plan.id)) {
-            <button type="button" class="btn-plan-cta downgrade-cta" disabled title="Downgrading from an active higher tier is not allowed">
+            <button type="button" class="btn-plan-cta downgrade-cta" disabled
+              title="Downgrading from an active higher tier is not allowed">
               <span class="material-symbols-outlined">lock</span>
               <span>Downgrade Not Allowed</span>
             </button>
@@ -194,7 +188,8 @@
   <!-- ========================================== -->
   @if (isRazorpayModalOpen() && selectedPlanForCheckout()) {
   <div class="rzp-modal-backdrop" (click)="closeRazorpayCheckout()">
-    <div class="rzp-modal-frame" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="rzp-title">
+    <div class="rzp-modal-frame" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+      aria-labelledby="rzp-title">
 
       <!-- Razorpay Header Bar -->
       <div class="rzp-modal-header">
@@ -204,7 +199,8 @@
             <span class="rzp-brand-name">Razorpay</span>
             <span class="rzp-badge-sandbox">TEST SANDBOX</span>
           </div>
-          <button type="button" class="rzp-close-btn" (click)="closeRazorpayCheckout()" aria-label="Close Razorpay checkout">
+          <button type="button" class="rzp-close-btn" (click)="closeRazorpayCheckout()"
+            aria-label="Close Razorpay checkout">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -230,7 +226,8 @@
           <div class="rzp-user-text">
             <span class="rzp-user-name">{{ authService.currentUser()?.name || 'Verified Investor' }}</span>
             <span class="rzp-user-contact">
-              {{ authService.currentUser()?.phone || '+91 94441 00000' }} • {{ authService.currentUser()?.email || 'investor@findaplot.in' }}
+              {{ authService.currentUser()?.phone || '+91 94441 00000' }} • {{ authService.currentUser()?.email ||
+              'investor@findaplot.in' }}
             </span>
           </div>
         </div>
@@ -320,7 +317,8 @@
 
               <div class="rzp-sandbox-notice">
                 <span class="material-symbols-outlined">info</span>
-                <span>Test Mode Active: No real money deducted. Instantly activates {{ selectedPlanForCheckout()?.name }} membership.</span>
+                <span>Test Mode Active: No real money deducted. Instantly activates {{ selectedPlanForCheckout()?.name
+                  }} membership.</span>
               </div>
             </div>
             }
@@ -377,7 +375,8 @@
               </div>
 
               <div class="rzp-banks-grid">
-                @for (b of ['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra', 'Punjab National']; track b) {
+                @for (b of ['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra', 'Punjab
+                National']; track b) {
                 <button type="button" class="rzp-bank-card" [class.selected]="selectedBank() === b"
                   (click)="selectBank(b)">
                   <span class="material-symbols-outlined">apartment</span>

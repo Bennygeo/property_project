@@ -74,7 +74,10 @@ try {
         $newOrder = (int)($plan['sort_order'] ?? 1);
 
         if ($newPrice < $curPrice || $newOrder < $curOrder) {
-            throw new \Exception("Downgrading from your active {$currentActive['current_plan_name']} tier is not permitted.");
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            Response::error("Downgrading from your active {$currentActive['current_plan_name']} tier is not permitted.", 400);
         }
     }
 
@@ -236,6 +239,8 @@ try {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    Response::error('Payment verification failed: ' . $e->getMessage(), 500);
+    error_log("Payment verification error: " . $e->getMessage());
+    $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? (int)$e->getCode() : 400;
+    Response::error('Payment verification failed: ' . $e->getMessage(), $code);
 }
 
