@@ -2185,12 +2185,14 @@
 /* Base Process Card */
 .process-card {
   position: relative;
-  border-radius: 12px;
-  padding: 1.85rem 1.45rem 1.65rem 1.45rem;
-  min-height: 270px;
+  border-radius: 16px;
+  padding: 2.25rem 1.85rem 2.25rem 1.85rem;
+  min-height: 290px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: #ffffff;
+  background-clip: padding-box;
   transition: border-color 0.2s ease;
   box-shadow: none !important;
   box-sizing: border-box;
@@ -2213,17 +2215,18 @@
 }
 
 .card-step-title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.25px;
-  margin: 1.25rem 0 0.85rem 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  margin: 0 0 1.15rem 0;
   line-height: 1.35;
 }
 
 .card-step-desc {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.65;
+  color: #475569;
   margin: 0;
   position: relative;
   z-index: 2;
@@ -2247,9 +2250,7 @@
 /* THEME 1: MILD SLATE PROCESS CARD (PHASE 01)                                */
 /* -------------------------------------------------------------------------- */
 .process-card-slate {
-  background: #f8fafc;
-  border: 1.5px solid #cbd5e1;
-  box-shadow: none !important;
+  border: 10px solid #cbd5e1;
 }
 
 .process-card-slate:hover {
@@ -2272,20 +2273,18 @@
 }
 
 .process-card-slate .card-step-watermark.watermark-slate {
-  color: rgba(203, 213, 225, 0.45);
+  color: #e2e8f0;
 }
 
 /* -------------------------------------------------------------------------- */
 /* THEME 2: MILD BRAND GREEN PROCESS CARD (PHASE 02)                          */
 /* -------------------------------------------------------------------------- */
 .process-card-green {
-  background: #f2f8f4;
-  border: 1.5px solid #8ebaa0;
-  box-shadow: none !important;
+  border: 10px solid #a3caa9;
 }
 
 .process-card-green:hover {
-  border-color: #5e8f72;
+  border-color: #7fae87;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -2305,20 +2304,18 @@
 }
 
 .process-card-green .card-step-watermark.watermark-green {
-  color: rgba(94, 143, 114, 0.16);
+  color: #d1e7d8;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 3: MILD BRAND TEAL PROCESS CARD (PHASE 03)                           */
+/* THEME 3: MILD BRAND TEAL PROCESS CARD (PHASE 03 - Matches Image Card 03)   */
 /* -------------------------------------------------------------------------- */
 .process-card-teal {
-  background: #f0f6f8;
-  border: 1.5px solid #7faab7;
-  box-shadow: none !important;
+  border: 10px solid #8ca6b0;
 }
 
 .process-card-teal:hover {
-  border-color: #0f3b4a;
+  border-color: #6d8d99;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -2330,24 +2327,28 @@
 }
 
 .process-card-teal .card-step-title {
-  color: #0f3b4a;
+  color: #1e3b48;
 }
 
 .process-card-teal .card-step-desc {
-  color: #264d59;
+  color: #334e5a;
 }
 
 .process-card-teal .card-step-watermark.watermark-teal {
-  color: rgba(15, 59, 74, 0.16);
+  color: #d8e2e7;
 }
 
 /* -------------------------------------------------------------------------- */
-/* THEME 4: MILD BRAND GOLD/SAND PROCESS CARD (PHASE 04)                      */
+/* THEME 4: MILD BRAND GOLD/SAND PROCESS CARD (PHASE 04 - Matches Image Card 04) */
 /* -------------------------------------------------------------------------- */
 .process-card-gold {
-  background: #fdfbf6;
-  border: 1.5px solid #dfc886;
+  border: 10px solid #f2e8cf;
+}
+
+.process-card-gold:hover {
+  border-color: #dfce9f;
   box-shadow: none !important;
+  transform: none !important;
 }
 
 .process-card-gold .card-step-badge.badge-gold {
@@ -2357,15 +2358,15 @@
 }
 
 .process-card-gold .card-step-title {
-  color: #6e5719;
+  color: #7d6526;
 }
 
 .process-card-gold .card-step-desc {
-  color: #524113;
+  color: #5a4b22;
 }
 
 .process-card-gold .card-step-watermark.watermark-gold {
-  color: rgba(213, 179, 87, 0.22);
+  color: #f4e9cf;
 }
 
 .spin {
