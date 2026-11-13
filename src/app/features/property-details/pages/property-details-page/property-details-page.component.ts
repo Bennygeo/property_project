@@ -403,12 +403,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
               if (prop.isViewRestricted) {
                 this.isEntitlementExhausted.set(true);
                 this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
-                this.notificationService.show({
-                  type: 'warning',
-                  title: 'Membership Quota Reached',
-                  message: prop.upgradeMessage || 'Upgrade your plan to unlock full project specifications and cadastral documents.',
-                  icon: 'lock'
-                });
               } else {
                 this.isEntitlementExhausted.set(false);
               }

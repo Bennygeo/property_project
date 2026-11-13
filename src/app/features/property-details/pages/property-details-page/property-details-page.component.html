@@ -6,110 +6,38 @@
   <app-header />
 
   @if (property(); as prop) {
-  <!-- 1. MEMBERSHIP QUOTA REACHED - HIGH ATTENTION BACKDROP BLUR ALERT MODAL -->
+  <!-- 1. SINGLE SIMPLE & PROFESSIONAL MEMBERSHIP QUOTA ALERT OVER BLURRED BACKGROUND -->
   @if (isEntitlementExhausted() && !isQuotaModalDismissed()) {
   <div class="quota-modal-backdrop" (click)="dismissQuotaModal()">
     <div class="quota-alert-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="quota-modal-title">
-      <!-- Architectural Spectrum Accent Stripe -->
       <div class="quota-modal-top-accent"></div>
 
-      <!-- Close Button -->
       <button type="button" class="quota-modal-close-btn" (click)="dismissQuotaModal()" aria-label="Close quota alert">
         <span class="material-symbols-outlined">close</span>
       </button>
 
       <div class="quota-modal-content">
-        <!-- Visual Badge & Icon -->
-        <div class="quota-modal-header">
-          <div class="quota-modal-icon-wrap">
-            <span class="material-symbols-outlined">workspace_premium</span>
-          </div>
-          <div class="quota-modal-header-meta">
-            <span class="quota-modal-pill">MEMBERSHIP QUOTA REACHED</span>
-            <span class="quota-modal-tier-tag">{{ property()?.activePlanName || activePlanName() || 'Free Explorer' }} Tier</span>
-          </div>
+        <div class="quota-modal-icon-wrap">
+          <span class="material-symbols-outlined">lock</span>
         </div>
 
-        <!-- Title & Subtitle -->
-        <h2 id="quota-modal-title" class="quota-modal-title">Project Dossier View Limit Reached</h2>
+        <span class="quota-modal-pill">MEMBERSHIP QUOTA REACHED</span>
+
+        <h2 id="quota-modal-title" class="quota-modal-title">Project View Limit Reached</h2>
+
         <p class="quota-modal-desc">
-          {{ entitlementExhaustedMessage() || ('You have reached your limit of ' + projectViewLimit() + ' project views on the ' + (property()?.activePlanName || activePlanName() || 'Free Explorer') + ' plan. Upgrade your membership to view complete specifications, cadastral audit, layout plots, and verified legal clearances.') }}
+          {{ entitlementExhaustedMessage() || ('You have used all ' + projectViewLimit() + ' project views on the ' + (property()?.activePlanName || activePlanName() || 'Free Explorer') + ' plan. Upgrade to unlock full project specifications, layout plots, and verified legal documents.') }}
         </p>
 
-        <!-- Quota Usage Tracker Widget -->
-        <div class="quota-meter-widget">
-          <div class="quota-meter-header">
-            <span class="meter-plan-label">Plan Quota Consumption</span>
-            <span class="meter-usage-count"><strong>{{ projectViewsUsed() }}</strong> / {{ projectViewLimit() }} Project Views (100%)</span>
-          </div>
-          <div class="quota-meter-track">
-            <div class="quota-meter-fill"></div>
-          </div>
-        </div>
-
-        <!-- Protected Intelligence Checklist -->
-        <div class="quota-locked-intel-card">
-          <div class="locked-intel-title">
-            <span class="material-symbols-outlined">shield_lock</span>
-            <span>Protected Architectural Intelligence Gated Under Current Tier:</span>
-          </div>
-          <ul class="locked-intel-list">
-            <li>
-              <span class="material-symbols-outlined bullet-icon">check_circle</span>
-              <span>Cadastral Survey Numbers, FMB Sketch &amp; Patta / Chitta Records</span>
-            </li>
-            <li>
-              <span class="material-symbols-outlined bullet-icon">check_circle</span>
-              <span>Complete 49-Point Specification &amp; Plot Layout Dimensions</span>
-            </li>
-            <li>
-              <span class="material-symbols-outlined bullet-icon">check_circle</span>
-              <span>Direct Verified Developer Escrow &amp; Legal Title Deeds</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Action Buttons Deck -->
         <div class="quota-modal-actions">
           <a routerLink="/subscriptions" class="btn-quota-upgrade">
             <span class="material-symbols-outlined">card_membership</span>
-            <span>Upgrade Membership (From ₹750)</span>
+            <span>Upgrade Plan (From ₹750)</span>
           </a>
-          <div class="quota-modal-secondary-actions">
-            <button type="button" class="btn-quota-ghost" (click)="dismissQuotaModal()">
-              <span class="material-symbols-outlined">visibility</span>
-              <span>Preview Basic Overview</span>
-            </button>
-            <button type="button" class="btn-quota-ghost" (click)="goBack()">
-              <span class="material-symbols-outlined">arrow_back</span>
-              <span>Back to Search</span>
-            </button>
-          </div>
+          <button type="button" class="btn-quota-ghost" (click)="goBack()">
+            <span>Back to Search</span>
+          </button>
         </div>
-      </div>
-    </div>
-  </div>
-  }
-
-  <!-- 2. REFINED THEME IN-PAGE BANNER (Shown when viewing page with quota reached) -->
-  @if (isEntitlementExhausted()) {
-  <div class="entitlement-limit-banner">
-    <div class="max-w-content entitlement-banner-inner">
-      <div class="entitlement-pill-left">
-        <span class="entitlement-badge-chip">MEMBERSHIP QUOTA REACHED</span>
-        <span class="entitlement-banner-text">
-          Quota reached ({{ projectViewsUsed() }}/{{ projectViewLimit() }} views used). Viewing basic overview only.
-        </span>
-      </div>
-      <div class="entitlement-banner-actions">
-        <button type="button" class="btn-banner-review" (click)="openQuotaModal()">
-          <span class="material-symbols-outlined">info</span>
-          <span>Review Notice</span>
-        </button>
-        <a routerLink="/subscriptions" class="btn-banner-upgrade">
-          <span class="material-symbols-outlined">card_membership</span>
-          <span>Upgrade Membership (From ₹750)</span>
-        </a>
       </div>
     </div>
   </div>
@@ -1405,11 +1333,7 @@
             }
           </div>
         </div>
-        } @else {
-        <!-- ====================================================================== -->
-        <!-- PAYWALL: MEMBERSHIP QUOTA REACHED / VIEW RESTRICTED                   -->
-        <!-- (Details below banner are NOT downloaded from DB per PRD M06)         -->
-        <!-- ====================================================================== -->
+        } @else if (isQuotaModalDismissed()) {
         <section class="restricted-view-paywall-card">
           <div class="paywall-header">
             <div class="paywall-icon-circle">
@@ -1417,127 +1341,18 @@
             </div>
             <div class="paywall-title-block">
               <div class="paywall-plan-tag">
-                <span class="tag-plan-name">{{ property()?.activePlanName || activePlanName() }} Plan</span>
-                <span class="tag-quota">{{ projectViewsUsed() }} of {{ projectViewLimit() }} Project Views Used</span>
+                <span class="tag-plan-name">{{ property()?.activePlanName || activePlanName() || 'Free Explorer' }} Plan</span>
+                <span class="tag-quota">{{ projectViewsUsed() }} / {{ projectViewLimit() }} Views Used</span>
               </div>
-              <h2 class="paywall-heading">Full Project Dossier Restricted</h2>
+              <h2 class="paywall-heading">Full Project Dossier Locked</h2>
               <p class="paywall-sub">
-                {{ property()?.upgradeMessage || 'You have reached your project view limit for your current plan.
-                Upgrade to view full specifications, cadastral audit, layout plots, and documents.' }}
+                Upgrade your membership to view full specifications, cadastral survey records, layout plots, and verified legal documents.
               </p>
             </div>
-          </div>
-
-          <!-- Feature Lock Notice Strip -->
-          <div class="restricted-features-strip">
-            <div class="strip-header">
-              <span class="material-symbols-outlined">shield</span>
-              <span>Protected Project Intelligence (Locked)</span>
-            </div>
-            <div class="locked-features-grid">
-              <div class="locked-feat-item">
-                <span class="material-symbols-outlined lock-bullet">lock</span>
-                <span>Complete 49-Point Master Excel Dossier</span>
-              </div>
-              <div class="locked-feat-item">
-                <span class="material-symbols-outlined lock-bullet">lock</span>
-                <span>3D Interactive Partition Studio &amp; Plot Layouts</span>
-              </div>
-              <div class="locked-feat-item">
-                <span class="material-symbols-outlined lock-bullet">lock</span>
-                <span>Cadastral Survey Numbers &amp; SRO Encumbrance (EC)</span>
-              </div>
-              <div class="locked-feat-item">
-                <span class="material-symbols-outlined lock-bullet">lock</span>
-                <span>DTCP / TNRERA Approval Sanction Numbers</span>
-              </div>
-              <div class="locked-feat-item">
-                <span class="material-symbols-outlined lock-bullet">lock</span>
-                <span>Ground Water Table &amp; Soil Bearing Reports</span>
-              </div>
-              <div class="locked-feat-item">
-                <span class="material-symbols-outlined lock-bullet">lock</span>
-                <span>Highway &amp; Corridor Connectivity Benchmarks</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3-Tier Upgrade Comparison Cards -->
-          <div class="upgrade-tiers-grid">
-            <!-- Smart Buyer -->
-            <div class="upgrade-tier-box">
-              <div class="tier-box-header">
-                <span class="tier-chip-name">Smart Buyer</span>
-                <div class="tier-pricing">
-                  <span class="price-currency">₹</span>
-                  <span class="price-amount">750</span>
-                  <span class="price-period">/ 30 Days</span>
-                </div>
-              </div>
-              <ul class="tier-features-list">
-                <li><span class="material-symbols-outlined">check_circle</span> <strong>5 Project Views</strong></li>
-                <li><span class="material-symbols-outlined">check_circle</span> 3 Benchmark Comparisons</li>
-                <li><span class="material-symbols-outlined">check_circle</span> 2 Senior Advisory Calls</li>
-                <li><span class="material-symbols-outlined">check_circle</span> Location Intelligence Report</li>
-              </ul>
-              <a routerLink="/subscriptions" class="btn-tier-select">
-                <span>Upgrade to Smart Buyer</span>
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </a>
-            </div>
-
-            <!-- Priority Buyer (Recommended) -->
-            <div class="upgrade-tier-box tier-recommended">
-              <div class="recommended-badge">MOST POPULAR</div>
-              <div class="tier-box-header">
-                <span class="tier-chip-name">Priority Buyer</span>
-                <div class="tier-pricing">
-                  <span class="price-currency">₹</span>
-                  <span class="price-amount">7,500</span>
-                  <span class="price-period">/ 60 Days</span>
-                </div>
-              </div>
-              <ul class="tier-features-list">
-                <li><span class="material-symbols-outlined">check_circle</span> <strong>25 Project Views</strong></li>
-                <li><span class="material-symbols-outlined">check_circle</span> 10 Benchmark Comparisons</li>
-                <li><span class="material-symbols-outlined">check_circle</span> 4 Advisory Consultations</li>
-                <li><span class="material-symbols-outlined">check_circle</span> 1 Assisted Site Visit (Cab Escort)</li>
-                <li><span class="material-symbols-outlined">check_circle</span> Dedicated Relationship Advisor</li>
-              </ul>
-              <a routerLink="/subscriptions" class="btn-tier-select btn-recommended">
-                <span>Upgrade to Priority Buyer</span>
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </a>
-            </div>
-
-            <!-- VIP Concierge -->
-            <div class="upgrade-tier-box">
-              <div class="tier-box-header">
-                <span class="tier-chip-name">VIP Concierge</span>
-                <div class="tier-pricing">
-                  <span class="price-currency">₹</span>
-                  <span class="price-amount">20,000</span>
-                  <span class="price-period">/ 90 Days</span>
-                </div>
-              </div>
-              <ul class="tier-features-list">
-                <li><span class="material-symbols-outlined">check_circle</span> <strong>50 Project Views</strong></li>
-                <li><span class="material-symbols-outlined">check_circle</span> 20 Benchmark Comparisons</li>
-                <li><span class="material-symbols-outlined">check_circle</span> 8 Advisory Consultations</li>
-                <li><span class="material-symbols-outlined">check_circle</span> 3 Assisted Site Visits</li>
-                <li><span class="material-symbols-outlined">check_circle</span> Priority Legal &amp; Title Escort</li>
-              </ul>
-              <a routerLink="/subscriptions" class="btn-tier-select">
-                <span>Upgrade to VIP Concierge</span>
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="paywall-footer-note">
-            <span class="material-symbols-outlined">info</span>
-            <span>Any properties already viewed remain permanently accessible in your account at zero credit
-              cost.</span>
+            <a routerLink="/subscriptions" class="btn-quota-inline-upgrade">
+              <span class="material-symbols-outlined">card_membership</span>
+              <span>Upgrade Plan (From ₹750)</span>
+            </a>
           </div>
         </section>
         }
@@ -1546,21 +1361,6 @@
 
       <!-- RIGHT COLUMN: STICKY REALTOR / CONCIERGE DESK (Hanu Reddy Style) -->
       <aside class="hanu-sidebar-column" id="inquiry-box">
-
-        @if (isViewRestricted()) {
-        <div class="sidebar-restricted-box">
-          <div class="s-icon">
-            <span class="material-symbols-outlined">lock</span>
-          </div>
-          <h3 class="s-title">Plan Upgrade Required</h3>
-          <p class="s-desc">Verified promoter contacts, legal title escrow, and private site walkthroughs are unlocked
-            with an active buyer membership.</p>
-          <a routerLink="/subscriptions" class="btn-sidebar-upgrade">
-            <span class="material-symbols-outlined">upgrade</span>
-            <span>Explore Membership Plans</span>
-          </a>
-        </div>
-        }
 
         <!-- DOCKED PRICING & QUICK ACTIONS (APPEARS WHEN SCROLLED PAST HEADER) -->
         @if (isScrolledPastHeader()) {
