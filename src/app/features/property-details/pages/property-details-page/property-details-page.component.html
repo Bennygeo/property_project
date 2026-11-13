@@ -6,43 +6,6 @@
   <app-header />
 
   @if (property(); as prop) {
-  <!-- 1. SINGLE SIMPLE & PROFESSIONAL MEMBERSHIP QUOTA ALERT OVER BLURRED BACKGROUND -->
-  @if (isEntitlementExhausted() && !isQuotaModalDismissed()) {
-  <div class="quota-modal-backdrop" (click)="dismissQuotaModal()">
-    <div class="quota-alert-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="quota-modal-title">
-      <div class="quota-modal-top-accent"></div>
-
-      <button type="button" class="quota-modal-close-btn" (click)="dismissQuotaModal()" aria-label="Close quota alert">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-
-      <div class="quota-modal-content">
-        <div class="quota-modal-icon-wrap">
-          <span class="material-symbols-outlined">lock</span>
-        </div>
-
-        <span class="quota-modal-pill">MEMBERSHIP QUOTA REACHED</span>
-
-        <h2 id="quota-modal-title" class="quota-modal-title">Project View Limit Reached</h2>
-
-        <p class="quota-modal-desc">
-          {{ entitlementExhaustedMessage() || ('You have used all ' + projectViewLimit() + ' project views on the ' + (property()?.activePlanName || activePlanName() || 'Free Explorer') + ' plan. Upgrade to unlock full project specifications, layout plots, and verified legal documents.') }}
-        </p>
-
-        <div class="quota-modal-actions">
-          <a routerLink="/subscriptions" class="btn-quota-upgrade">
-            <span class="material-symbols-outlined">card_membership</span>
-            <span>Upgrade Plan (From ₹750)</span>
-          </a>
-          <button type="button" class="btn-quota-ghost" (click)="goBack()">
-            <span>Back to Search</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  }
-
   @if (isFirstGuestPreview()) {
   <div class="guest-preview-banner">
     <div class="max-w-content preview-banner-inner">
@@ -60,7 +23,7 @@
   }
 
   <!-- UNLOCKED: CLEAN, STRONG HANU REDDY REALTY STYLE DETAIL SHOWCASE -->
-  <div class="max-w-content hanu-property-page" [class.is-guest-blurred]="isBlockedForGuest() || (isEntitlementExhausted() && !isQuotaModalDismissed())">
+  <div class="max-w-content hanu-property-page" [class.is-guest-blurred]="isBlockedForGuest()">
 
     <!-- GUEST VIEWING: MINIMALIST OVERLAY IF OTP MODAL IS DISMISSED -->
     @if (isBlockedForGuest() && !authService.isOtpModalOpen()) {
@@ -1333,25 +1296,55 @@
             }
           </div>
         </div>
-        } @else if (isQuotaModalDismissed()) {
-        <section class="restricted-view-paywall-card">
-          <div class="paywall-header">
-            <div class="paywall-icon-circle">
-              <span class="material-symbols-outlined">lock</span>
-            </div>
-            <div class="paywall-title-block">
-              <div class="paywall-plan-tag">
-                <span class="tag-plan-name">{{ property()?.activePlanName || activePlanName() || 'Free Explorer' }} Plan</span>
-                <span class="tag-quota">{{ projectViewsUsed() }} / {{ projectViewLimit() }} Views Used</span>
-              </div>
-              <h2 class="paywall-heading">Full Project Dossier Locked</h2>
-              <p class="paywall-sub">
-                Upgrade your membership to view full specifications, cadastral survey records, layout plots, and verified legal documents.
-              </p>
-            </div>
-            <a routerLink="/subscriptions" class="btn-quota-inline-upgrade">
-              <span class="material-symbols-outlined">card_membership</span>
-              <span>Upgrade Plan (From ₹750)</span>
+        } @else {
+        <!-- ====================================================================== -->
+        <!-- MEDIUM.COM STYLE FADE-OUT TEASER + INLINE EDITORIAL PAYWALL            -->
+        <!-- ====================================================================== -->
+        <section class="medium-paywall-wrapper">
+          <div class="medium-fade-teaser" aria-hidden="true">
+            <p class="teaser-para">
+              {{ prop.title }} is a verified real estate asset situated in the prime growth corridor of {{ prop.locality }}, {{ prop.city }}. Evaluated under our architectural due diligence framework, the property features demarcated road access, clear survey boundaries, and comprehensive legal documentation.
+            </p>
+            <p class="teaser-para">
+              Before scheduling an acquisition walkthrough, review the complete 49-point property specification matrix, cadastral survey numbers, FMB sketch, Patta / Chitta records, and SRO encumbrance verification below.
+            </p>
+          </div>
+
+          <div class="medium-upgrade-prompt">
+            <span class="medium-offer-pill">Membership Quota Reached</span>
+
+            <h2 class="medium-paywall-heading">Access the complete property dossier.</h2>
+            <p class="medium-paywall-subheading">Unlock every verified specification &amp; legal record.</p>
+
+            <ul class="medium-benefits-list">
+              <li>
+                <span class="medium-check">✓</span>
+                <span>Read complete 49-point property &amp; plot specifications</span>
+              </li>
+              <li>
+                <span class="medium-check">✓</span>
+                <span>Verify cadastral survey numbers, FMB sketch &amp; Patta records</span>
+              </li>
+              <li>
+                <span class="medium-check">✓</span>
+                <span>Inspect DTCP / TNRERA sanction &amp; SRO encumbrance audits</span>
+              </li>
+              <li>
+                <span class="medium-check">✓</span>
+                <span>Explore 3D interactive layout &amp; plot availability studio</span>
+              </li>
+              <li>
+                <span class="medium-check">✓</span>
+                <span>Connect directly with verified developers &amp; relationship advisors</span>
+              </li>
+              <li>
+                <span class="medium-check">✓</span>
+                <span>Access ground water table, soil profile &amp; transit benchmarks</span>
+              </li>
+            </ul>
+
+            <a routerLink="/subscriptions" class="medium-upgrade-cta">
+              Upgrade now
             </a>
           </div>
         </section>
