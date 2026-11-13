@@ -19,8 +19,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'POST') === 'OPTIONS') {
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../helpers/property_master_helper.php';
 
 use Mannidam\Config\Database;
+use Mannidam\Helpers\PropertyMasterHelper;
 
 try {
     $db = (new Database())->getConnection();
@@ -174,44 +176,44 @@ try {
         $user ? $user['name'] : $developer['name']
     ]);
 
-    // 4. Insert into property_master_details
-    $pmdInsert = $db->prepare("
-        INSERT INTO property_master_details (
-            property_id, project_name, developer, village_locality, area_location,
-            taluk, district, corridor, pincode, rera_number,
-            plot_no, plot_size_sqft, plot_size_cents, facing,
-            patta_type, dtcp_approved, dtcp_approval_no, road_width_ft,
-            clear_title_available, bank_loan_approved, suited_for, possession_timeline
-        ) VALUES (
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, '600001', ?,
-            'Plot 1', ?, 2.75, ?,
-            'Individual Patta', 'Yes', ?, ?,
-            'Yes', 'Yes', 'Residential Villa Construction', ?
-        )
-    ");
-
+    // 4. Insert complete ~70-column record into `projects`, `project_details`, and `property_master_details`
+    $masterData = $input['masterData'] ?? $input['masterDetails'] ?? [];
+    if (!is_array($masterData)) {
+        $masterData = [];
+    }
     $cleanSqft = (int)preg_replace('/[^\d]/', '', $sqft);
     if ($cleanSqft <= 0) $cleanSqft = 1200;
-    $roadWidth = (int)preg_replace('/[^\d]/', '', (string)($input['roadWidth'] ?? '40'));
+    $roadWidth = (int)preg_replace('/[^\d]/', '', (string)($input['roadWidth'] ?? ($masterData['roadWidthFt'] ?? '40')));
     if ($roadWidth <= 0) $roadWidth = 40;
-    $dtcpApprovalNo = trim((string)($input['dtcpApprovalNo'] ?? $input['plotApproval'] ?? 'DTCP/2026/L-042'));
+    $dtcpApprovalNo = trim((string)($masterData['dtcpApprovalNo'] ?? $input['dtcpApprovalNo'] ?? $input['plotApproval'] ?? 'DTCP/2026/L-042'));
 
-    $pmdInsert->execute([
-        $propId,
-        $title,
-        $developer['name'],
-        $localityName,
-        $cityName,
-        $taluk ?: $cityName,
-        $district ?: $cityName,
-        $corridor ?: 'State Highway Corridor',
-        $reraNumber,
-        $cleanSqft,
-        $facingOrView,
-        $dtcpApprovalNo,
-        $roadWidth,
-        $possessionDate
+    if (empty($masterData)) {
+        $masterData = [
+            'projectName' => $title,
+            'developer' => $developer['name'],
+            'developerId' => $developerId,
+            'villageLocality' => $localityName,
+            'areaLocation' => $cityName,
+            'taluk' => $taluk ?: $cityName,
+            'district' => $district ?: $cityName,
+            'corridor' => $corridor ?: 'State Highway Corridor',
+            'pincode' => '600001',
+            'reraNumber' => $reraNumber,
+            'plotNo' => 'Plot 1',
+            'plotSizeSqft' => $cleanSqft,
+            'plotSizeCents' => round($cleanSqft / 435.6, 2),
+            'facing' => $facingOrView,
+            'dtcpApprovalNo' => $dtcpApprovalNo,
+            'roadWidthFt' => $roadWidth,
+            'possessionTimeline' => $possessionDate
+        ];
+    }
+
+    PropertyMasterHelper::saveProjectAndDetails($db, $propId, $input, $masterData, [
+        'status'         => 'published',
+        'developer_id'   => $developerId,
+        'developer_name' => $developer['name'],
+        'submitted_by'   => $user ? $user['name'] : $developer['name']
     ]);
 
     // 5. Insert highlights

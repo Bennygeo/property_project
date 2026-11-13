@@ -1,0 +1,2162 @@
+        <!-- ========================================================================= -->
+        <!-- TAB CONTENT: SUPER ADMIN MEMBERSHIP PLANS & ENTITLEMENTS CUSTOMIZATION     -->
+        <!-- ========================================================================= -->
+        @if (activeTab() === 'subscription_plans') {
+        <section class="tab-pane-section subscription-plans-admin-pane">
+
+          <!-- Header Banner -->
+          <div class="workspace-header-banner"
+            style="background: linear-gradient(135deg, #0f3b4a 0%, #1e3a5f 60%, #134e4a 100%);">
+            <div class="banner-title-block">
+              <div class="banner-icon-box" style="background: rgba(255,255,255,0.18); color: #ffffff;">
+                <span class="material-symbols-outlined">tune</span>
+              </div>
+              <div>
+                <h2 class="banner-main-title" style="color: #ffffff;">Membership Plans &amp; Entitlements Governance
+                </h2>
+                <p class="banner-subtitle" style="color: rgba(255,255,255,0.88);">
+                  Super Administrator complete control: customize pricing (₹), validity periods, quotas, advisory
+                  limits, marketing copy, and feature checklists with real-time MySQL database deployment.
+                </p>
+              </div>
+            </div>
+
+            <div class="workspace-stats-pills">
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminSubscriptionPlans().length }}</span>
+                <span class="stat-lbl">Configured Tiers</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ dashboardMetrics().totalSubscriptionBuyers }}</span>
+                <span class="stat-lbl">Active Paid Buyers</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">₹{{ getTotalSubscriptionRevenue() | number:'1.0-0' }}</span>
+                <span class="stat-lbl">Total Subscriptions</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action & Filter Bar -->
+          <div class="workspace-actions-bar" style="margin-top: 1.25rem;">
+            <div class="action-bar-left">
+              <span
+                style="font-size: 13px; font-weight: 700; color: #0f3b4a; display: inline-flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: #5e8f72;">verified_user</span>
+                Live Catalog Governance: Changes deploy instantly to public /subscriptions page &amp; Razorpay Checkout
+              </span>
+            </div>
+            <div class="action-bar-right" style="display: flex; gap: 8px;">
+              <button type="button" class="btn-refresh-plans" (click)="loadSubscriptionPlans()"
+                [disabled]="isPlansLoading()"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #0f3b4a; font-size: 13px; font-weight: 600; cursor: pointer;">
+                <span class="material-symbols-outlined" [class.spin]="isPlansLoading()"
+                  style="font-size: 16px;">refresh</span>
+                <span>Refresh From DB</span>
+              </button>
+              <a routerLink="/subscriptions" target="_blank"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; background: #0f3b4a; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">open_in_new</span>
+                <span>Preview Public Plans</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Plans Cards Grid -->
+          <div class="admin-plans-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+            @for (plan of adminSubscriptionPlans(); track plan.id) {
+            <div class="admin-plan-card" [class.is-inactive]="!plan.isActive"
+              style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 1.5rem; display: flex; flex-direction: column; position: relative;">
+
+              <!-- Top Header -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                <span
+                  style="font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px;"
+                  [style.background]="plan.id === 'explorer' ? '#f1f5f9' : (plan.id === 'smart_buyer' ? '#e5f7ec' : (plan.id === 'priority_buyer' ? '#e1eff2' : '#f7f0d8'))"
+                  [style.color]="plan.id === 'explorer' ? '#334155' : (plan.id === 'smart_buyer' ? '#2c4938' : (plan.id === 'priority_buyer' ? '#0f3b4a' : '#6e5719'))">
+                  {{ plan.badgeText || (plan.priceInr === 0 ? 'Free Forever' : 'Standard Tier') }}
+                </span>
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;"
+                  [style.color]="plan.isActive ? '#15803d' : '#94a3b8'">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">{{ plan.isActive ? 'check_circle' :
+                    'do_not_disturb_on' }}</span>
+                  {{ plan.isActive ? 'ACTIVE' : 'INACTIVE' }}
+                </span>
+              </div>
+
+              <!-- Name & Pricing -->
+              <h3 style="font-size: 16px; font-weight: 700; color: #0f3b4a; margin: 0 0 0.25rem 0;">{{ plan.name }}</h3>
+              <p style="font-size: 12px; color: #64748b; line-height: 1.4; margin: 0 0 1rem 0; min-height: 34px;">{{
+                plan.description }}</p>
+
+              <div
+                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: baseline; gap: 6px;">
+                  <span style="font-size: 18px; font-weight: 800; color: #0f3b4a;">₹{{ plan.priceInr | number:'1.0-0'
+                    }}</span>
+                  <span style="font-size: 12px; color: #64748b; font-weight: 500;">/ {{ plan.durationDays }} Days
+                    Validity</span>
+                </div>
+                <div style="font-size: 11px; color: #5e8f72; font-weight: 600; margin-top: 3px;">
+                  {{ plan.priceInr > 0 ? '+ 18% GST Applicable (Automatic Tax Invoice)' : 'Zero Charges, Instant Access'
+                  }}
+                </div>
+              </div>
+
+              <!-- Entitlement Quotas -->
+              <div
+                style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                Configured Quotas:
+              </div>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; margin-bottom: 1rem;">
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+                  <span style="color: #64748b; display: block; font-size: 10px;">Project Views</span>
+                  <strong style="color: #0f3b4a; font-size: 13px;">{{ plan.projectViewLimit }}</strong>
+                </div>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+                  <span style="color: #64748b; display: block; font-size: 10px;">Comparisons</span>
+                  <strong style="color: #0f3b4a; font-size: 13px;">{{ plan.comparisonLimit }}</strong>
+                </div>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+                  <span style="color: #64748b; display: block; font-size: 10px;">Advisories</span>
+                  <strong style="color: #0f3b4a; font-size: 13px;">{{ plan.advisorySessionLimit }}</strong>
+                </div>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
+                  <span style="color: #64748b; display: block; font-size: 10px;">Site Visits</span>
+                  <strong style="color: #0f3b4a; font-size: 13px;">{{ plan.siteVisitLimit }}</strong>
+                </div>
+              </div>
+
+              <!-- Feature Bullets Preview -->
+              <div
+                style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                Entitlement Checklist ({{ plan.features?.length || 0 }} items):
+              </div>
+              <ul
+                style="list-style: none; padding: 0; margin: 0 0 1.25rem 0; flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                @for (feat of (plan.features || []).slice(0, 4); track feat) {
+                <li
+                  style="font-size: 12px; color: #334155; display: flex; align-items: flex-start; gap: 6px; line-height: 1.35;">
+                  <span class="material-symbols-outlined"
+                    style="font-size: 15px; color: #5e8f72; flex-shrink: 0; margin-top: 1px;">check_circle</span>
+                  <span>{{ feat }}</span>
+                </li>
+                }
+                @if ((plan.features?.length || 0) > 4) {
+                <li style="font-size: 11px; color: #64748b; font-style: italic; margin-top: 2px;">
+                  + {{ (plan.features?.length || 0) - 4 }} additional entitlements configured
+                </li>
+                }
+              </ul>
+
+              <!-- Subscriber Stats Pill -->
+              <div
+                style="display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid #f1f5f9; margin-bottom: 0.85rem; font-size: 12px;">
+                <span style="color: #64748b;">Subscribers: <strong style="color: #0f3b4a;">{{ plan.activeSubscribers ||
+                    0 }}</strong></span>
+                <span style="color: #64748b;">Revenue: <strong style="color: #15803d;">₹{{ (plan.totalRevenueInr || 0) |
+                    number:'1.0-0' }}</strong></span>
+              </div>
+
+              <!-- Card Action Buttons -->
+              <div style="display: flex; gap: 8px; margin-top: auto;">
+                <button type="button" (click)="openEditPlanModal(plan)"
+                  style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; background: #0f3b4a; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                  <span>Edit Plan &amp; Quotas</span>
+                </button>
+                <button type="button" (click)="togglePlanStatus(plan)"
+                  [title]="plan.isActive ? 'Deactivate Tier' : 'Activate Tier'"
+                  style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 34px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; color: #64748b; cursor: pointer;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">{{ plan.isActive ? 'toggle_on' :
+                    'toggle_off' }}</span>
+                </button>
+              </div>
+
+            </div>
+            }
+          </div>
+
+          <!-- EDIT PLAN MODAL DIALOG -->
+          @if (editingPlan()) {
+          <div class="admin-plan-modal-backdrop"
+            style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1.25rem;">
+
+            <div class="admin-plan-modal-card"
+              style="background: #ffffff; border-radius: 12px; max-width: 820px; width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; border: 1px solid #cbd5e1;">
+
+              <!-- Modal Header -->
+              <div
+                style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div
+                    style="width: 36px; height: 36px; border-radius: 8px; background: #e1eff2; color: #0f3b4a; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-symbols-outlined">tune</span>
+                  </div>
+                  <div>
+                    <h3 style="font-size: 15px; font-weight: 700; color: #0f3b4a; margin: 0;">Customize Plan: {{
+                      editingPlan()?.name }}</h3>
+                    <span style="font-size: 12px; color: #64748b;">Plan ID: <code
+                        style="background: #e2e8f0; padding: 1px 4px; border-radius: 4px;">{{ editingPlan()?.id }}</code></span>
+                  </div>
+                </div>
+                <button type="button" (click)="closeEditPlanModal()"
+                  style="background: none; border: none; color: #64748b; cursor: pointer; padding: 4px;">
+                  <span class="material-symbols-outlined" style="font-size: 22px;">close</span>
+                </button>
+              </div>
+
+              <!-- Modal Body Form -->
+              <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+
+                <!-- Section 1: Basic Metadata -->
+                <div>
+                  <h4
+                    style="font-size: 13px; font-weight: 700; color: #0f3b4a; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    1. Plan Identity &amp; Pricing
+                  </h4>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Plan
+                        Display Name</label>
+                      <input type="text" [(ngModel)]="editingPlan()!.name"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Badge
+                        Pill Text (optional)</label>
+                      <input type="text" [(ngModel)]="editingPlan()!.badgeText"
+                        placeholder="e.g. Most Popular, Best Value"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Price
+                        (INR ₹)</label>
+                      <input type="number" min="0" step="1" [(ngModel)]="editingPlan()!.priceInr"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Validity
+                        Duration (Days)</label>
+                      <input type="number" min="1" step="1" [(ngModel)]="editingPlan()!.durationDays"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Display
+                        Sort Order</label>
+                      <input type="number" min="1" step="1" [(ngModel)]="editingPlan()!.sortOrder"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding-top: 18px;">
+                      <input type="checkbox" id="modalPlanActive" [(ngModel)]="editingPlan()!.isActive"
+                        style="width: 16px; height: 16px;" />
+                      <label for="modalPlanActive"
+                        style="font-size: 13px; font-weight: 600; color: #0f3b4a; cursor: pointer;">Tier Active on Live
+                        Site</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Marketing Description -->
+                <div>
+                  <label
+                    style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Marketing
+                    Description / Target Audience</label>
+                  <textarea [(ngModel)]="editingPlan()!.description" rows="2"
+                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;"></textarea>
+                </div>
+
+                <!-- Section 2: Entitlement Quotas -->
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 1rem;">
+                  <h4
+                    style="font-size: 13px; font-weight: 700; color: #0f3b4a; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    2. Real-Time Entitlement Quotas
+                  </h4>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Project
+                        Views Limit</label>
+                      <input type="number" min="0" [(ngModel)]="editingPlan()!.projectViewLimit"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Plot
+                        Comparisons Limit</label>
+                      <input type="number" min="0" [(ngModel)]="editingPlan()!.comparisonLimit"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Advisory
+                        Sessions Limit</label>
+                      <input type="number" min="0" [(ngModel)]="editingPlan()!.advisorySessionLimit"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label
+                        style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Physical
+                        Site Visits Limit</label>
+                      <input type="number" min="0" [(ngModel)]="editingPlan()!.siteVisitLimit"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+                    </div>
+                  </div>
+
+                  <!-- Boolean Feature Flags -->
+                  <div
+                    style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1rem; background: #f8fafc; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <label
+                      style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #0f3b4a; cursor: pointer;">
+                      <input type="checkbox" [(ngModel)]="editingPlan()!.hasLocationReport"
+                        style="width: 16px; height: 16px;" />
+                      <span>Location &amp; Corridor Growth Report</span>
+                    </label>
+                    <label
+                      style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #0f3b4a; cursor: pointer;">
+                      <input type="checkbox" [(ngModel)]="editingPlan()!.hasDedicatedAdvisor"
+                        style="width: 16px; height: 16px;" />
+                      <span>Dedicated Property Advisor</span>
+                    </label>
+                    <label
+                      style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #0f3b4a; cursor: pointer;">
+                      <input type="checkbox" [(ngModel)]="editingPlan()!.hasPriorityAdvisor"
+                        style="width: 16px; height: 16px;" />
+                      <span>Priority Advisor Direct Line</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Section 3: Feature Bullets Management -->
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 1rem;">
+                  <h4
+                    style="font-size: 13px; font-weight: 700; color: #0f3b4a; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    3. Included Entitlements Checklist
+                  </h4>
+
+                  <div style="display: flex; gap: 8px; margin-bottom: 0.75rem;">
+                    <input type="text" [(ngModel)]="newFeatureBullet" (keyup.enter)="addFeatureBullet()"
+                      placeholder="Type new entitlement bullet (e.g. 50 Detailed Project Views)..."
+                      style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+                    <button type="button" (click)="addFeatureBullet()"
+                      style="display: inline-flex; align-items: center; gap: 4px; padding: 8px 14px; background: #5e8f72; color: #ffffff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                      <span>Add Bullet</span>
+                    </button>
+                  </div>
+
+                  <div
+                    style="display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+                    @for (feat of editingPlan()!.features; track feat; let fIdx = $index) {
+                    <div
+                      style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px;">
+                      <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <span class="material-symbols-outlined"
+                          style="font-size: 16px; color: #5e8f72;">check_circle</span>
+                        <input type="text" [(ngModel)]="editingPlan()!.features[fIdx]"
+                          style="flex: 1; border: none; background: transparent; font-size: 12px; color: #0f172a; outline: none;" />
+                      </div>
+                      <button type="button" (click)="removeFeatureBullet(fIdx)" title="Remove item"
+                        style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px;">
+                        <span class="material-symbols-outlined" style="font-size: 18px; color: #b91c1c;">delete</span>
+                      </button>
+                    </div>
+                    }
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Modal Actions Footer -->
+              <div
+                style="padding: 1.25rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                <button type="button" (click)="closeEditPlanModal()"
+                  style="padding: 8px 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer;">
+                  Cancel
+                </button>
+                <button type="button" (click)="savePlanChanges()" [disabled]="isSavingPlan()"
+                  style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; background: #0f3b4a; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; color: #ffffff; cursor: pointer;">
+                  @if (isSavingPlan()) {
+                  <span class="material-symbols-outlined spin" style="font-size: 16px;">progress_activity</span>
+                  <span>Deploying to Database...</span>
+                  } @else {
+                  <span class="material-symbols-outlined" style="font-size: 16px;">cloud_upload</span>
+                  <span>Save &amp; Deploy to Live Site</span>
+                  }
+                </button>
+              </div>
+
+            </div>
+          </div>
+          }
+
+        </section>
+        }
+
+        <!-- ========================================== -->
+        <!-- TAB CONTENT: DEDICATED WHATSAPP MESSAGES   -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'whatsapp_messages') {
+        <section class="tab-pane-section whatsapp-messages-pane">
+          <div class="workspace-header-banner"
+            style="background: linear-gradient(135deg, #0f3b4a 0%, #14532d 60%, #166534 100%);">
+            <div class="banner-title-block">
+              <div class="banner-icon-box" style="background: rgba(255,255,255,0.18); color: #ffffff;">
+                <span class="material-symbols-outlined">chat</span>
+              </div>
+              <div>
+                <h2 class="banner-main-title" style="color: #ffffff;">WhatsApp Concierge Inquiries &amp; Messages Log
+                </h2>
+                <p class="banner-subtitle" style="color: rgba(255,255,255,0.85);">
+                  Live buyer requests initiated via website WhatsApp buttons, property dossier shares, and legal
+                  encumbrance queries.
+                </p>
+              </div>
+            </div>
+
+            <div class="workspace-stats-pills">
+              <div class="stat-pill">
+                <span class="stat-num">{{ dashboardMetrics().totalWhatsappRequests }}</span>
+                <span class="stat-lbl">Inquiries</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ dashboardMetrics().totalWhatsappRequests > 0 ? '100%' : '0%' }}</span>
+                <span class="stat-lbl">Direct Chat Links</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ dashboardMetrics().totalWhatsappRequests > 0 ? '< 15 min' : 'Live' }}</span>
+                    <span class="stat-lbl">Avg Response Time</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls & Filter Toolbar -->
+          <div class="workspace-controls-bar"
+            style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div class="workspace-search-box" style="flex:1;min-width:260px;">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" [ngModel]="whatsappSearchQuery()" (ngModelChange)="whatsappSearchQuery.set($event)"
+                placeholder="Search messages by lead name, phone number, property title, message notes..."
+                class="workspace-search-input" />
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <button type="button" (click)="isWhatsappSettingsOpen.set(!isWhatsappSettingsOpen())"
+                style="display:inline-flex;align-items:center;gap:6px;background:#0f3b4a;color:#ffffff;border:1px solid #1e5567;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;"
+                title="Configure Meta Cloud API, business number & free agent auto-reply">
+                <span class="material-symbols-outlined" style="font-size:16px;color:#38bdf8;">tune</span>
+                <span>WhatsApp &amp; Free Agent Settings</span>
+              </button>
+
+              <button type="button" (click)="createTestWhatsAppRequest()"
+                style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s ease;"
+                title="Create a test WhatsApp inquiry directly to test the flow">
+                <span class="material-symbols-outlined" style="font-size:16px;">add_comment</span>
+                <span>+ Test WhatsApp Request ({{ whatsappConfig().whatsapp_number }})</span>
+              </button>
+
+              <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'all'"
+                  (click)="whatsappStatusFilter.set('all')"
+                  style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                  All Messages ({{ (dashboardMetrics().whatsappMessages || []).length }})
+                </button>
+                <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'new'"
+                  (click)="whatsappStatusFilter.set('new')"
+                  style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                  New Uncontacted
+                </button>
+                <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'contacted'"
+                  (click)="whatsappStatusFilter.set('contacted')"
+                  style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                  Contacted / In Progress
+                </button>
+                <button type="button" class="btn-filter-pill" [class.active]="whatsappStatusFilter() === 'completed'"
+                  (click)="whatsappStatusFilter.set('completed')"
+                  style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                  Resolved &amp; Completed
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEDICATED WHATSAPP CONFIGURATION & FREE AGENT AUTO-REPLY PANEL -->
+          @if (isWhatsappSettingsOpen()) {
+          <div class="whatsapp-config-card"
+            style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <div
+              style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding-bottom:14px;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div
+                  style="width:36px;height:36px;background:#e0f2fe;color:#0284c7;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+                  <span class="material-symbols-outlined" style="font-size:22px;">tune</span>
+                </div>
+                <div>
+                  <h3 style="margin:0;font-size:16px;font-weight:700;color:#0f3b4a;">WhatsApp Business Number &amp; Free
+                    Agent Auto-Reply Engine</h3>
+                  <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Configure the marketplace contact number and
+                    activate automated AI conversational agents.</p>
+                </div>
+              </div>
+              <button type="button" (click)="isWhatsappSettingsOpen.set(false)"
+                style="background:none;border:none;color:#64748b;cursor:pointer;padding:4px;"
+                title="Close settings panel">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;">
+              <!-- SECTION 1: BUSINESS WHATSAPP NUMBER -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                  <span class="material-symbols-outlined" style="color:#16a34a;font-size:20px;">phone_iphone</span>
+                  <h4 style="margin:0;font-size:14px;font-weight:700;color:#0f3b4a;">1. Marketplace WhatsApp Number</h4>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                  <label
+                    style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Country
+                    Code &amp; Mobile Number *</label>
+                  <div style="display:flex;gap:8px;">
+                    <input type="text" [(ngModel)]="whatsappConfig().whatsapp_country_code" placeholder="91"
+                      style="width:70px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;color:#0f3b4a;background:#fff;" />
+                    <input type="text" [(ngModel)]="whatsappConfig().whatsapp_number" placeholder="9486140936"
+                      style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;color:#0f3b4a;background:#fff;" />
+                  </div>
+                  <span style="font-size:11px;color:#64748b;display:block;margin-top:4px;">Direct international format:
+                    +{{ whatsappConfig().whatsapp_country_code }} {{ whatsappConfig().whatsapp_number }}</span>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                  <label
+                    style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Business
+                    Display Name</label>
+                  <input type="text" [(ngModel)]="whatsappConfig().whatsapp_display_name"
+                    placeholder="Find a Plot Concierge Desk"
+                    style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#0f3b4a;background:#fff;" />
+                </div>
+
+                <div
+                  style="background:#e5f7ec;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:14px;">
+                  <span style="font-size:11px;font-weight:700;color:#166534;display:block;margin-bottom:3px;">Live
+                    WhatsApp Click-to-Chat Preview:</span>
+                  <a [href]="'https://wa.me/' + whatsappConfig().whatsapp_country_code + whatsappConfig().whatsapp_number"
+                    target="_blank" rel="noopener"
+                    style="font-size:12px;font-family:monospace;color:#15803d;text-decoration:underline;word-break:break-all;">
+                    https://wa.me/{{ whatsappConfig().whatsapp_country_code }}{{ whatsappConfig().whatsapp_number }} ↗
+                  </a>
+                </div>
+
+                <button type="button" (click)="saveWhatsappSettings()" [disabled]="isSavingWhatsappSettings()"
+                  style="display:inline-flex;align-items:center;gap:6px;background:#0f3b4a;color:#ffffff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
+                  <span class="material-symbols-outlined" style="font-size:16px;">save</span>
+                  <span>{{ isSavingWhatsappSettings() ? 'Saving...' : 'Save WhatsApp Number' }}</span>
+                </button>
+              </div>
+
+              <!-- SECTION 2: FREE AGENT AUTO-REPLY ENGINE -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="material-symbols-outlined" style="color:#5e8f72;font-size:20px;">smart_toy</span>
+                    <h4 style="margin:0;font-size:14px;font-weight:700;color:#0f3b4a;">2. Free Agent Auto-Reply System
+                    </h4>
+                  </div>
+                  <label
+                    style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;cursor:pointer;">
+                    <input type="checkbox" [(ngModel)]="whatsappConfig().whatsapp_auto_reply_enabled"
+                      style="accent-color:#16a34a;width:16px;height:16px;" />
+                    <span [style.color]="whatsappConfig().whatsapp_auto_reply_enabled ? '#166534' : '#64748b'">
+                      {{ whatsappConfig().whatsapp_auto_reply_enabled ? 'Auto-Reply ON' : 'Paused' }}
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Agent Persona Selector -->
+                <div style="margin-bottom:12px;">
+                  <label
+                    style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Select
+                    Free Agent Persona *</label>
+                  <select [(ngModel)]="whatsappConfig().whatsapp_auto_reply_agent"
+                    style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#0f3b4a;background:#fff;">
+                    <option value="cadastral_concierge">🏛️ Cadastral &amp; Legal Concierge (DTCP/RERA, Patta
+                      verification)</option>
+                    <option value="investment_advisor">📈 Land Investment &amp; ROI Advisor (Valuation, 5-yr
+                      appreciation)</option>
+                    <option value="fast_concierge">⚡ Express Concierge (Instant warm greeting &amp; free chauffeur cab
+                      booking)</option>
+                  </select>
+                </div>
+
+                <!-- Free AI Model Engine -->
+                <div style="margin-bottom:12px;">
+                  <label
+                    style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;">Free
+                    AI Inference Engine *</label>
+                  <select [(ngModel)]="whatsappConfig().whatsapp_free_agent_model"
+                    style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#0f3b4a;background:#fff;">
+                    <option value="local_real_estate_ai">🤖 Local Real Estate Agent AI (Deterministic, 0ms, 100% Free,
+                      Zero Key)</option>
+                    <option value="pollinations_free">🌐 Pollinations Free LLM (Conversational Open-Source AI, No API
+                      Key)</option>
+                  </select>
+                  <span style="font-size:11px;color:#64748b;display:block;margin-top:3px;">Both engines run completely
+                    free with no usage limits or API billing.</span>
+                </div>
+
+                <!-- Live Test Agent Sandbox -->
+                <div
+                  style="background:#ffffff;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px;margin-bottom:14px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <span style="font-size:11px;font-weight:700;color:#0f3b4a;">Interactive Free Agent Test:</span>
+                    <button type="button" (click)="testFreeAgentAutoReply()" [disabled]="isGeneratingTestReply()"
+                      style="display:inline-flex;align-items:center;gap:4px;background:#e0f2fe;color:#0369a1;border:none;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">
+                      <span class="material-symbols-outlined" style="font-size:13px;">play_arrow</span>
+                      <span>{{ isGeneratingTestReply() ? 'Generating...' : 'Test AI Reply' }}</span>
+                    </button>
+                  </div>
+                  <input type="text" [(ngModel)]="testSampleMessage"
+                    placeholder="Ask sample question e.g. DTCP approval status?"
+                    style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;margin-bottom:8px;" />
+
+                  @if (testReplyPreview()) {
+                  <div
+                    style="background:#f0fdf4;border-left:3px solid #16a34a;padding:8px;border-radius:4px;font-size:12px;line-height:1.4;color:#14532d;white-space:pre-line;">
+                    <strong style="display:block;font-size:11px;color:#166534;margin-bottom:4px;">AI Agent Output ({{
+                      testReplyModelUsed() }}):</strong>
+                    {{ testReplyPreview() }}
+                  </div>
+                  }
+                </div>
+
+                <button type="button" (click)="saveWhatsappSettings()" [disabled]="isSavingWhatsappSettings()"
+                  style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
+                  <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span>
+                  <span>Save Free Agent Settings</span>
+                </button>
+              </div>
+
+              <!-- SECTION 3: META WHATSAPP BUSINESS CLOUD API (OFFICIAL ARCHITECTURE 1) -->
+              <div
+                style="grid-column: 1 / -1; background:#ffffff; border:1.5px solid #0284c7; border-radius:8px; padding:18px; margin-top:4px; box-shadow:0 1px 4px rgba(2,132,199,0.08);">
+                <!-- Header bar with live status badge -->
+                <div
+                  style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #e0f2fe;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div
+                      style="width:34px; height:34px; background:#e0f2fe; color:#0284c7; border-radius:6px; display:flex; align-items:center; justify-content:center;">
+                      <span class="material-symbols-outlined" style="font-size:20px;">hub</span>
+                    </div>
+                    <div>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <h4 style="margin:0; font-size:14px; font-weight:700; color:#0f3b4a;">3. Meta WhatsApp Business
+                          Cloud API (Official Architecture 1)</h4>
+                        <span
+                          style="font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px;"
+                          [style.background]="metaWhatsappConfig().isLive ? '#dcfce7' : '#fef3c7'"
+                          [style.color]="metaWhatsappConfig().isLive ? '#15803d' : '#b45309'"
+                          [style.border]="metaWhatsappConfig().isLive ? '1px solid #86efac' : '1px solid #fde68a'">
+                          {{ metaWhatsappConfig().isLive ? '● Live Connected' : '○ Setup Required' }}
+                        </span>
+                      </div>
+                      <p style="margin:2px 0 0; font-size:12px; color:#64748b;">
+                        Direct webhook integration with Meta Graph API for business number <strong>9486140936</strong>.
+                        Reads buyer inquiries in real time and sends replies through official WhatsApp servers.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2-Column layout inside Section 3: Webhook on Left, API Credentials on Right -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+
+                  <!-- LEFT: Webhook Callback Settings (Configure in Meta Developer Dashboard) -->
+                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                      <span class="material-symbols-outlined" style="font-size:18px; color:#0284c7;">webhook</span>
+                      <h5 style="margin:0; font-size:12px; font-weight:700; color:#0f3b4a; text-transform:uppercase;">
+                        Meta App Webhook Setup (Copy to Meta)</h5>
+                    </div>
+                    <p style="margin:0 0 10px; font-size:11px; color:#64748b; line-height:1.4;">
+                      Paste these values in <strong>Meta for Developers &gt; Your App &gt; WhatsApp &gt; Configuration
+                        &gt; Edit Webhook</strong>:
+                    </p>
+
+                    <!-- Callback URL -->
+                    <div style="margin-bottom:10px;">
+                      <label
+                        style="display:block; font-size:10px; font-weight:700; color:#475569; margin-bottom:3px; text-transform:uppercase;">Callback
+                        URL</label>
+                      <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="text" readonly [value]="metaWhatsappConfig().webhookUrl"
+                          style="flex:1; padding:7px 10px; font-size:11px; font-family:monospace; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f3b4a;" />
+                        <button type="button"
+                          (click)="copyToClipboard(metaWhatsappConfig().webhookUrl, 'Webhook Callback URL')"
+                          title="Copy Webhook URL"
+                          style="padding:7px 10px; background:#0f3b4a; color:#ffffff; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                          <span class="material-symbols-outlined" style="font-size:14px;">content_copy</span>
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Verify Token -->
+                    <div style="margin-bottom:10px;">
+                      <label
+                        style="display:block; font-size:10px; font-weight:700; color:#475569; margin-bottom:3px; text-transform:uppercase;">Verify
+                        Token</label>
+                      <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="text" [(ngModel)]="metaWhatsappConfig().verifyToken"
+                          style="flex:1; padding:7px 10px; font-size:11px; font-family:monospace; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f3b4a;" />
+                        <button type="button"
+                          (click)="copyToClipboard(metaWhatsappConfig().verifyToken, 'Verify Token')"
+                          title="Copy Verify Token"
+                          style="padding:7px 10px; background:#0f3b4a; color:#ffffff; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                          <span class="material-symbols-outlined" style="font-size:14px;">content_copy</span>
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                      style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:8px 10px; font-size:11px; color:#1e40af; line-height:1.4;">
+                      <strong>Required Subscription:</strong> Under Webhook event fields in Meta, subscribe to
+                      <code>messages</code>. When buyers send a message to 9486140936, Meta posts it to this endpoint
+                      automatically.
+                    </div>
+                  </div>
+
+                  <!-- RIGHT: API Credentials & Live Verification -->
+                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                      <span class="material-symbols-outlined" style="font-size:18px; color:#16a34a;">key</span>
+                      <h5 style="margin:0; font-size:12px; font-weight:700; color:#0f3b4a; text-transform:uppercase;">
+                        Meta Cloud API Credentials (Paste Here)</h5>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                      <div>
+                        <label
+                          style="display:block; font-size:10px; font-weight:700; color:#475569; margin-bottom:3px; text-transform:uppercase;">Phone
+                          Number ID *</label>
+                        <input type="text" [(ngModel)]="metaWhatsappConfig().phoneNumberId"
+                          placeholder="e.g. 104859602938471"
+                          style="width:100%; box-sizing:border-box; padding:7px 10px; font-size:12px; font-family:monospace; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f3b4a;" />
+                      </div>
+                      <div>
+                        <label
+                          style="display:block; font-size:10px; font-weight:700; color:#475569; margin-bottom:3px; text-transform:uppercase;">WhatsApp
+                          Business Account (WABA) ID</label>
+                        <input type="text" [(ngModel)]="metaWhatsappConfig().wabaId" placeholder="e.g. 103948572019485"
+                          style="width:100%; box-sizing:border-box; padding:7px 10px; font-size:12px; font-family:monospace; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f3b4a;" />
+                      </div>
+                    </div>
+
+                    <!-- Access Token -->
+                    <div style="margin-bottom:10px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                        <label
+                          style="font-size:10px; font-weight:700; color:#475569; text-transform:uppercase;">Permanent
+                          System User Access Token *</label>
+                        @if (metaWhatsappConfig().isTokenConfigured) {
+                        <span style="font-size:10px; color:#166534; font-weight:600;">✓ Active Token Configured</span>
+                        }
+                      </div>
+                      <div style="display:flex; gap:6px;">
+                        <input [type]="showMetaToken() ? 'text' : 'password'"
+                          [(ngModel)]="metaWhatsappConfig().accessToken"
+                          placeholder="EAAG... (Paste permanent System User token with whatsapp_business_messaging permission)"
+                          style="flex:1; padding:7px 10px; font-size:11px; font-family:monospace; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f3b4a;" />
+                        <button type="button" (click)="showMetaToken.set(!showMetaToken())"
+                          style="padding:7px 10px; background:#e2e8f0; color:#334155; border:none; border-radius:6px; font-size:11px; cursor:pointer;"
+                          title="Toggle token visibility">
+                          <span class="material-symbols-outlined" style="font-size:15px;">{{ showMetaToken() ?
+                            'visibility_off' : 'visibility' }}</span>
+                        </button>
+                      </div>
+                      <span style="font-size:10px; color:#64748b; display:block; margin-top:3px;">
+                        Leave blank when updating other fields if keeping your existing token.
+                      </span>
+                    </div>
+
+                    <!-- Action & Test Buttons -->
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px;">
+                      <button type="button" (click)="saveMetaWhatsappSettings()" [disabled]="isSavingMetaConfig()"
+                        style="display:inline-flex; align-items:center; gap:6px; background:#0f3b4a; color:#ffffff; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+                        <span class="material-symbols-outlined" style="font-size:15px;">save</span>
+                        <span>{{ isSavingMetaConfig() ? 'Saving...' : 'Save Meta API Config' }}</span>
+                      </button>
+
+                      <button type="button" (click)="testMetaCloudApi()" [disabled]="isTestingMetaApi()"
+                        style="display:inline-flex; align-items:center; gap:6px; background:#16a34a; color:#ffffff; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+                        <span class="material-symbols-outlined" style="font-size:15px;">send</span>
+                        <span>{{ isTestingMetaApi() ? 'Sending Test...' : 'Send Test WhatsApp to 9486140936' }}</span>
+                      </button>
+                    </div>
+
+                    <!-- Test Result Banner -->
+                    @if (metaApiTestResult()) {
+                    <div style="margin-top:10px; padding:8px 12px; border-radius:6px; font-size:11px; line-height:1.4;"
+                      [style.background]="metaApiTestResult().startsWith('Success') ? '#dcfce7' : '#fee2e2'"
+                      [style.color]="metaApiTestResult().startsWith('Success') ? '#15803d' : '#b91c1c'"
+                      [style.border]="metaApiTestResult().startsWith('Success') ? '1px solid #86efac' : '1px solid #fca5a5'">
+                      {{ metaApiTestResult() }}
+                    </div>
+                    }
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- WhatsApp Messages Table -->
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Lead Name &amp; Time</th>
+                  <th>WhatsApp Contact</th>
+                  <th>Property Inquired</th>
+                  <th>Inquiry Message &amp; AI Auto-Reply</th>
+                  <th>Lead Status</th>
+                  <th class="th-actions">Direct Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (m of filteredWhatsappMessages(); track m.id) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-cell-avatar" style="background:#dcfce7;color:#166534;font-weight:700;">
+                        {{ m.contactName?.charAt(0) || 'L' }}
+                      </div>
+                      <div>
+                        <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ m.contactName }}</span>
+                        <span class="user-cell-id">MSG #{{ m.id }} · {{ m.createdAt | slice:0:16 }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="contact-cell">
+                      <a [href]="'https://wa.me/' + m.contactPhone" target="_blank" rel="noopener"
+                        style="display:inline-flex;align-items:center;gap:5px;background:#e5f7ec;color:#15803d;padding:4px 10px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;"
+                        title="Open live WhatsApp chat">
+                        <span class="material-symbols-outlined" style="font-size:16px;">chat</span>
+                        <span>{{ m.contactPhone }}</span>
+                      </a>
+                      <a [href]="'tel:' + m.contactPhone"
+                        style="display:inline-flex;align-items:center;gap:4px;color:#64748b;text-decoration:none;font-size:11px;margin-top:2px;">
+                        <span class="material-symbols-outlined" style="font-size:13px;color:#5e8f72;">call</span>
+                        <span>Call Phone</span>
+                      </a>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;flex-direction:column;">
+                      <span style="font-weight:600;color:#0f3b4a;">{{ m.propertyTitle || 'Project Reference' }}</span>
+                      <a [routerLink]="['/property', m.propertyId]" target="_blank" class="text-xs"
+                        style="color:#5e8f72;text-decoration:none;font-weight:600;">
+                        {{ m.propertyId }} · {{ m.localityName || 'Chennai' }} ↗
+                      </a>
+                      @if (m.price) {
+                      <span class="text-xs text-muted">{{ m.price }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <div style="max-width:380px;line-height:1.4;">
+                      <p class="text-xs"
+                        style="color:#1e293b;margin:0 0 6px 0;font-style:italic;background:#f8fafc;padding:8px 10px;border-left:3px solid #64748b;border-radius:4px;">
+                        "{{ m.message }}"
+                      </p>
+                      @if (m.autoReplyText) {
+                      <div
+                        style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #16a34a;padding:8px 10px;border-radius:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                          <span
+                            style="font-size:11px;font-weight:700;color:#166534;display:inline-flex;align-items:center;gap:4px;">
+                            <span class="material-symbols-outlined"
+                              style="font-size:14px;color:#16a34a;">smart_toy</span>
+                            <span>Free Agent Auto-Reply</span>
+                          </span>
+                          <button type="button" (click)="generateLeadReply(m)"
+                            style="background:none;border:none;color:#15803d;font-size:11px;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;"
+                            title="Regenerate auto-reply with active agent">
+                            ↻ Regenerate
+                          </button>
+                        </div>
+                        <p style="font-size:12px;color:#14532d;margin:0;white-space:pre-line;line-height:1.4;">{{
+                          m.autoReplyText }}</p>
+                      </div>
+                      } @else {
+                      <button type="button" (click)="generateLeadReply(m)"
+                        style="display:inline-flex;align-items:center;gap:4px;background:#f8fafc;border:1px solid #cbd5e1;color:#0f3b4a;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">
+                        <span class="material-symbols-outlined" style="font-size:14px;color:#16a34a;">smart_toy</span>
+                        <span>Generate AI Reply</span>
+                      </button>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    @if (m.status === 'completed') {
+                    <span class="badge-role" style="background:#e5f7ec;color:#166534;font-weight:700;">Completed</span>
+                    } @else if (m.status === 'contacted') {
+                    <span class="badge-role" style="background:#e0f2fe;color:#0369a1;font-weight:700;">Contacted</span>
+                    } @else {
+                    <span class="badge-role" style="background:#fef3c7;color:#92400e;font-weight:700;">New
+                      Request</span>
+                    }
+                  </td>
+                  <td class="td-actions">
+                    <div class="action-btn-group">
+                      <button type="button" class="btn-action-primary" (click)="openConversationThread(m)"
+                        style="background:#0f3b4a;color:#ffffff;display:inline-flex;align-items:center;gap:4px;"
+                        title="View entire two-way WhatsApp conversation log">
+                        <span class="material-symbols-outlined" style="font-size:15px;">forum</span>
+                        <span>Chat Log ({{ m.chatCount || 1 }})</span>
+                      </button>
+                      <a [href]="getDirectWhatsAppReplyUrl(m)" target="_blank" rel="noopener" class="btn-action-primary"
+                        style="background:#16a34a;text-decoration:none;"
+                        [title]="m.autoReplyText ? 'Send AI Auto-Reply on WhatsApp' : 'Send WhatsApp Dossier Reply'">
+                        <span class="material-symbols-outlined">send</span>
+                        <span>{{ m.autoReplyText ? 'Send AI Reply' : 'Reply on WA' }}</span>
+                      </a>
+                      @if (m.status !== 'completed') {
+                      <button type="button" class="btn-action-icon" (click)="updateWhatsappStatus(m.id, 'completed')"
+                        title="Mark as Completed" style="color:#16a34a;">
+                        <span class="material-symbols-outlined">done_all</span>
+                      </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                    <span class="material-symbols-outlined"
+                      style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">chat_bubble_outline</span>
+                    <strong style="color:#0f3b4a;font-size:14px;">No WhatsApp inquiries logged yet</strong>
+                    <p style="font-size:12px;margin:4px 0 16px;color:#94a3b8;">When visitors inquire about properties
+                      via WhatsApp, their message records will appear here.</p>
+                    <button type="button" (click)="createTestWhatsAppRequest()"
+                      style="display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#ffffff;border:none;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
+                      title="Click to test WhatsApp request">
+                      <span class="material-symbols-outlined" style="font-size:18px;">add_comment</span>
+                      <span>Create Test WhatsApp Request ({{ whatsappConfig().whatsapp_number }})</span>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+        }
+
+        <!-- ======================================================== -->
+        <!-- MODAL: TWO-WAY THREADED WHATSAPP CONVERSATION LOG VIEWER -->
+        <!-- ======================================================== -->
+        @if (isChatDrawerOpen() && selectedChatLead()) {
+        <div class="modal-backdrop" (click)="closeConversationThread()"
+          style="position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);">
+          <div class="whatsapp-chat-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+            style="width:760px;max-width:95vw;height:88vh;max-height:820px;background:#ffffff;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35);border:1px solid #cbd5e1;">
+
+            <!-- Chat Header -->
+            <div
+              style="background:linear-gradient(135deg, #0f3b4a 0%, #14532d 60%, #166534 100%);color:#ffffff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div
+                  style="width:42px;height:42px;background:#dcfce7;color:#166534;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">
+                  {{ selectedChatLead()?.contactName?.charAt(0) || 'U' }}
+                </div>
+                <div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <h3 style="margin:0;font-size:16px;font-weight:700;color:#ffffff;">{{
+                      selectedChatLead()?.contactName }}</h3>
+                    <span
+                      style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">
+                      Buyer: {{ selectedChatLead()?.contactPhone }}
+                    </span>
+                  </div>
+                  <p
+                    style="margin:2px 0 0;font-size:12px;color:rgba(255,255,255,0.85);display:flex;align-items:center;gap:6px;">
+                    <span>Business Desk: <strong>{{ whatsappConfig().whatsapp_number }}</strong></span>
+                    <span>·</span>
+                    <span>Ref: <strong>{{ selectedChatLead()?.propertyId || 'General Inquiry' }}</strong></span>
+                  </p>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:10px;">
+                <a [href]="'https://wa.me/' + selectedChatLead()?.contactPhone" target="_blank" rel="noopener"
+                  style="display:inline-flex;align-items:center;gap:5px;background:#25d366;color:#ffffff;padding:6px 12px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:700;"
+                  title="Open live chat in WhatsApp web/app">
+                  <span class="material-symbols-outlined" style="font-size:16px;">open_in_new</span>
+                  <span>Open in WA</span>
+                </a>
+                <button type="button" (click)="closeConversationThread()"
+                  style="background:rgba(255,255,255,0.15);border:none;color:#ffffff;width:32px;height:32px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+                  title="Close chat thread">
+                  <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat Conversation Area -->
+            <div
+              style="flex:1;padding:18px 20px;overflow-y:auto;background:#efeae2;background-image:radial-gradient(#cbd5e1 1.2px, transparent 1.2px);background-size:20px 20px;display:flex;flex-direction:column;gap:14px;">
+
+              <div style="text-align:center;margin:6px 0;">
+                <span
+                  style="background:rgba(255,255,255,0.85);border:1px solid #cbd5e1;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;color:#64748b;">
+                  🔒 End-to-End Logged WhatsApp Conversation Thread (Admin Desk: {{ whatsappConfig().whatsapp_number }})
+                </span>
+              </div>
+
+              @if (isChatThreadLoading()) {
+              <div style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                <span class="material-symbols-outlined"
+                  style="font-size:32px;animation:spin 1s linear infinite;color:#0f3b4a;">sync</span>
+                <p style="font-size:13px;margin-top:6px;">Loading conversation logs from database...</p>
+              </div>
+              } @else if (chatThreadMessages().length === 0) {
+              <div
+                style="text-align:center;padding:3rem 1rem;background:#fff;border-radius:8px;border:1px solid #e2e8f0;">
+                <span class="material-symbols-outlined" style="font-size:36px;color:#94a3b8;">chat_bubble_outline</span>
+                <p style="font-size:13px;font-weight:700;color:#0f3b4a;margin:6px 0 2px;">No logged chat messages yet
+                </p>
+                <p style="font-size:12px;color:#64748b;margin:0 0 12px;">When {{ selectedChatLead()?.contactName ||
+                  'this contact' }} sends a message via WhatsApp, incoming and outgoing messages will appear here in
+                  real time.</p>
+              </div>
+              }
+
+              <!-- Message Bubbles -->
+              @for (msg of chatThreadMessages(); track msg.id) {
+              <!-- SENDER: USER (e.g. 9498400967) -->
+              @if (msg.senderType === 'user') {
+              <div
+                style="align-self:flex-start;max-width:78%;background:#ffffff;border-radius:8px 8px 8px 2px;padding:10px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:3px solid #0284c7;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
+                  <span
+                    style="font-size:11px;font-weight:800;color:#0369a1;display:inline-flex;align-items:center;gap:4px;">
+                    <span class="material-symbols-outlined" style="font-size:13px;">person</span>
+                    <span>{{ msg.senderName || selectedChatLead()?.contactName }} ({{ msg.userPhone ||
+                      selectedChatLead()?.contactPhone }})</span>
+                  </span>
+                  <span style="font-size:10px;color:#94a3b8;">{{ msg.createdAt | slice:11:16 }}</span>
+                </div>
+                <p style="font-size:13px;color:#1e293b;margin:0;line-height:1.45;white-space:pre-line;">{{
+                  msg.messageText }}</p>
+              </div>
+              }
+
+              <!-- SENDER: ADMIN (9486140936) -->
+              @if (msg.senderType === 'admin') {
+              <div
+                style="align-self:flex-end;max-width:78%;background:#d9fdd3;border-radius:8px 8px 2px 8px;padding:10px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-right:3px solid #16a34a;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
+                  <span
+                    style="font-size:11px;font-weight:800;color:#166534;display:inline-flex;align-items:center;gap:4px;">
+                    <span class="material-symbols-outlined" style="font-size:13px;">admin_panel_settings</span>
+                    <span>{{ msg.senderName || 'Admin Desk (' + whatsappConfig().whatsapp_number + ')' }}</span>
+                  </span>
+                  <span style="font-size:10px;color:#64748b;">{{ msg.createdAt | slice:11:16 }} ✓✓</span>
+                </div>
+                <p style="font-size:13px;color:#0f3b4a;margin:0;line-height:1.45;white-space:pre-line;">{{
+                  msg.messageText }}</p>
+              </div>
+              }
+
+              <!-- SENDER: FREE AI AGENT CONCIERGE -->
+              @if (msg.senderType === 'ai_agent') {
+              <div
+                style="align-self:flex-end;max-width:80%;background:#ecfdf5;border-radius:8px 8px 2px 8px;padding:10px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-right:3px solid #059669;border-left:2px solid #10b981;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
+                  <span
+                    style="font-size:11px;font-weight:800;color:#047857;display:inline-flex;align-items:center;gap:4px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;color:#059669;">smart_toy</span>
+                    <span>{{ msg.senderName || 'Find a Plot AI Concierge' }} (Auto-Reply)</span>
+                  </span>
+                  <span style="font-size:10px;color:#047857;">{{ msg.createdAt | slice:11:16 }} 🤖</span>
+                </div>
+                <p style="font-size:13px;color:#064e3b;margin:0;line-height:1.45;white-space:pre-line;">{{
+                  msg.messageText }}</p>
+              </div>
+              }
+              }
+
+            </div>
+
+            <!-- Chat Input & Direct Actions Area -->
+            <div
+              style="background:#ffffff;border-top:1px solid #e2e8f0;padding:12px 18px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+              <textarea [(ngModel)]="adminChatReplyInput" rows="2"
+                placeholder="Type message reply to send from Admin (9486140936), or click 'Draft with Free AI Agent'..."
+                style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;resize:none;color:#0f3b4a;line-height:1.4;"></textarea>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                <button type="button" (click)="draftWithAiAgent()"
+                  style="display:inline-flex;align-items:center;gap:5px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:7px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;"
+                  title="Use Free AI Agent to generate response based on conversation context">
+                  <span class="material-symbols-outlined" style="font-size:16px;">smart_toy</span>
+                  <span>Draft with Free AI Agent</span>
+                </button>
+
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <button type="button" (click)="sendAdminChatReply(true)"
+                    [disabled]="isSendingAdminReply() || !adminChatReplyInput().trim()"
+                    style="display:inline-flex;align-items:center;gap:5px;background:#059669;color:#ffffff;border:none;padding:7px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;"
+                    title="Send and log as AI Concierge Auto-Reply">
+                    <span class="material-symbols-outlined" style="font-size:16px;">smart_toy</span>
+                    <span>Send as AI Agent</span>
+                  </button>
+
+                  <button type="button" (click)="sendAdminChatReply(false)"
+                    [disabled]="isSendingAdminReply() || !adminChatReplyInput().trim()"
+                    style="display:inline-flex;align-items:center;gap:5px;background:#0f3b4a;color:#ffffff;border:none;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;"
+                    title="Send and log as Admin 9486140936">
+                    <span class="material-symbols-outlined" style="font-size:16px;">send</span>
+                    <span>{{ isSendingAdminReply() ? 'Sending...' : 'Send as Admin (9486140936)' }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        }
+
+
+      <!-- ========================================== -->
+      <!-- MODAL: PROPERTY REVIEW & AUDIT INSPECTOR   -->
+      <!-- ========================================== -->
+      @if (isReviewModalOpen() && inspectingProperty()) {
+      <div class="modal-backdrop" (click)="closeReviewModal()">
+        <div class="modal-dialog-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+          <!-- Modal Header -->
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">#{{ inspectingProperty()?.id }}</span>
+              <h3 class="dialog-heading">{{ inspectingProperty()?.title }}</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeReviewModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="modal-dialog-body">
+            <div class="modal-preview-grid">
+
+              <!-- Left Preview Media -->
+              <div class="modal-media-col">
+                <img [src]="inspectingProperty()?.mainImageUrl" [alt]="inspectingProperty()?.title"
+                  class="modal-cover-img" loading="lazy" decoding="async" />
+
+                <div class="spec-pills-row">
+                  <span class="spec-pill">{{ inspectingProperty()?.propertyType }}</span>
+                  <span class="spec-pill">{{ inspectingProperty()?.bhkBadge }}</span>
+                  <span class="spec-pill">{{ inspectingProperty()?.sqft }}</span>
+                  <span class="spec-pill">{{ inspectingProperty()?.facingOrView }}</span>
+                </div>
+
+                <div class="info-block">
+                  <span class="info-label">RERA Registration:</span>
+                  <span class="info-val font-mono">{{ inspectingProperty()?.reraNumber }}</span>
+                </div>
+              </div>
+
+              <!-- Right Verification & Notes -->
+              <div class="modal-decision-col">
+
+                <!-- Submitter Info -->
+                <div class="verification-card">
+                  <h4 class="v-card-title">Origin &amp; Attribution</h4>
+                  <div class="v-card-line">
+                    <span class="v-label">Author:</span>
+                    <span class="v-val font-bold">{{ inspectingProperty()?.submittedByName }} ({{
+                      inspectingProperty()?.submittedByRole?.toUpperCase() }})</span>
+                  </div>
+                  <div class="v-card-line">
+                    <span class="v-label">Current Status:</span>
+                    <span class="status-badge" [class]="'badge-' + inspectingProperty()?.status">
+                      {{ inspectingProperty()?.status?.replace('_', ' ')?.toUpperCase() }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Maker-Checker Status Notice -->
+                @if (!adminService.canApprove(inspectingProperty()!).allowed) {
+                <div class="peer-guard-alert">
+                  <span class="material-symbols-outlined">gavel</span>
+                  <div>
+                    <strong>Four-Eyes Maker-Checker Rule in Effect:</strong>
+                    <p>{{ adminService.canApprove(inspectingProperty()!).reason }}</p>
+                  </div>
+                </div>
+                }
+
+                <!-- Reviewer Feedback & Audit Notes -->
+                <div class="review-notes-box">
+                  <label class="notes-label">Review / Audit Notes (Will be logged in registry)</label>
+                  <textarea class="notes-textarea" rows="3" [value]="reviewNotes()"
+                    (input)="reviewNotes.set($any($event.target).value)"
+                    placeholder="Enter deed verification notes, cadastral reference, or rejection reason..."></textarea>
+                </div>
+
+                <!-- Past Review Log if available -->
+                @if (inspectingProperty()?.reviewNotes) {
+                <div class="past-audit-box">
+                  <span class="past-audit-title">Previous Audit Log:</span>
+                  <p class="past-audit-text">{{ inspectingProperty()?.reviewNotes }}</p>
+                </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="modal-actions-strip">
+                  <button type="button" class="btn-modal-approve"
+                    [disabled]="!adminService.canApprove(inspectingProperty()!).allowed || adminService.isSubmitting()"
+                    (click)="onApprove(inspectingProperty()!)">
+                    <span class="material-symbols-outlined">verified</span>
+                    <span>Approve &amp; Publish Live</span>
+                  </button>
+
+                  <button type="button" class="btn-modal-edit" (click)="openEditModal(inspectingProperty()!)">
+                    <span class="material-symbols-outlined">edit</span>
+                    <span>Edit Details</span>
+                  </button>
+
+                  <button type="button" class="btn-modal-revision" [disabled]="adminService.isSubmitting()"
+                    (click)="onRequestRevision(inspectingProperty()!)">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    <span>Request Changes</span>
+                  </button>
+
+                  <button type="button" class="btn-modal-reject" [disabled]="adminService.isSubmitting()"
+                    (click)="onReject(inspectingProperty()!)">
+                    <span class="material-symbols-outlined">cancel</span>
+                    <span>Reject Listing</span>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+      }
+
+
+      <!-- ========================================== -->
+      <!-- MODAL: EDIT PROPERTY DETAILS (ALL 3 ADMINS) -->
+      <!-- ========================================== -->
+      @if (isEditModalOpen() && editingProperty()) {
+      <div class="modal-backdrop" (click)="closeEditModal()">
+        <div class="edit-property-modal-dialog" (click)="$event.stopPropagation()">
+
+          <!-- Header -->
+          <div class="modal-header">
+            <div class="modal-header-meta">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">edit_note</span>
+                <h2 class="modal-title">Edit Property Specifications</h2>
+              </div>
+              <div class="admin-persona-pill">
+                <span class="persona-indicator"></span>
+                <span>Active Admin: <strong>{{ adminService.activePersona().name }}</strong> ({{
+                  adminService.activePersona().title }})</span>
+              </div>
+            </div>
+            <button type="button" class="btn-modal-close" (click)="closeEditModal()" aria-label="Close edit modal">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Scrollable Form Body -->
+          <div class="modal-body-scrollable">
+            <div class="edit-form-grid">
+
+              <!-- Title -->
+              <div class="form-group col-span-2">
+                <label class="form-label">Property Title *</label>
+                <input type="text" class="form-input" [value]="editForm().title"
+                  (input)="updateEditField('title', $any($event.target).value)"
+                  placeholder="e.g. Verified Cadastral Layout - Plot 2" />
+              </div>
+
+              <!-- Property Type & Listing Mode -->
+              <div class="form-group">
+                <label class="form-label">Property Type</label>
+                <select class="form-input" [value]="editForm().propertyType"
+                  (change)="updateEditField('propertyType', $any($event.target).value)">
+                  <option value="Plot / Land">Plot / Land</option>
+                  <option value="Commercial Plots">Commercial Plots</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Listing Mode</label>
+                <select class="form-input" [value]="editForm().listingMode"
+                  (change)="updateEditField('listingMode', $any($event.target).value)">
+                  <option value="buy">Buy / Sale</option>
+                  <option value="rent">Rent / Lease</option>
+                </select>
+              </div>
+
+              <!-- City & Locality -->
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" class="form-input" [value]="editForm().cityName"
+                  (input)="updateEditField('cityName', $any($event.target).value)"
+                  placeholder="e.g. Chennai, Thanjavur" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Locality / Micro-Market</label>
+                <input type="text" class="form-input" [value]="editForm().localityName"
+                  (input)="updateEditField('localityName', $any($event.target).value)"
+                  placeholder="e.g. Pillayarpatti Extension" />
+              </div>
+
+              <!-- Price & Price Per Sqft -->
+              <div class="form-group">
+                <label class="form-label">Display Price</label>
+                <input type="text" class="form-input" [value]="editForm().price"
+                  (input)="updateEditField('price', $any($event.target).value)" placeholder="e.g. ₹ 1.02 Cr" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Rate / Sq.Ft</label>
+                <input type="text" class="form-input" [value]="editForm().pricePerSqft"
+                  (input)="updateEditField('pricePerSqft', $any($event.target).value)"
+                  placeholder="e.g. ₹ 8,459/sq.ft" />
+              </div>
+
+              <!-- Sqft Area & BHK Badge -->
+              <div class="form-group">
+                <label class="form-label">Area (Sq.Ft / Extent)</label>
+                <input type="text" class="form-input" [value]="editForm().sqft"
+                  (input)="updateEditField('sqft', $any($event.target).value)"
+                  placeholder="e.g. 800 sq.ft (1.84 Cents)" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">BHK / Sub-badge</label>
+                <input type="text" class="form-input" [value]="editForm().bhkBadge"
+                  (input)="updateEditField('bhkBadge', $any($event.target).value)"
+                  placeholder="e.g. 1.84 Cents Plot or 3 BHK" />
+              </div>
+
+              <!-- Facing & RERA -->
+              <div class="form-group">
+                <label class="form-label">Facing / Direction</label>
+                <input type="text" class="form-input" [value]="editForm().facingOrView"
+                  (input)="updateEditField('facingOrView', $any($event.target).value)"
+                  placeholder="e.g. South-West Facing" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">RERA Registration No.</label>
+                <input type="text" class="form-input" [value]="editForm().reraNumber"
+                  (input)="updateEditField('reraNumber', $any($event.target).value)"
+                  placeholder="e.g. TNRERA/13/LO/0114/2026" />
+              </div>
+
+              <!-- Main Image URL -->
+              <div class="form-group col-span-2">
+                <label class="form-label">Main Image URL</label>
+                <div class="flex gap-2">
+                  <input type="text" class="form-input flex-1" [value]="editForm().mainImageUrl"
+                    (input)="updateEditField('mainImageUrl', $any($event.target).value)"
+                    placeholder="https://images.unsplash.com/..." />
+                  @if (editForm().mainImageUrl) {
+                  <img [src]="editForm().mainImageUrl" alt="Preview"
+                    class="h-10 w-16 object-cover border border-slate-300" />
+                  }
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div class="form-group col-span-2">
+                <label class="form-label">Listing Status</label>
+                <select class="form-input" [value]="editForm().status"
+                  (change)="updateEditField('status', $any($event.target).value)">
+                  <option value="published">Published (Active Live Listing)</option>
+                  <option value="pending_review">Pending Review</option>
+                  <option value="pending_peer_review">Pending Peer Review (Maker-Checker)</option>
+                  <option value="revision_requested">Revision Requested</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+
+              <!-- Audit Trail Notes -->
+              <div class="form-group col-span-2">
+                <label class="form-label text-primary font-bold">
+                  Admin Audit Trail Justification / Reason *
+                </label>
+                <textarea class="form-input notes-textarea" rows="2" [value]="editAuditNotes()"
+                  (input)="editAuditNotes.set($any($event.target).value)"
+                  placeholder="Provide notes on why this listing was updated (e.g. Corrected cadastral survey extent, updated rate per sq.ft as per deed)..."></textarea>
+                <p class="text-xs text-slate-500 mt-1">
+                  This modification will be permanently logged in the audit trail under {{
+                  adminService.activePersona().name
+                  }}.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeEditModal()">
+              Cancel
+            </button>
+            <button type="button" class="btn-save" [disabled]="adminService.isSubmitting()"
+              (click)="onSaveEditedProperty()">
+              <span class="material-symbols-outlined">save</span>
+              <span>{{ adminService.isSubmitting() ? 'Saving Changes...' : 'Save & Record Audit Trail' }}</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+      }
+
+      <!-- ========================================== -->
+      <!-- MODAL: TRANSACTION DETAILS & AUDIT RECEIPT  -->
+      <!-- ========================================== -->
+      @if (isTxnModalOpen() && inspectingTransaction()) {
+      <div class="modal-backdrop" (click)="closeTxnModal()">
+        <div class="modal-dialog-panel fin-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">TXN #{{ inspectingTransaction()?.id }}</span>
+              <h3 class="dialog-heading">Recharge Audit Dossier</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeTxnModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="modal-dialog-body">
+            <div class="fin-receipt-box">
+
+              <div class="receipt-header">
+                <div class="receipt-brand">
+                  <span class="material-symbols-outlined">verified</span>
+                  <span>Find a Plot Media Points Settlement</span>
+                </div>
+                <span class="receipt-status-pill success">
+                  <span class="material-symbols-outlined">check_circle</span>
+                  <span>{{ inspectingTransaction()?.status?.toUpperCase() }}</span>
+                </span>
+              </div>
+
+              <div class="receipt-amount-display">
+                <span class="rec-curr">₹</span>
+                <span class="rec-val">{{ inspectingTransaction()?.amountRupees?.toLocaleString('en-IN') }}</span>
+                <span class="rec-pts-badge">+{{ inspectingTransaction()?.points }} Media Points</span>
+              </div>
+
+              <div class="receipt-grid">
+                <div class="receipt-row">
+                  <span class="rec-label">Investor Name</span>
+                  <span class="rec-data">{{ inspectingTransaction()?.userName }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="rec-label">Account Email</span>
+                  <span class="rec-data font-mono">{{ inspectingTransaction()?.userEmail }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="rec-label">Phone</span>
+                  <span class="rec-data">{{ inspectingTransaction()?.userPhone || '—' }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="rec-label">Payment Channel</span>
+                  <span class="rec-data flex items-center gap-1">
+                    <span class="material-symbols-outlined text-blue text-sm">
+                      {{ inspectingTransaction()?.isRazorpay ? 'verified' : 'payments' }}
+                    </span>
+                    <span>{{ inspectingTransaction()?.paymentMethod }}</span>
+                  </span>
+                </div>
+                <div class="receipt-row">
+                  <span class="rec-label">Razorpay Reference</span>
+                  <span class="rec-data font-mono text-blue flex items-center gap-2">
+                    <span>{{ inspectingTransaction()?.razorpayPaymentId }}</span>
+                    @if (inspectingTransaction()?.razorpayPaymentId && inspectingTransaction()?.razorpayPaymentId !==
+                    '—') {
+                    <button type="button" class="btn-copy-mini"
+                      (click)="copyReference(inspectingTransaction()!.razorpayPaymentId)">
+                      <span class="material-symbols-outlined text-xs">content_copy</span>
+                    </button>
+                    }
+                  </span>
+                </div>
+                <div class="receipt-row">
+                  <span class="rec-label">Timestamp</span>
+                  <span class="rec-data">{{ inspectingTransaction()?.formattedDate }}</span>
+                </div>
+                <div class="receipt-row full">
+                  <span class="rec-label">Description / Purpose</span>
+                  <span class="rec-data">{{ inspectingTransaction()?.description }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="modal-dialog-footer">
+            <button type="button" class="btn-close-modal" (click)="closeTxnModal()">
+              Close
+            </button>
+          </div>
+
+        </div>
+      </div>
+      }
+
+      <!-- ========================================== -->
+      <!-- MODAL: MANUAL / WIRE CREDIT ADJUSTMENT      -->
+      <!-- ========================================== -->
+      @if (isManualCreditModalOpen()) {
+      <div class="modal-backdrop" (click)="closeManualCreditModal()">
+        <div class="modal-dialog-panel fin-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">ADMINISTRATIVE ACTION</span>
+              <h3 class="dialog-heading">Issue Manual / Wire Transfer Credit</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeManualCreditModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <form (submit)="$event.preventDefault(); submitManualCredit()" class="modal-dialog-body">
+            <p class="dialog-help-text">
+              Credit media points directly to an investor for offline payments (NEFT/RTGS bank wire, cheque, or
+              administrative promotion). Audit attribution will be assigned to <strong>{{
+                adminService.activePersona().name
+                }}</strong>.
+            </p>
+
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label class="field-label">Target Customer User ID *</label>
+                <input type="number" class="form-input" [value]="manualCreditForm().userId"
+                  (input)="manualCreditForm.update(f => ({ ...f, userId: +$any($event.target).value }))" min="1"
+                  required />
+                <span class="field-hint">e.g. ID 1 for Demo Real Estate Investor</span>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Media Points to Credit *</label>
+                <input type="number" class="form-input" [value]="manualCreditForm().points"
+                  (input)="manualCreditForm.update(f => ({ ...f, points: +$any($event.target).value }))" min="1"
+                  required />
+                <span class="field-hint">e.g. 20, 40, 100 points</span>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Collection Amount (INR ₹)</label>
+                <input type="number" class="form-input" [value]="manualCreditForm().amountRupees"
+                  (input)="manualCreditForm.update(f => ({ ...f, amountRupees: +$any($event.target).value }))"
+                  min="0" />
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Payment Channel / Source *</label>
+                <select class="form-input" [value]="manualCreditForm().paymentMethod"
+                  (change)="manualCreditForm.update(f => ({ ...f, paymentMethod: $any($event.target).value }))">
+                  <option value="Direct Bank Wire (NEFT/RTGS)">Direct Bank Wire (NEFT/RTGS)</option>
+                  <option value="Corporate Escrow Account">Corporate Escrow Account</option>
+                  <option value="Direct Cheque Clearance">Direct Cheque Clearance</option>
+                  <option value="Cash Deposit / SRO Desk">Cash Deposit / SRO Desk</option>
+                  <option value="Administrative Courtesy Grant">Administrative Courtesy Grant</option>
+                </select>
+              </div>
+
+              <div class="form-field full-width">
+                <label class="field-label">Bank Reference / UTR Number / Reason</label>
+                <textarea class="form-input form-textarea" rows="2" [value]="manualCreditForm().notes"
+                  (input)="manualCreditForm.update(f => ({ ...f, notes: $any($event.target).value }))"
+                  placeholder="UTR No: HDFCN2610167890 • Certified by Legal Desk"></textarea>
+              </div>
+            </div>
+
+            <div class="modal-dialog-footer">
+              <button type="button" class="btn-cancel" (click)="closeManualCreditModal()">
+                Cancel
+              </button>
+              <button type="submit" class="btn-submit-action" [disabled]="adminService.isSubmitting()">
+                <span class="material-symbols-outlined">{{ adminService.isSubmitting() ? 'sync' : 'verified_user'
+                  }}</span>
+                <span>{{ adminService.isSubmitting() ? 'Crediting Wallet...' : 'Authorize & Credit Points' }}</span>
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+      }
+
+      <!-- ========================================== -->
+      <!-- MODAL: PARTITIONED PLOT UNIT EDITOR        -->
+      <!-- ========================================== -->
+      @if (isPlotModalOpen()) {
+      <div class="plot-modal-overlay" (click)="closePlotModal()">
+        <div class="plot-modal-container" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+          <!-- Modal Header -->
+          <div class="plot-modal-header">
+            <div class="pmh-left">
+              <div class="pmh-icon-box">
+                <span class="material-symbols-outlined">grid_view</span>
+              </div>
+              <div>
+                <h3 class="pmh-title">
+                  {{ editingPlotIndex() !== null ? 'Edit Partitioned Parcel #' + plotModalForm().plotNo : 'Add
+                  Partitioned
+                  Plot Parcel' }}
+                </h3>
+                <p class="pmh-sub">Configure parcel dimensions, orientation, pricing and 3D digital twin coordinates.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="btn-close-plot-modal" (click)="closePlotModal()" aria-label="Close dialog">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Modal Form Body -->
+          <form (submit)="$event.preventDefault(); savePlotModal()" class="plot-modal-form-body">
+            <div class="pm-form-grid">
+
+              <!-- Plot Identifier -->
+              <div class="pm-field">
+                <label class="pm-label">Plot Number / Identifier *</label>
+                <div class="pm-input-wrap">
+                  <span class="material-symbols-outlined pm-input-icon">pin</span>
+                  <input type="text" class="pm-input with-icon" [(ngModel)]="plotModalForm().plotNo" name="plotNo"
+                    placeholder="e.g. 248 or Plot 101" required />
+                </div>
+              </div>
+
+              <!-- Availability Status -->
+              <div class="pm-field">
+                <label class="pm-label">Availability Status *</label>
+                <div class="pm-input-wrap">
+                  <span class="material-symbols-outlined pm-input-icon text-green">circle</span>
+                  <select class="pm-select with-icon" [(ngModel)]="plotModalForm().status" name="status">
+                    <option value="available">🟢 Available (For Sale)</option>
+                    <option value="sold">🔴 Sold Out (Booked)</option>
+                    <option value="reserved">🟡 Reserved (Under Hold)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Facing Direction -->
+              <div class="pm-field">
+                <label class="pm-label">Facing Direction *</label>
+                <div class="pm-input-wrap">
+                  <span class="material-symbols-outlined pm-input-icon">explore</span>
+                  <select class="pm-select with-icon" [(ngModel)]="plotModalForm().facing" name="facing">
+                    <option value="North Facing">North Facing</option>
+                    <option value="South Facing">South Facing</option>
+                    <option value="East Facing">East Facing</option>
+                    <option value="West Facing">West Facing</option>
+                    <option value="North-East Facing">North-East Facing (Ishan / Auspicious)</option>
+                    <option value="North-West Facing">North-West Facing</option>
+                    <option value="South-East Facing">South-East Facing</option>
+                    <option value="South-West Facing">South-West Facing</option>
+                    <option value="North Facing (Corner)">North Facing (Corner)</option>
+                    <option value="South Facing (Corner)">South Facing (Corner)</option>
+                    <option value="East Facing (Corner)">East Facing (Corner)</option>
+                    <option value="West Facing (Corner)">West Facing (Corner)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Corner Parcel Card Toggle -->
+              <div class="pm-field">
+                <label class="pm-label">Corner Property Status</label>
+                <label class="pm-toggle-card" [class.active]="plotModalForm().isCorner">
+                  <input type="checkbox" class="pm-checkbox" [(ngModel)]="plotModalForm().isCorner" name="isCorner" />
+                  <div class="pm-toggle-text">
+                    <span class="pm-toggle-title">
+                      <span class="material-symbols-outlined pm-corner-icon">turn_right</span>
+                      Corner Parcel (Dual Road Access)
+                    </span>
+                    <span class="pm-toggle-desc">Commands premium valuation and dual street frontage</span>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Super Built-up Area -->
+              <div class="pm-field">
+                <label class="pm-label">Super Built-up Area (Sq. Yards) *</label>
+                <div class="pm-input-wrap">
+                  <span class="material-symbols-outlined pm-input-icon">square_foot</span>
+                  <input type="number" step="0.01" class="pm-input with-icon"
+                    [ngModel]="plotModalForm().superBuiltUpYds" (ngModelChange)="onPlotSqYdsChange($event)"
+                    name="superBuiltUpYds" required />
+                </div>
+                <div class="pm-hint-pill">
+                  <span>Calculated:</span>
+                  <strong>{{ plotModalForm().superBuiltUpSqft | number:'1.0-0' }} Sq.Ft</strong>
+                </div>
+              </div>
+
+              <!-- Net Plot Area -->
+              <div class="pm-field">
+                <label class="pm-label">Net Plot Area (Sq. Yards) *</label>
+                <div class="pm-input-wrap">
+                  <span class="material-symbols-outlined pm-input-icon">straighten</span>
+                  <input type="number" step="0.01" class="pm-input with-icon"
+                    [(ngModel)]="plotModalForm().netPlotAreaYds" name="netPlotAreaYds" required />
+                </div>
+                <div class="pm-hint-pill">
+                  <span>Net Carpet:</span>
+                  <strong>{{ (plotModalForm().netPlotAreaYds * 9) | number:'1.0-0' }} Sq.Ft</strong>
+                </div>
+              </div>
+
+              <!-- Dimensions (Width x Length Meters) -->
+              <div class="pm-field">
+                <label class="pm-label">Dimensions (Width × Length in Meters) *</label>
+                <div class="pm-duo-inputs">
+                  <div class="pm-input-wrap">
+                    <input type="number" step="0.01" class="pm-input" [ngModel]="plotModalForm().widthMeters"
+                      (ngModelChange)="onPlotMetersChange($event, plotModalForm().lengthMeters)" name="widthMeters"
+                      placeholder="Width (m)" required />
+                  </div>
+                  <span class="pm-duo-x">×</span>
+                  <div class="pm-input-wrap">
+                    <input type="number" step="0.01" class="pm-input" [ngModel]="plotModalForm().lengthMeters"
+                      (ngModelChange)="onPlotMetersChange(plotModalForm().widthMeters, $event)" name="lengthMeters"
+                      placeholder="Length (m)" required />
+                  </div>
+                </div>
+                <div class="pm-hint-pill">
+                  <span>Imperial:</span>
+                  <strong>{{ plotModalForm().widthFeet }} ft × {{ plotModalForm().lengthFeet }} ft</strong>
+                </div>
+              </div>
+
+              <!-- Price Estimate -->
+              <div class="pm-field">
+                <label class="pm-label">Price Estimate (in ₹ Lakhs) *</label>
+                <div class="pm-input-wrap">
+                  <span class="material-symbols-outlined pm-input-icon text-amber">currency_rupee</span>
+                  <input type="number" step="0.1" class="pm-input with-icon" [ngModel]="plotModalForm().priceInLakhs"
+                    (ngModelChange)="onPlotPriceLakhsChange($event)" name="priceInLakhs" required />
+                </div>
+                <div class="pm-hint-pill highlight-amber">
+                  <span>Display:</span>
+                  <strong>{{ plotModalForm().formattedPrice }}</strong>
+                </div>
+              </div>
+
+              <!-- 3D Coordinates: Road Position (X) & Row (Y) -->
+              <div class="pm-field">
+                <label class="pm-label">3D Scene Coordinates (X East-West &amp; Y Offset)</label>
+                <div class="pm-duo-inputs">
+                  <div class="pm-input-wrap">
+                    <input type="number" step="1" class="pm-input" [(ngModel)]="plotModalForm().x" name="posX"
+                      placeholder="X Offset" />
+                  </div>
+                  <span class="pm-duo-x">,</span>
+                  <div class="pm-input-wrap">
+                    <input type="number" step="1" class="pm-input" [(ngModel)]="plotModalForm().y" name="posY"
+                      placeholder="Y Offset" />
+                  </div>
+                </div>
+                <span class="pm-sub-hint">Placement along avenue: X (-30 to +30), Y (-15 for North, +15 for
+                  South)</span>
+              </div>
+
+              <!-- 3D Slab Footprint (W x H) -->
+              <div class="pm-field">
+                <label class="pm-label">3D Digital Twin Footprint (Width × Depth)</label>
+                <div class="pm-duo-inputs">
+                  <div class="pm-input-wrap">
+                    <input type="number" step="1" class="pm-input" [(ngModel)]="plotModalForm().w" name="sizeW"
+                      placeholder="Width" />
+                  </div>
+                  <span class="pm-duo-x">×</span>
+                  <div class="pm-input-wrap">
+                    <input type="number" step="1" class="pm-input" [(ngModel)]="plotModalForm().h" name="sizeH"
+                      placeholder="Depth" />
+                  </div>
+                </div>
+                <span class="pm-sub-hint">Default 3D extruded slab: 13 × 11 meters scale</span>
+              </div>
+
+              <!-- Mature Trees Feature Card Toggle (Full width) -->
+              <div class="pm-field full-width">
+                <label class="pm-toggle-card" [class.active]="plotModalForm().hasTrees">
+                  <input type="checkbox" class="pm-checkbox" [(ngModel)]="plotModalForm().hasTrees" name="hasTrees" />
+                  <div class="pm-toggle-text">
+                    <span class="pm-toggle-title">
+                      <span class="material-symbols-outlined text-green">park</span>
+                      Feature mature avenue trees and landscaped perimeter on this parcel
+                    </span>
+                    <span class="pm-toggle-desc">Renders photorealistic 3D foliage sprites and green buffer on the
+                      masterplan twin</span>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Live Plot Card Preview inside Modal -->
+              <div class="pm-field full-width">
+                <div class="pm-live-preview-box" [class.avail]="plotModalForm().status === 'available'"
+                  [class.sold]="plotModalForm().status === 'sold'"
+                  [class.reserved]="plotModalForm().status === 'reserved'">
+                  <div class="pm-preview-top">
+                    <div class="pm-preview-id">
+                      <span class="material-symbols-outlined text-sm">terrain</span>
+                      <span>Parcel {{ plotModalForm().plotNo || '---' }}</span>
+                      @if (plotModalForm().isCorner) {
+                      <span class="pm-corner-tag">CORNER</span>
+                      }
+                    </div>
+                    <span class="pm-status-pill" [class.avail]="plotModalForm().status === 'available'"
+                      [class.sold]="plotModalForm().status === 'sold'"
+                      [class.reserved]="plotModalForm().status === 'reserved'">
+                      {{ plotModalForm().status | uppercase }}
+                    </span>
+                  </div>
+                  <div class="pm-preview-specs">
+                    <span class="pm-spec-item">
+                      <strong>{{ plotModalForm().superBuiltUpYds }} Yds</strong> ({{ plotModalForm().superBuiltUpSqft }}
+                      sq.ft)
+                    </span>
+                    <span class="pm-spec-dot">•</span>
+                    <span class="pm-spec-item">{{ plotModalForm().facing }}</span>
+                    <span class="pm-spec-dot">•</span>
+                    <span class="pm-spec-item font-mono">{{ plotModalForm().widthFeet }}' × {{
+                      plotModalForm().lengthFeet
+                      }}'</span>
+                    <span class="pm-spec-dot">•</span>
+                    <span class="pm-spec-price">{{ plotModalForm().formattedPrice }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Modal Action Footer -->
+            <div class="plot-modal-footer">
+              <button type="button" class="btn-plot-modal-cancel" (click)="closePlotModal()">
+                Cancel
+              </button>
+              <button type="submit" class="btn-plot-modal-submit">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>{{ editingPlotIndex() !== null ? 'Save Plot Changes' : 'Add Plot to Layout' }}</span>
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+      }
+
+      <!-- ======================================================== -->
+      <!-- MODAL: ASSIGN SITE VISIT & ESCORT COORDINATION           -->
+      <!-- ======================================================== -->
+      @if (isAssignVisitModalOpen() && selectedVisit()) {
+      <div class="modal-backdrop" (click)="closeAssignVisitModal()">
+        <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog"
+          aria-modal="true">
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">VISIT #{{ selectedVisit()?.id }}</span>
+              <h3 class="dialog-heading">Assign Escort &amp; Update Visit Status</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeAssignVisitModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="modal-dialog-body ws-modal-body">
+            <div class="ws-modal-info-strip">
+              <div><strong>Buyer:</strong> {{ selectedVisit()?.user_name }} ({{ selectedVisit()?.user_phone }})</div>
+              <div><strong>Property:</strong> {{ selectedVisit()?.property_title }}</div>
+              <div><strong>Appointment:</strong> {{ selectedVisit()?.visit_date }} ({{ selectedVisit()?.visit_slot }})
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Visit Status</label>
+                <select class="form-input-field" [ngModel]="editVisitStatus()"
+                  (ngModelChange)="editVisitStatus.set($event)">
+                  <option value="requested">Requested (Pending Confirmation)</option>
+                  <option value="confirmed">Confirmed (Escort Assigned)</option>
+                  <option value="completed">Completed (Walkthrough Finished)</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Assigned Executive Name</label>
+                <input type="text" class="form-input-field" [ngModel]="editExecutiveName()"
+                  (ngModelChange)="editExecutiveName.set($event)" placeholder="e.g. Ramesh V (Senior Field Officer)" />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Executive Contact Phone</label>
+                <input type="text" class="form-input-field" [ngModel]="editExecutivePhone()"
+                  (ngModelChange)="editExecutivePhone.set($event)" placeholder="e.g. +91 94440 12345" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Pickup &amp; Transport Location</label>
+                <input type="text" class="form-input-field" [ngModel]="editPickupLocation()"
+                  (ngModelChange)="editPickupLocation.set($event)" placeholder="e.g. Koyambedu Metro Station Gate 2" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Escort / Internal Notes</label>
+                <textarea class="form-input-field textarea-field" rows="2" [ngModel]="editAdminNotes()"
+                  (ngModelChange)="editAdminNotes.set($event)"
+                  placeholder="Provide instructions for field officer or buyer pickup details..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="ws-modal-footer">
+            <button type="button" class="btn-ws-cancel" (click)="closeAssignVisitModal()">Cancel</button>
+            <button type="button" class="btn-ws-save" (click)="saveAssignVisit()">
+              <span class="material-symbols-outlined">save</span>
+              <span>Save Visit Assignment</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- ======================================================== -->
+      <!-- MODAL: LOG ADVISORY CONSULTATION & RECOMMENDATIONS       -->
+      <!-- ======================================================== -->
+      @if (isAddConsultModalOpen()) {
+      <div class="modal-backdrop" (click)="closeAddConsultModal()">
+        <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog"
+          aria-modal="true">
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">ADVISORY DESK</span>
+              <h3 class="dialog-heading">Log Buyer Strategy &amp; Cadastral Consultation</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeAddConsultModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="modal-dialog-body ws-modal-body">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Buyer User ID</label>
+                <input type="number" class="form-input-field" [ngModel]="consultUserId()"
+                  (ngModelChange)="consultUserId.set($event)" />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Senior Advisor Specialist</label>
+                <input type="text" class="form-input-field" [ngModel]="consultAdvisorName()"
+                  (ngModelChange)="consultAdvisorName.set($event)" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Advisor Role / Specialization</label>
+                <input type="text" class="form-input-field" [ngModel]="consultAdvisorRole()"
+                  (ngModelChange)="consultAdvisorRole.set($event)" />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Attached Dossier Document URL / PDF</label>
+                <input type="text" class="form-input-field" [ngModel]="consultDossier()"
+                  (ngModelChange)="consultDossier.set($event)" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Consultation Findings &amp; Legal Takeaways</label>
+                <textarea class="form-input-field textarea-field" rows="3" [ngModel]="consultNotes()"
+                  (ngModelChange)="consultNotes.set($event)"
+                  placeholder="Enter advice regarding DTCP master plan, setback requirements, patta transfer timeline..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="ws-modal-footer">
+            <button type="button" class="btn-ws-cancel" (click)="closeAddConsultModal()">Cancel</button>
+            <button type="button" class="btn-ws-save" (click)="saveConsultation()">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>Commit Consultation Log</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- ======================================================== -->
+      <!-- MODAL: UPDATE PLOT BOOKING & REGISTRATION STAGE          -->
+      <!-- ======================================================== -->
+      @if (isEditBookingModalOpen() && selectedBooking()) {
+      <div class="modal-backdrop" (click)="closeEditBookingModal()">
+        <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog"
+          aria-modal="true">
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">BOOKING #{{ selectedBooking()?.id }}</span>
+              <h3 class="dialog-heading">Update Plot Registration Workflow</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeEditBookingModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="modal-dialog-body ws-modal-body">
+            <div class="ws-modal-info-strip">
+              <div><strong>Buyer:</strong> {{ selectedBooking()?.user_name }}</div>
+              <div><strong>Property:</strong> {{ selectedBooking()?.property_title }} (Plot #{{
+                selectedBooking()?.plot_number }})</div>
+              <div><strong>Price:</strong> ₹{{ selectedBooking()?.total_price | number }} | <strong>Advance:</strong>
+                ₹{{
+                selectedBooking()?.token_advance_paid | number }}</div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Registration Workflow Stage</label>
+                <select class="form-input-field" [ngModel]="bookingStatus()"
+                  (ngModelChange)="bookingStatus.set($event)">
+                  <option value="plot_on_hold">1. Plot on Hold (Initial Reservation)</option>
+                  <option value="token_paid">2. Token Paid (Advance Cleared)</option>
+                  <option value="document_verification">3. Document Verification (EC / Patta Check)</option>
+                  <option value="registration_in_progress">4. Registration in Progress (SRO Slot Booked)</option>
+                  <option value="registered_completed">5. Registered / Title Deed Handed Over</option>
+                  <option value="cancelled">Cancelled / Refunded</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Assigned Legal &amp; Title Verification Officer</label>
+                <input type="text" class="form-input-field" [ngModel]="bookingLegalOfficer()"
+                  (ngModelChange)="bookingLegalOfficer.set($event)" />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Target SRO Registration Date</label>
+                <input type="date" class="form-input-field" [ngModel]="bookingTargetDate()"
+                  (ngModelChange)="bookingTargetDate.set($event)" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Cadastral / Sub-Registrar Progress Notes</label>
+                <textarea class="form-input-field textarea-field" rows="2" [ngModel]="bookingNotes()"
+                  (ngModelChange)="bookingNotes.set($event)"
+                  placeholder="Enter legal verification status or sub-registrar appointment details..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="ws-modal-footer">
+            <button type="button" class="btn-ws-cancel" (click)="closeEditBookingModal()">Cancel</button>
+            <button type="button" class="btn-ws-save" (click)="saveBookingStatus()">
+              <span class="material-symbols-outlined">save</span>
+              <span>Update Registration Stage</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- ======================================================== -->
+      <!-- MODAL: ADJUST ENTITLEMENT CREDITS & QUOTAS               -->
+      <!-- ======================================================== -->
+      @if (isAdjustCreditsModalOpen()) {
+      <div class="modal-backdrop" (click)="closeAdjustCreditsModal()">
+        <div class="modal-dialog-panel ws-modal-panel" (click)="$event.stopPropagation()" role="dialog"
+          aria-modal="true">
+          <div class="modal-dialog-header">
+            <div class="dialog-titles">
+              <span class="dialog-prop-id">UID #{{ creditsUserId() }}</span>
+              <h3 class="dialog-heading">Grant Additional Entitlement Quota</h3>
+            </div>
+            <button type="button" class="btn-close-dialog" (click)="closeAdjustCreditsModal()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="modal-dialog-body ws-modal-body">
+            <p class="ws-modal-subtext">Add verification and access credits directly to buyer account without manual
+              payment
+              billing:</p>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Add Project Views</label>
+                <input type="number" class="form-input-field" [ngModel]="addViews()"
+                  (ngModelChange)="addViews.set($event)" min="0" />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Add Comparisons</label>
+                <input type="number" class="form-input-field" [ngModel]="addComparisons()"
+                  (ngModelChange)="addComparisons.set($event)" min="0" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Add Advisory Sessions</label>
+                <input type="number" class="form-input-field" [ngModel]="addAdvisory()"
+                  (ngModelChange)="addAdvisory.set($event)" min="0" />
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Add Assisted Site Visits</label>
+                <input type="number" class="form-input-field" [ngModel]="addVisits()"
+                  (ngModelChange)="addVisits.set($event)" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="ws-modal-footer">
+            <button type="button" class="btn-ws-cancel" (click)="closeAdjustCreditsModal()">Cancel</button>
+            <button type="button" class="btn-ws-save" (click)="saveAdjustCredits()">
+              <span class="material-symbols-outlined">add_task</span>
+              <span>Grant Credits Now</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      }
+

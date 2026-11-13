@@ -1,0 +1,2154 @@
+        <!-- ========================================== -->
+        <!-- TAB CONTENT: DEVELOPER PORTFOLIOS & ACCESS -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'developers') {
+        <section class="tab-pane-section developers-admin-pane">
+          <div class="workspace-header-banner"
+            style="background: linear-gradient(135deg, #0f3b4a 0%, #1e4d58 60%, #2c4938 100%);">
+            <div class="banner-title-block">
+              <div class="banner-icon-box" style="background: rgba(255,255,255,0.15); color: #ffffff;">
+                <span class="material-symbols-outlined">domain</span>
+              </div>
+              <div>
+                <h2 class="banner-main-title" style="color: #ffffff;">Developer Entities &amp; Master Promoters</h2>
+                <p class="banner-subtitle" style="color: rgba(255,255,255,0.85);">
+                  Super Administrator oversight for registered real estate promoters, RERA numbers, authorized company
+                  portfolios, and upcoming projects.
+                </p>
+              </div>
+            </div>
+
+            <div class="workspace-stats-pills">
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminDevelopers().length }}</span>
+                <span class="stat-lbl">Developers</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminService.stats().total }}</span>
+                <span class="stat-lbl">Total Projects</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminDevelopers().length > 0 ? 'Verified' : 'None' }}</span>
+                <span class="stat-lbl">TNRERA Registry</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="workspace-controls-bar">
+            <div class="workspace-search-box">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" [ngModel]="developerSearchQuery()" (ngModelChange)="developerSearchQuery.set($event)"
+                placeholder="Search developer by name, RERA registration, office..." class="workspace-search-input" />
+            </div>
+            <div class="toolbar-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              @if (isSuperAdmin()) {
+              <button type="button" (click)="openCreateDeveloperModal()"
+                style="display:inline-flex;align-items:center;gap:6px;background:#0f3b4a;color:#ffffff;padding:8px 16px;border-radius:6px;border:none;font-size:13px;font-weight:600;cursor:pointer;">
+                <span class="material-symbols-outlined">add_business</span>
+                <span>+ Create New Developer</span>
+              </button>
+              }
+              <a routerLink="/developer" class="btn-post-developer-proj"
+                style="display:inline-flex;align-items:center;gap:6px;background:#5e8f72;color:#ffffff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">
+                <span class="material-symbols-outlined">manage_accounts</span>
+                <span>Open Developer Workspace</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Developers Table -->
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Company / Developer</th>
+                  <th>Background Cover</th>
+                  <th>Page Theme</th>
+                  <th>Promoter RERA No.</th>
+                  <th>Corporate Office</th>
+                  <th>Active Projects</th>
+                  <th>Upcoming Releases</th>
+                  <th>Track Record</th>
+                  <th class="th-actions">Direct Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (dev of filteredAdminDevelopers(); track dev.id || dev.name) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="dev-table-logo-box"
+                        style="width:40px;height:40px;border-radius:6px;background:#ffffff;border:1px solid #e2e8f0;padding:2px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                        @if (dev.logoUrl) {
+                        <img [src]="dev.logoUrl" [alt]="dev.name"
+                          style="max-width:100%;max-height:100%;object-fit:contain;">
+                        } @else {
+                        <span class="material-symbols-outlined" style="color:#0f3b4a;font-size:24px;">apartment</span>
+                        }
+                      </div>
+                      <div>
+                        <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ dev.name }}</span>
+                        <span class="user-cell-id">ID #{{ dev.id }} • {{ dev.slug }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dev-table-cover-preview"
+                      [style.background-image]="'url(' + (dev.coverImageUrl || defaultDevCoverImage) + ')'"
+                      (click)="openEditDeveloperModal(dev)" title="Click to edit Hero Background Image">
+                      @if (dev.coverImageUrl) {
+                      <span class="cover-status-badge custom">Custom</span>
+                      } @else {
+                      <span class="cover-status-badge default">Default</span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dev-table-gradient-preview"
+                      [style.background]="dev.bgGradient || 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)'"
+                      (click)="openEditDeveloperModal(dev)"
+                      title="Click to customize developer page mild gradient theme">
+                      <span class="gradient-preview-chip-text">{{ dev.bgGradient ? 'Custom Theme' : 'Emerald Default'
+                        }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge-role badge-rera"
+                      style="background:#e5f7ec;color:#2c4938;font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">
+                      {{ dev.reraNumber || 'TNRERA/PROM/0219/2026' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-xs text-muted" style="color:#475569;font-size:12px;">{{ dev.corporateOffice ||
+                      'Chennai, Tamil Nadu' }}</span>
+                  </td>
+                  <td>
+                    <span style="font-weight:700;color:#0f3b4a;">{{ dev.propertyCount ?? dev.projectCount ?? 0 }} Active</span>
+                  </td>
+                  <td>
+                    <span class="badge-plan-tier"
+                      style="background:#e0f2fe;color:#0369a1;font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">
+                      {{ dev.upcomingProjectsCount || 0 }} Pipeline
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display:flex;flex-direction:column;font-size:11px;color:#64748b;">
+                      <span>Est. {{ dev.establishedYear || '2016' }}</span>
+                      <span>{{ dev.projectCount }} Delivered</span>
+                    </div>
+                  </td>
+                  <td class="td-actions">
+                    <div class="action-btn-group">
+                      <button type="button" class="btn-action-icon btn-action-edit-dev"
+                        (click)="openEditDeveloperModal(dev)" title="Edit Developer Profile & Background Image"
+                        style="color:#0284c7;background:#f0f9ff;border:1px solid #bae6fd;">
+                        <span class="material-symbols-outlined">edit</span>
+                      </button>
+                      <a [routerLink]="['/builder', dev.slug || dev.name]" target="_blank" class="btn-action-icon"
+                        title="View Public Developer Page">
+                        <span class="material-symbols-outlined">visibility</span>
+                      </a>
+                      <a routerLink="/developer" class="btn-action-icon" title="Manage In Developer Portal"
+                        style="color:#5e8f72;">
+                        <span class="material-symbols-outlined">manage_accounts</span>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SUPER ADMIN: EDIT DEVELOPER PROFILE & BACKGROUND COVER IMAGE MODAL -->
+          @if (selectedEditDeveloper(); as editDev) {
+          <div class="admin-modal-backdrop" (click)="closeEditDeveloperModal()">
+            <div class="admin-modal-card developer-edit-modal" (click)="$event.stopPropagation()">
+              <div class="admin-modal-header">
+                <div class="modal-header-title">
+                  <span class="material-symbols-outlined modal-header-icon">apartment</span>
+                  <div>
+                    <h3>{{ editDev.isNew ? 'Create New Developer Profile' : 'Edit Developer Profile & Hero Background' }}</h3>
+                    <p>{{ editDev.isNew ? 'Register a new developer entity (with or without projects) and optionally link existing registry projects.' : ('Customize ' + editDev.name + ' company branding, cover photo, and verified credentials.') }}</p>
+                  </div>
+                </div>
+                <button type="button" class="btn-modal-close" (click)="closeEditDeveloperModal()">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div class="admin-modal-body">
+                <!-- Company Details Grid -->
+                <div class="modal-form-section">
+                  <div class="section-badge-title">
+                    <span class="material-symbols-outlined">domain</span>
+                    <span>Company Credentials &amp; Logo</span>
+                  </div>
+
+                  <div class="modal-fields-grid-2">
+                    <div>
+                      <label class="modal-label">Company / Developer Name *</label>
+                      <input type="text" [(ngModel)]="editDev.name" required class="modal-input">
+                    </div>
+                    <div>
+                      <label class="modal-label">Promoter RERA Registration *</label>
+                      <input type="text" [(ngModel)]="editDev.reraNumber" required class="modal-input">
+                    </div>
+                  </div>
+
+                  <div class="modal-fields-grid-2">
+                    <div>
+                      <label class="modal-label">Developer Logo Image</label>
+                      <div class="input-with-inline-upload">
+                        <input type="url" [(ngModel)]="editDev.logoUrl" placeholder="https://..." class="modal-input">
+                        <button type="button" class="btn-admin-upload" (click)="adminLogoFileInput.click()"
+                          [disabled]="isUploadingDevLogo()" title="Upload Logo"
+                          style="padding: 7px 12px; font-size: 11px;">
+                          <span class="material-symbols-outlined">{{ isUploadingDevLogo() ? 'progress_activity' : 'upload' }}</span>
+                          <span>{{ isUploadingDevLogo() ? 'Uploading...' : 'Upload Logo' }}</span>
+                        </button>
+                        <input #adminLogoFileInput type="file" accept="image/*"
+                          (change)="onAdminUploadDeveloperLogo($event)" style="display:none">
+                      </div>
+                      @if (editDev.logoUrl) {
+                      <div
+                        style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;background:#f8fafc;padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;">
+                        <img [src]="editDev.logoUrl" alt="Logo preview"
+                          style="width:32px;height:32px;object-fit:contain;background:#fff;border-radius:4px;border:1px solid #cbd5e1;padding:2px;">
+                        <span style="font-size:11px;color:#334155;font-weight:600;">Active Logo</span>
+                        <button type="button" (click)="editDev.logoUrl = ''" title="Remove logo"
+                          style="background:transparent;border:none;cursor:pointer;color:#ef4444;display:flex;align-items:center;">
+                          <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+                        </button>
+                      </div>
+                      }
+                    </div>
+                    <div>
+                      <label class="modal-label">Corporate Office Address</label>
+                      <input type="text" [(ngModel)]="editDev.corporateOffice" class="modal-input">
+                    </div>
+                  </div>
+
+                  <div class="modal-fields-grid-3">
+                    <div>
+                      <label class="modal-label">Established Year</label>
+                      <input type="text" [(ngModel)]="editDev.establishedYear" class="modal-input">
+                    </div>
+                    <div>
+                      <label class="modal-label">Delivered Extent</label>
+                      <input type="text" [(ngModel)]="editDev.deliveredSqFt" class="modal-input">
+                    </div>
+                    <div>
+                      <label class="modal-label">Completed Landmarks</label>
+                      <input type="text" [(ngModel)]="editDev.projectsCompleted" class="modal-input">
+                    </div>
+                  </div>
+
+                  <div class="modal-fields-grid-3">
+                    <div>
+                      <label class="modal-label">Contact Phone</label>
+                      <input type="text" [(ngModel)]="editDev.contactPhone" class="modal-input">
+                    </div>
+                    <div>
+                      <label class="modal-label">Contact Email</label>
+                      <input type="email" [(ngModel)]="editDev.contactEmail" class="modal-input">
+                    </div>
+                    <div>
+                      <label class="modal-label">Official Website</label>
+                      <input type="url" [(ngModel)]="editDev.websiteUrl" class="modal-input">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="modal-label">About Developer &amp; Corporate Narrative</label>
+                    <textarea [(ngModel)]="editDev.about" rows="3" class="modal-textarea"></textarea>
+                  </div>
+                </div>
+
+                <!-- Linked Master Projects & Assignment Section (Option 2) -->
+                <div class="modal-form-section">
+                  <div class="section-badge-title">
+                    <span class="material-symbols-outlined">link</span>
+                    <span>Linked Master Projects ({{ adminDevLinkedProjects().length }})</span>
+                  </div>
+                  <p class="section-lead-text">
+                    Projects linked to this developer appear on their public showcase page
+                    (<code>/builder/{{ editDev.slug || editDev.name }}</code>).
+                  </p>
+
+                  <!-- Currently Linked Projects List -->
+                  @if (adminDevLinkedProjects().length > 0) {
+                  <div class="linked-projects-list">
+                    @for (lp of adminDevLinkedProjects(); track lp.project_id) {
+                    <div class="linked-project-row">
+                      <div class="lp-thumb"
+                        [style.background-image]="'url(' + (lp.cover_image || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80') + ')'">
+                      </div>
+                      <div class="lp-info">
+                        <span class="lp-title">{{ lp.project_name }}</span>
+                        <span class="lp-meta">ID #{{ lp.project_id }} • {{ lp.locality || lp.city }}, {{ lp.district
+                          }}</span>
+                      </div>
+                      <button type="button" class="btn-unlink-proj" (click)="unlinkSingleProject(lp.project_id)"
+                        [disabled]="isLinkingProjects()" title="Unlink Project">
+                        <span class="material-symbols-outlined">link_off</span>
+                        <span>Unlink</span>
+                      </button>
+                    </div>
+                    }
+                  </div>
+                  } @else {
+                  <div class="empty-linked-notice">
+                    <span class="material-symbols-outlined">domain_disabled</span>
+                    <span>No master projects are currently linked to this developer yet. Optional: search below to attach existing layouts, or save with 0 projects.</span>
+                  </div>
+                  }
+
+                  <!-- Search & Link Existing Master Projects -->
+                  <div class="link-existing-wrapper">
+                    <div class="link-existing-header">
+                      <span class="modal-label" style="margin:0;">Link Existing Projects from Master Registry</span>
+                      @if (adminSelectedProjectsToLink().length > 0) {
+                      <button type="button" class="btn-batch-link" (click)="linkSelectedProjects()"
+                        [disabled]="isLinkingProjects() || isSavingDeveloper()">
+                        <span class="material-symbols-outlined">link</span>
+                        <span>{{ editDev.id ? ('Link Selected (' + adminSelectedProjectsToLink().length + ')') : ('Create & Link (' + adminSelectedProjectsToLink().length + ')') }}</span>
+                      </button>
+                      }
+                    </div>
+
+                    <div class="link-search-bar">
+                      <span class="material-symbols-outlined">search</span>
+                      <input type="text" [value]="adminDevProjectSearch()" (input)="onSearchAvailableProjects($event)"
+                        placeholder="Search available projects by name, locality, or ID (e.g. PRJ-)..."
+                        class="link-search-input">
+                    </div>
+
+                    @if (adminDevAvailableProjects().length > 0) {
+                    <div class="available-projects-list">
+                      @for (ap of adminDevAvailableProjects(); track ap.project_id) {
+                      <div class="available-project-item" [class.is-selected]="isProjectSelected(ap.project_id)"
+                        (click)="toggleProjectSelection(ap.project_id)">
+                        <input type="checkbox" [checked]="isProjectSelected(ap.project_id)"
+                          (click)="$event.stopPropagation(); toggleProjectSelection(ap.project_id)">
+                        <div class="ap-details">
+                          <span class="ap-name">{{ ap.project_name }}</span>
+                          <span class="ap-sub">ID: {{ ap.project_id }} • {{ ap.locality || ap.city }}</span>
+                        </div>
+                        @if (ap.developer_name) {
+                        <span class="ap-curr-dev">Current: {{ ap.developer_name }}</span>
+                        } @else {
+                        <span class="ap-unassigned">Unassigned</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                    } @else if (adminDevProjectSearch()) {
+                    <div class="no-results-avail">
+                      <span>No unlinked projects matched "{{ adminDevProjectSearch() }}"</span>
+                    </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Background Image Hero Banner Section -->
+                <div class="modal-form-section">
+                  <div class="section-badge-title">
+                    <span class="material-symbols-outlined">wallpaper</span>
+                    <span>Hero Background Cover Photo</span>
+                  </div>
+                  <p class="section-lead-text">
+                    This background image spans the header of the builder's public profile page
+                    (<code>/builder/{{ editDev.slug || editDev.name }}</code>).
+                  </p>
+
+                  <!-- Live Banner Preview Box -->
+                  <div class="dev-modal-banner-preview"
+                    [style.background-image]="'url(' + (editDev.coverImageUrl || defaultDevCoverImage) + ')'">
+                    <div class="banner-preview-overlay">
+                      <div class="banner-preview-monogram">
+                        @if (editDev.logoUrl) {
+                        <img [src]="editDev.logoUrl" [alt]="editDev.name">
+                        } @else {
+                        <span class="material-symbols-outlined">apartment</span>
+                        }
+                      </div>
+                      <div class="banner-preview-text">
+                        <span class="preview-dev-name">{{ editDev.name || 'Developer Company' }}</span>
+                        <span class="preview-dev-rera">TNRERA: {{ editDev.reraNumber || 'Verified' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Cover Input & Upload Controls -->
+                  <div class="cover-input-control-row">
+                    <div class="input-ctrl-wrapper">
+                      <label class="modal-label">Cover Image URL</label>
+                      <input type="url" [(ngModel)]="editDev.coverImageUrl"
+                        placeholder="https://images.unsplash.com/..." class="modal-input">
+                    </div>
+                    <div class="upload-btn-wrapper">
+                      <label class="modal-label">&nbsp;</label>
+                      <button type="button" class="btn-admin-upload" (click)="adminCoverFileInput.click()"
+                        [disabled]="isUploadingDevCover()">
+                        <span class="material-symbols-outlined">{{ isUploadingDevCover() ? 'progress_activity' :
+                          'upload' }}</span>
+                        <span>{{ isUploadingDevCover() ? 'Uploading...' : 'Upload Image' }}</span>
+                      </button>
+                      <input #adminCoverFileInput type="file" accept="image/*"
+                        (change)="onAdminUploadDeveloperCover($event)" style="display:none">
+                    </div>
+                  </div>
+
+                  <!-- Curated Architectural Presets -->
+                  <div class="admin-presets-strip">
+                    <span class="presets-caption">Architectural Themes:</span>
+                    <div class="presets-pills">
+                      @for (preset of adminArchitecturalCoverPresets; track preset.label) {
+                      <button type="button" class="btn-preset-chip"
+                        [class.active]="editDev.coverImageUrl === preset.url"
+                        (click)="selectAdminCoverPreset(preset.url)">
+                        {{ preset.label }}
+                      </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mild Gradient Background Section -->
+                <div class="modal-form-section">
+                  <div class="section-badge-title">
+                    <span class="material-symbols-outlined">palette</span>
+                    <span>Developer Page Mild Gradient Background</span>
+                  </div>
+                  <p class="section-lead-text">
+                    Customizes a unique ambient mild gradient for {{ editDev.name || 'this developer' }}'s public showcase page
+                    (<code>/builder/{{ editDev.slug || editDev.name }}</code>). Designed to preserve high-contrast
+                    readability with zero shadows.
+                  </p>
+
+                  <!-- Live Gradient Background & Page Preview Mockup -->
+                  <div class="dev-modal-gradient-preview" [style.background]="editDev.bgGradient">
+                    <div class="gradient-preview-content">
+                      <div class="gradient-mockup-card">
+                        <div class="mockup-header-row">
+                          <span class="mockup-logo-icon material-symbols-outlined">apartment</span>
+                          <div>
+                            <div class="mockup-title">{{ editDev.name || 'Developer Company' }}</div>
+                            <div class="mockup-subtitle">TNRERA: {{ editDev.reraNumber || 'Verified' }} • Showcase
+                              Atmosphere</div>
+                          </div>
+                        </div>
+                        <div class="mockup-spectrum-rule"></div>
+                        <div class="mockup-pill-row">
+                          <span class="mockup-pill">100% Clear Title</span>
+                          <span class="mockup-pill">DTCP Approved</span>
+                        </div>
+                      </div>
+                      <div class="gradient-badge-tag">
+                        <span class="material-symbols-outlined text-xs">auto_awesome</span>
+                        <span>Live Theme Preview</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Curated Mild Gradient Presets -->
+                  <div class="admin-presets-strip" style="margin-top: 12px;">
+                    <span class="presets-caption">Curated Mild Gradients:</span>
+                    <div class="presets-pills gradient-presets-grid">
+                      @for (preset of adminMildGradientPresets; track preset.label) {
+                      <button type="button" class="btn-gradient-chip"
+                        [class.active]="editDev.bgGradient === preset.value"
+                        (click)="selectAdminGradientPreset(preset.value)">
+                        <span class="chip-color-swatch" [style.background]="preset.value"></span>
+                        <div>
+                          <span class="chip-text">{{ preset.label }}</span>
+                          <span class="chip-badge">{{ preset.badge }}</span>
+                        </div>
+                      </button>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Curated Mild Flat Colors & Pure White Presets -->
+                  <div class="admin-presets-strip" style="margin-top: 12px;">
+                    <span class="presets-caption">Curated Mild Flat Colors &amp; Pure White:</span>
+                    <div class="presets-pills gradient-presets-grid">
+                      @for (preset of adminMildFlatColorPresets; track preset.label) {
+                      <button type="button" class="btn-gradient-chip"
+                        [class.active]="editDev.bgGradient === preset.value"
+                        (click)="selectAdminGradientPreset(preset.value)">
+                        <span class="chip-color-swatch" [style.background]="preset.value"></span>
+                        <div>
+                          <span class="chip-text">{{ preset.label }}</span>
+                          <span class="chip-badge">{{ preset.badge }}</span>
+                        </div>
+                      </button>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Custom Background CSS (Hex Color / Linear / Radial) -->
+                  <div class="cover-input-control-row">
+                    <div class="input-ctrl-wrapper" style="width: 100%;">
+                      <label class="modal-label">Custom Background CSS (Flat Hex Color or Linear / Radial Gradient)</label>
+                      <input type="text" [(ngModel)]="editDev.bgGradient"
+                        placeholder="e.g. #ffffff or linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)"
+                        class="modal-input font-mono text-xs">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="admin-modal-footer">
+                <button type="button" class="btn-modal-cancel" (click)="closeEditDeveloperModal()">Cancel</button>
+                <button type="button" class="btn-modal-save" (click)="saveDeveloperFromAdmin()"
+                  [disabled]="isSavingDeveloper()">
+                  <span class="material-symbols-outlined">{{ isSavingDeveloper() ? 'progress_activity' : 'check_circle'
+                    }}</span>
+                  <span>{{ isSavingDeveloper() ? 'Saving Changes...' : (editDev.isNew ? 'Create Developer Profile' : 'Save Developer Profile') }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          }
+        </section>
+        }
+
+        <!-- ========================================== -->
+        <!-- TAB CONTENT 4: RAZORPAY & FINANCIAL CREDITS DASHBOARD -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'financials') {
+        <section class="tab-pane-section financials-pane">
+
+          <!-- Financial Header & Actions Banner -->
+          <div class="fin-header-banner">
+            <div class="fin-title-col">
+              <div class="fin-badge-pill">
+                <span class="material-symbols-outlined">payments</span>
+                <span>ADMINISTRATIVE SETTLEMENT CONSOLE</span>
+              </div>
+              <h3 class="fin-heading">Razorpay &amp; Payment Gateway Reconciliation</h3>
+              <p class="fin-sub">
+                Monitor real-time revenue collections, compare Razorpay versus alternate channels, and audit investor
+                media
+                point recharges.
+              </p>
+            </div>
+
+            <div class="fin-actions-col">
+              <button type="button" class="btn-fin-action btn-wire" (click)="openManualCreditModal()">
+                <span class="material-symbols-outlined">add_card</span>
+                <span>Issue Manual / Wire Credit</span>
+              </button>
+
+              <button type="button" class="btn-fin-action btn-export" (click)="exportFinancialsCsv()"
+                title="Download CSV for finance audits">
+                <span class="material-symbols-outlined">download</span>
+                <span>Export CSV Ledger</span>
+              </button>
+
+              <button type="button" class="btn-fin-action btn-refresh" [disabled]="adminService.isFinancialLoading()"
+                (click)="adminService.loadFinancials(financialGateway(), financialStatus(), financialTimeframe(), financialSearch())"
+                title="Refresh ledger">
+                <span class="material-symbols-outlined" [class.spin-anim]="adminService.isFinancialLoading()">
+                  sync
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 5-Card Financial KPI Strip -->
+          <div class="fin-kpi-grid">
+
+            <!-- KPI 1: Total Revenue Collections -->
+            <div class="fin-kpi-card highlight-emerald">
+              <div class="fin-kpi-top">
+                <span class="fin-kpi-tag">TOTAL CREDITED</span>
+                <div class="fin-kpi-icon-box bg-emerald-dim">
+                  <span class="material-symbols-outlined">account_balance_wallet</span>
+                </div>
+              </div>
+              <div class="fin-kpi-value-row">
+                <span class="fin-currency">₹</span>
+                <span class="fin-value">{{ (adminService.financialData()?.summary?.totalRevenueRupees || 0) |
+                  number:'1.2-2'
+                  }}</span>
+              </div>
+              <div class="fin-kpi-footer">
+                <span class="material-symbols-outlined text-emerald">bolt</span>
+                <span>{{ adminService.financialData()?.summary?.totalPointsCredited || 0 }} Media Points in
+                  Circulation</span>
+              </div>
+            </div>
+
+            <!-- KPI 2: Razorpay Gateway Collections -->
+            <div class="fin-kpi-card highlight-blue">
+              <div class="fin-kpi-top">
+                <span class="fin-kpi-tag rzp-tag">
+                  <span class="material-symbols-outlined">credit_score</span>
+                  <span>RAZORPAY GATEWAY</span>
+                </span>
+                <div class="fin-kpi-icon-box bg-blue-dim">
+                  <span class="material-symbols-outlined">verified</span>
+                </div>
+              </div>
+              <div class="fin-kpi-value-row text-blue">
+                <span class="fin-currency">₹</span>
+                <span class="fin-value">{{ (adminService.financialData()?.summary?.razorpayRevenueRupees || 0) |
+                  number:'1.2-2' }}</span>
+              </div>
+              <div class="fin-kpi-footer">
+                <div class="fin-progress-tiny">
+                  <div class="bar-fill bg-blue"
+                    [style.width.%]="adminService.financialData()?.summary?.razorpayPercentage || 0"></div>
+                </div>
+                <span class="fin-pct-label">{{ adminService.financialData()?.summary?.razorpayPercentage || 0 }}% Share
+                  ({{
+                  adminService.financialData()?.summary?.razorpayOrdersCount || 0 }} Orders)</span>
+              </div>
+            </div>
+
+            <!-- KPI 3: Other Channels (UPI, NetBanking, Cards) -->
+            <div class="fin-kpi-card highlight-purple">
+              <div class="fin-kpi-top">
+                <span class="fin-kpi-tag other-tag">
+                  <span class="material-symbols-outlined">account_balance</span>
+                  <span>OTHER CHANNELS</span>
+                </span>
+                <div class="fin-kpi-icon-box bg-purple-dim">
+                  <span class="material-symbols-outlined">sync_alt</span>
+                </div>
+              </div>
+              <div class="fin-kpi-value-row text-purple">
+                <span class="fin-currency">₹</span>
+                <span class="fin-value">{{ (adminService.financialData()?.summary?.otherRevenueRupees || 0) |
+                  number:'1.2-2'
+                  }}</span>
+              </div>
+              <div class="fin-kpi-footer">
+                <div class="fin-progress-tiny">
+                  <div class="bar-fill bg-purple"
+                    [style.width.%]="adminService.financialData()?.summary?.otherPercentage || 0"></div>
+                </div>
+                <span class="fin-pct-label">{{ adminService.financialData()?.summary?.otherPercentage || 0 }}% Share ({{
+                  adminService.financialData()?.summary?.otherOrdersCount || 0 }} Orders)</span>
+              </div>
+            </div>
+
+            <!-- KPI 4: Average Order Value (AOV) -->
+            <div class="fin-kpi-card">
+              <div class="fin-kpi-top">
+                <span class="fin-kpi-tag">AVERAGE ORDER (AOV)</span>
+                <div class="fin-kpi-icon-box bg-amber-dim">
+                  <span class="material-symbols-outlined">trending_up</span>
+                </div>
+              </div>
+              <div class="fin-kpi-value-row">
+                <span class="fin-currency">₹</span>
+                <span class="fin-value">{{ (adminService.financialData()?.summary?.averageOrderValue || 0) |
+                  number:'1.0-0'
+                  }}</span>
+              </div>
+              <div class="fin-kpi-footer">
+                <span class="material-symbols-outlined text-amber">shopping_bag</span>
+                <span>{{ adminService.financialData()?.summary?.totalOrdersCount || 0 }} Total Recharge Orders</span>
+              </div>
+            </div>
+
+            <!-- KPI 5: Active Paying Investors -->
+            <div class="fin-kpi-card">
+              <div class="fin-kpi-top">
+                <span class="fin-kpi-tag">PAYING INVESTORS</span>
+                <div class="fin-kpi-icon-box bg-cyan-dim">
+                  <span class="material-symbols-outlined">groups</span>
+                </div>
+              </div>
+              <div class="fin-kpi-value-row text-cyan">
+                <span class="fin-value">{{ adminService.financialData()?.summary?.uniqueInvestorsCount || 0 }}</span>
+                <span class="fin-unit">Accounts</span>
+              </div>
+              <div class="fin-kpi-footer">
+                <span class="material-symbols-outlined text-cyan">military_tech</span>
+                <span>100% KYC &amp; Phone Verified</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Channel Share Visual Progress Bar & Cards Strip -->
+          <div class="gateway-distribution-box">
+            <div class="dist-header-row">
+              <span class="dist-title">
+                <span class="material-symbols-outlined">donut_large</span>
+                <span>Payment Gateway Market Share</span>
+              </span>
+              <div class="dist-legend">
+                <span class="legend-pill leg-rzp">
+                  <span class="legend-dot bg-blue"></span>
+                  <span>Razorpay Gateway ({{ adminService.financialData()?.summary?.razorpayPercentage || 0 }}%)</span>
+                </span>
+                <span class="legend-pill leg-other">
+                  <span class="legend-dot bg-purple"></span>
+                  <span>Other Channels / UPI ({{ adminService.financialData()?.summary?.otherPercentage || 0 }}%)</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Proportional Visual Bar -->
+            <div class="dist-bar-track">
+              <div class="dist-bar-segment seg-rzp"
+                [style.width.%]="adminService.financialData()?.summary?.razorpayPercentage || 50"
+                title="Razorpay Gateway: ₹{{ adminService.financialData()?.summary?.razorpayRevenueRupees | number:'1.2-2' }}">
+              </div>
+              <div class="dist-bar-segment seg-other"
+                [style.width.%]="adminService.financialData()?.summary?.otherPercentage || 50"
+                title="Other Channels: ₹{{ adminService.financialData()?.summary?.otherRevenueRupees | number:'1.2-2' }}">
+              </div>
+            </div>
+
+            <!-- Channel Breakdown Cards -->
+            <div class="channels-grid">
+              @for (ch of adminService.financialData()?.channels || []; track ch.name) {
+              <div class="channel-mini-card"
+                [class.selected]="financialGateway() === (ch.isRazorpay ? 'razorpay' : 'others')"
+                (click)="filterFinancialsByGateway(ch.isRazorpay ? 'razorpay' : 'others')">
+                <div class="ch-icon-row">
+                  <div class="ch-icon-avatar" [class.rzp]="ch.isRazorpay" [class.upi]="ch.badgeTheme === 'emerald'"
+                    [class.nb]="ch.badgeTheme === 'purple'">
+                    <span class="material-symbols-outlined">
+                      {{ ch.isRazorpay ? 'credit_score' : (ch.name.includes('UPI') ? 'qr_code_2' :
+                      (ch.name.includes('Card')
+                      ? 'credit_card' : 'account_balance')) }}
+                    </span>
+                  </div>
+                  <span class="ch-badge" [class.rzp]="ch.isRazorpay">{{ ch.isRazorpay ? 'PRIMARY GATEWAY' : 'ALTERNATE
+                    CHANNEL' }}</span>
+                </div>
+                <div class="ch-name">{{ ch.name }}</div>
+                <div class="ch-amount">₹{{ ch.amountRupees | number:'1.2-2' }}</div>
+                <div class="ch-details-row">
+                  <span>{{ ch.count }} Orders</span>
+                  <span>•</span>
+                  <span>{{ ch.points }} Pts</span>
+                  <span>•</span>
+                  <span class="text-blue font-bold">{{ ch.percentage }}%</span>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Filter & Search Console -->
+          <div class="ledger-filter-console">
+
+            <!-- Search box -->
+            <div class="fin-search-box">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" class="fin-search-input" [value]="financialSearch()"
+                (input)="onFinancialSearch($any($event.target).value)"
+                placeholder="Search by customer name, email, phone, Txn ID, or Razorpay Payment ID..." />
+              @if (financialSearch()) {
+              <button type="button" class="btn-clear-search" (click)="onFinancialSearch('')">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+              }
+            </div>
+
+            <!-- Gateway Filter Buttons -->
+            <div class="fin-filter-group">
+              <span class="filter-lbl">Channel:</span>
+              <div class="filter-pills-row">
+                <button type="button" class="fin-pill" [class.active]="financialGateway() === 'all'"
+                  (click)="filterFinancialsByGateway('all')">
+                  All Gateways
+                </button>
+                <button type="button" class="fin-pill pill-rzp" [class.active]="financialGateway() === 'razorpay'"
+                  (click)="filterFinancialsByGateway('razorpay')">
+                  <span class="material-symbols-outlined">verified</span>
+                  <span>Razorpay Only</span>
+                </button>
+                <button type="button" class="fin-pill" [class.active]="financialGateway() === 'others'"
+                  (click)="filterFinancialsByGateway('others')">
+                  Other Channels
+                </button>
+                <button type="button" class="fin-pill" [class.active]="financialGateway() === 'upi'"
+                  (click)="filterFinancialsByGateway('upi')">
+                  Instant UPI
+                </button>
+                <button type="button" class="fin-pill" [class.active]="financialGateway() === 'cards'"
+                  (click)="filterFinancialsByGateway('cards')">
+                  Cards
+                </button>
+              </div>
+            </div>
+
+            <!-- Timeframe Filter -->
+            <div class="fin-filter-group">
+              <span class="filter-lbl">Timeframe:</span>
+              <div class="filter-pills-row">
+                <button type="button" class="fin-pill" [class.active]="financialTimeframe() === 'all'"
+                  (click)="filterFinancialsByTimeframe('all')">
+                  All Time
+                </button>
+                <button type="button" class="fin-pill" [class.active]="financialTimeframe() === 'today'"
+                  (click)="filterFinancialsByTimeframe('today')">
+                  Today
+                </button>
+                <button type="button" class="fin-pill" [class.active]="financialTimeframe() === '7days'"
+                  (click)="filterFinancialsByTimeframe('7days')">
+                  Past 7 Days
+                </button>
+                <button type="button" class="fin-pill" [class.active]="financialTimeframe() === '30days'"
+                  (click)="filterFinancialsByTimeframe('30days')">
+                  30 Days
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Ledger Table of Credit Transactions -->
+          <div class="fin-table-container">
+            <table class="fin-ledger-table">
+              <thead>
+                <tr>
+                  <th>Txn ID &amp; Ref</th>
+                  <th>Investor / Customer</th>
+                  <th>Amount (INR)</th>
+                  <th>Points Credited</th>
+                  <th>Channel / Gateway</th>
+                  <th>Razorpay Reference</th>
+                  <th>Status</th>
+                  <th>Timestamp</th>
+                  <th>Audit Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (txn of adminService.financialData()?.transactions || []; track txn.id) {
+                <tr class="fin-table-row" [class.rzp-row]="txn.isRazorpay">
+
+                  <!-- ID & Type -->
+                  <td>
+                    <div class="txn-id-col">
+                      <span class="txn-num">#{{ txn.id }}</span>
+                      <span class="txn-type-badge" [class.bonus]="txn.transactionType === 'bonus_credit'">
+                        {{ txn.transactionType === 'bonus_credit' ? 'PROMO' : 'PURCHASE' }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Customer Info -->
+                  <td>
+                    <div class="txn-user-col">
+                      <div class="user-avatar-mini" [class.admin-user]="txn.userRole === 'admin'">
+                        {{ txn.userName.slice(0, 2).toUpperCase() }}
+                      </div>
+                      <div class="user-meta">
+                        <span class="user-name">{{ txn.userName }}</span>
+                        <span class="user-email">{{ txn.userEmail }}</span>
+                        @if (txn.userPhone && txn.userPhone !== '—') {
+                        <span class="user-phone">{{ txn.userPhone }}</span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Amount in Rupees -->
+                  <td>
+                    <div class="txn-amount-col">
+                      <span class="txn-amount-val">₹{{ txn.amountRupees.toLocaleString('en-IN') }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Points Credited -->
+                  <td>
+                    <div class="txn-pts-col">
+                      <span class="pts-pill">
+                        <span class="material-symbols-outlined">bolt</span>
+                        <span>+{{ txn.points }} Pts</span>
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Payment Channel -->
+                  <td>
+                    <div class="txn-channel-badge" [class.rzp]="txn.isRazorpay"
+                      [class.upi]="txn.paymentMethod.includes('UPI')" [class.card]="txn.paymentMethod.includes('Card')">
+                      <span class="material-symbols-outlined ch-glyph">
+                        {{ txn.isRazorpay ? 'verified' : (txn.paymentMethod.includes('UPI') ? 'qr_code_2' :
+                        (txn.paymentMethod.includes('Card') ? 'credit_card' : 'payments')) }}
+                      </span>
+                      <span>{{ txn.paymentMethod }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Razorpay Payment ID with copy button -->
+                  <td>
+                    <div class="txn-ref-box">
+                      <span class="txn-ref-code" [title]="txn.razorpayPaymentId">
+                        {{ txn.razorpayPaymentId }}
+                      </span>
+                      @if (txn.razorpayPaymentId && txn.razorpayPaymentId !== '—') {
+                      <button type="button" class="btn-copy-ref" [class.copied]="copiedRef() === txn.razorpayPaymentId"
+                        (click)="copyReference(txn.razorpayPaymentId)" title="Copy Razorpay Payment ID">
+                        <span class="material-symbols-outlined">
+                          {{ copiedRef() === txn.razorpayPaymentId ? 'check' : 'content_copy' }}
+                        </span>
+                      </button>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- Status -->
+                  <td>
+                    <span class="fin-status-tag" [class.success]="txn.status === 'success'"
+                      [class.failed]="txn.status === 'failed'">
+                      <span class="material-symbols-outlined">
+                        {{ txn.status === 'success' ? 'check_circle' : 'cancel' }}
+                      </span>
+                      <span>{{ txn.status.toUpperCase() }}</span>
+                    </span>
+                  </td>
+
+                  <!-- Date & Time -->
+                  <td>
+                    <div class="txn-date-col">
+                      <span class="txn-date">{{ txn.formattedDate }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Action -->
+                  <td>
+                    <button type="button" class="btn-view-receipt" (click)="openTxnModal(txn)">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                      <span>Details</span>
+                    </button>
+                  </td>
+
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="9" class="empty-fin-cell">
+                    <div class="empty-fin-box">
+                      <span class="material-symbols-outlined">receipt</span>
+                      <h4>No financial transactions found</h4>
+                      <p>Adjust your search filters or channel selection to view credit records.</p>
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+        }
+
+        <!-- TAB CONTENT 5: BUYER MINDSET & AI BEHAVIORAL LEADS -->
+        @if (activeTab() === 'user_mindset') {
+        <section class="tab-pane-section">
+
+          <!-- Header Banner -->
+          <div class="user-mindset-admin-header">
+            <div class="um-header-left">
+              <div class="um-icon-badge">
+                <span class="material-symbols-outlined">psychology</span>
+              </div>
+              <div>
+                <h2 class="um-admin-title">Buyer Mindset &amp; Behavioral Leads Intelligence</h2>
+                <p class="um-admin-sub">Real-time buyer persona analysis synthesized from browsing behavior across plots
+                  and
+                  flats</p>
+              </div>
+            </div>
+            <div class="um-header-actions">
+              <button type="button" class="btn-refresh-mindset" (click)="loadMindsetLeads()">
+                <span class="material-symbols-outlined">sync</span>
+                <span>Sync Database</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Leads List -->
+          <div class="mindset-leads-grid">
+            @for (lead of mindsetLeads(); track lead.userPhone) {
+            <div class="admin-lead-card">
+              <!-- Lead Top Bar -->
+              <div class="lead-card-top">
+                <div class="lead-phone-block">
+                  <span class="material-symbols-outlined lead-phone-icon">phone_android</span>
+                  <div>
+                    <span class="lead-lbl">TRACKED BUYER PHONE</span>
+                    <h3 class="lead-phone-num">{{ lead.userPhone }}</h3>
+                  </div>
+                </div>
+
+                <div class="lead-archetype-badge">
+                  <span class="material-symbols-outlined">insights</span>
+                  <span>{{ lead.buyerArchetype }}</span>
+                </div>
+
+                <div class="lead-urgency-badge" [class.hot]="lead.totalViewed >= 4">
+                  <span class="material-symbols-outlined">local_fire_department</span>
+                  <span>{{ lead.urgency || 'High Intent' }}</span>
+                </div>
+              </div>
+
+              <!-- Mindset Brief Quote Box -->
+              <div class="admin-brief-box">
+                <div class="brief-quote-header">
+                  <span class="material-symbols-outlined text-amber">format_quote</span>
+                  <span class="brief-tag">SYNTHESIZED BUYER MINDSET BRIEF</span>
+                </div>
+                <blockquote class="lead-brief-quote">
+                  "{{ lead.mindsetBrief }}"
+                </blockquote>
+              </div>
+
+              <!-- Split & Metrics Grid -->
+              <div class="lead-metrics-row">
+                <!-- Interest Split -->
+                <div class="lead-metric-item">
+                  <span class="lm-label">Interest Split ({{ lead.totalViewed }} Viewed)</span>
+                  <div class="lm-progress">
+                    <div class="lm-prog-plots" [style.width.%]="lead.plotsPercentage">
+                      <span *ngIf="lead.plotsPercentage >= 20">{{ lead.plotsPercentage }}% Plots</span>
+                    </div>
+                    <div class="lm-prog-flats" [style.width.%]="lead.flatsPercentage">
+                      <span *ngIf="lead.flatsPercentage >= 20">{{ lead.flatsPercentage }}% Flats</span>
+                    </div>
+                  </div>
+                  <div class="lm-split-labels">
+                    <span class="text-green font-bold">{{ lead.plotsCount }} Plots ({{ lead.plotsPercentage }}%)</span>
+                    <span class="text-blue font-bold">{{ lead.flatsCount }} Flat{{ lead.flatsCount === 1 ? '' : 's' }}
+                      ({{
+                      lead.flatsPercentage }}%)</span>
+                  </div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="lead-metric-item">
+                  <span class="lm-label">Explored Price Bracket</span>
+                  <span class="lm-price-val">{{ lead.priceRange }}</span>
+                  <span class="lm-sub">Avg Ticket: {{ lead.avgPriceFormatted }}</span>
+                </div>
+
+                <!-- Target Localities -->
+                <div class="lead-metric-item">
+                  <span class="lm-label">Target Corridors</span>
+                  <div class="lm-loc-chips">
+                    @for (loc of lead.topLocalities; track loc) {
+                    <span class="lm-chip">
+                      <span class="material-symbols-outlined text-xs">place</span>
+                      {{ loc }}
+                    </span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recommendation / Action Box -->
+              <div class="admin-recommendation-box">
+                <span class="material-symbols-outlined text-amber">tips_and_updates</span>
+                <p><strong>Broker Action:</strong> {{ lead.recommendation }}</p>
+              </div>
+
+              <!-- Direct Contact Buttons -->
+              <div class="lead-actions-bar">
+                <a [href]="'https://wa.me/91' + lead.userPhone" target="_blank" class="btn-lead-wa">
+                  <span class="material-symbols-outlined">chat</span>
+                  <span>WhatsApp Buyer</span>
+                </a>
+                <a [href]="'tel:+91' + lead.userPhone" class="btn-lead-call">
+                  <span class="material-symbols-outlined">call</span>
+                  <span>Direct Call</span>
+                </a>
+                <button type="button" class="btn-lead-note">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <span>Log CRM Note</span>
+                </button>
+              </div>
+            </div>
+            } @empty {
+            <div class="empty-leads-box">
+              <span class="material-symbols-outlined text-4xl">travel_explore</span>
+              <h4>No user browsing analytics recorded yet</h4>
+              <p>As visitors browse properties on the marketplace, live behavioral leads will appear here.</p>
+            </div>
+            }
+          </div>
+
+          <!-- Interactive Admin Buyer Mindset Simulator & Drawer Widget -->
+          <app-user-mindset-bar />
+
+        </section>
+        }
+
+
+
+        <!-- TAB CONTENT: BULK EXCEL PROPERTY UPLOAD & DB SYNCHRONIZATION -->
+        @if (activeTab() === 'bulk_upload') {
+        <section class="tab-pane-section bulk-upload-pane">
+
+          <!-- Top Header & Mission Statement -->
+          <div class="bulk-header-banner">
+            <div class="bulk-header-content">
+              <div class="bulk-title-group">
+                <span class="material-symbols-outlined bulk-main-icon">upload_file</span>
+                <div>
+                  <h2 class="bulk-main-title">Bulk Property Excel Import &amp; Database Manager</h2>
+                  <p class="bulk-subtitle">
+                    Batch import multi-parcel cadastral land listings from <strong>.xlsx, .xls, or .csv</strong>
+                    spreadsheets directly into the live SQL database.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Header Quick Actions -->
+              <div class="bulk-header-actions">
+                <button type="button" class="btn-download-tmpl" (click)="downloadExcelTemplate()">
+                  <span class="material-symbols-outlined">download</span>
+                  <span>Download Excel Template</span>
+                </button>
+
+                <button type="button" class="btn-danger-wipe" (click)="clearAllDatabaseProperties()"
+                  [disabled]="isClearingDb()">
+                  <span class="material-symbols-outlined">delete_forever</span>
+                  <span>{{ isClearingDb() ? 'Wiping Database...' : 'Wipe All DB Properties' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feedback Alert Messages -->
+          @if (bulkUploadSuccess()) {
+          <div class="bulk-alert-box alert-success">
+            <span class="material-symbols-outlined alert-icon">check_circle</span>
+            <div class="alert-content">
+              <strong>Import Success:</strong>
+              <p>{{ bulkUploadSuccess() }}</p>
+            </div>
+          </div>
+          }
+
+          @if (bulkUploadError()) {
+          <div class="bulk-alert-box alert-error">
+            <span class="material-symbols-outlined alert-icon">error</span>
+            <div class="alert-content">
+              <strong>Import Error:</strong>
+              <p>{{ bulkUploadError() }}</p>
+            </div>
+          </div>
+          }
+
+          <!-- Upload Drag & Drop Zone -->
+          <div class="bulk-dropzone" [class.drag-over]="isDragOverBulk()" (dragover)="onBulkDragOver($event)"
+            (dragleave)="onBulkDragLeave($event)" (drop)="onBulkFileDrop($event)">
+
+            <input type="file" #excelFileInput accept=".xlsx, .xls, .csv" (change)="onBulkFileSelected($event)"
+              style="display:none" />
+
+            <div class="dropzone-center">
+              <div class="dropzone-icon-ring">
+                <span class="material-symbols-outlined drop-icon">cloud_upload</span>
+              </div>
+
+              <h3 class="dropzone-title">Drag &amp; Drop Property Master Excel File Here</h3>
+              <p class="dropzone-sub">
+                Supports <strong>.xlsx, .xls, and .csv</strong> files containing up to 100+ columns (51 Canonical
+                Cadastral
+                Fields).
+              </p>
+
+              <button type="button" class="btn-browse-file" (click)="excelFileInput.click()">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span>Browse Computer Files</span>
+              </button>
+
+              @if (bulkFileName()) {
+              <div class="file-loaded-badge">
+                <span class="material-symbols-outlined">description</span>
+                <span>Active File: <strong>{{ bulkFileName() }}</strong></span>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Import Options Ribbon -->
+          <div class="bulk-options-card">
+            <div class="option-checkbox-row">
+              <label class="custom-toggle-label">
+                <input type="checkbox" [(ngModel)]="bulkClearExisting" class="custom-checkbox" />
+                <div class="toggle-text">
+                  <strong class="toggle-title">Remove all existing DB property data before import</strong>
+                  <span class="toggle-desc">When checked, purges existing property table records to start with a
+                    pristine,
+                    verified inventory.</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Summary Stats Counters -->
+            @if (bulkUploadStats(); as stats) {
+            <div class="bulk-stats-strip">
+              <div class="stat-pill-item total">
+                <span class="stat-num">{{ stats.total }}</span>
+                <span class="stat-label">Total Properties</span>
+              </div>
+
+              <div class="stat-pill-item valid">
+                <span class="material-symbols-outlined stat-icon-green">check_circle</span>
+                <span class="stat-num">{{ stats.validGps }}</span>
+                <span class="stat-label">Valid GPS Coordinates</span>
+              </div>
+
+              <div class="stat-pill-item invalid" [class.has-errors]="stats.invalidGps > 0">
+                <span class="material-symbols-outlined stat-icon-red">error</span>
+                <span class="stat-num">{{ stats.invalidGps }}</span>
+                <span class="stat-label">Inaccurate / Missing GPS (Flagged in Red)</span>
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Live Parsed Rows Preview Table -->
+          @if (bulkParsedRows().length > 0) {
+          <div class="bulk-preview-container">
+            <div class="preview-header-bar">
+              <div class="preview-title-block">
+                <h3>Live Spreadsheet Preview ({{ bulkParsedRows().length }} Rows Loaded)</h3>
+                <p>Verify data columns and GPS validation status before committing to the database.</p>
+              </div>
+
+              <div class="preview-commit-actions">
+                <button type="button" class="btn-commit-import" (click)="executeBulkImport()"
+                  [disabled]="isUploadingBulk()">
+                  <span class="material-symbols-outlined">
+                    {{ isUploadingBulk() ? 'sync' : 'cloud_upload' }}
+                  </span>
+                  <span>{{ isUploadingBulk() ? 'Importing into Database...' : 'Commit & Import ' +
+                    bulkParsedRows().length +
+                    ' Properties' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Scrollable Table Grid -->
+            <div class="table-responsive-wrapper">
+              <table class="bulk-data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Property ID</th>
+                    <th>Developer</th>
+                    <th>Project Name &amp; Plot</th>
+                    <th>RERA / DTCP</th>
+                    <th>Locality / District</th>
+                    <th>Area (Sq.ft / Cents)</th>
+                    <th>Price / Rate</th>
+                    <th>Facing / Corner</th>
+                    <th>Cadastral GPS Status</th>
+                    <th>Contact</th>
+                    <th>Maps Link</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of bulkParsedRows(); track $index) {
+                  <tr [class.row-gps-invalid]="!row._gpsAudit?.isValid">
+                    <td class="col-idx">{{ $index + 1 }}</td>
+                    <td><code class="cell-code">{{ row.propertyId }}</code></td>
+                    <td>
+                      <strong>{{ row.developer }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{ row.projectName }}</strong>
+                      <span class="cell-sub">Plot No: {{ row.plotNo }}</span>
+                    </td>
+                    <td>
+                      <div>{{ row.reraNumber }}</div>
+                      <span class="cell-sub">DTCP: {{ row.dtcpApproved }} {{ row.dtcpApprovalNo }}</span>
+                    </td>
+                    <td>
+                      <div>{{ row.villageLocality }}</div>
+                      <span class="cell-sub">{{ row.district }} ({{ row.pincode }})</span>
+                    </td>
+                    <td>
+                      <strong>{{ row.plotSizeSqft | number }} sq.ft</strong>
+                      <span class="cell-sub">({{ row.plotSizeCents }} Cents)</span>
+                    </td>
+                    <td>
+                      <strong class="text-price">₹ {{ row.totalPrice | number }}</strong>
+                      <span class="cell-sub">₹ {{ row.pricePerSqft | number }}/sq.ft</span>
+                    </td>
+                    <td>
+                      <div>{{ row.facing }}</div>
+                      <span class="cell-sub">{{ row.cornerPlot === 'Yes' ? 'Corner Plot' : 'Regular' }}</span>
+                    </td>
+                    <td>
+                      @if (row._gpsAudit?.isValid) {
+                      <span class="cell-badge-gps-valid">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span>{{ row._gpsAudit.formattedText }}</span>
+                      </span>
+                      } @else {
+                      <span class="cell-badge-gps-error" [title]="row._gpsAudit?.reason || 'Invalid coordinates'">
+                        <span class="material-symbols-outlined">error</span>
+                        <span>GPS Inaccurate: {{ row._gpsAudit?.reason || 'Audit Pending' }}</span>
+                      </span>
+                      }
+                    </td>
+                    <td>
+                      <div>{{ row.contactPersonPhone }}</div>
+                    </td>
+                    <td class="col-link">
+                      @if (row.googleMapsLink && row.googleMapsLink.startsWith('http')) {
+                      <a [href]="row.googleMapsLink" target="_blank" rel="noopener" class="tbl-link">
+                        <span class="material-symbols-outlined">open_in_new</span>
+                      </a>
+                      } @else {
+                      <span class="text-muted-dash">-</span>
+                      }
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Bottom Floating Commit Strip -->
+            <div class="bulk-bottom-commit-strip">
+              <div class="commit-stats-note">
+                Ready to insert <strong>{{ bulkParsedRows().length }}</strong> properties into
+                <strong>properties</strong>
+                and <strong>property_master_details</strong> SQL tables.
+              </div>
+              <button type="button" class="btn-commit-import-large" (click)="executeBulkImport()"
+                [disabled]="isUploadingBulk()">
+                <span class="material-symbols-outlined">cloud_upload</span>
+                <span>{{ isUploadingBulk() ? 'Importing...' : 'Confirm & Import All Properties' }}</span>
+              </button>
+            </div>
+          </div>
+          }
+
+        </section>
+        }
+
+        <!-- ========================================== -->
+        <!-- TAB CONTENT 8: BUYER WORKSPACES & CRM HUB  -->
+        <!-- PRD M04 & M09 DEDICATED ADMIN DESK         -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'buyer_workspaces') {
+        <section class="tab-pane-section workspace-admin-section">
+
+          <!-- Hub Banner -->
+          <div class="workspace-header-banner">
+            <div class="banner-title-block">
+              <div class="banner-icon-box">
+                <span class="material-symbols-outlined">workspace_premium</span>
+              </div>
+              <div>
+                <h2 class="banner-main-title">Buyer Workspaces &amp; CRM Desk</h2>
+                <p class="banner-subtitle">Centralized administrative control for buyer subscriptions, entitlement
+                  quotas,
+                  site visit escorts, advisory dossiers, and registration legal workflows.</p>
+              </div>
+            </div>
+
+            <div class="workspace-stats-pills">
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminWorkspaces()?.users?.length || 0 }}</span>
+                <span class="stat-lbl">Active Buyers</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminWorkspaces()?.allVisits?.length || 0 }}</span>
+                <span class="stat-lbl">Site Visits</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminWorkspaces()?.allConsultations?.length || 0 }}</span>
+                <span class="stat-lbl">Consultations</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ adminWorkspaces()?.allBookings?.length || 0 }}</span>
+                <span class="stat-lbl">Plot Bookings</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation & Controls Row -->
+          <div class="workspace-controls-bar">
+            <!-- Sub-tabs -->
+            <div class="workspace-subtabs-nav">
+              <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'membership'"
+                (click)="workspaceSubTab.set('membership')">
+                <span class="material-symbols-outlined">card_membership</span>
+                <span>Membership &amp; Quotas</span>
+                <span class="subtab-badge">{{ adminWorkspaces()?.users?.length || 0 }}</span>
+              </button>
+
+              <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'visits'"
+                (click)="workspaceSubTab.set('visits')">
+                <span class="material-symbols-outlined">event_available</span>
+                <span>Site Visits Escort</span>
+                <span class="subtab-badge">{{ adminWorkspaces()?.allVisits?.length || 0 }}</span>
+              </button>
+
+              <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'consultations'"
+                (click)="workspaceSubTab.set('consultations')">
+                <span class="material-symbols-outlined">support_agent</span>
+                <span>Advisory Consultations</span>
+                <span class="subtab-badge">{{ adminWorkspaces()?.allConsultations?.length || 0 }}</span>
+              </button>
+
+              <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'saved_searches'"
+                (click)="workspaceSubTab.set('saved_searches')">
+                <span class="material-symbols-outlined">saved_search</span>
+                <span>Saved Searches &amp; Alerts</span>
+                <span class="subtab-badge">{{ adminWorkspaces()?.allSearches?.length || 0 }}</span>
+              </button>
+
+              <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'bookings'"
+                (click)="workspaceSubTab.set('bookings')">
+                <span class="material-symbols-outlined">gavel</span>
+                <span>Plot Bookings &amp; SRO</span>
+                <span class="subtab-badge">{{ adminWorkspaces()?.allBookings?.length || 0 }}</span>
+              </button>
+
+              <button type="button" class="subtab-btn" [class.active]="workspaceSubTab() === 'daily_visitors'"
+                (click)="workspaceSubTab.set('daily_visitors')">
+                <span class="material-symbols-outlined">phone_in_talk</span>
+                <span>Daily Visitors &amp; Call Logs</span>
+                <span class="subtab-badge">{{ visitorLeads().length }}</span>
+              </button>
+            </div>
+
+            <!-- Search Input -->
+            <div class="workspace-search-box">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" [ngModel]="workspaceSearchQuery()" (ngModelChange)="workspaceSearchQuery.set($event)"
+                placeholder="Search buyers, properties, executives..." class="workspace-search-input" />
+              @if (workspaceSearchQuery()) {
+              <button type="button" class="btn-clear-search" (click)="workspaceSearchQuery.set('')">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+              }
+            </div>
+          </div>
+
+          <!-- SUB-TAB 1: MEMBERSHIP & ENTITLEMENTS -->
+          @if (workspaceSubTab() === 'membership') {
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Buyer Account</th>
+                  <th>Contact Details</th>
+                  <th>Active Plan Tier</th>
+                  <th>Enrolled Date</th>
+                  <th>Activity Summary</th>
+                  <th class="th-actions">Administrative Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of filteredAdminUsers(); track u.id) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-cell-avatar">
+                        <span class="material-symbols-outlined">person</span>
+                      </div>
+                      <div>
+                        <span class="user-cell-name">{{ u.name }}</span>
+                        <span class="user-cell-id">UID #{{ u.id }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="contact-cell">
+                      <span><span class="material-symbols-outlined">call</span> {{ u.phone || 'N/A' }}</span>
+                      <span><span class="material-symbols-outlined">mail</span> {{ u.email || 'N/A' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="tier-chip" [class.tier-vip]="u.plan_id === 'vip_concierge'"
+                      [class.tier-smart]="u.plan_id === 'smart_buyer'"
+                      [class.tier-priority]="u.plan_id === 'priority_buyer'">
+                      {{ u.plan_name }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="date-cell">{{ u.created_at | date:'mediumDate' }}</span>
+                  </td>
+                  <td>
+                    <div class="metrics-mini-list">
+                      <span class="m-pill" title="Site Visits"><span class="material-symbols-outlined">event</span> {{
+                        u.total_visits }}</span>
+                      <span class="m-pill" title="Advisory Consultations"><span
+                          class="material-symbols-outlined">support_agent</span> {{ u.total_consultations }}</span>
+                      <span class="m-pill" title="Saved Searches"><span
+                          class="material-symbols-outlined">saved_search</span> {{ u.total_saved_searches }}</span>
+                      <span class="m-pill" title="Plot Bookings"><span class="material-symbols-outlined">gavel</span> {{
+                        u.total_bookings }}</span>
+                    </div>
+                  </td>
+                  <td class="td-actions">
+                    <button type="button" class="btn-action-outline" (click)="openAdjustCreditsModal(u.id)">
+                      <span class="material-symbols-outlined">add_chart</span>
+                      <span>Adjust Credits</span>
+                    </button>
+                    <button type="button" class="btn-action-outline" (click)="openAddConsultModal(u.id)">
+                      <span class="material-symbols-outlined">note_add</span>
+                      <span>Log Consult</span>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+
+          <!-- SUB-TAB 2: SITE VISITS MANAGEMENT -->
+          @if (workspaceSubTab() === 'visits') {
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Visit ID</th>
+                  <th>Buyer</th>
+                  <th>Property &amp; Location</th>
+                  <th>Appointment Slot</th>
+                  <th>Pickup Location</th>
+                  <th>Assigned Escort Executive</th>
+                  <th>Status</th>
+                  <th class="th-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of filteredAdminVisits(); track v.id) {
+                <tr>
+                  <td><span class="font-mono text-muted">VISIT-{{ v.id }}</span></td>
+                  <td>
+                    <div class="user-meta-sub">
+                      <strong>{{ v.user_name || 'Buyer #' + v.user_id }}</strong>
+                      <span class="text-muted-xs">{{ v.user_phone }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="prop-meta-cell">
+                      <a [routerLink]="['/property', v.property_id]" class="prop-link-bold">{{ v.property_title }}</a>
+                      <span class="text-muted-xs"><span class="material-symbols-outlined">location_on</span> {{
+                        v.locality
+                        }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="slot-cell">
+                      <span class="font-bold">{{ v.visit_date }}</span>
+                      <span class="text-muted-xs">{{ v.visit_slot }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pickup-text">{{ v.pickup_location || 'Koyambedu Metro Station' }}</span>
+                  </td>
+                  <td>
+                    <div class="exec-cell">
+                      <span class="exec-name-bold">{{ v.assigned_executive_name || 'Unassigned' }}</span>
+                      <span class="exec-phone-sub">{{ v.assigned_executive_phone }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'"
+                      [class.status-requested]="v.status === 'requested'"
+                      [class.status-completed]="v.status === 'completed'"
+                      [class.status-cancelled]="v.status === 'cancelled'">
+                      {{ v.status | uppercase }}
+                    </span>
+                  </td>
+                  <td class="td-actions">
+                    <button type="button" class="btn-action-primary" (click)="openAssignVisitModal(v)">
+                      <span class="material-symbols-outlined">person_add</span>
+                      <span>Assign / Update</span>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+
+          <!-- SUB-TAB 3: ADVISORY CONSULTATIONS DESK -->
+          @if (workspaceSubTab() === 'consultations') {
+          <div class="consultation-desk-wrapper">
+            <div class="desk-action-bar">
+              <span class="desk-title">Buyer Strategy &amp; Cadastral Verification Consultations</span>
+              <button type="button" class="btn-action-primary" (click)="openAddConsultModal(1)">
+                <span class="material-symbols-outlined">add</span>
+                <span>Log New Consultation</span>
+              </button>
+            </div>
+
+            <div class="workspace-table-container">
+              <table class="workspace-table">
+                <thead>
+                  <tr>
+                    <th>Consult ID</th>
+                    <th>Buyer</th>
+                    <th>Advisor Specialist</th>
+                    <th>Date &amp; Duration</th>
+                    <th>Status</th>
+                    <th>Advisor Notes &amp; Findings</th>
+                    <th>Dossier PDF</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of filteredAdminConsultations(); track c.id) {
+                  <tr>
+                    <td><span class="font-mono text-muted">CNS-{{ c.id }}</span></td>
+                    <td>
+                      <div class="user-meta-sub">
+                        <strong>{{ c.user_name || 'Buyer #' + c.user_id }}</strong>
+                        <span class="text-muted-xs">{{ c.user_phone }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="advisor-admin-cell">
+                        <span class="font-bold">{{ c.advisor_name }}</span>
+                        <span class="text-muted-xs">{{ c.advisor_role }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="slot-cell">
+                        <span>{{ c.consultation_date }}</span>
+                        <span class="text-muted-xs">{{ c.duration_minutes }} Mins</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-chip status-confirmed">{{ c.status | uppercase }}</span>
+                    </td>
+                    <td>
+                      <p class="notes-preview-cell" [title]="c.advisor_notes">{{ c.advisor_notes }}</p>
+                    </td>
+                    <td>
+                      @if (c.dossier_pdf_url) {
+                      <a [href]="c.dossier_pdf_url" target="_blank" class="btn-dossier-mini">
+                        <span class="material-symbols-outlined">picture_as_pdf</span>
+                        <span>View PDF</span>
+                      </a>
+                      } @else {
+                      <span class="text-muted-xs">No PDF</span>
+                      }
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          }
+
+          <!-- SUB-TAB 4: SAVED SEARCHES & ALERTS -->
+          @if (workspaceSubTab() === 'saved_searches') {
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Search ID</th>
+                  <th>Buyer</th>
+                  <th>Search Title &amp; Criteria</th>
+                  <th>Active Channels</th>
+                  <th>Matching Plots</th>
+                  <th>Last Dispatched</th>
+                  <th class="th-actions">Trigger Alert</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (s of filteredAdminSearches(); track s.id) {
+                <tr>
+                  <td><span class="font-mono text-muted">SRCH-{{ s.id }}</span></td>
+                  <td>
+                    <div class="user-meta-sub">
+                      <strong>{{ s.user_name || 'Buyer #' + s.user_id }}</strong>
+                      <span class="text-muted-xs">{{ s.user_phone }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="search-name-bold">{{ s.search_name }}</div>
+                    <div class="filters-summary-xs">
+                      <span>{{ s.filters.district || 'Any District' }}</span> •
+                      <span>{{ s.filters.locality || 'Any Locality' }}</span> •
+                      <span>Up to ₹{{ (s.filters.budgetMax || 10000000) / 100000 }}L</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="channels-cell">
+                      <span class="ch-badge" [class.active]="s.email_alerts_enabled">
+                        <span class="material-symbols-outlined">mail</span> Email
+                      </span>
+                      <span class="ch-badge" [class.active]="s.whatsapp_alerts_enabled">
+                        <span class="material-symbols-outlined">chat</span> WhatsApp
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="match-badge">{{ s.matches_count }} Plots</span>
+                  </td>
+                  <td>
+                    <span class="text-muted-xs">{{ s.last_notified_at || 'Today' }}</span>
+                  </td>
+                  <td class="td-actions">
+                    <button type="button" class="btn-action-primary" (click)="dispatchAlert(s.id)">
+                      <span class="material-symbols-outlined">send</span>
+                      <span>Dispatch Alert</span>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+
+          <!-- SUB-TAB 5: PLOT BOOKINGS & REGISTRATION -->
+          @if (workspaceSubTab() === 'bookings') {
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Buyer</th>
+                  <th>Property &amp; Plot #</th>
+                  <th>Extent</th>
+                  <th>Financials</th>
+                  <th>Current Stage</th>
+                  <th>Assigned Legal Officer</th>
+                  <th>Target Registration</th>
+                  <th class="th-actions">Update</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (b of filteredAdminBookings(); track b.id) {
+                <tr>
+                  <td><span class="font-mono text-muted">BKG-{{ b.id }}</span></td>
+                  <td>
+                    <div class="user-meta-sub">
+                      <strong>{{ b.user_name || 'Buyer #' + b.user_id }}</strong>
+                      <span class="text-muted-xs">{{ b.user_phone }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="prop-meta-cell">
+                      <span class="plot-tag">Plot #{{ b.plot_number }}</span>
+                      <a [routerLink]="['/property', b.property_id]" class="prop-link-bold">{{ b.property_title }}</a>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="font-bold">{{ b.plot_extent_sqft | number }} sq.ft</span>
+                  </td>
+                  <td>
+                    <div class="financials-admin-cell">
+                      <span class="text-muted-xs">Total: ₹{{ b.total_price | number }}</span>
+                      <span class="advance-tag">Paid: ₹{{ b.token_advance_paid | number }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="stage-cell">
+                      <span class="stage-badge stage-step-{{ getBookingStepIndex(b.status) }}">
+                        Step {{ getBookingStepIndex(b.status) }}/5: {{ b.status.replace('_', ' ') | uppercase }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="legal-officer-cell">
+                      <span class="font-bold">{{ b.assigned_legal_officer || 'Unassigned' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-muted-xs">{{ b.target_registration_date || 'TBD' }}</span>
+                  </td>
+                  <td class="td-actions">
+                    <button type="button" class="btn-action-primary" (click)="openEditBookingModal(b)">
+                      <span class="material-symbols-outlined">edit</span>
+                      <span>Update Stage</span>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+
+          <!-- SUB-TAB 6: DAILY VISITORS & CALL LOGS TRACKER -->
+          @if (workspaceSubTab() === 'daily_visitors') {
+          <div class="workspace-visitors-wrapper">
+            <!-- Quick Status Filter Pills -->
+            <div class="call-filter-pills-row" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+              <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'all'"
+                (click)="callStatusFilter.set('all')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                All Visitors ({{ visitorLeads().length }})
+              </button>
+              <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'called_connected'"
+                (click)="callStatusFilter.set('called_connected')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                Connected ({{ countVisitorStatus('called_connected') }})
+              </button>
+              <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'called_unreachable'"
+                (click)="callStatusFilter.set('called_unreachable')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                Not Reachable ({{ countVisitorStatus('called_unreachable') }})
+              </button>
+              <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'visit_confirmed'"
+                (click)="callStatusFilter.set('visit_confirmed')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                Site Visit Confirmed ({{ countVisitorStatus('visit_confirmed') }})
+              </button>
+              <button type="button" class="btn-filter-pill" [class.active]="callStatusFilter() === 'closed_budget'"
+                (click)="callStatusFilter.set('closed_budget')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                Closed ({{ countVisitorStatus('closed_budget') }})
+              </button>
+            </div>
+
+            <div class="workspace-table-container">
+              <table class="workspace-table">
+                <thead>
+                  <tr>
+                    <th>Visitor Lead</th>
+                    <th>Contact &amp; Dialler</th>
+                    <th>Interested Project</th>
+                    <th>Visit Time</th>
+                    <th>Call Status</th>
+                    <th>Call Duration</th>
+                    <th>Assigned Executive &amp; Notes</th>
+                    <th class="th-actions">Log Call / Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (v of filteredVisitorLeads(); track v.id) {
+                  <tr>
+                    <td>
+                      <div class="user-cell">
+                        <div class="user-cell-avatar" style="background:#e5f7ec;color:#2c4938;">
+                          <span class="material-symbols-outlined">person</span>
+                        </div>
+                        <div>
+                          <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ v.visitorName }}</span>
+                          <span class="user-cell-id">LEAD #{{ v.id }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="contact-cell">
+                        <a [href]="'tel:' + v.phone"
+                          style="display:inline-flex;align-items:center;gap:4px;color:#0f3b4a;text-decoration:none;font-weight:600;"
+                          title="Click to call">
+                          <span class="material-symbols-outlined" style="font-size:15px;color:#5e8f72;">call</span>
+                          <span>{{ v.phone }}</span>
+                        </a>
+                        <a [href]="'https://wa.me/' + v.phone" target="_blank" rel="noopener"
+                          style="display:inline-flex;align-items:center;gap:4px;color:#16a34a;text-decoration:none;font-size:11px;">
+                          <span class="material-symbols-outlined" style="font-size:13px;">chat</span>
+                          <span>WhatsApp Dossier</span>
+                        </a>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display:flex;flex-direction:column;">
+                        <span style="font-weight:600;color:#0f3b4a;">{{ v.interestedProject }}</span>
+                        <a [routerLink]="['/property', v.propertyId]" target="_blank" class="text-xs"
+                          style="color:#5e8f72;text-decoration:none;">
+                          {{ v.propertyId }} ↗
+                        </a>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="text-xs text-muted">{{ v.firstVisitedAt }}</span>
+                    </td>
+                    <td>
+                      @if (v.status === 'called_connected') {
+                      <span class="badge-role"
+                        style="background:#e5f7ec;color:#166534;font-weight:700;">Connected</span>
+                      } @else if (v.status === 'called_unreachable') {
+                      <span class="badge-role" style="background:#fef3c7;color:#92400e;font-weight:700;">Not
+                        Reachable</span>
+                      } @else if (v.status === 'visit_confirmed') {
+                      <span class="badge-role" style="background:#dcfce7;color:#15803d;font-weight:700;">Visit
+                        Confirmed</span>
+                      } @else if (v.status && v.status.startsWith('closed')) {
+                      <span class="badge-role" style="background:#fee2e2;color:#991b1b;font-weight:700;">Closed</span>
+                      } @else {
+                      <span class="badge-role" style="background:#f1f5f9;color:#475569;font-weight:700;">New Lead</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="text-xs" style="font-weight:600;color:#334155;">{{ v.callDuration || '00:00'
+                        }}</span>
+                    </td>
+                    <td>
+                      <div style="display:flex;flex-direction:column;gap:2px;">
+                        <span class="text-xs" style="font-weight:600;color:#0f3b4a;">{{ v.executiveName || 'Unassigned'
+                          }}</span>
+                        <span class="text-xs" style="color:#64748b;max-width:260px;line-height:1.3;">{{ v.notes ||
+                          'Direct inquiry' }}</span>
+                        @if (v.closeReason) {
+                        <span class="text-xs" style="color:#b91c1c;font-weight:600;">Reason: {{ v.closeReason }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td class="td-actions">
+                      <div class="action-btn-group">
+                        <button type="button" class="btn-action-primary"
+                          (click)="updateVisitorStatus(v.id, 'called_connected')" title="Mark as Connected">
+                          <span class="material-symbols-outlined">call</span>
+                          <span>Connected</span>
+                        </button>
+                        <button type="button" class="btn-action-icon"
+                          (click)="updateVisitorStatus(v.id, 'visit_confirmed')" title="Confirm Site Visit"
+                          style="color:#15803d;">
+                          <span class="material-symbols-outlined">event_available</span>
+                        </button>
+                        <button type="button" class="btn-action-icon"
+                          (click)="updateVisitorStatus(v.id, 'closed_budget', 'Customer budget under ₹25 Lakhs')"
+                          title="Close with reason" style="color:#b91c1c;">
+                          <span class="material-symbols-outlined">cancel</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  } @empty {
+                  <tr>
+                    <td colspan="8" style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                      <span class="material-symbols-outlined"
+                        style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">phone_disabled</span>
+                      <strong style="color:#0f3b4a;font-size:14px;">No visitor call inquiries yet</strong>
+                      <p style="font-size:12px;margin:4px 0 0;color:#94a3b8;">When users request a callback on a
+                        property, their inquiry appears here in real time.</p>
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          }
+
+        </section>
+        }
+
+        <!-- ========================================== -->
+        <!-- TAB CONTENT: DEDICATED SUBSCRIPTION BUYERS -->
+        <!-- ========================================== -->
+        @if (activeTab() === 'subscription_buyers') {
+        <section class="tab-pane-section subscription-buyers-pane">
+          <div class="workspace-header-banner"
+            style="background: linear-gradient(135deg, #0f3b4a 0%, #2e1065 60%, #1e1b4b 100%);">
+            <div class="banner-title-block">
+              <div class="banner-icon-box" style="background: rgba(255,255,255,0.18); color: #ffffff;">
+                <span class="material-symbols-outlined">workspace_premium</span>
+              </div>
+              <div>
+                <h2 class="banner-main-title" style="color: #ffffff;">Subscribed Buyers &amp; Plan Entitlements</h2>
+                <p class="banner-subtitle" style="color: rgba(255,255,255,0.85);">
+                  Super Administrator oversight for premium paid buyers, view quotas, active validity countdowns, and
+                  advisory usage.
+                </p>
+              </div>
+            </div>
+
+            <div class="workspace-stats-pills">
+              <div class="stat-pill">
+                <span class="stat-num">{{ dashboardMetrics().totalSubscriptionBuyers }}</span>
+                <span class="stat-lbl">Paid Subscribers</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">₹{{ getTotalSubscriptionRevenue() | number:'1.0-0' }}</span>
+                <span class="stat-lbl">Plan Collections</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num">{{ dashboardMetrics().totalSubscriptionBuyers > 0 ? '100%' : '0%' }}</span>
+                <span class="stat-lbl">Active Validities</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls & Filter Toolbar -->
+          <div class="workspace-controls-bar">
+            <div class="workspace-search-box">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" [ngModel]="subscriptionSearchQuery()"
+                (ngModelChange)="subscriptionSearchQuery.set($event)"
+                placeholder="Search subscribed buyers by name, phone, email, plan tier..."
+                class="workspace-search-input" />
+            </div>
+
+            <div class="filter-pills-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="btn-filter-pill" [class.active]="subscriptionTierFilter() === 'all'"
+                (click)="subscriptionTierFilter.set('all')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                All Plans ({{ (dashboardMetrics().subscriptionBuyers || []).length }})
+              </button>
+              <button type="button" class="btn-filter-pill" [class.active]="subscriptionTierFilter() === 'smart_buyer'"
+                (click)="subscriptionTierFilter.set('smart_buyer')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                Smart Buyer (₹750)
+              </button>
+              <button type="button" class="btn-filter-pill"
+                [class.active]="subscriptionTierFilter() === 'priority_buyer'"
+                (click)="subscriptionTierFilter.set('priority_buyer')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                Priority Buyer (₹7,500)
+              </button>
+              <button type="button" class="btn-filter-pill"
+                [class.active]="subscriptionTierFilter() === 'vip_concierge'"
+                (click)="subscriptionTierFilter.set('vip_concierge')"
+                style="padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+                VIP Concierge (₹20,000)
+              </button>
+            </div>
+          </div>
+
+          <!-- Subscription Buyers Table -->
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th>Buyer / Investor</th>
+                  <th>Contact Details</th>
+                  <th>Active Plan Tier</th>
+                  <th>Amount Paid</th>
+                  <th>Validity Dates</th>
+                  <th>View Quota</th>
+                  <th>Advisory &amp; Visits</th>
+                  <th>Status</th>
+                  <th class="th-actions">Direct Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (b of filteredSubscriptionBuyers(); track b.subscriptionId) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-cell-avatar" style="background:#ede9fe;color:#6d28d9;font-weight:700;">
+                        {{ b.userName?.charAt(0) || 'U' }}
+                      </div>
+                      <div>
+                        <span class="user-cell-name" style="font-weight:700;color:#0f3b4a;">{{ b.userName }}</span>
+                        <span class="user-cell-id">USER #{{ b.userId }} · SUB #{{ b.subscriptionId }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="contact-cell">
+                      <a [href]="'tel:' + b.userPhone"
+                        style="display:inline-flex;align-items:center;gap:4px;color:#0f3b4a;text-decoration:none;font-weight:600;">
+                        <span class="material-symbols-outlined" style="font-size:15px;color:#5e8f72;">call</span>
+                        <span>{{ b.userPhone }}</span>
+                      </a>
+                      <a [href]="'mailto:' + b.userEmail"
+                        style="display:inline-flex;align-items:center;gap:4px;color:#64748b;text-decoration:none;font-size:11px;">
+                        <span class="material-symbols-outlined" style="font-size:13px;">mail</span>
+                        <span>{{ b.userEmail }}</span>
+                      </a>
+                    </div>
+                  </td>
+                  <td>
+                    @if (b.planId === 'vip_concierge') {
+                    <span class="badge-role"
+                      style="background:#fef3c7;color:#92400e;font-weight:700;border:1px solid #fde68a;">
+                      👑 VIP Concierge (50 Projects)
+                    </span>
+                    } @else if (b.planId === 'priority_buyer') {
+                    <span class="badge-role"
+                      style="background:#ede9fe;color:#5b21b6;font-weight:700;border:1px solid #ddd6fe;">
+                      ⭐ Priority Buyer (25 Projects)
+                    </span>
+                    } @else if (b.planId === 'smart_buyer') {
+                    <span class="badge-role"
+                      style="background:#e0f2fe;color:#0369a1;font-weight:700;border:1px solid #bae6fd;">
+                      🚀 Smart Buyer (5 Projects)
+                    </span>
+                    } @else {
+                    <span class="badge-role" style="background:#f1f5f9;color:#475569;">
+                      Free Explorer (2 Projects)
+                    </span>
+                    }
+                  </td>
+                  <td>
+                    <div style="display:flex;flex-direction:column;">
+                      <span style="font-weight:700;color:#0f3b4a;font-size:14px;">₹{{ b.amountPaid | number:'1.2-2'
+                        }}</span>
+                      <span class="text-xs text-muted">Razorpay Verified</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;flex-direction:column;gap:2px;">
+                      <span class="text-xs" style="color:#0f3b4a;font-weight:600;">From: {{ b.startsAt | slice:0:10
+                        }}</span>
+                      <span class="text-xs" style="color:#16a34a;font-weight:700;">Expires: {{ b.expiresAt | slice:0:10
+                        }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;flex-direction:column;gap:3px;min-width:110px;">
+                      <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;">
+                        <span>{{ b.viewsUsed || 0 }} / {{ b.viewLimit || 5 }}</span>
+                        <span style="color:#64748b;">{{ ((b.viewsUsed || 0) / (b.viewLimit || 5) * 100) | number:'1.0-0'
+                          }}%</span>
+                      </div>
+                      <div style="height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                        <div [style.width.%]="((b.viewsUsed || 0) / (b.viewLimit || 5) * 100)"
+                          [style.background]="(b.viewsUsed || 0) >= (b.viewLimit || 5) ? '#dc2626' : '#5e8f72'"
+                          style="height:100%;border-radius:4px;"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;flex-direction:column;gap:2px;font-size:12px;">
+                      <span style="color:#334155;"><strong>{{ b.advisoryUsed || 0 }}/{{ b.advisoryLimit || 0 }}</strong>
+                        Advisory Calls</span>
+                      <span style="color:#334155;"><strong>{{ b.visitsUsed || 0 }}/{{ b.visitLimit || 0 }}</strong> Site
+                        Escorts</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge-role" style="background:#e5f7ec;color:#166534;font-weight:700;">
+                      Active Tier
+                    </span>
+                  </td>
+                  <td class="td-actions">
+                    <div class="action-btn-group">
+                      <a [href]="'https://wa.me/' + b.userPhone" target="_blank" rel="noopener"
+                        class="btn-action-primary" style="background:#16a34a;text-decoration:none;"
+                        title="Direct WhatsApp Concierge">
+                        <span class="material-symbols-outlined">chat</span>
+                        <span>WhatsApp</span>
+                      </a>
+                      <a [routerLink]="['/profile']" class="btn-action-icon" title="Inspect User Workspace"
+                        style="color:#0f3b4a;">
+                        <span class="material-symbols-outlined">account_circle</span>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="9" style="text-align:center;padding:3rem 1rem;color:#64748b;">
+                    <span class="material-symbols-outlined"
+                      style="font-size:36px;color:#94a3b8;display:block;margin-bottom:8px;">workspace_premium</span>
+                    <strong style="color:#0f3b4a;font-size:14px;">No active paid subscribers yet</strong>
+                    <p style="font-size:12px;margin:4px 0 0;color:#94a3b8;">When buyers subscribe to Smart Buyer,
+                      Priority Buyer, or VIP Concierge, their account status and quotas will appear here.</p>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+        }
+

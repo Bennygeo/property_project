@@ -106,6 +106,17 @@ $ROLES_CATALOG = [
             'gis_content', 'localities_maps', 'media_assets', 'project_information'
         ]
     ],
+    'buyer' => [
+        'id'          => 'buyer',
+        'name'        => 'Registered User / Buyer',
+        'badgeColor'  => 'slate',
+        'description' => 'Standard registered user: view properties, edit profile, history, share, search and message.',
+        'level'       => 4,
+        'dashboardRoute' => '/profile',
+        'defaultPermissions' => [
+            'view_properties', 'edit_profile', 'view_history', 'share_property', 'search_properties', 'send_messages'
+        ]
+    ],
     'public_visitor' => [
         'id'          => 'public_visitor',
         'name'        => 'Public visitor',
@@ -129,6 +140,12 @@ $PERMISSIONS_CATALOG = [
     ['key' => 'site_visits',        'label' => 'Site Visits & Coordination',       'category' => 'Operations', 'desc' => 'Manage scheduled property site visits and field coordination'],
     ['key' => 'finance_payments',   'label' => 'Payments, Subscriptions & Comm',   'category' => 'Finance',    'desc' => 'Manage payments, subscription plans, and commission payouts'],
     ['key' => 'gis_content',        'label' => 'Localities, Maps & Media',         'category' => 'GIS/Media',  'desc' => 'Manage localities, GIS maps, media assets, and project info'],
+    ['key' => 'view_properties',    'label' => 'View Properties',                  'category' => 'User',       'desc' => 'Browse and inspect property listings and details'],
+    ['key' => 'edit_profile',       'label' => 'Edit Own Profile',                 'category' => 'User',       'desc' => 'Update own name, email, phone and preferences'],
+    ['key' => 'view_history',       'label' => 'View Browsing History',            'category' => 'User',       'desc' => 'View and clear own property view history'],
+    ['key' => 'share_property',     'label' => 'Share Properties',                 'category' => 'User',       'desc' => 'Share property dossiers and links'],
+    ['key' => 'search_properties',  'label' => 'Search Properties',                'category' => 'User',       'desc' => 'Use search bar, filters, and save searches'],
+    ['key' => 'send_messages',      'label' => 'Send Inquiries & Messages',        'category' => 'User',       'desc' => 'Message developers/concierge or request callbacks'],
     ['key' => 'public_browse',      'label' => 'Permitted Public Information',      'category' => 'Public',     'desc' => 'Browse verified public marketplace dossiers']
 ];
 

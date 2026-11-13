@@ -67,9 +67,14 @@ import {
   MASTER_UTILITY_OPTIONS,
   MASTER_DRAINAGE_OPTIONS,
   MASTER_ROAD_TYPE_OPTIONS,
-  MASTER_FLOOD_ZONE_OPTIONS
+  MASTER_FLOOD_ZONE_OPTIONS,
+  MASTER_CATEGORY_OPTIONS,
+  MASTER_TYPE_OPTIONS,
+  MASTER_PROJECT_STAGE_OPTIONS,
+  MASTER_PROJECT_STATUS_OPTIONS,
+  MASTER_APPROVAL_AUTHORITY_OPTIONS
 } from '../../../../core/models/property-master.model';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, ViewEncapsulation, forwardRef, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
@@ -79,6 +84,7 @@ import { FormsModule } from '@angular/forms';
 import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
 import { AdminService, ADMIN_PERSONAS } from '../../../../core/services/admin.service';
 import { PropertyService } from '../../../../core/services/property.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AdminPropertyItem, PropertyReviewStatus } from '../../../../core/models/admin.model';
 import { ToastComponent } from '../../../home/components/toast/toast.component';
@@ -86,7 +92,9 @@ import { SubdividedPlot } from '../../../../core/models/subdivided-plot.model';
 import { PlotDetails } from '../../../../core/models/property.model';
 import { PlotexViewerComponent } from '../../../../shared/components/plotex-viewer/plotex-viewer.component';
 import { InteractivePlotLayoutComponent } from '../../../../shared/components/interactive-plot-layout/interactive-plot-layout.component';
-import { UserMindsetBarComponent } from '../../../../shared/components/user-mindset-bar/user-mindset-bar.component';
+import { ADMIN_DASHBOARD_HOST } from './sections/admin-dashboard-host.token';
+import { AdminDevelopersCrmComponent } from './sections/admin-developers-crm.component';
+import { AdminOperationsModalsComponent } from './sections/admin-operations-modals.component';
 
 import { ActivatedRoute } from '@angular/router';
 import * as XLSX from 'xlsx';
@@ -107,15 +115,15 @@ import {
   PlotBookingItem
 } from '../../../../core/models/workspace.model';
 
-export type AdminActiveTab = 
-  | 'review_queue' 
-  | 'post_property' 
-  | 'plot_studio' 
-  | 'all_directory' 
-  | 'developers' 
-  | 'financials' 
-  | 'user_mindset' 
-  | 'bulk_upload' 
+export type AdminActiveTab =
+  | 'review_queue'
+  | 'post_property'
+  | 'plot_studio'
+  | 'all_directory'
+  | 'developers'
+  | 'financials'
+  | 'user_mindset'
+  | 'bulk_upload'
   | 'buyer_workspaces'
   | 'subscription_buyers'
   | 'subscription_plans'
@@ -143,10 +151,15 @@ export interface UploadedImageItem {
     ToastComponent,
     PlotexViewerComponent,
     InteractivePlotLayoutComponent,
-    UserMindsetBarComponent
+    AdminDevelopersCrmComponent,
+    AdminOperationsModalsComponent
+  ],
+  providers: [
+    { provide: ADMIN_DASHBOARD_HOST, useExisting: forwardRef(() => AdminDashboardComponent) }
   ],
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.css']
+  styleUrls: ['./admin-dashboard.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class AdminDashboardComponent {
   // Comprehensive Property Master Data from Excel Schema
@@ -163,14 +176,37 @@ export class AdminDashboardComponent {
   readonly adminDrainageOptions = MASTER_DRAINAGE_OPTIONS;
   readonly adminRoadTypeOptions = MASTER_ROAD_TYPE_OPTIONS;
   readonly adminFloodZoneOptions = MASTER_FLOOD_ZONE_OPTIONS;
+  readonly adminCategoryOptions = MASTER_CATEGORY_OPTIONS;
+  readonly adminTypeOptions = MASTER_TYPE_OPTIONS;
+  readonly adminProjectStageOptions = MASTER_PROJECT_STAGE_OPTIONS;
+  readonly adminProjectStatusOptions = MASTER_PROJECT_STATUS_OPTIONS;
+  readonly adminApprovalAuthorityOptions = MASTER_APPROVAL_AUTHORITY_OPTIONS;
 
   onAdminPlotSizeSqftChange(): void {
     this.adminMaster.plotSizeCents = calculateCents(this.adminMaster.plotSizeSqft);
     this.adminMaster.totalPrice = calculateTotalPrice(this.adminMaster.plotSizeSqft, this.adminMaster.pricePerSqft);
+    if (this.adminMaster.plotSizeSqft && !this.adminMaster.minPlotSize) {
+      this.adminMaster.minPlotSize = this.adminMaster.plotSizeSqft;
+    }
+    if (this.adminMaster.plotSizeSqft && !this.adminMaster.maxPlotSize) {
+      this.adminMaster.maxPlotSize = this.adminMaster.plotSizeSqft;
+    }
+    if (this.adminMaster.totalPrice > 0 && !this.adminMaster.priceFrom) {
+      this.adminMaster.priceFrom = this.adminMaster.totalPrice;
+    }
+    if (this.adminMaster.totalPrice > 0 && !this.adminMaster.priceTo) {
+      this.adminMaster.priceTo = this.adminMaster.totalPrice;
+    }
   }
 
   onAdminPricePerSqftChange(): void {
     this.adminMaster.totalPrice = calculateTotalPrice(this.adminMaster.plotSizeSqft, this.adminMaster.pricePerSqft);
+    if (this.adminMaster.totalPrice > 0 && !this.adminMaster.priceFrom) {
+      this.adminMaster.priceFrom = this.adminMaster.totalPrice;
+    }
+    if (this.adminMaster.totalPrice > 0 && !this.adminMaster.priceTo) {
+      this.adminMaster.priceTo = this.adminMaster.totalPrice;
+    }
   }
 
   getAdminFormattedTotalPrice(): string {
@@ -187,6 +223,7 @@ export class AdminDashboardComponent {
 
   readonly adminService = inject(AdminService);
   readonly propertyService = inject(PropertyService);
+  readonly authService = inject(AuthService);
   readonly workspaceService = inject(WorkspaceService);
   readonly subscriptionService = inject(SubscriptionService);
   readonly notificationService = inject(NotificationService);
@@ -197,25 +234,25 @@ export class AdminDashboardComponent {
   readonly personas = ADMIN_PERSONAS;
 
   ngOnInit(): void {
-    if (!this.adminService.isAuthenticated()) {
-      this.router.navigate(['/admin/login']);
-      return;
+      if (!this.adminService.verifyAdminAccess()) {
+        this.router.navigate(['/admin/login']);
+        return;
+      }
+
+      this.loadDashboardMetrics();
+      this.loadWhatsappSettings();
+
+      this.route.queryParams.subscribe(params => {
+        if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
+          this.setTab(params['tab'] as AdminActiveTab);
+        }
+      });
     }
 
-    this.loadDashboardMetrics();
-    this.loadWhatsappSettings();
-
-    this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
-        this.setTab(params['tab'] as AdminActiveTab);
-      }
-    });
-  }
-
-  onSignOut(): void {
-    this.adminService.logout();
-    this.router.navigate(['/admin/login']);
-  }
+    onSignOut(): void {
+      this.adminService.logout();
+      this.router.navigate(['/admin/login']);
+    }
 
   // Active Tab View & Modern Enterprise Sidebar State
   readonly activeTab = signal<AdminActiveTab>('review_queue');
@@ -371,7 +408,7 @@ export class AdminDashboardComponent {
     const tier = this.subscriptionTierFilter();
 
     return list.filter(b => {
-      const matchesSearch = !q || 
+      const matchesSearch = !q ||
         (b.userName && b.userName.toLowerCase().includes(q)) ||
         (b.userPhone && b.userPhone.includes(q)) ||
         (b.userEmail && b.userEmail.toLowerCase().includes(q)) ||
@@ -960,12 +997,374 @@ export class AdminDashboardComponent {
     const list = this.adminDevelopers();
     const q = this.developerSearchQuery().trim().toLowerCase();
     if (!q) return list;
-    return list.filter(d => 
+    return list.filter(d =>
       (d.name && d.name.toLowerCase().includes(q)) ||
       (d.reraNumber && d.reraNumber.toLowerCase().includes(q)) ||
       (d.corporateOffice && d.corporateOffice.toLowerCase().includes(q))
     );
   });
+
+  // Super Admin Developer Profile & Cover Image Editing Modal State
+  readonly selectedEditDeveloper = signal<any | null>(null);
+  readonly isSavingDeveloper = signal<boolean>(false);
+  readonly isUploadingDevCover = signal<boolean>(false);
+  readonly isUploadingDevLogo = signal<boolean>(false);
+
+  // Developer Linked Projects & Assignment State
+  readonly adminDevLinkedProjects = signal<any[]>([]);
+  readonly adminDevAvailableProjects = signal<any[]>([]);
+  readonly adminDevProjectSearch = signal<string>('');
+  readonly adminSelectedProjectsToLink = signal<string[]>([]);
+  readonly isLinkingProjects = signal<boolean>(false);
+  readonly isLoadingLinkedProjects = signal<boolean>(false);
+
+  readonly defaultDevCoverImage = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80';
+
+  readonly adminArchitecturalCoverPresets = [
+    { label: 'Executive Skyline', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80' },
+    { label: 'Modern Prestige', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1800&q=80' },
+    { label: 'Plotted Land Corridor', url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=80' },
+    { label: 'Green Gated Layout', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1800&q=80' }
+  ];
+
+  readonly adminMildGradientPresets = [
+    { label: 'Emerald Sage Breeze', value: 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)', badge: 'Eco & Plotted' },
+    { label: 'Coastal Marine Mist', value: 'linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #e0f2fe 100%)', badge: 'Maritime & Teal' },
+    { label: 'Warm Champagne', value: 'linear-gradient(135deg, #fffbeb 0%, #f8fafc 50%, #fef3c7 100%)', badge: 'Heritage Luxury' },
+    { label: 'Slate Platinum', value: 'linear-gradient(135deg, #f1f5f9 0%, #f8fafc 50%, #e2e8f0 100%)', badge: 'Executive Modern' },
+    { label: 'Nordic Botanical Mint', value: 'linear-gradient(135deg, #ecfdf5 0%, #f8fafc 50%, #d1fae5 100%)', badge: 'Gated Townships' },
+    { label: 'Rose Blush Whisper', value: 'linear-gradient(135deg, #fff1f2 0%, #f8fafc 50%, #ffe4e6 100%)', badge: 'Boutique Estates' },
+    { label: 'Lavender Royal Mist', value: 'linear-gradient(135deg, #f5f3ff 0%, #f8fafc 50%, #ede9fe 100%)', badge: 'Royal Enclaves' },
+    { label: 'Pure Studio Canvas', value: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)', badge: 'Minimalist Clean' }
+  ];
+
+  readonly adminMildFlatColorPresets = [
+    { label: 'Pure White', value: '#ffffff', badge: 'Crisp Minimalist' },
+    { label: 'Soft Alabaster', value: '#fafafa', badge: 'Warm Neutral' },
+    { label: 'Cool Slate Canvas', value: '#f8fafc', badge: 'Executive Modern' },
+    { label: 'Mild Sage Tint', value: '#f0fdf4', badge: 'Eco Meadow' },
+    { label: 'Coastal Sky Blue', value: '#f0f9ff', badge: 'Maritime Calm' },
+    { label: 'Champagne Cream', value: '#fffbeb', badge: 'Heritage Luxury' },
+    { label: 'Soft Botanical Mint', value: '#ecfdf5', badge: 'Botanical Flat' },
+    { label: 'Rose Quartz Tint', value: '#fff1f2', badge: 'Boutique Estates' },
+    { label: 'Lavender Royal Tint', value: '#f5f3ff', badge: 'Royal Enclave' },
+    { label: 'Warm Sandstone', value: '#fefce8', badge: 'Earth & Plotted' }
+  ];
+
+  selectAdminGradientPreset(gradient: string): void {
+    const current = this.selectedEditDeveloper();
+    if (current) {
+      this.selectedEditDeveloper.set({
+        ...current,
+        bgGradient: gradient
+      });
+    }
+  }
+
+  isSuperAdmin(): boolean {
+    const r = (this.adminService.currentAdmin()?.role || '').toLowerCase();
+    return !r || r === 'super_admin' || r === 'admin';
+  }
+
+  openCreateDeveloperModal(): void {
+    if (!this.isSuperAdmin()) {
+      this.notificationService.show({
+        type: 'error',
+        title: 'Access Denied',
+        message: 'Only Super Admin can create new developers.',
+        icon: 'gpp_bad'
+      });
+      return;
+    }
+    this.selectedEditDeveloper.set({
+      isNew: true,
+      id: 0,
+      name: '',
+      slug: '',
+      reraNumber: 'TNRERA/PROM/2026',
+      logoUrl: '',
+      coverImageUrl: '',
+      bgGradient: '#ffffff',
+      corporateOffice: 'Chennai, Tamil Nadu',
+      contactPhone: '',
+      contactEmail: '',
+      websiteUrl: '',
+      about: '',
+      establishedYear: '2026',
+      projectsCompleted: '0 Projects',
+      deliveredSqFt: ''
+    });
+
+    this.adminSelectedProjectsToLink.set([]);
+    this.adminDevLinkedProjects.set([]);
+    this.adminDevProjectSearch.set('');
+    this.loadDeveloperLinkedProjects(0, '');
+  }
+
+  openEditDeveloperModal(dev: any): void {
+    this.selectedEditDeveloper.set({
+      isNew: false,
+      id: dev.id || 0,
+      name: dev.name || '',
+      slug: dev.slug || '',
+      reraNumber: dev.reraNumber || '',
+      logoUrl: dev.logoUrl || '',
+      coverImageUrl: dev.coverImageUrl || '',
+      bgGradient: dev.bgGradient || 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)',
+      corporateOffice: dev.corporateOffice || '',
+      contactPhone: dev.contactPhone || '',
+      contactEmail: dev.contactEmail || '',
+      websiteUrl: dev.websiteUrl || '',
+      about: dev.about || dev.aboutText || '',
+      establishedYear: dev.establishedYear || '2016',
+      projectsCompleted: dev.projectsCompleted || `${dev.projectCount ?? 0} Projects`,
+      deliveredSqFt: dev.deliveredSqFt || '1.2M+ sq.ft'
+    });
+
+    this.adminSelectedProjectsToLink.set([]);
+    this.adminDevProjectSearch.set('');
+    this.loadDeveloperLinkedProjects(dev.id || 0, '');
+  }
+
+  loadDeveloperLinkedProjects(devId: number, search: string = ''): void {
+    this.isLoadingLinkedProjects.set(true);
+    this.authService.getDeveloperLinkedProjects(devId, search).subscribe(res => {
+      this.isLoadingLinkedProjects.set(false);
+      if (res && res.success && res.data) {
+        this.adminDevLinkedProjects.set(res.data.linkedProjects || []);
+        this.adminDevAvailableProjects.set(res.data.availableProjects || []);
+      }
+    });
+  }
+
+  onSearchAvailableProjects(event: Event): void {
+    const q = (event.target as HTMLInputElement).value || '';
+    this.adminDevProjectSearch.set(q);
+    const dev = this.selectedEditDeveloper();
+    this.loadDeveloperLinkedProjects(dev?.id || 0, q);
+  }
+
+  toggleProjectSelection(projectId: string): void {
+    this.adminSelectedProjectsToLink.update(list => {
+      if (list.includes(projectId)) {
+        return list.filter(id => id !== projectId);
+      } else {
+        return [...list, projectId];
+      }
+    });
+  }
+
+  isProjectSelected(projectId: string): boolean {
+    return this.adminSelectedProjectsToLink().includes(projectId);
+  }
+
+  linkSelectedProjects(): void {
+    const dev = this.selectedEditDeveloper();
+    const projectIds = this.adminSelectedProjectsToLink();
+    if (!dev || projectIds.length === 0) return;
+
+    if (!dev.id || dev.id === 0) {
+      this.saveDeveloperFromAdmin();
+      return;
+    }
+
+    this.isLinkingProjects.set(true);
+    this.authService.linkDeveloperProjects(dev.id, projectIds, 'link').subscribe(res => {
+      this.isLinkingProjects.set(false);
+      if (res && res.success) {
+        this.adminSelectedProjectsToLink.set([]);
+        this.loadDeveloperLinkedProjects(dev.id);
+        this.loadAdminDevelopers();
+      }
+    });
+  }
+
+  unlinkSingleProject(projectId: string): void {
+    const dev = this.selectedEditDeveloper();
+    if (!dev?.id || !projectId) return;
+
+    this.isLinkingProjects.set(true);
+    this.authService.linkDeveloperProjects(dev.id, [projectId], 'unlink').subscribe(res => {
+      this.isLinkingProjects.set(false);
+      if (res && res.success) {
+        this.loadDeveloperLinkedProjects(dev.id);
+        this.loadAdminDevelopers();
+      }
+    });
+  }
+
+  onAdminDeveloperChange(developerName: string): void {
+    if (!developerName) {
+      this.adminMaster.developerId = null;
+      return;
+    }
+    const match = this.adminDevelopers().find(d => d.name && d.name.toLowerCase() === developerName.trim().toLowerCase());
+    if (match) {
+      this.adminMaster.developerId = match.id || null;
+      if (match.reraNumber && !this.adminMaster.reraNumber) {
+        this.adminMaster.reraNumber = match.reraNumber;
+      }
+    } else {
+      this.adminMaster.developerId = null;
+    }
+  }
+
+  closeEditDeveloperModal(): void {
+    this.selectedEditDeveloper.set(null);
+  }
+
+  selectAdminCoverPreset(url: string): void {
+    const dev = this.selectedEditDeveloper();
+    if (dev) {
+      this.selectedEditDeveloper.set({ ...dev, coverImageUrl: url });
+    }
+  }
+
+  onAdminUploadDeveloperCover(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingDevCover.set(true);
+
+    this.propertyService.uploadPropertyImage(file).subscribe({
+      next: (res) => {
+        this.isUploadingDevCover.set(false);
+        if (res && res.success && res.url) {
+          const dev = this.selectedEditDeveloper();
+          if (dev) {
+            this.selectedEditDeveloper.set({ ...dev, coverImageUrl: res.url });
+          }
+          this.notificationService.show({
+            type: 'success',
+            title: 'Cover Image Uploaded',
+            message: 'Background image ready. Click Save Changes to commit.',
+            icon: 'wallpaper'
+          });
+        } else {
+          this.notificationService.show({
+            type: 'error',
+            title: 'Upload Failed',
+            message: res?.message || 'Failed to upload cover image.',
+            icon: 'error'
+          });
+        }
+      },
+      error: () => {
+        this.isUploadingDevCover.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Upload Error',
+          message: 'Error communicating with upload server.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  onAdminUploadDeveloperLogo(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingDevLogo.set(true);
+
+    this.propertyService.uploadPropertyImage(file).subscribe({
+      next: (res) => {
+        this.isUploadingDevLogo.set(false);
+        if (res && res.success && res.url) {
+          const dev = this.selectedEditDeveloper();
+          if (dev) {
+            this.selectedEditDeveloper.set({ ...dev, logoUrl: res.url });
+          }
+        }
+      },
+      error: () => {
+        this.isUploadingDevLogo.set(false);
+      }
+    });
+  }
+
+  saveDeveloperFromAdmin(): void {
+    const dev = this.selectedEditDeveloper();
+    if (!dev) return;
+
+    if (dev.isNew && !this.isSuperAdmin()) {
+      this.notificationService.show({
+        type: 'error',
+        title: 'Access Denied',
+        message: 'Only Super Admin can create new developers.',
+        icon: 'gpp_bad'
+      });
+      return;
+    }
+
+    if (!dev.name || !dev.name.trim()) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Company Name Required',
+        message: 'Please enter a Company / Developer Name before saving.',
+        icon: 'warning'
+      });
+      return;
+    }
+
+    this.isSavingDeveloper.set(true);
+    const admin = this.adminService.currentAdmin();
+    const linkProjectIds = this.adminSelectedProjectsToLink();
+    const payload = {
+      isAdmin: true,
+      createNew: !!dev.isNew,
+      userId: admin?.id || 104,
+      userRole: admin?.role || 'super_admin',
+      developerId: dev.id || 0,
+      name: dev.name.trim(),
+      reraNumber: dev.reraNumber,
+      logoUrl: dev.logoUrl,
+      coverImageUrl: dev.coverImageUrl,
+      bgGradient: dev.bgGradient,
+      corporateOffice: dev.corporateOffice,
+      contactPhone: dev.contactPhone,
+      contactEmail: dev.contactEmail,
+      websiteUrl: dev.websiteUrl,
+      about: dev.about,
+      establishedYear: dev.establishedYear,
+      projectsCompleted: dev.projectsCompleted,
+      deliveredSqFt: dev.deliveredSqFt,
+      linkProjectIds
+    };
+
+    this.authService.updateDeveloperCompany(payload).subscribe({
+      next: (res) => {
+        this.isSavingDeveloper.set(false);
+        if (res && res.success) {
+          this.notificationService.show({
+            type: 'success',
+            title: dev.isNew ? 'Developer Profile Created' : 'Developer Profile Updated',
+            message: `${dev.name} saved${linkProjectIds.length > 0 ? ` with ${linkProjectIds.length} linked project(s)` : ''}.`,
+            icon: 'verified'
+          });
+          this.adminSelectedProjectsToLink.set([]);
+          this.closeEditDeveloperModal();
+          this.loadAdminDevelopers();
+        } else {
+          this.notificationService.show({
+            type: 'error',
+            title: 'Save Failed',
+            message: res?.message || 'Failed to update developer profile.',
+            icon: 'error'
+          });
+        }
+      },
+      error: (err) => {
+        this.isSavingDeveloper.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Save Error',
+          message: err?.message || 'Server error occurred while saving developer.',
+          icon: 'error'
+        });
+      }
+    });
+  }
 
   // =========================================================================
   // PRD BUYER WORKSPACES & CRM MANAGEMENT (DEDICATED ADMIN TAB)
@@ -1108,7 +1507,7 @@ export class AdminDashboardComponent {
     }
     const q = this.workspaceSearchQuery().trim().toLowerCase();
     if (q) {
-      list = list.filter(v => 
+      list = list.filter(v =>
         v.visitorName.toLowerCase().includes(q) ||
         v.phone.includes(q) ||
         v.interestedProject.toLowerCase().includes(q)
@@ -2372,11 +2771,32 @@ export class AdminDashboardComponent {
 
   // Post property form submission
   onSubmitNewProperty(): void {
-    const data = this.newProp();
-    if (!data.title.trim()) {
-      alert('Please enter a property title');
+    const raw = this.newProp();
+    const effectiveTitle = (raw.title || '').trim() || (this.adminMaster.projectName || '').trim();
+    if (!effectiveTitle) {
+      this.notificationService.show({
+        type: 'error',
+        title: 'Project Name Required',
+        message: 'Please enter the Project Name in Section 1 before submitting.',
+        icon: 'error'
+      });
       return;
     }
+
+    const data = {
+      ...raw,
+      title: effectiveTitle,
+      propertyType: this.adminMaster.category || raw.propertyType,
+      listingMode: this.adminMaster.type || raw.listingMode,
+      cityName: (this.adminMaster.city || this.adminMaster.district || raw.cityName || 'Chennai').trim(),
+      localityName: (this.adminMaster.villageLocality || this.adminMaster.areaLocation || raw.localityName || 'Anna Nagar').trim(),
+      price: this.adminMaster.totalPrice > 0 ? this.getAdminFormattedTotalPrice() : raw.price,
+      pricePerSqft: this.adminMaster.pricePerSqft ? `₹ ${this.adminMaster.pricePerSqft.toLocaleString('en-IN')}/sq.ft` : raw.pricePerSqft,
+      sqft: this.adminMaster.plotSizeSqft ? `${this.adminMaster.plotSizeSqft} sq.ft` : raw.sqft,
+      facingOrView: this.adminMaster.facing ? `${this.adminMaster.facing} Facing` : raw.facingOrView,
+      reraNumber: this.adminMaster.reraNumber || raw.reraNumber,
+      interactiveMapUrl: this.adminMaster.interactiveMap || raw.interactiveMapUrl
+    };
 
     let finalMainImageUrl = data.mainImageUrl;
     const coverUploaded = this.adminUploadedImages().find(img => img.isCover);
@@ -2435,7 +2855,9 @@ export class AdminDashboardComponent {
       bhkBadge: finalBhkBadge,
       highlights: customHighlights,
       mainImageUrl: finalMainImageUrl,
-      galleryImages
+      galleryImages,
+      masterData: this.adminMaster,
+      masterDetails: this.adminMaster
     };
 
     if (this.isAdminPlot()) {

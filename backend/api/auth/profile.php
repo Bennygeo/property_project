@@ -81,10 +81,11 @@ try {
             v.created_at AS createdAt
         FROM inquiries_and_visits v
         LEFT JOIN properties p ON UPPER(TRIM(v.property_id)) = UPPER(TRIM(p.id))
-        WHERE v.user_id = ? OR v.contact_phone = ?
+        WHERE v.user_id = ? OR (? != '' AND v.contact_phone = ?)
         ORDER BY v.created_at DESC
     ");
-    $visitsStmt->execute([$userId, $user['phone'] ?? '']);
+    $phoneStr = trim((string)($user['phone'] ?? ''));
+    $visitsStmt->execute([$userId, $phoneStr, $phoneStr]);
     $visits = $visitsStmt->fetchAll();
 } catch (\Throwable $e) {}
 

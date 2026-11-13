@@ -203,6 +203,16 @@ export const ADMIN_PERSONAS: AdminPersona[] = [
 ];
 
 const ADMIN_STORAGE_KEY = 'mannidam_admin_session';
+const AUTHORIZED_ADMIN_ROLES = [
+  'admin',
+  'super_admin',
+  'co_admin',
+  'sales_executive',
+  'property_advisor',
+  'operations_executive',
+  'finance_admin',
+  'content_gis_admin'
+];
 
 @Injectable({
   providedIn: 'root'
@@ -216,7 +226,7 @@ export class AdminService {
   readonly isAuthenticated = computed<boolean>(() => !!this.currentAdmin());
 
   // Active Admin Persona Switcher for Maker-Checker testing
-  readonly activePersona = signal<AdminPersona>(this.currentAdmin() || ADMIN_PERSONAS[2]);
+  readonly activePersona = signal<AdminPersona>(this.currentAdmin() || ADMIN_PERSONAS[0]);
 
   // Data state
   readonly properties = signal<AdminPropertyItem[]>([]);
@@ -243,132 +253,153 @@ export class AdminService {
 
   private getStoredAdminSession(): AdminPersona | null {
     try {
-      const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
       const userStored = localStorage.getItem('mannidam_auth_user');
       if (userStored) {
         const u = JSON.parse(userStored);
-        if (u.role === 'admin' || (u.phone && u.phone.includes('9486140936'))) {
-          return {
-            id: u.id || 104,
-            name: u.name || 'Benny',
-            role: 'admin',
-            title: 'Super Admin, Technology & Developer Director',
-            avatarInitials: 'BE',
-            email: u.email || 'benny_gj@yahoo.co.in',
-            department: 'Full Access & Developer Operations',
-            responsibility: 'Full Super Admin Access, Developer Management & Registry Operations'
-          };
+          if (u?.role && !AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
+            localStorage.removeItem(ADMIN_STORAGE_KEY);
+            return null;
+          }
+          if (u?.role === 'admin' || u?.role === 'super_admin') {
+            return {
+              id: u.id || 104,
+            name: u.name || 'Administrator',
+              role: u.role,
+              title: u.role === 'super_admin' ? 'Super Administrator' : 'Administrator',
+              avatarInitials: (u.name || 'AD').substring(0, 2).toUpperCase(),
+              email: u.email || 'admin@findaplot.in',
+              department: 'Platform Governance',
+              responsibility: 'Administrative Portal Access'
+            };
+          }
         }
+        const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.role && AUTHORIZED_ADMIN_ROLES.includes(parsed.role)) {
+            return parsed;
+          }
+          localStorage.removeItem(ADMIN_STORAGE_KEY);
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
+      return null;
     }
-    // Default fallback so Benny (9486140936) always has full admin access
-    return {
-      id: 104,
-      name: 'Benny',
-      role: 'admin',
-      title: 'Super Admin, Technology & Developer Director',
-      avatarInitials: 'BE',
-      email: 'benny_gj@yahoo.co.in',
-      department: 'Full Access & Developer Operations',
-      responsibility: 'Full Super Admin Access, Developer Management & Registry Operations'
-    };
-  }
 
-  // Admin Login via Backend API
-  login(loginId: string, password: string): Observable<{ success: boolean; message?: string; admin?: AdminPersona; dashboardRoute?: string }> {
-    this.isLoading.set(true);
-    const body = { email: loginId, password };
-    const tryLogin = (url: string) => this.http.post<{ success: boolean; data: { admin: any }; message: string }>(url, body);
-
-    return tryLogin(`${environment.apiUrl}/admin/login.php`).pipe(
-      catchError(() => tryLogin('/P_demo_5/backend/api/admin/login.php')),
-      catchError(() => tryLogin('/p_demo_5/backend/api/admin/login.php')),
-      catchError(() => tryLogin('/P_demo_4/backend/api/admin/login.php')),
-      catchError(() => tryLogin('/p_demo_4/backend/api/admin/login.php')),
-      catchError(() => tryLogin('/p_demo_3/backend/api/admin/login.php')),
-      catchError(() => tryLogin('/api/admin/login.php')),
-      catchError(() => tryLogin('http://localhost/the-property-project/backend/api/admin/login.php')),
-      map(res => {
-        this.isLoading.set(false);
-        if (res && res.success && res.data?.admin) {
-          const admData: AdminPersona = {
-            id: res.data.admin.id,
-            name: res.data.admin.name,
-            role: res.data.admin.role,
-            title: res.data.admin.title,
-            avatarInitials: res.data.admin.avatarInitials,
-            email: res.data.admin.email,
-            department: res.data.admin.department,
-            responsibility: res.data.admin.responsibility,
-            developer_id: res.data.admin.developer_id,
-            permissions: res.data.admin.permissions,
-            dashboardRoute: res.data.admin.dashboardRoute || '/admin'
-          };
-          this.currentAdmin.set(admData);
-          this.activePersona.set(admData);
-          localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(admData));
-          this.notificationService.show({
-            type: 'success',
-            title: 'Administrative Access Granted',
-            message: res.message || `Welcome back, ${admData.name}.`,
-            icon: 'verified_user'
-          });
-          this.loadAdminData();
-          return { success: true, admin: admData, dashboardRoute: admData.dashboardRoute };
+  verifyAdminAccess(): boolean {
+      try {
+        const userStored = localStorage.getItem('mannidam_auth_user');
+        if (userStored) {
+          const u = JSON.parse(userStored);
+          if (u?.role && !AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
+            this.currentAdmin.set(null);
+            localStorage.removeItem(ADMIN_STORAGE_KEY);
+            return false;
+          }
         }
-        return { success: false, message: 'Invalid credentials' };
-      }),
-      catchError(err => {
-        this.isLoading.set(false);
-        const msg = err?.error?.error || 'Invalid credentials or unauthorized access';
-        this.notificationService.show({
-          type: 'error',
-          title: 'Access Denied',
-          message: msg,
-          icon: 'gavel'
-        });
-        return of({ success: false, message: msg });
-      })
-    );
-  }
+      } catch {
+        // ignore
+      }
+      const admin = this.currentAdmin();
+      if (admin && AUTHORIZED_ADMIN_ROLES.includes(admin.role)) {
+        return true;
+      }
+      const refreshed = this.getStoredAdminSession();
+      this.currentAdmin.set(refreshed);
+      return !!refreshed;
+    }
 
-  // Admin Logout
-  logout(): void {
-    this.currentAdmin.set(null);
-    this.activePersona.set(ADMIN_PERSONAS[0]);
-    localStorage.removeItem(ADMIN_STORAGE_KEY);
-    this.notificationService.show({
-      type: 'info',
-      title: 'Signed Out',
-      message: 'Administrative session ended securely.',
-      icon: 'logout'
-    });
-  }
+    // Admin Login via Backend API
+    login(loginId: string, password: string): Observable < { success: boolean; message?: string; admin?: AdminPersona; dashboardRoute?: string } > {
+      this.isLoading.set(true);
+      const body = { email: loginId, password };
+      const tryLogin = (url: string) => this.http.post<{ success: boolean; data: { admin: any }; message: string }>(url, body);
 
-  // Switch persona between Lead Admin and Co-Admin
-  switchPersona(personaId: number): void {
-    const found = ADMIN_PERSONAS.find(p => p.id === personaId) || ADMIN_PERSONAS[0];
-    this.activePersona.set(found);
-    this.notificationService.show({
-      type: 'info',
-      title: 'Admin Switched',
-      message: `Active session is now: ${found.name} (${found.title})`,
-      icon: 'admin_panel_settings'
-    });
-  }
+      return tryLogin(`${environment.apiUrl}/admin/login.php`).pipe(
+        catchError(() => tryLogin('/P_demo_5/backend/api/admin/login.php')),
+        catchError(() => tryLogin('/p_demo_5/backend/api/admin/login.php')),
+        catchError(() => tryLogin('/P_demo_4/backend/api/admin/login.php')),
+        catchError(() => tryLogin('/p_demo_4/backend/api/admin/login.php')),
+        catchError(() => tryLogin('/p_demo_3/backend/api/admin/login.php')),
+        catchError(() => tryLogin('/api/admin/login.php')),
+        catchError(() => tryLogin('http://localhost/the-property-project/backend/api/admin/login.php')),
+        map(res => {
+          this.isLoading.set(false);
+          if (res && res.success && res.data?.admin) {
+            const admData: AdminPersona = {
+              id: res.data.admin.id,
+              name: res.data.admin.name,
+              role: res.data.admin.role,
+              title: res.data.admin.title,
+              avatarInitials: res.data.admin.avatarInitials,
+              email: res.data.admin.email,
+              department: res.data.admin.department,
+              responsibility: res.data.admin.responsibility,
+              developer_id: res.data.admin.developer_id,
+              permissions: res.data.admin.permissions,
+              dashboardRoute: res.data.admin.dashboardRoute || '/admin'
+            };
+            this.currentAdmin.set(admData);
+            this.activePersona.set(admData);
+            localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(admData));
+            this.notificationService.show({
+              type: 'success',
+              title: 'Administrative Access Granted',
+              message: res.message || `Welcome back, ${admData.name}.`,
+              icon: 'verified_user'
+            });
+            this.loadAdminData();
+            return { success: true, admin: admData, dashboardRoute: admData.dashboardRoute };
+          }
+          return { success: false, message: 'Invalid credentials' };
+        }),
+        catchError(err => {
+          this.isLoading.set(false);
+          const msg = err?.error?.error || 'Invalid credentials or unauthorized access';
+          this.notificationService.show({
+            type: 'error',
+            title: 'Access Denied',
+            message: msg,
+            icon: 'gavel'
+          });
+          return of({ success: false, message: msg });
+        })
+      );
+    }
 
-  // Fetch properties and metrics from backend
-  loadAdminData(status = this.currentFilter(), search = this.currentSearch()): void {
-    this.isLoading.set(true);
-    this.currentFilter.set(status);
-    this.currentSearch.set(search);
+    // Admin Logout
+    logout(): void {
+      this.currentAdmin.set(null);
+      this.activePersona.set(ADMIN_PERSONAS[0]);
+      localStorage.removeItem(ADMIN_STORAGE_KEY);
+      this.notificationService.show({
+        type: 'info',
+        title: 'Signed Out',
+        message: 'Administrative session ended securely.',
+        icon: 'logout'
+      });
+    }
 
-    const params: Record<string, string> = {};
+    // Switch persona between Lead Admin and Co-Admin
+    switchPersona(personaId: number): void {
+      const found = ADMIN_PERSONAS.find(p => p.id === personaId) || ADMIN_PERSONAS[0];
+      this.activePersona.set(found);
+      this.notificationService.show({
+        type: 'info',
+        title: 'Admin Switched',
+        message: `Active session is now: ${found.name} (${found.title})`,
+        icon: 'admin_panel_settings'
+      });
+    }
+
+    // Fetch properties and metrics from backend
+    loadAdminData(status = this.currentFilter(), search = this.currentSearch()): void {
+      this.isLoading.set(true);
+      this.currentFilter.set(status);
+      this.currentSearch.set(search);
+
+      const params: Record<string, string> = { };
     if (status && status !== 'all') params['status'] = status;
     if (search) params['q'] = search;
 

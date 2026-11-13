@@ -529,29 +529,37 @@ if ($method === 'POST') {
             $reraNumber   = trim($input['reraNumber'] ?? ($existing['rera_no'] ?? ''));
             $landType     = trim($input['landType'] ?? ($input['propertyType'] ?? ($existing['land_type'] ?? 'Residential')));
 
-            $updateSql = "
-                UPDATE projects SET
-                    project_name = :title,
-                    city = :city,
-                    locality = :locality,
-                    land_type = :land_type,
-                    cover_image = :cover_image,
-                    rera_no = :rera_no,
-                    status = :status,
-                    updated_at = NOW()
-                WHERE project_id = :id
-            ";
-            $stmt = $db->prepare($updateSql);
-            $stmt->execute([
-                ':title'       => $title,
-                ':city'        => $cityName,
-                ':locality'    => $localityName,
-                ':land_type'   => $landType,
-                ':cover_image' => $mainImageUrl,
-                ':rera_no'     => $reraNumber,
-                ':status'      => $status,
-                ':id'          => $propId
-            ]);
+            $masterData = $input['masterData'] ?? $input['masterDetails'] ?? [];
+            if (!empty($masterData) && is_array($masterData)) {
+                PropertyMasterHelper::saveProjectAndDetails($db, $propId, $input, $masterData, [
+                    'status'       => $status,
+                    'submitted_by' => $existing['submitted_by'] ?: $adminName
+                ]);
+            } else {
+                $updateSql = "
+                    UPDATE projects SET
+                        project_name = :title,
+                        city = :city,
+                        locality = :locality,
+                        land_type = :land_type,
+                        cover_image = :cover_image,
+                        rera_no = :rera_no,
+                        status = :status,
+                        updated_at = NOW()
+                    WHERE project_id = :id
+                ";
+                $stmt = $db->prepare($updateSql);
+                $stmt->execute([
+                    ':title'       => $title,
+                    ':city'        => $cityName,
+                    ':locality'    => $localityName,
+                    ':land_type'   => $landType,
+                    ':cover_image' => $mainImageUrl,
+                    ':rera_no'     => $reraNumber,
+                    ':status'      => $status,
+                    ':id'          => $propId
+                ]);
+            }
 
             try {
                 $logStmt = $db->prepare("
@@ -685,43 +693,119 @@ if ($method === 'POST') {
         : 'pending_review';
 
     if ($useProjectsTable) {
-        $propId = 'PRJ-' . strtoupper(bin2hex(random_bytes(3)));
-
-        $numPrice = 0;
-        if (preg_match('/([\d\.]+)/', str_replace(',', '', $price), $m)) {
-            $numPrice = (float)$m[1];
-            if (stripos($price, 'cr') !== false) {
-                $numPrice *= 10000000;
-            } else if (stripos($price, 'l') !== false) {
-                $numPrice *= 100000;
+        $masterData = $input['masterData'] ?? $input['masterDetails'] ?? [];
+        $propId = trim((string)($masterData['propertyId'] ?? $input['propertyId'] ?? ''));
+        if (empty($propId)) {
+            $propId = 'PRJ-' . strtoupper(bin2hex(random_bytes(3)));
+        } else {
+            // Ensure unique project_id if already used
+            $idChk = $db->prepare("SELECT project_id FROM projects WHERE project_id = ?");
+            $idChk->execute([$propId]);
+            if ($idChk->fetch()) {
+                $propId = 'PRJ-' . strtoupper(bin2hex(random_bytes(3)));
             }
         }
 
-        $stmt = $db->prepare("
-            INSERT INTO projects (
-                project_id, project_name, category, type, land_type, city, locality, district,
-                price_from, price_to, cover_image, rera_no, status, submitted_by
-            ) VALUES (
-                :id, :name, :cat, :type, :land_type, :city, :locality, :district,
-                :price_from, :price_to, :cover_image, :rera_no, :status, :submitted_by
-            )
-        ");
-        $stmt->execute([
-            ':id'           => $propId,
-            ':name'         => $title,
-            ':cat'          => $propertyType,
-            ':type'         => $listingMode,
-            ':land_type'    => $propertyType,
-            ':city'         => $cityName,
-            ':locality'     => $localityName,
-            ':district'     => $cityName,
-            ':price_from'   => $numPrice,
-            ':price_to'     => $numPrice,
-            ':cover_image'  => $mainImageUrl,
-            ':rera_no'      => $reraNumber,
-            ':status'       => $status,
-            ':submitted_by' => $authorName
+        $devName = trim((string)($masterData['developer'] ?? $input['developerName'] ?? $input['developer'] ?? ''));
+        $devId = (int)($masterData['developerId'] ?? $input['developerId'] ?? 0);
+        if ($devId <= 0 && !empty($devName)) {
+            $devLookup = $db->prepare("SELECT id, name FROM developers WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1");
+            $devLookup->execute([$devName]);
+            $devRow = $devLookup->fetch(PDO::FETCH_ASSOC);
+            if ($devRow) {
+                $devId = (int)$devRow['id'];
+                $devName = $devRow['name'];
+            }
+        }
+
+        $saved = PropertyMasterHelper::saveProjectAndDetails($db, $propId, $input, is_array($masterData) ? $masterData : [], [
+            'status'         => $status,
+            'submitted_by'   => $authorName,
+            'developer_id'   => $devId > 0 ? $devId : null,
+            'developer_name' => $devName
         ]);
+
+        if (!$saved) {
+            Response::error('Failed to persist project and detail records', 500);
+        }
+
+        // Also store plot factsheet & subdivided plots if provided
+        $plotFactsheet = $input['plotFactsheet'] ?? null;
+        $subdividedPlots = $input['subdividedPlots'] ?? [];
+        if ($propertyType === 'Gated CMDA Plots' || !empty($plotFactsheet) || !empty($subdividedPlots)) {
+            try {
+                if (!empty($plotFactsheet) && is_array($plotFactsheet)) {
+                    $delFact = $db->prepare("DELETE FROM property_plot_details WHERE property_id = ?");
+                    $delFact->execute([$propId]);
+                    $plotDetailStmt = $db->prepare("
+                        INSERT INTO property_plot_details (
+                            property_id, layout_sanction_no, rera_layout_no, frontage_road_width,
+                            water_table_depth, soil_bearing_capacity, fsi_permissible, eb_substation,
+                            boundary_wall, drainage_system, patta_status, dimension_ranges
+                        ) VALUES (
+                            :pid, :sanction, :rera, :road, :water, :soil, :fsi, :eb, :wall, :drain, :patta, :dims
+                        )
+                    ");
+                    $plotDetailStmt->execute([
+                        ':pid'      => $propId,
+                        ':sanction' => $plotFactsheet['layoutSanctionNo'] ?? '',
+                        ':rera'     => $plotFactsheet['reraLayoutNo'] ?? $reraNumber,
+                        ':road'     => $plotFactsheet['frontageRoadWidth'] ?? '40 Feet Wide Bitumen Road',
+                        ':water'    => $plotFactsheet['waterTableDepth'] ?? 'Sweet Potable Water at 18–24 Feet',
+                        ':soil'     => $plotFactsheet['soilBearingCapacity'] ?? 'Certified 220 kN/sq.m',
+                        ':fsi'      => $plotFactsheet['fsiPermissible'] ?? '2.0 FSI',
+                        ':eb'       => $plotFactsheet['ebSubstation'] ?? 'Dedicated 11kV Substation',
+                        ':wall'     => $plotFactsheet['boundaryWall'] ?? 'Gated & Compounded Perimeter',
+                        ':drain'    => $plotFactsheet['drainageSystem'] ?? 'Underground Stormwater Grid',
+                        ':patta'    => $plotFactsheet['pattaStatus'] ?? 'Individual Computerized Patta Issued',
+                        ':dims'     => $plotFactsheet['dimensionRanges'] ?? '30x40 to 40x60 standard'
+                    ]);
+                }
+
+                if (!empty($subdividedPlots) && is_array($subdividedPlots)) {
+                    $delPlots = $db->prepare("DELETE FROM property_subdivided_plots WHERE property_id = ?");
+                    $delPlots->execute([$propId]);
+                    $subStmt = $db->prepare("
+                        INSERT INTO property_subdivided_plots (
+                            property_id, plot_no, status, super_built_up_yds, net_plot_area_yds,
+                            super_built_up_sqft, width_meters, length_meters, width_feet, length_feet,
+                            facing, price_in_lakhs, formatted_price, is_corner, has_trees,
+                            pos_x, pos_y, size_w, size_h
+                        ) VALUES (
+                            :pid, :plot_no, :status, :super_yds, :net_yds,
+                            :super_sqft, :w_m, :l_m, :w_ft, :l_ft,
+                            :facing, :price_lakhs, :formatted_price, :is_corner, :has_trees,
+                            :pos_x, :pos_y, :size_w, :size_h
+                        )
+                    ");
+                    foreach ($subdividedPlots as $p) {
+                        $subStmt->execute([
+                            ':pid'             => $propId,
+                            ':plot_no'         => (string)($p['plotNo'] ?? '101'),
+                            ':status'          => in_array($p['status'] ?? '', ['available', 'sold', 'reserved']) ? $p['status'] : 'available',
+                            ':super_yds'       => (float)($p['superBuiltUpYds'] ?? 150),
+                            ':net_yds'         => (float)($p['netPlotAreaYds'] ?? 100),
+                            ':super_sqft'      => (int)($p['superBuiltUpSqft'] ?? 1350),
+                            ':w_m'             => (float)($p['widthMeters'] ?? 11),
+                            ':l_m'             => (float)($p['lengthMeters'] ?? 7.8),
+                            ':w_ft'            => (float)($p['widthFeet'] ?? 36),
+                            ':l_ft'            => (float)($p['lengthFeet'] ?? 25.6),
+                            ':facing'          => (string)($p['facing'] ?? 'North Facing'),
+                            ':price_lakhs'     => (float)($p['priceInLakhs'] ?? 40),
+                            ':formatted_price' => (string)($p['formattedPrice'] ?? '₹40.00 L'),
+                            ':is_corner'       => !empty($p['isCorner']) ? 1 : 0,
+                            ':has_trees'       => !empty($p['hasTrees']) ? 1 : 0,
+                            ':pos_x'           => (float)($p['x'] ?? 0),
+                            ':pos_y'           => (float)($p['y'] ?? 0),
+                            ':size_w'          => (float)($p['w'] ?? 13),
+                            ':size_h'          => (float)($p['h'] ?? 11)
+                        ]);
+                    }
+                }
+            } catch (\Throwable $pe) {
+                error_log('Admin plot details insert warning: ' . $pe->getMessage());
+            }
+        }
 
         Response::success([
             'propertyId' => $propId,

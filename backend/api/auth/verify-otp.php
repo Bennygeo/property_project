@@ -41,21 +41,53 @@ $last10 = substr(preg_replace('/[^\d]/', '', $cleanPhone), -10);
 
 $db = (new Database())->getConnection();
 
+// Standard permissions for new registered users (buyers)
+$defaultBuyerPermissionsList = [
+    'view_properties',
+    'edit_profile',
+    'view_history',
+    'share_property',
+    'search_properties',
+    'send_messages'
+];
+$defaultBuyerPermissionsJson = json_encode($defaultBuyerPermissionsList);
+
+// Ensure role_definitions table exists with clear distinction between Admin, Developer, and User roles
+try {
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS `role_definitions` (
+            `role_key` varchar(50) NOT NULL,
+            `role_name` varchar(100) NOT NULL,
+            `role_category` enum('admin','developer','user','guest') NOT NULL DEFAULT 'user',
+            `access_level` int(11) NOT NULL DEFAULT 4,
+            `portal_access` varchar(100) NOT NULL DEFAULT '/profile',
+            `is_admin_portal_allowed` tinyint(1) NOT NULL DEFAULT 0,
+            `is_developer_portal_allowed` tinyint(1) NOT NULL DEFAULT 0,
+            `default_permissions` longtext NOT NULL,
+            `description` varchar(255) DEFAULT NULL,
+            `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`role_key`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+} catch (\Throwable $e) {
+    // Non-fatal if already initialized
+}
+
 // Check if user already exists
 $stmt = $db->prepare("SELECT * FROM users WHERE phone LIKE ? OR phone LIKE ? LIMIT 1");
 $stmt->execute(["%{$last10}", "%{$cleanPhone}%"]);
 $user = $stmt->fetch();
 
 if (!$user) {
-    // Register new user with 40 starter points
+    // Register new user as standard 'buyer' with restricted user-only permissions and 40 starter points
     $defaultName = !empty($name) ? $name : 'Verified Investor ' . substr($last10, -4);
     $defaultEmail = 'investor_' . $last10 . '@mannidam.com';
     
     $insertStmt = $db->prepare("
-        INSERT INTO users (name, email, phone, role, points_balance)
-        VALUES (?, ?, ?, 'buyer', 40)
+        INSERT INTO users (name, email, phone, role, developer_id, department, designation, status, permissions, points_balance)
+        VALUES (?, ?, ?, 'buyer', NULL, 'Registered User', 'Verified Buyer / Investor', 'active', ?, 40)
     ");
-    $insertStmt->execute([$defaultName, $defaultEmail, $cleanPhone]);
+    $insertStmt->execute([$defaultName, $defaultEmail, $cleanPhone, $defaultBuyerPermissionsJson]);
     $userId = (int)$db->lastInsertId();
 
     // Log welcome bonus points
@@ -68,6 +100,11 @@ if (!$user) {
     $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
+} else if (($user['role'] ?? 'buyer') === 'buyer' && empty($user['permissions'])) {
+    // Ensure existing buyer rows have explicit user permissions populated
+    $db->prepare("UPDATE users SET permissions = ?, department = COALESCE(department, 'Registered User'), designation = COALESCE(designation, 'Verified Buyer / Investor') WHERE id = ?")
+       ->execute([$defaultBuyerPermissionsJson, (int)$user['id']]);
+    $user['permissions'] = $defaultBuyerPermissionsJson;
 }
 
 // If phone is 9486140936, ensure full admin role with developer access
@@ -76,6 +113,17 @@ if ($last10 === '9486140936') {
     $user['role'] = 'admin';
     $user['developer_id'] = 1;
     $user['points_balance'] = 10000;
+}
+
+$decodedPermissions = [];
+if (!empty($user['permissions'])) {
+    $tmp = json_decode((string)$user['permissions'], true);
+    if (is_array($tmp)) {
+        $decodedPermissions = $tmp;
+    }
+}
+if (empty($decodedPermissions) && ($user['role'] ?? 'buyer') === 'buyer') {
+    $decodedPermissions = $defaultBuyerPermissionsList;
 }
 
 // Mock auth token
@@ -87,8 +135,9 @@ Response::success([
         'name'          => $user['name'],
         'email'         => $user['email'],
         'phone'         => $user['phone'],
-        'role'          => $user['role'],
-        'developerId'   => (int)($user['developer_id'] ?? 0),
+        'role'          => $user['role'] ?: 'buyer',
+        'permissions'   => $decodedPermissions,
+        'developerId'   => !empty($user['developer_id']) ? (int)$user['developer_id'] : null,
         'companyName'   => (!empty($user['developer_id'])) ? 'Experion Developers & Infrastructure' : null,
         'pointsBalance' => (int)$user['points_balance'],
         'createdAt'     => $user['created_at'],

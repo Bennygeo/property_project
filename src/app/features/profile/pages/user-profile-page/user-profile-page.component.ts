@@ -115,13 +115,15 @@ export class UserProfilePageComponent implements OnInit {
   // Profile Data from MySQL
   readonly profileData = signal<UserProfileResponse | null>(null);
 
-  // Edit Form Fields
+  // Edit Form & Acquisition Preference Fields (blank until user performs searches or edits)
   readonly editName = signal<string>('');
   readonly editEmail = signal<string>('');
   readonly editPhone = signal<string>('');
-  readonly editCity = signal<string>('Chennai');
-  readonly editBudget = signal<string>('₹2 Cr – ₹5 Cr');
-  readonly editPropertyType = signal<string>('Luxury Villas & Penthouses');
+  readonly editCity = signal<string>('');
+  readonly editBudget = signal<string>('');
+  readonly editPropertyType = signal<string>('');
+  readonly editTitleRequirement = signal<string>('');
+  readonly editReraVerification = signal<string>('');
 
   // Notification Preferences
   readonly notifyWhatsApp = signal<boolean>(true);
@@ -239,6 +241,9 @@ export class UserProfilePageComponent implements OnInit {
       this.myProperties.set(props);
     });
 
+    // Load search-driven Acquisition Preferences (remains blank if user has not searched)
+    this.syncAcquisitionPreferencesFromSearch(userId);
+
     this.authService.loadProfile(userId).subscribe(data => {
       this.isLoading.set(false);
       if (data) {
@@ -250,8 +255,57 @@ export class UserProfilePageComponent implements OnInit {
           this.editEmail.set(data.user.email);
           this.editPhone.set(data.user.phone || '');
         }
+        this.syncAcquisitionPreferencesFromSearch(userId, data);
       }
     });
+  }
+
+  private syncAcquisitionPreferencesFromSearch(_userId: number, data?: UserProfileResponse | null): void {
+    const prefs = this.propertyService.getUserAcquisitionPreferences();
+    const searchHistory = this.propertyService.getUserSearchHistory();
+    const views = data?.viewHistory || [];
+
+    let hub = prefs.targetHubCorridor;
+    let budget = prefs.targetBudget;
+    let assetClass = prefs.assetClassification;
+    let titleReq = prefs.titleRequirement;
+    let reraReq = prefs.reraVerification;
+
+    if (!hub && searchHistory.length > 0) {
+      hub = searchHistory
+        .slice(0, 3)
+        .map(h => h.label)
+        .filter(Boolean)
+        .join(', ');
+    }
+
+    if (!hub && views.length > 0) {
+      const locs = Array.from(new Set(views.map(v => v.locality || v.city).filter(Boolean))).slice(0, 3);
+      if (locs.length > 0) hub = locs.join(', ');
+    }
+
+    if (!assetClass && views.length > 0) {
+      const types = Array.from(new Set(views.map(v => v.propertyType).filter(Boolean)));
+      if (types.length > 0) assetClass = types.join(' / ');
+    }
+
+    if (!budget && views.length > 0) {
+      const firstPrice = views[0]?.price;
+      if (firstPrice) budget = firstPrice;
+    }
+
+    if ((hub || budget || assetClass) && !titleReq) {
+      titleReq = 'Clear Title / Patta Verified';
+    }
+    if ((hub || budget || assetClass) && !reraReq) {
+      reraReq = 'TNRERA & DTCP Approved';
+    }
+
+    this.editCity.set(hub);
+    this.editBudget.set(budget);
+    this.editPropertyType.set(assetClass);
+    this.editTitleRequirement.set(titleReq);
+    this.editReraVerification.set(reraReq);
   }
 
   setSection(section: ProfileDashboardSection): void {
@@ -302,6 +356,11 @@ export class UserProfilePageComponent implements OnInit {
     const user = this.authService.currentUser();
     if (!user) return;
 
+    this.propertyService.updateUserAcquisitionPreferences({
+      targetHubCorridor: this.editCity().trim(),
+      targetBudget: this.editBudget().trim(),
+      assetClassification: this.editPropertyType().trim()
+    });
     this.isSavingProfile.set(true);
     this.authService.updateProfile({
       id: user.id,

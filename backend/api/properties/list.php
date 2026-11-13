@@ -145,12 +145,20 @@ if (!empty($developer) && $developer !== 'all') {
 if (!empty($district) && $district !== 'all') {
     $variantDistricts = [
         'tiruvallur'      => ['Tiruvallur', 'Thiruvallur'],
+        'thiruvallur'     => ['Tiruvallur', 'Thiruvallur'],
         'tiruchirappalli' => ['Tiruchirappalli', 'Thiruchirapalli', 'Trichy'],
+        'trichy'          => ['Tiruchirappalli', 'Thiruchirapalli', 'Trichy'],
         'tiruvarur'       => ['Tiruvarur', 'Thiruvarur'],
-        'thoothukudi'     => ['Thoothukudi', 'Thoothukkudi'],
+        'thiruvarur'      => ['Tiruvarur', 'Thiruvarur'],
+        'thoothukudi'     => ['Thoothukudi', 'Thoothukkudi', 'Tuticorin'],
         'pudukkottai'     => ['Pudukkottai', 'Pudukottai'],
         'tenkasi'         => ['Tenkasi', 'Tenksai'],
-        'kanyakumari'     => ['Kanyakumari', 'Kanniyakumari'],
+        'kanyakumari'     => ['Kanyakumari', 'Kanniyakumari', 'Nagercoil'],
+        'kanniyakumari'   => ['Kanyakumari', 'Kanniyakumari', 'Nagercoil'],
+        'kanchipuram'     => ['Kanchipuram', 'Kancheepuram'],
+        'kancheepuram'    => ['Kanchipuram', 'Kancheepuram'],
+        'viluppuram'      => ['Viluppuram', 'Villupuram'],
+        'villupuram'      => ['Viluppuram', 'Villupuram'],
     ];
     $dClean = strtolower(trim($district));
     $variants = $variantDistricts[$dClean] ?? [trim($district)];

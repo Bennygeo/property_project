@@ -4074,6 +4074,24 @@ input[type="radio"] {
   text-transform: uppercase;
 }
 
+.btn-clear-history {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-clear-history:hover {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
 .suggestions-list {
   list-style: none !important;
   margin: 0 !important;

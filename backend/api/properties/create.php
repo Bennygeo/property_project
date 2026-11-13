@@ -168,11 +168,16 @@ if (!empty($highlights) && is_array($highlights)) {
                 $hlOrder++;
             }
         }
-    // Save Master Plot Factsheet & Subdivided Plots if property is a Plot
-    $plotFactsheet = $input['plotFactsheet'] ?? null;
-    $subdividedPlots = $input['subdividedPlots'] ?? [];
+    } catch (\Throwable $e) {
+        error_log('Property highlights insert error: ' . $e->getMessage());
+    }
+}
 
-    if ($propertyType === 'Gated CMDA Plots' || !empty($plotFactsheet) || !empty($subdividedPlots)) {
+// Save Master Plot Factsheet & Subdivided Plots if property is a Plot
+$plotFactsheet = $input['plotFactsheet'] ?? null;
+$subdividedPlots = $input['subdividedPlots'] ?? [];
+
+if ($propertyType === 'Gated CMDA Plots' || !empty($plotFactsheet) || !empty($subdividedPlots)) {
         try {
             if ($plotFactsheet && is_array($plotFactsheet)) {
                 $plotStmt = $db->prepare("
@@ -283,14 +288,17 @@ if (!empty($highlights) && is_array($highlights)) {
         }
     }
 
-
-if (!empty($masterDetails) && is_array($masterDetails)) {
-        try {
-            PropertyMasterHelper::saveMasterDetails($db, $propId, $masterDetails);
-        } catch (\Throwable $e) {
-            error_log('User post master details insert error: ' . $e->getMessage());
-        }
-    }
+// Save complete ~70-column record into `projects`, `project_details`, and `property_master_details`
+PropertyMasterHelper::saveProjectAndDetails(
+    $db,
+    $propId,
+    $input,
+    is_array($masterDetails) ? $masterDetails : [],
+    [
+        'status'       => 'pending_review',
+        'submitted_by' => $userName
+    ]
+);
 
 Response::success([
     'propertyId' => $propId,

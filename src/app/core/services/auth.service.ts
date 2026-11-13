@@ -9,6 +9,26 @@ import { environment } from '../../../environments/environment';
 const STORAGE_KEY = 'mannidam_auth_user';
 const GUEST_VIEWS_STORAGE_KEY = 'mannidam_guest_viewed_properties';
 
+export const ADMIN_PORTAL_ROLES: readonly string[] = [
+  'admin',
+  'super_admin',
+  'co_admin',
+  'sales_executive',
+  'property_advisor',
+  'operations_executive',
+  'finance_admin',
+  'content_gis_admin'
+];
+
+export const DEFAULT_USER_PERMISSIONS: readonly string[] = [
+  'view_properties',
+  'edit_profile',
+  'view_history',
+  'share_property',
+  'search_properties',
+  'send_messages'
+];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -21,12 +41,28 @@ export class AuthService {
   public readonly isLoggedIn = computed(() => !!this.currentUser());
   public readonly isDeveloper = computed(() => {
     const u = this.currentUser();
-    return u?.role === 'developer' || u?.role === 'admin' || !!u?.developerId || (u?.phone && u.phone.includes('9486140936'));
+    if (!u) return false;
+    return u.role === 'developer' || u.role === 'admin' || u.role === 'super_admin';
   });
   public readonly isAdmin = computed(() => {
     const u = this.currentUser();
-    return u?.role === 'admin' || (u?.phone && u.phone.includes('9486140936'));
+    if (!u) return false;
+    return ADMIN_PORTAL_ROLES.includes(u.role);
   });
+
+  public hasPermission(permission: string): boolean {
+    const u = this.currentUser();
+    if (!u) {
+      return permission === 'view_properties' || permission === 'search_properties';
+    }
+    if (ADMIN_PORTAL_ROLES.includes(u.role)) {
+      return true;
+    }
+    const perms = Array.isArray(u.permissions) && u.permissions.length > 0
+      ? u.permissions
+      : (u.role === 'buyer' ? DEFAULT_USER_PERMISSIONS : []);
+    return perms.includes(permission) || perms.includes('all_access');
+  }
 
   // Guest property views tracking (Max 2 free property views for unauthenticated visitors)
   public readonly guestViewedPropertyIds = signal<string[]>(this.getInitialGuestViews());
@@ -223,6 +259,7 @@ export class AuthService {
       email: 'arunkumar@mannidam.com',
       phone: '+91 94441 00000',
       role: 'buyer',
+      permissions: [...DEFAULT_USER_PERMISSIONS],
       pointsBalance: points,
       createdAt: '2026-10-15 17:01:48'
     };
@@ -303,6 +340,7 @@ export class AuthService {
             email: 'user@mannidam.com',
             phone: phone || '+91 94441 00000',
             role: 'buyer',
+            permissions: [...DEFAULT_USER_PERMISSIONS],
             pointsBalance: 40,
             createdAt: new Date().toISOString()
           };
@@ -374,9 +412,24 @@ export class AuthService {
   }
 
   public setCurrentUser(user: User): void {
-    this.currentUser.set(user);
+    const previousUserId = this.currentUser()?.id;
+    const normalizedUser: User = {
+      ...user,
+      permissions: Array.isArray(user.permissions) && user.permissions.length > 0
+        ? user.permissions
+        : (user.role === 'buyer' ? [...DEFAULT_USER_PERMISSIONS] : user.permissions)
+    };
+    this.currentUser.set(normalizedUser);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      if (previousUserId && previousUserId !== normalizedUser.id) {
+        localStorage.removeItem('mannidam_view_history');
+        localStorage.removeItem('mannidam_shortlisted_properties');
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedUser));
+      if (!ADMIN_PORTAL_ROLES.includes(normalizedUser.role)) {
+        localStorage.removeItem('mannidam_admin_session');
+        localStorage.removeItem('findaplot_admin_persona');
+      }
     } catch {
       // Ignore
     }
@@ -529,27 +582,76 @@ export class AuthService {
   public updateDeveloperCompany(payload: any): Observable<any> {
     const url = `${environment.apiUrl}/developers/update-profile.php`;
     const user = this.currentUser();
+
+    // Check if administrator session exists in localStorage
+    let adminPersona: any = null;
+    try {
+      const stored = localStorage.getItem('findaplot_admin_persona');
+      if (stored) adminPersona = JSON.parse(stored);
+    } catch { }
+
+    const isAdmin = payload.isAdmin || !!adminPersona || (user?.role as any) === 'admin' || (user?.role as any) === 'super_admin';
+    const effectiveUserId = payload.userId ?? adminPersona?.id ?? user?.id ?? (isAdmin ? 104 : 105);
+    const effectiveRole = payload.userRole ?? adminPersona?.role ?? user?.role ?? (isAdmin ? 'super_admin' : 'developer');
+
     const data = {
-      userId: user?.id || 105,
-      developerId: user?.developerId || payload.id || payload.developerId || 1,
-      ...payload
+      ...payload,
+      userId: effectiveUserId,
+      userRole: effectiveRole,
+      isAdmin: isAdmin,
+      developerId: payload.developerId ?? payload.id ?? user?.developerId
     };
     return this.http.post<any>(url, data).pipe(
+      catchError(err => {
+        const msg = err?.error?.message || err?.message || 'Failed to update company profile';
+        this.notificationService.show({
+          type: 'error',
+          title: 'Update Failed',
+          message: msg,
+          icon: 'error'
+        });
+        return of({ success: false, message: msg });
+      })
+    );
+  }
+
+  /**
+   * Fetch linked and available master projects for a developer
+   */
+  public getDeveloperLinkedProjects(developerId: number, search: string = ''): Observable<any> {
+    const url = `${environment.apiUrl}/developers/link-projects.php?developer_id=${developerId}&search=${encodeURIComponent(search)}`;
+    return this.http.get<any>(url).pipe(
+      catchError(err => {
+        return of({ success: false, data: { linkedProjects: [], availableProjects: [] } });
+      })
+    );
+  }
+
+  /**
+   * Link or unlink master projects to a developer
+   */
+  public linkDeveloperProjects(developerId: number, projectIds: string[], action: 'link' | 'unlink' = 'link'): Observable<any> {
+    const url = `${environment.apiUrl}/developers/link-projects.php`;
+    return this.http.post<any>(url, {
+      developerId,
+      projectIds,
+      action
+    }).pipe(
       tap(res => {
         if (res && res.success) {
           this.notificationService.show({
             type: 'success',
-            title: 'Company Customized',
-            message: 'Your developer company profile and showcase have been updated.',
-            icon: 'verified'
+            title: action === 'link' ? 'Projects Linked' : 'Projects Unlinked',
+            message: res.message || 'Developer project assignment updated.',
+            icon: action === 'link' ? 'link' : 'link_off'
           });
         }
       }),
       catchError(err => {
-        const msg = err?.error?.message || 'Failed to update company profile';
+        const msg = err?.error?.message || `Failed to ${action} projects`;
         this.notificationService.show({
           type: 'error',
-          title: 'Update Failed',
+          title: 'Action Failed',
           message: msg,
           icon: 'error'
         });
@@ -597,6 +699,8 @@ export class AuthService {
     this.currentUser.set(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('mannidam_admin_session');
+      localStorage.removeItem('findaplot_admin_persona');
     } catch {
       // Ignore
     }

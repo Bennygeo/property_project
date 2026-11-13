@@ -65,7 +65,7 @@
               (input)="onSearchInput($any($event.target).value)" (focus)="onSearchFocus()" (blur)="onSearchBlur()"
               (click)="scrollToTop()" (keydown)="onSearchKeydown($event)" autocomplete="off" autocorrect="off"
               autocapitalize="off" spellcheck="false" role="combobox" aria-autocomplete="list" data-lpignore="true"
-              [placeholder]="selectedDistrict() ? ('Search localities in ' + selectedDistrict() + ' (e.g. ' + getDistrictLocalityHint(selectedDistrict()) + ')...') : (selectedLocalities().length > 0 ? 'Add more localities (e.g. Ramapuram, Guindy)...' : 'Add locality (e.g. Porur, Ramapuram, Coimbatore), builder, or project...')">
+              [placeholder]="selectedDistrict() ? ('Search localities in ' + selectedDistrict() + ' (e.g. ' + getDistrictLocalityHint(selectedDistrict()) + ')...') : (selectedLocalities().length > 0 ? 'Add more localities or keywords...' : 'Search locality, city, builder, or project...')">
           </div>
 
           @if (selectedLocalities().length > 0 || rawSearchInput()) {
@@ -75,20 +75,31 @@
           </button>
           }
 
-          <!-- NoBroker Style Live Autocomplete Dropdown -->
+          <!-- Live Autocomplete & User-Specific Search History Dropdown -->
           @if (isSuggestionsOpen() && searchSuggestions().length > 0) {
           <div class="search-suggestions-dropdown">
             <div class="suggestions-header">
               <span class="sugg-header-title">
                 @if (selectedDistrict()) {
                 <span>Top Localities in <strong>{{ selectedDistrict() }}</strong></span>
+                } @else if (rawSearchInput().trim().length === 0 && userSearchHistory().length > 0) {
+                <span>Recent Search History</span>
+                } @else if (rawSearchInput().trim().length === 0) {
+                <span>Popular &amp; Trending Searches</span>
                 } @else {
-                <span>{{ rawSearchInput().length >= 2 ? 'Verified Places & Locations' : 'Popular & Trending Locations'
-                  }}</span>
+                <span>Verified Places &amp; Locations</span>
                 }
               </span>
-              <span class="sugg-header-tag">{{ selectedDistrict() ? (selectedDistrict() + ' Targeted') :
-                (rawSearchInput().length >= 2 ? 'Google Places Active' : 'Explore') }}</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                @if (!selectedDistrict() && rawSearchInput().trim().length === 0 && userSearchHistory().length > 0) {
+                <button type="button" class="btn-clear-history" (mousedown)="clearSearchHistory($event)">
+                  Clear History
+                </button>
+                }
+                <span class="sugg-header-tag">{{ selectedDistrict() ? (selectedDistrict() + ' Targeted') :
+                  (rawSearchInput().trim().length === 0 ? (userSearchHistory().length > 0 ? 'History' : 'Popular') :
+                  (rawSearchInput().length >= 2 ? 'Google Places Active' : 'Suggestions')) }}</span>
+              </div>
             </div>
             <ul class="suggestions-list">
               @for (item of searchSuggestions(); track item.query + item.label) {
@@ -101,12 +112,14 @@
                     <span class="suggestion-label">{{ item.label }}</span>
                     @if (item.type === 'google_place') {
                     <span class="google-place-pill">Google Place</span>
+                    } @else if (item.type === 'developer') {
+                    <span class="google-place-pill">Developer</span>
                     }
                   </div>
                   <span class="suggestion-sub">{{ item.sub }}</span>
                 </div>
-                @if (item.query) {
-                <span class="suggestion-type-badge">+ Add</span>
+                @if (item.query || item.type === 'developer') {
+                <span class="suggestion-type-badge">{{ item.type === 'developer' ? 'View Profile →' : '+ Add' }}</span>
                 }
               </li>
               }

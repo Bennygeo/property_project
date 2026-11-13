@@ -49,6 +49,14 @@ export interface DistrictHubItem {
   topLocalities?: string[];
 }
 
+export interface UserAcquisitionPreferences {
+  targetHubCorridor: string;
+  targetBudget: string;
+  assetClassification: string;
+  titleRequirement: string;
+  reraVerification: string;
+}
+
 export interface DeveloperSummary {
   id?: number;
   name: string;
@@ -320,6 +328,156 @@ export class PropertyService {
       // Fallback
     }
     return 1;
+  }
+
+  private getSearchHistoryStorageKey(): string {
+    try {
+      const user = this.authService.currentUser() as any;
+      if (user) {
+        const identifier = user.id && Number(user.id) > 0 ? user.id : (user.phone || user.email || '');
+        if (identifier) {
+          return `fap_search_history_user_${String(identifier).trim()}`;
+        }
+      }
+    } catch {
+      // Ignore auth signal read error
+    }
+    return 'fap_search_history_guest';
+  }
+
+  public getUserSearchHistory(): {
+    label: string;
+    sub: string;
+    type: 'locality' | 'project' | 'developer' | 'corridor' | 'city' | 'google_place';
+    icon: string;
+    query: string;
+  }[] {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return [];
+    }
+    try {
+      const raw = localStorage.getItem(this.getSearchHistoryStorageKey());
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      const validTypes = new Set(['locality', 'project', 'developer', 'corridor', 'city', 'google_place']);
+      return parsed
+        .filter((item: any) => item && typeof item.label === 'string' && item.label.trim().length > 0)
+        .map((item: any) => {
+          const baseSub = typeof item.sub === 'string' && item.sub.trim()
+            ? item.sub.trim().replace(/^Recent Search\s*[•·-]\s*/i, '')
+            : 'From your search history';
+          const itemType = (validTypes.has(item.type) ? item.type : 'locality') as 'locality' | 'project' | 'developer' | 'corridor' | 'city' | 'google_place';
+          return {
+            label: item.label.trim(),
+            sub: baseSub === 'From your search history' ? baseSub : `Recent Search • ${baseSub}`,
+            type: itemType,
+            icon: 'history',
+            query: (typeof item.query === 'string' && item.query.trim()) ? item.query.trim() : item.label.trim()
+          };
+        })
+        .slice(0, 8);
+    } catch (err) {
+      console.warn('[PropertyService] Error reading search history:', err);
+      return [];
+    }
+  }
+
+  public recordUserSearchHistory(item: { label: string; sub?: string; type?: string; query?: string }): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    const cleanLabel = (item?.label || '').trim();
+    const cleanQuery = (item?.query || cleanLabel).trim();
+    if (!cleanLabel || !cleanQuery) return;
+
+    try {
+      const key = this.getSearchHistoryStorageKey();
+      const existing = this.getUserSearchHistory().filter(
+        h => h.query.toLowerCase() !== cleanQuery.toLowerCase() && h.label.toLowerCase() !== cleanLabel.toLowerCase()
+      );
+      const rawSub = (item.sub || '').trim().replace(/^Recent Search\s*[•·-]\s*/i, '');
+      const validTypes = new Set(['locality', 'project', 'developer', 'corridor', 'city', 'google_place']);
+      const entryType = (item.type && validTypes.has(item.type) ? item.type : 'locality') as 'locality' | 'project' | 'developer' | 'corridor' | 'city' | 'google_place';
+      const entry = {
+        label: cleanLabel,
+        sub: rawSub || 'From your search history',
+        type: entryType,
+        icon: 'history',
+        query: cleanQuery
+      };
+      const updated = [entry, ...existing].slice(0, 8);
+      localStorage.setItem(key, JSON.stringify(updated));
+    } catch (err) {
+      console.warn('[PropertyService] Error saving search history:', err);
+    }
+  }
+
+  public clearUserSearchHistory(): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      localStorage.removeItem(this.getSearchHistoryStorageKey());
+      localStorage.removeItem(this.getAcquisitionPrefsStorageKey());
+    } catch (err) {
+      console.warn('[PropertyService] Error clearing search history:', err);
+    }
+  }
+
+  private getAcquisitionPrefsStorageKey(): string {
+    try {
+      const user = this.authService.currentUser() as any;
+      if (user) {
+        const identifier = user.id && Number(user.id) > 0 ? user.id : (user.phone || user.email || '');
+        if (identifier) {
+          return `fap_acquisition_prefs_user_${String(identifier).trim()}`;
+        }
+      }
+    } catch {
+      // Ignore auth signal read error
+    }
+    return 'fap_acquisition_prefs_guest';
+  }
+
+  public getUserAcquisitionPreferences(): UserAcquisitionPreferences {
+    const blank: UserAcquisitionPreferences = {
+      targetHubCorridor: '',
+      targetBudget: '',
+      assetClassification: '',
+      titleRequirement: '',
+      reraVerification: ''
+    };
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return blank;
+    }
+    try {
+      const raw = localStorage.getItem(this.getAcquisitionPrefsStorageKey());
+      if (!raw) return blank;
+      const parsed = JSON.parse(raw);
+      return {
+        targetHubCorridor: typeof parsed?.targetHubCorridor === 'string' ? parsed.targetHubCorridor : '',
+        targetBudget: typeof parsed?.targetBudget === 'string' ? parsed.targetBudget : '',
+        assetClassification: typeof parsed?.assetClassification === 'string' ? parsed.assetClassification : '',
+        titleRequirement: typeof parsed?.titleRequirement === 'string' ? parsed.titleRequirement : '',
+        reraVerification: typeof parsed?.reraVerification === 'string' ? parsed.reraVerification : ''
+      };
+    } catch {
+      return blank;
+    }
+  }
+
+  public updateUserAcquisitionPreferences(partial: Partial<UserAcquisitionPreferences>): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const current = this.getUserAcquisitionPreferences();
+      const updated: UserAcquisitionPreferences = {
+        targetHubCorridor: (partial.targetHubCorridor ?? '').trim() || current.targetHubCorridor,
+        targetBudget: (partial.targetBudget ?? '').trim() || current.targetBudget,
+        assetClassification: (partial.assetClassification ?? '').trim() || current.assetClassification,
+        titleRequirement: (partial.titleRequirement ?? '').trim() || current.titleRequirement,
+        reraVerification: (partial.reraVerification ?? '').trim() || current.reraVerification
+      };
+      localStorage.setItem(this.getAcquisitionPrefsStorageKey(), JSON.stringify(updated));
+    } catch {
+      // Ignore storage errors
+    }
   }
 
   public isShortlisted(propertyId: string): boolean {

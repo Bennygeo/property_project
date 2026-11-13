@@ -14,7 +14,12 @@ import {
   MASTER_UTILITY_OPTIONS,
   MASTER_DRAINAGE_OPTIONS,
   MASTER_ROAD_TYPE_OPTIONS,
-  MASTER_FLOOD_ZONE_OPTIONS
+  MASTER_FLOOD_ZONE_OPTIONS,
+  MASTER_CATEGORY_OPTIONS,
+  MASTER_TYPE_OPTIONS,
+  MASTER_PROJECT_STAGE_OPTIONS,
+  MASTER_PROJECT_STATUS_OPTIONS,
+  MASTER_APPROVAL_AUTHORITY_OPTIONS
 } from '../../../../core/models/property-master.model';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -94,14 +99,37 @@ export class PostPropertyPageComponent {
   readonly drainageOptions = MASTER_DRAINAGE_OPTIONS;
   readonly roadTypeOptions = MASTER_ROAD_TYPE_OPTIONS;
   readonly floodZoneOptions = MASTER_FLOOD_ZONE_OPTIONS;
+  readonly categoryOptions = MASTER_CATEGORY_OPTIONS;
+  readonly typeOptions = MASTER_TYPE_OPTIONS;
+  readonly projectStageOptions = MASTER_PROJECT_STAGE_OPTIONS;
+  readonly projectStatusOptions = MASTER_PROJECT_STATUS_OPTIONS;
+  readonly approvalAuthorityOptions = MASTER_APPROVAL_AUTHORITY_OPTIONS;
 
   onPlotSizeSqftChange(): void {
     this.master.plotSizeCents = calculateCents(this.master.plotSizeSqft);
     this.master.totalPrice = calculateTotalPrice(this.master.plotSizeSqft, this.master.pricePerSqft);
+    if (this.master.plotSizeSqft && !this.master.minPlotSize) {
+      this.master.minPlotSize = this.master.plotSizeSqft;
+    }
+    if (this.master.plotSizeSqft && !this.master.maxPlotSize) {
+      this.master.maxPlotSize = this.master.plotSizeSqft;
+    }
+    if (this.master.totalPrice > 0 && !this.master.priceFrom) {
+      this.master.priceFrom = this.master.totalPrice;
+    }
+    if (this.master.totalPrice > 0 && !this.master.priceTo) {
+      this.master.priceTo = this.master.totalPrice;
+    }
   }
 
   onPricePerSqftChange(): void {
     this.master.totalPrice = calculateTotalPrice(this.master.plotSizeSqft, this.master.pricePerSqft);
+    if (this.master.totalPrice > 0 && !this.master.priceFrom) {
+      this.master.priceFrom = this.master.totalPrice;
+    }
+    if (this.master.totalPrice > 0 && !this.master.priceTo) {
+      this.master.priceTo = this.master.totalPrice;
+    }
   }
 
   getFormattedTotalPrice(): string {
@@ -474,7 +502,13 @@ export class PostPropertyPageComponent {
       this.form.localityName = this.master.villageLocality || this.master.areaLocation || '';
     }
     if (!this.form.cityName.trim()) {
-      this.form.cityName = this.master.district || this.master.taluk || 'Chennai';
+      this.form.cityName = this.master.city || this.master.district || this.master.taluk || 'Chennai';
+    }
+    if (this.master.category) {
+      this.form.propertyType = this.master.category;
+    }
+    if (this.master.interactiveMap && !this.form.interactiveMapUrl.trim()) {
+      this.form.interactiveMapUrl = this.master.interactiveMap;
     }
     if (!this.form.reraNumber.trim() && this.master.reraNumber) {
       this.form.reraNumber = this.master.reraNumber;

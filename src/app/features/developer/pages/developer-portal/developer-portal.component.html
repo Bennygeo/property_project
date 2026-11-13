@@ -8,9 +8,9 @@
       <div class="developer-identity-strip">
         <div class="logo-preview-box">
           @if (company()?.logoUrl) {
-            <img [src]="company()?.logoUrl" [alt]="company()?.name" class="dev-logo-img">
+          <img [src]="company()?.logoUrl" [alt]="company()?.name" class="dev-logo-img">
           } @else {
-            <span class="material-symbols-outlined logo-fallback-icon">apartment</span>
+          <span class="material-symbols-outlined logo-fallback-icon">apartment</span>
           }
         </div>
 
@@ -39,6 +39,14 @@
         </div>
 
         <div class="banner-actions-col">
+          @if (allDevelopers().length > 0 && isSuperAdminUser()) {
+          <select class="dev-company-switcher" [ngModel]="company()?.id"
+            (ngModelChange)="switchDeveloperCompany($event)" aria-label="Switch Developer Company">
+            @for (d of allDevelopers(); track d.id) {
+            <option [value]="d.id">{{ d.name }} ({{ d.projectCount ?? 0 }})</option>
+            }
+          </select>
+          }
           <button type="button" class="btn-public-preview" (click)="viewPublicPage()">
             <span class="material-symbols-outlined">visibility</span>
             <span>View Public Page</span>
@@ -55,27 +63,38 @@
   <!-- NAVIGATION TABS -->
   <nav class="portal-nav-bar">
     <div class="max-w-content nav-tabs-list">
-      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'overview'"
+        (click)="setTab('overview')">
         <span class="material-symbols-outlined">dashboard</span>
         <span>Overview</span>
       </button>
 
-      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'projects'" (click)="setTab('projects')">
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'projects'"
+        (click)="setTab('projects')">
         <span class="material-symbols-outlined">apartment</span>
         <span>My Projects ({{ projects().length }})</span>
       </button>
 
-      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'post-project'" (click)="setTab('post-project')">
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'link-projects'"
+        (click)="setTab('link-projects')">
+        <span class="material-symbols-outlined">link</span>
+        <span>Link Existing Projects</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'post-project'"
+        (click)="setTab('post-project')">
         <span class="material-symbols-outlined">add_business</span>
         <span>Post New Project</span>
       </button>
 
-      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'upcoming'" (click)="setTab('upcoming')">
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'upcoming'"
+        (click)="setTab('upcoming')">
         <span class="material-symbols-outlined">event_upcoming</span>
         <span>Upcoming Projects ({{ upcomingProjects().length }})</span>
       </button>
 
-      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'customize'" (click)="setTab('customize')">
+      <button type="button" class="nav-tab-btn" [class.active]="activeTab() === 'customize'"
+        (click)="setTab('customize')">
         <span class="material-symbols-outlined">tune</span>
         <span>Customize Developer Page</span>
       </button>
@@ -87,561 +106,1348 @@
 
     <!-- TAB 1: OVERVIEW -->
     @if (activeTab() === 'overview') {
-      <section class="tab-pane overview-pane">
-        <!-- KPI Metrics Grid -->
-        <div class="kpi-grid-4">
-          <div class="kpi-card">
-            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">apartment</span></span>
-            <div class="kpi-text-col">
-              <span class="kpi-val">{{ projects().length }}</span>
-              <span class="kpi-tit">Total Projects</span>
-              <span class="kpi-sub">Authorized Portfolio</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">check_circle</span></span>
-            <div class="kpi-text-col">
-              <span class="kpi-val">{{ stats().publishedProjects }}</span>
-              <span class="kpi-tit">Live on Registry</span>
-              <span class="kpi-sub">Active buyer visibility</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">event_available</span></span>
-            <div class="kpi-text-col">
-              <span class="kpi-val">{{ upcomingProjects().length }}</span>
-              <span class="kpi-tit">Upcoming Pipelines</span>
-              <span class="kpi-sub">Pre-launch registered</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <span class="kpi-icon-wrap"><span class="material-symbols-outlined">mark_chat_unread</span></span>
-            <div class="kpi-text-col">
-              <span class="kpi-val">{{ stats().totalInquiries }}</span>
-              <span class="kpi-tit">Buyer Enquiries</span>
-              <span class="kpi-sub">Site visit & dossier leads</span>
-            </div>
+    <section class="tab-pane overview-pane">
+      <!-- KPI Metrics Grid -->
+      <div class="kpi-grid-4">
+        <div class="kpi-card">
+          <span class="kpi-icon-wrap"><span class="material-symbols-outlined">apartment</span></span>
+          <div class="kpi-text-col">
+            <span class="kpi-val">{{ projects().length }}</span>
+            <span class="kpi-tit">Total Projects</span>
+            <span class="kpi-sub">Authorized Portfolio</span>
           </div>
         </div>
 
-        <!-- Section: Company Profile Quick Status -->
-        <div class="card-box company-status-box">
-          <div class="box-header-row">
-            <div>
-              <h2 class="box-heading">Developer Credentials & Verification</h2>
-              <p class="box-sub">Your company's state regulatory compliance status</p>
-            </div>
-            <button type="button" class="btn-subtle" (click)="setTab('customize')">
-              <span class="material-symbols-outlined">edit</span>
-              <span>Edit Profile</span>
-            </button>
-          </div>
-
-          <div class="credentials-summary-grid">
-            <div class="cred-cell">
-              <span class="cell-label">Promoter RERA No.</span>
-              <span class="cell-val text-brand">{{ company()?.reraNumber || 'TNRERA/PROM/0219/2026' }}</span>
-            </div>
-            <div class="cred-cell">
-              <span class="cell-label">Corporate Office</span>
-              <span class="cell-val">{{ company()?.corporateOffice }}</span>
-            </div>
-            <div class="cred-cell">
-              <span class="cell-label">Contact Desk</span>
-              <span class="cell-val">{{ company()?.contactPhone }} / {{ company()?.contactEmail }}</span>
-            </div>
-            <div class="cred-cell">
-              <span class="cell-label">Official Website</span>
-              <span class="cell-val">{{ company()?.websiteUrl || 'Not specified' }}</span>
-            </div>
+        <div class="kpi-card">
+          <span class="kpi-icon-wrap"><span class="material-symbols-outlined">check_circle</span></span>
+          <div class="kpi-text-col">
+            <span class="kpi-val">{{ stats().publishedProjects }}</span>
+            <span class="kpi-tit">Live on Registry</span>
+            <span class="kpi-sub">Active buyer visibility</span>
           </div>
         </div>
 
-        <!-- Section: Live Projects Preview -->
-        <div class="card-box projects-summary-box">
-          <div class="box-header-row">
-            <div>
-              <h2 class="box-heading">Authorized Live Projects</h2>
-              <p class="box-sub">Projects linked strictly to {{ company()?.name }}</p>
-            </div>
-            <button type="button" class="btn-primary-action" (click)="setTab('post-project')">
-              <span class="material-symbols-outlined">add</span>
-              <span>Add New Project</span>
-            </button>
+        <div class="kpi-card">
+          <span class="kpi-icon-wrap"><span class="material-symbols-outlined">event_available</span></span>
+          <div class="kpi-text-col">
+            <span class="kpi-val">{{ upcomingProjects().length }}</span>
+            <span class="kpi-tit">Upcoming Pipelines</span>
+            <span class="kpi-sub">Pre-launch registered</span>
           </div>
-
-          @if (projects().length > 0) {
-            <div class="projects-table-wrap">
-              <table class="portal-table">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Location</th>
-                    <th>Price Range</th>
-                    <th>Plots / Units</th>
-                    <th>RERA Number</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (p of projects(); track p.id) {
-                    <tr>
-                      <td class="proj-title-cell">
-                        <img [src]="p.imageUrl" [alt]="p.title" class="table-thumb">
-                        <div>
-                          <strong>{{ p.title }}</strong>
-                          <span class="text-xs text-muted">ID: {{ p.id }}</span>
-                        </div>
-                      </td>
-                      <td>{{ p.locality }}, {{ p.city }}</td>
-                      <td class="price-cell">{{ p.price }}</td>
-                      <td>{{ p.totalUnits || p.sqft }}</td>
-                      <td><span class="rera-pill">{{ p.reraNumber }}</span></td>
-                      <td><span class="status-pill status-published">{{ p.status || 'published' }}</span></td>
-                      <td>
-                        <a [routerLink]="['/property', p.id]" target="_blank" class="table-action-link" title="View Property Details">
-                          <span class="material-symbols-outlined">open_in_new</span>
-                        </a>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          } @else {
-            <div class="empty-state-card">
-              <span class="material-symbols-outlined empty-icon">apartment</span>
-              <h3>No Projects Posted Yet</h3>
-              <p>Post your first residential plotted layout or luxury villa project.</p>
-              <button type="button" class="btn-primary-action" (click)="setTab('post-project')">Post New Project</button>
-            </div>
-          }
         </div>
-      </section>
+
+        <div class="kpi-card">
+          <span class="kpi-icon-wrap"><span class="material-symbols-outlined">mark_chat_unread</span></span>
+          <div class="kpi-text-col">
+            <span class="kpi-val">{{ stats().totalInquiries }}</span>
+            <span class="kpi-tit">Buyer Enquiries</span>
+            <span class="kpi-sub">Site visit & dossier leads</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Company Profile Quick Status -->
+      <div class="card-box company-status-box">
+        <div class="box-header-row">
+          <div>
+            <h2 class="box-heading">Developer Credentials & Verification</h2>
+            <p class="box-sub">Your company's state regulatory compliance status</p>
+          </div>
+          <button type="button" class="btn-subtle" (click)="setTab('customize')">
+            <span class="material-symbols-outlined">edit</span>
+            <span>Edit Profile</span>
+          </button>
+        </div>
+
+        <div class="credentials-summary-grid">
+          <div class="cred-cell">
+            <span class="cell-label">Promoter RERA No.</span>
+            <span class="cell-val text-brand">{{ company()?.reraNumber || 'TNRERA/PROM/0219/2026' }}</span>
+          </div>
+          <div class="cred-cell">
+            <span class="cell-label">Corporate Office</span>
+            <span class="cell-val">{{ company()?.corporateOffice }}</span>
+          </div>
+          <div class="cred-cell">
+            <span class="cell-label">Contact Desk</span>
+            <span class="cell-val">{{ company()?.contactPhone }} / {{ company()?.contactEmail }}</span>
+          </div>
+          <div class="cred-cell">
+            <span class="cell-label">Official Website</span>
+            <span class="cell-val">{{ company()?.websiteUrl || 'Not specified' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Live Projects Preview -->
+      <div class="card-box projects-summary-box">
+        <div class="box-header-row">
+          <div>
+            <h2 class="box-heading">Authorized Live Projects</h2>
+            <p class="box-sub">Projects linked strictly to {{ company()?.name }}</p>
+          </div>
+          <button type="button" class="btn-primary-action" (click)="setTab('post-project')">
+            <span class="material-symbols-outlined">add</span>
+            <span>Add New Project</span>
+          </button>
+        </div>
+
+        @if (projects().length > 0) {
+        <div class="projects-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Location</th>
+                <th>Price Range</th>
+                <th>Plots / Units</th>
+                <th>RERA Number</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of projects(); track p.id) {
+              <tr>
+                <td class="proj-title-cell">
+                  <img [src]="p.imageUrl" [alt]="p.title" class="table-thumb">
+                  <div>
+                    <strong>{{ p.title }}</strong>
+                    <span class="text-xs text-muted">ID: {{ p.id }}</span>
+                  </div>
+                </td>
+                <td>{{ p.locality }}, {{ p.city }}</td>
+                <td class="price-cell">{{ p.price }}</td>
+                <td>{{ p.totalUnits || p.sqft }}</td>
+                <td><span class="rera-pill">{{ p.reraNumber }}</span></td>
+                <td><span class="status-pill status-published">{{ p.status || 'published' }}</span></td>
+                <td>
+                  <a [routerLink]="['/property', p.id]" target="_blank" class="table-action-link"
+                    title="View Property Details">
+                    <span class="material-symbols-outlined">open_in_new</span>
+                  </a>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        } @else {
+        <div class="empty-state-card">
+          <span class="material-symbols-outlined empty-icon">apartment</span>
+          <h3>No Projects Posted Yet</h3>
+          <p>Post your first residential plotted layout or luxury villa project.</p>
+          <button type="button" class="btn-primary-action" (click)="setTab('post-project')">Post New Project</button>
+        </div>
+        }
+      </div>
+    </section>
     }
 
     <!-- TAB 2: MY PROJECTS REGISTRY -->
     @if (activeTab() === 'projects') {
-      <section class="tab-pane projects-pane">
-        <div class="pane-header-strip">
-          <div>
-            <h2 class="pane-title">Authorized Company Projects</h2>
-            <p class="pane-desc">You are only permitted to view and manage projects registered under {{ company()?.name }}</p>
-          </div>
+    <section class="tab-pane projects-pane">
+      <div class="pane-header-strip">
+        <div>
+          <h2 class="pane-title">Authorized Company Projects</h2>
+          <p class="pane-desc">Manage projects currently linked or published under {{ company()?.name }}</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button type="button" class="btn-subtle" (click)="setTab('link-projects')">
+            <span class="material-symbols-outlined">link</span>
+            <span>Link Existing Projects</span>
+          </button>
           <button type="button" class="btn-primary-action" (click)="setTab('post-project')">
             <span class="material-symbols-outlined">add_circle</span>
             <span>Post New Project</span>
           </button>
         </div>
+      </div>
 
-        <div class="developer-projects-grid">
-          @for (p of projects(); track p.id) {
-            <article class="project-registry-card">
-              <div class="card-media-wrap">
-                <img [src]="p.imageUrl" [alt]="p.title" class="card-img">
-                <span class="status-badge-overlay">{{ p.status || 'Published' }}</span>
-                <span class="rera-badge-overlay">{{ p.reraNumber }}</span>
+      @if (projects().length > 0) {
+      <div class="developer-projects-grid">
+        @for (p of projects(); track p.id) {
+        <article class="project-registry-card">
+          <div class="card-media-wrap">
+            <img [src]="p.imageUrl" [alt]="p.title" class="card-img">
+            <span class="status-badge-overlay">{{ p.status || 'Published' }}</span>
+            <span class="rera-badge-overlay">{{ p.reraNumber }}</span>
+          </div>
+          <div class="card-body">
+            <h3 class="proj-name">{{ p.title }}</h3>
+            <p class="proj-loc"><span class="material-symbols-outlined">location_on</span> {{ p.locality }}, {{ p.city
+              }}</p>
+
+            <div class="proj-metrics-strip">
+              <div class="metric-item">
+                <span class="m-lbl">Pricing</span>
+                <span class="m-val">{{ p.price }}</span>
               </div>
-              <div class="card-body">
-                <h3 class="proj-name">{{ p.title }}</h3>
-                <p class="proj-loc"><span class="material-symbols-outlined">location_on</span> {{ p.locality }}, {{ p.city }}</p>
-
-                <div class="proj-metrics-strip">
-                  <div class="metric-item">
-                    <span class="m-lbl">Pricing</span>
-                    <span class="m-val">{{ p.price }}</span>
-                  </div>
-                  <div class="metric-item">
-                    <span class="m-lbl">Extent</span>
-                    <span class="m-val">{{ p.sqft }}</span>
-                  </div>
-                  <div class="metric-item">
-                    <span class="m-lbl">Units</span>
-                    <span class="m-val">{{ p.totalUnits || 'Plotted' }}</span>
-                  </div>
-                </div>
-
-                <div class="card-actions-strip">
-                  <a [routerLink]="['/property', p.id]" class="btn-view-details">
-                    <span>View Property Details</span>
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                  </a>
-                </div>
+              <div class="metric-item">
+                <span class="m-lbl">Extent</span>
+                <span class="m-val">{{ p.sqft }}</span>
               </div>
-            </article>
+              <div class="metric-item">
+                <span class="m-lbl">Units</span>
+                <span class="m-val">{{ p.totalUnits || 'Plotted' }}</span>
+              </div>
+            </div>
+
+            <div class="card-actions-strip">
+              <a [routerLink]="['/property', p.id]" class="btn-view-details">
+                <span>View Property Details</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+      } @else {
+      <div class="card-box empty-state-card">
+        <span class="material-symbols-outlined empty-icon">apartment</span>
+        <h3>No Projects Linked Yet</h3>
+        <p>Link existing master projects from the registry or post a brand-new project for {{ company()?.name }}.</p>
+        <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+          <button type="button" class="btn-subtle" (click)="setTab('link-projects')">Link Existing Projects</button>
+          <button type="button" class="btn-primary-action" (click)="setTab('post-project')">Post New Project</button>
+        </div>
+      </div>
+      }
+    </section>
+    }
+
+    <!-- TAB 2B: LINK EXISTING PROJECTS -->
+    @if (activeTab() === 'link-projects') {
+    <section class="tab-pane link-projects-pane">
+      <div class="pane-header-strip">
+        <div>
+          <h2 class="pane-title">Link &amp; Manage Master Projects</h2>
+          <p class="pane-desc">Attach existing registry projects to <strong>{{ company()?.name }}</strong> or unlink
+            assigned projects.</p>
+        </div>
+        @if (selectedProjectsToLink().length > 0) {
+        <button type="button" class="btn-primary-action" (click)="linkSelectedProjects()"
+          [disabled]="isLinkingProjects()">
+          <span class="material-symbols-outlined">link</span>
+          <span>Link Selected ({{ selectedProjectsToLink().length }})</span>
+        </button>
+        }
+      </div>
+
+      <!-- Currently Linked Projects -->
+      <div class="card-box">
+        <div class="box-header-row">
+          <div>
+            <h3 class="box-heading">Currently Linked Projects ({{ linkedProjects().length }})</h3>
+            <p class="box-sub">Projects currently assigned to {{ company()?.name }}</p>
+          </div>
+        </div>
+
+        @if (linkedProjects().length > 0) {
+        <div class="portal-linked-list">
+          @for (lp of linkedProjects(); track lp.project_id) {
+          <div class="portal-linked-row">
+            <div class="portal-linked-info">
+              <strong>{{ lp.project_name }}</strong>
+              <span>ID: {{ lp.project_id }} • {{ lp.locality || lp.city }}{{ lp.district ? ', ' + lp.district : ''
+                }}</span>
+            </div>
+            <button type="button" class="btn-unlink-sm" (click)="unlinkProject(lp.project_id)"
+              [disabled]="isLinkingProjects()">
+              <span class="material-symbols-outlined">link_off</span>
+              <span>Unlink</span>
+            </button>
+          </div>
           }
         </div>
-      </section>
+        } @else {
+        <div class="empty-linked-msg">
+          No master projects are currently linked to {{ company()?.name }}. Search below to attach existing projects.
+        </div>
+        }
+      </div>
+
+      <!-- Search & Link Available Registry Projects -->
+      <div class="card-box">
+        <div class="box-header-row">
+          <div>
+            <h3 class="box-heading">Available Master Registry Projects</h3>
+            <p class="box-sub">Select one or more existing projects from the registry to link to {{ company()?.name }}
+            </p>
+          </div>
+          @if (selectedProjectsToLink().length > 0) {
+          <button type="button" class="btn-primary-action" (click)="linkSelectedProjects()"
+            [disabled]="isLinkingProjects()">
+            <span class="material-symbols-outlined">link</span>
+            <span>Link Selected ({{ selectedProjectsToLink().length }})</span>
+          </button>
+          }
+        </div>
+
+        <div class="portal-link-search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" [ngModel]="projectSearchQuery()" (ngModelChange)="onSearchAvailableProjects($event)"
+            placeholder="Search projects by name, ID (PRJ-...), district, or locality..." class="form-input">
+        </div>
+
+        @if (availableProjects().length > 0) {
+        <div class="portal-avail-list">
+          @for (ap of availableProjects(); track ap.project_id) {
+          <div class="portal-avail-item" [class.selected]="isProjectSelected(ap.project_id)"
+            (click)="toggleProjectSelection(ap.project_id)">
+            <input type="checkbox" [checked]="isProjectSelected(ap.project_id)"
+              (click)="$event.stopPropagation(); toggleProjectSelection(ap.project_id)">
+            <div class="avail-item-info">
+              <strong>{{ ap.project_name }}</strong>
+              <span>ID: {{ ap.project_id }} • {{ ap.locality || ap.city }}{{ ap.district ? ', ' + ap.district : ''
+                }}</span>
+            </div>
+            @if (ap.developer_name) {
+            <span class="avail-dev-tag">Current: {{ ap.developer_name }}</span>
+            } @else {
+            <span class="avail-unassigned-tag">Unassigned</span>
+            }
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="empty-linked-msg">No matching available projects found.</div>
+        }
+      </div>
+    </section>
     }
 
     <!-- TAB 3: POST NEW PROJECT (FREE OPTION LIKE POST-PROPERTY) -->
     @if (activeTab() === 'post-project') {
-      <section class="tab-pane post-project-pane">
-        <div class="card-box form-card-box">
-          <div class="form-header-intro">
-            <div class="post-free-badge">
-              <span class="material-symbols-outlined">verified</span>
-              <span>Developer Free Project Submission</span>
+    <section class="tab-pane post-project-pane">
+      <div class="card-box form-card-box">
+        <div class="form-header-intro">
+          <div class="post-free-badge">
+            <span class="material-symbols-outlined">verified</span>
+            <span>Developer Free Project Submission</span>
+          </div>
+          <h2 class="form-title">Post New Developer Project Details</h2>
+          <p class="form-sub">
+            Your listing will be automatically linked to <strong>{{ company()?.name }}</strong> under your authorized
+            developer role.
+          </p>
+        </div>
+
+        <form (submit)="submitNewProject()" class="portal-form">
+          <!-- 1. PROJECT & LEGAL -->
+          <div class="form-section-title">1. Project, Promoter &amp; Legal Approvals</div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="p-title">Project Name / Title *</label>
+              type="text" [(ngModel)]="newProjectForm.title" (ngModelChange)="devMaster.projectName = $event"
+              name="title" placeholder="e.g. Experion Grand Plotted Layout" required class="form-input">
             </div>
-            <h2 class="form-title">Post New Developer Project Details</h2>
-            <p class="form-sub">
-              Your listing will be automatically linked to <strong>{{ company()?.name }}</strong> under your authorized developer role.
-            </p>
+
+            <div class="form-group">
+              <label for="p-id">Property ID</label>
+              <input id="p-id" type="text" [(ngModel)]="devMaster.propertyId" name="devPropertyId" readonly
+                class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-dev">Developer / Promoter</label>
+              <input id="p-dev" type="text" [(ngModel)]="devMaster.developer" name="devPromoter"
+                placeholder="Authorized Developer" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-type">Property Category *</label>
+              <select id="p-type" [(ngModel)]="devMaster.category" name="devCategory" class="form-select">
+                @for (opt of devCategoryOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-ltype">Listing Type *</label>
+              <select id="p-ltype" [(ngModel)]="devMaster.type" name="devListingType" class="form-select">
+                @for (opt of devTypeOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-stage">Project Stage</label>
+              <select id="p-stage" [(ngModel)]="devMaster.projectStage" name="devProjectStage" class="form-select">
+                @for (opt of devProjectStageOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-pstatus">Project Status</label>
+              <select id="p-pstatus" [(ngModel)]="devMaster.projectStatus" name="devProjectStatus" class="form-select">
+                @for (opt of devProjectStatusOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-launch">Launch Date</label>
+              <input id="p-launch" type="date" [(ngModel)]="devMaster.launchDate" name="devLaunchDate"
+                class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-rera">RERA Registration No.</label>
+              <input id="p-rera" type="text" [(ngModel)]="devMaster.reraNumber" name="devReraNumber"
+                placeholder="TNRERA/..." class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-reradet">RERA Compliance Details</label>
+              <input id="p-reradet" type="text" [(ngModel)]="devMaster.reraDetails" name="devReraDetails"
+                placeholder="e.g. TNRERA Phase 1 Approved" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-dtcp-yn">DTCP Approved *</label>
+              <select id="p-dtcp-yn" [(ngModel)]="devMaster.dtcpApproved" name="devDtcpApproved" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-auth">Approval Authority</label>
+              <select id="p-auth" [(ngModel)]="devMaster.approvalAuthority" name="devApprovalAuth" class="form-select">
+                @for (opt of devApprovalAuthorityOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-dtcp">DTCP / LP Approval No.</label>
+              <input id="p-dtcp" type="text" [(ngModel)]="devMaster.dtcpApprovalNo" name="devDtcpApprovalNo"
+                placeholder="DTCP/2026/L-084" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-appdate">Approval Date</label>
+              <input id="p-appdate" type="date" [(ngModel)]="devMaster.approvalDate" name="devApprovalDate"
+                class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-patta">Patta Type *</label>
+              <select id="p-patta" [(ngModel)]="devMaster.pattaType" name="devPattaType" class="form-select">
+                <option value="">-- Select Patta Type --</option>
+                @for (opt of devPattaOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-ec">Clear Title / EC Available</label>
+              <select id="p-ec" [(ngModel)]="devMaster.clearTitleAvailable" name="devClearTitle" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-loan">Bank Loan Approved</label>
+              <select id="p-loan" [(ngModel)]="devMaster.bankLoanApproved" name="devBankLoan" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-brok">Brokerage Policy</label>
+              <input id="p-brok" type="text" [(ngModel)]="devMaster.brokerage" name="devBrokerage"
+                placeholder="0% Direct SRO Deed" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-nobrok">No Brokerage (0%)</label>
+              <select id="p-nobrok" [(ngModel)]="devMaster.noBrokerage" name="devNoBrokerage" class="form-select">
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-feat">Featured Listing</label>
+              <select id="p-feat" [(ngModel)]="devMaster.featured" name="devFeatured" class="form-select">
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-freeacc">Free Public Access</label>
+              <select id="p-freeacc" [(ngModel)]="devMaster.freeAccess" name="devFreeAccess" class="form-select">
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
           </div>
 
-          <form (submit)="submitNewProject()" class="portal-form">
-            <div class="form-section-title">1. Master Project Information</div>
-            
-            <div class="form-row-2">
-              <div class="form-group">
-                <label for="p-title">Project Name / Title *</label>
-                <input id="p-title" type="text" [(ngModel)]="newProjectForm.title" name="title" placeholder="e.g. Experion Grand Plotted Layout" required class="form-input">
-              </div>
+          <!-- 2. CADASTRAL & GEOGRAPHICAL LOCATION -->
+          <div class="form-section-title">2. Cadastral &amp; Geographical Location</div>
 
-              <div class="form-group">
-                <label for="p-type">Property Category *</label>
-                <select id="p-type" [(ngModel)]="newProjectForm.propertyType" name="propertyType" class="form-select">
-                  <option value="Gated CMDA Plots">Gated CMDA Plots</option>
-                  <option value="DTCP Sanctioned Plots">DTCP Sanctioned Plots</option>
-                  <option value="Independent Villas">Independent Villas</option>
-                  <option value="Apartments & Flats">Apartments & Flats</option>
-                  <option value="Commercial Spaces">Commercial Spaces</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row-3">
-              <div class="form-group">
-                <label for="p-city">City *</label>
-                <input id="p-city" type="text" [(ngModel)]="newProjectForm.cityName" name="cityName" placeholder="e.g. Chennai" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="p-locality">Locality / Corridor *</label>
-                <input id="p-locality" type="text" [(ngModel)]="newProjectForm.localityName" name="localityName" placeholder="e.g. Kelambakkam Corridor" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="p-district">District</label>
-                <input id="p-district" type="text" [(ngModel)]="newProjectForm.district" name="district" placeholder="e.g. Chengalpattu" class="form-input">
-              </div>
-            </div>
-
-            <div class="form-row-3">
-              <div class="form-group">
-                <label for="p-price">Starting Price *</label>
-                <input id="p-price" type="text" [(ngModel)]="newProjectForm.price" name="price" placeholder="e.g. ₹ 45.00 Lakhs" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="p-rate">Rate per Sq.Ft</label>
-                <input id="p-rate" type="text" [(ngModel)]="newProjectForm.pricePerSqft" name="pricePerSqft" placeholder="e.g. ₹ 3,750/sq.ft" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="p-extent">Typical Plot Size *</label>
-                <input id="p-extent" type="text" [(ngModel)]="newProjectForm.sqft" name="sqft" placeholder="e.g. 1200 sq.ft (2.75 Cents)" class="form-input">
-              </div>
-            </div>
-
-            <div class="form-section-title">2. Statutory Approvals & Infrastructure</div>
-
-            <div class="form-row-3">
-              <div class="form-group">
-                <label for="p-rera">Project RERA Number</label>
-                <input id="p-rera" type="text" [(ngModel)]="newProjectForm.reraNumber" name="reraNumber" placeholder="TNRERA/..." class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="p-dtcp">DTCP / CMDA Sanction No.</label>
-                <input id="p-dtcp" type="text" [(ngModel)]="newProjectForm.dtcpApprovalNo" name="dtcpApprovalNo" placeholder="DTCP/2026/L-084" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="p-road">Internal Road Width (Ft)</label>
-                <input id="p-road" type="text" [(ngModel)]="newProjectForm.roadWidth" name="roadWidth" placeholder="40" class="form-input">
-              </div>
-            </div>
-
-            <div class="form-row-2">
-              <div class="form-group">
-                <label for="p-facing">Orientation / Facing</label>
-                <select id="p-facing" [(ngModel)]="newProjectForm.facingOrView" name="facingOrView" class="form-select">
-                  <option value="East Facing">East Facing</option>
-                  <option value="North Facing">North Facing</option>
-                  <option value="North-East Corner">North-East Corner</option>
-                  <option value="West Facing">West Facing</option>
-                  <option value="South Facing">South Facing</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="p-cover">Master Project Cover Photo URL</label>
-                <input id="p-cover" type="url" [(ngModel)]="newProjectForm.mainImageUrl" name="mainImageUrl" class="form-input">
-              </div>
-            </div>
-
-            <!-- Subdivided Plot Matrix -->
-            <div class="form-section-title plot-matrix-title">
-              <span>3. Subdivided Plot Inventory (Cadastral Matrix)</span>
-              <button type="button" class="btn-subtle" (click)="addPlotRow()">
-                <span class="material-symbols-outlined">add</span>
-                <span>Add Plot</span>
-              </button>
-            </div>
-
-            <div class="plot-rows-list">
-              @for (plot of newProjectPlots(); track $index) {
-                <div class="plot-row-item">
-                  <div class="plot-cell">
-                    <label>Plot No.</label>
-                    <input type="text" [(ngModel)]="plot.plotNumber" [name]="'plotNum_' + $index" class="form-input">
-                  </div>
-                  <div class="plot-cell">
-                    <label>Sq.Ft</label>
-                    <input type="number" [(ngModel)]="plot.plotSizeSqft" [name]="'plotSqft_' + $index" class="form-input">
-                  </div>
-                  <div class="plot-cell">
-                    <label>Facing</label>
-                    <select [(ngModel)]="plot.facing" [name]="'plotFace_' + $index" class="form-select">
-                      <option value="East">East</option>
-                      <option value="North">North</option>
-                      <option value="West">West</option>
-                      <option value="South">South</option>
-                    </select>
-                  </div>
-                  <div class="plot-cell">
-                    <label>Total Price</label>
-                    <input type="text" [(ngModel)]="plot.totalPrice" [name]="'plotPrice_' + $index" class="form-input">
-                  </div>
-                  <button type="button" class="btn-remove-plot" (click)="removePlotRow($index)" title="Remove plot">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
-                </div>
-              }
-            </div>
-
-            <div class="form-section-title">4. Key Highlights & Legal Dossier (One per line)</div>
+          <div class="form-row-3">
             <div class="form-group">
-              <textarea [(ngModel)]="newProjectForm.highlightsText" name="highlightsText" rows="4" class="form-textarea"></textarea>
+              <label for="p-area">Area / Location *</label>
+              <input id="p-area" type="text" [(ngModel)]="devMaster.areaLocation" name="devAreaLocation"
+                placeholder="e.g. Kelambakkam" class="form-input">
             </div>
 
-            <div class="form-actions-bar">
-              <button type="button" class="btn-subtle" (click)="setTab('projects')">Cancel</button>
-              <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
-                @if (isSaving()) {
-                  <span>Publishing Project...</span>
-                } @else {
-                  <span class="material-symbols-outlined">check_circle</span>
-                  <span>Publish Developer Project</span>
+            <div class="form-group">
+              <label for="p-locality">Village / Locality *</label>
+              <input id="p-locality" type="text" [(ngModel)]="devMaster.villageLocality" name="devVillageLocality"
+                placeholder="e.g. Kelambakkam Corridor" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-city">City *</label>
+              type="text" [(ngModel)]="devMaster.city" name="devCity" placeholder="e.g. Chennai" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-taluk">Taluk</label>
+              <input id="p-taluk" type="text" [(ngModel)]="devMaster.taluk" name="devTaluk"
+                placeholder="e.g. Thiruporur" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-district">District *</label>
+              <input id="p-district" type="text" [(ngModel)]="devMaster.district" name="devDistrict"
+                placeholder="e.g. Chengalpattu" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-pin">Pincode *</label>
+              <input id="p-pin" type="text" [(ngModel)]="devMaster.pincode" name="devPincode" placeholder="e.g. 603103"
+                class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-gps">GPS Coordinates (Lat, Lng)</label>
+              <input id="p-gps" type="text" [(ngModel)]="devMaster.gps" name="devGps" placeholder="12.7850, 80.2210"
+                class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-gmap">Google Maps Link</label>
+              <input id="p-gmap" type="text" [(ngModel)]="devMaster.googleMapsLink" name="devGoogleMapsLink"
+                placeholder="https://maps.google.com/..." class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-imap">Interactive 3D Masterplan URL</label>
+              <input id="p-imap" type="text" [(ngModel)]="devMaster.interactiveMap" name="devInteractiveMap"
+                placeholder="assets/secura-masterplan-3d.html" class="form-input font-mono">
+            </div>
+          </div>
+
+          <!-- 3. PLOT DETAILS, EXTENT & VALUATION -->
+          <div class="form-section-title">3. Master Layout Extent, Plot Details &amp; Valuation</div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="p-plotno">Sample / Featured Plot No.</label>
+              <input id="p-plotno" type="text" [(ngModel)]="devMaster.plotNo" name="devPlotNo" placeholder="e.g. A-12"
+                class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-sqft">Plot Size (sq.ft) *</label>
+              <input id="p-sqft" type="number" [(ngModel)]="devMaster.plotSizeSqft" name="devPlotSizeSqft"
+                (ngModelChange)="onDevPlotSizeSqftChange()" placeholder="e.g. 1200" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-cents">Plot Size (Cents - Auto)</label>
+              <input id="p-cents" type="number" step="0.01" [ngModel]="devMaster.plotSizeCents" name="devPlotSizeCents"
+                readonly class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-rate">Price per sq.ft (₹) *</label>
+              <input id="p-rate" type="number" [(ngModel)]="devMaster.pricePerSqft" name="devPricePerSqft"
+                (ngModelChange)="onDevPricePerSqftChange()" placeholder="e.g. 3750" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-totalprice">Total Price (₹ - Auto: {{ getDevFormattedTotalPrice() }})</label>
+              <input id="p-totalprice" type="number" [ngModel]="devMaster.totalPrice" name="devTotalPrice" readonly
+                class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-price">Display Starting Price *</label>
+              <input id="p-price" type="text" [(ngModel)]="newProjectForm.price" name="price"
+                placeholder="e.g. ₹ 45.00 Lakhs" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-pfrom">Price From (₹)</label>
+              <input id="p-pfrom" type="number" [(ngModel)]="devMaster.priceFrom" name="devPriceFrom"
+                placeholder="e.g. 2800000" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-pto">Price To (₹)</label>
+              <input id="p-pto" type="number" [(ngModel)]="devMaster.priceTo" name="devPriceTo"
+                placeholder="e.g. 7600000" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-minsz">Min Plot Size (sq.ft)</label>
+              <input id="p-minsz" type="number" [(ngModel)]="devMaster.minPlotSize" name="devMinPlotSize"
+                placeholder="e.g. 600" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-maxsz">Max Plot Size (sq.ft)</label>
+              <input id="p-maxsz" type="number" [(ngModel)]="devMaster.maxPlotSize" name="devMaxPlotSize"
+                placeholder="e.g. 2400" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-availsz">Available Plot Sizes Range</label>
+              <input id="p-availsz" type="text" [(ngModel)]="devMaster.availablePlotSizes" name="devAvailableSizes"
+                placeholder="e.g. 600 - 2,400 sq.ft" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-dim">Dimensions (ft)</label>
+              <input id="p-dim" type="text" [(ngModel)]="devMaster.dimension" name="devDimension"
+                placeholder="e.g. 30 x 40" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-facing">Facing *</label>
+              <select id="p-facing" [(ngModel)]="devMaster.facing" name="devFacing" class="form-select">
+                <option value="">-- Select Facing --</option>
+                @for (opt of devFacingOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
                 }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-corner">Corner Plot *</label>
+              <select id="p-corner" [(ngModel)]="devMaster.cornerPlot" name="devCornerPlot" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-landuse">Land Use *</label>
+              <select id="p-landuse" [(ngModel)]="devMaster.landUse" name="devLandUse" class="form-select">
+                <option value="">-- Select Land Use --</option>
+                @for (opt of devLandUseOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-avail">Availability *</label>
+              <select id="p-avail" [(ngModel)]="devMaster.availability" name="devAvailability" class="form-select">
+                @for (opt of devAvailabilityOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-layoutarea">Total Layout Area</label>
+              <input id="p-layoutarea" type="text" [(ngModel)]="devMaster.totalLayoutArea" name="devTotalLayoutArea"
+                placeholder="e.g. 12.5 Acres" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-totalplots">Total Plots Count</label>
+              <input id="p-totalplots" type="number" [(ngModel)]="devMaster.totalPlots" name="devTotalPlots"
+                placeholder="e.g. 48" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-totalunits">Total Units (Display)</label>
+              <input id="p-totalunits" type="text" [(ngModel)]="devMaster.totalUnits" name="devTotalUnits"
+                placeholder="e.g. 48 Plotted Units" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-unitssold">Units Sold / Booked</label>
+              <input id="p-unitssold" type="text" [(ngModel)]="devMaster.unitsSold" name="devUnitsSold"
+                placeholder="e.g. 14 Sold" class="form-input">
+            </div>
+          </div>
+
+          <!-- 4. NEARBY FACILITIES & GROWTH HUBS -->
+          <div class="form-section-title">4. Nearby Facilities, Connectivity &amp; Growth Hubs</div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="p-corridor">Strategic Corridor</label>
+              <select id="p-corridor" [(ngModel)]="devMaster.corridor" name="devCorridor" class="form-select">
+                <option value="">-- Select Corridor --</option>
+                @for (opt of devCorridorOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-nearroads">Nearby Arterial Roads</label>
+              <input id="p-nearroads" type="text" [(ngModel)]="devMaster.nearbyRoads" name="devNearbyRoads"
+                placeholder="e.g. OMR, ECR, Outer Ring Road" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-hwy">Highway Name</label>
+              <input id="p-hwy" type="text" [(ngModel)]="devMaster.highwayName" name="devHighwayName"
+                placeholder="e.g. GST Road (NH45)" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-hwydist">Highway Distance (km)</label>
+              <input id="p-hwydist" type="number" step="0.1" [(ngModel)]="devMaster.highwayDistance"
+                name="devHighwayDistance" placeholder="e.g. 1.0" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-petrol">Petrol Bunk Distance (km)</label>
+              <input id="p-petrol" type="number" step="0.1" [(ngModel)]="devMaster.petrolBunkDistance"
+                name="devPetrolBunk" placeholder="e.g. 1.2" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-bus">Bus Stop Distance (km)</label>
+              <input id="p-bus" type="number" step="0.1" [(ngModel)]="devMaster.busStopDistance" name="devBusStop"
+                placeholder="e.g. 0.8" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-rail">Railway Station (Name &amp; km)</label>
+              <input id="p-rail" type="text" [(ngModel)]="devMaster.railwayStationNearby" name="devRailway"
+                placeholder="e.g. Guduvanchery - 2.5 km" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-air">Airport Distance (km)</label>
+              <input id="p-air" type="number" step="0.1" [(ngModel)]="devMaster.airportDistance" name="devAirport"
+                placeholder="e.g. 28" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-schools">Schools (Name &amp; km)</label>
+              <input id="p-schools" type="text" [(ngModel)]="devMaster.schoolsNearby" name="devSchools"
+                placeholder="e.g. DAV School - 1.5 km" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-colleges">Colleges (Name &amp; km)</label>
+              <input id="p-colleges" type="text" [(ngModel)]="devMaster.collegesNearby" name="devColleges"
+                placeholder="e.g. SRM University - 6 km" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-hosp">Hospitals (Name &amp; km)</label>
+              <input id="p-hosp" type="text" [(ngModel)]="devMaster.hospitalNearby" name="devHospital"
+                placeholder="e.g. Apollo Clinic - 3 km" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-emphubs">Employment &amp; IT Hubs</label>
+              <input id="p-emphubs" type="text" [(ngModel)]="devMaster.employmentHubs" name="devEmploymentHubs"
+                placeholder="e.g. SIPCOT IT Park, Mahindra World City" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-resdev">Surrounding Residential Growth</label>
+              <input id="p-resdev" type="text" [(ngModel)]="devMaster.residentialDevelopment" name="devResDev"
+                placeholder="e.g. Villa Townships Nearby" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-infraproj">Upcoming Infrastructure Projects</label>
+              <input id="p-infraproj" type="text" [(ngModel)]="devMaster.infrastructureProjects" name="devInfraProj"
+                placeholder="e.g. Metro Phase 2 Extension" class="form-input">
+            </div>
+          </div>
+
+          <!-- 5. SUITABILITY & POSSESSION -->
+          <div class="form-section-title">5. Suitability &amp; Possession</div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="p-suited">Suited For</label>
+              <select id="p-suited" [(ngModel)]="devMaster.suitedFor" name="devSuitedFor" class="form-select">
+                <option value="">-- Select Suitability --</option>
+                @for (opt of devSuitedForOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-poss">Possession Timeline</label>
+              <input id="p-poss" type="text" [(ngModel)]="devMaster.possessionTimeline" name="devPossession"
+                placeholder="e.g. Ready to Register / Immediate" class="form-input">
+            </div>
+          </div>
+
+          <!-- 6. INFRASTRUCTURE & ON-SITE UTILITIES -->
+          <div class="form-section-title">6. Infrastructure &amp; On-Site Utilities</div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="p-elec">Electricity</label>
+              <select id="p-elec" [(ngModel)]="devMaster.electricity" name="devElectricity" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devUtilityOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-elecspec">Electricity Specification</label>
+              <input id="p-elecspec" type="text" [(ngModel)]="devMaster.electricityDetails" name="devElecSpec"
+                placeholder="EB 3-Phase Underground Cabling" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-water">Water Connection</label>
+              <select id="p-water" [(ngModel)]="devMaster.waterConnection" name="devWater" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devUtilityOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-waterspec">Water Supply Specification</label>
+              <input id="p-waterspec" type="text" [(ngModel)]="devMaster.waterDetails" name="devWaterSpec"
+                placeholder="Individual OHT Water Supply" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-drain">Drainage Facility</label>
+              <select id="p-drain" [(ngModel)]="devMaster.drainageFacility" name="devDrainage" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devDrainageOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-drainspec">Drainage Specification</label>
+              <input id="p-drainspec" type="text" [(ngModel)]="devMaster.drainageDetails" name="devDrainSpec"
+                placeholder="Underground Stormwater Drainage" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-road">Internal Road Width (Ft)</label>
+              <input id="p-road" type="number" [(ngModel)]="devMaster.roadWidthFt" name="devRoadWidthFt"
+                placeholder="40" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-roadspec">Road Width Description</label>
+              <input id="p-roadspec" type="text" [(ngModel)]="devMaster.roadWidth" name="devRoadWidthDesc"
+                placeholder="30ft & 40ft Blacktop Roads" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-roadtype">Road Type</label>
+              <select id="p-roadtype" [(ngModel)]="devMaster.roadType" name="devRoadType" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devRoadTypeOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-introads">Internal Roads Finish</label>
+              <input id="p-introads" type="text" [(ngModel)]="devMaster.internalRoads" name="devInternalRoads"
+                placeholder="40ft & 30ft Blacktop Tar" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-lights">Street Lights</label>
+              <select id="p-lights" [(ngModel)]="devMaster.streetLights" name="devStreetLights" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-lightsspec">Street Lights Spec</label>
+              <input id="p-lightsspec" type="text" [(ngModel)]="devMaster.streetLightsDetails" name="devLightsSpec"
+                placeholder="LED Avenue Lighting" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-gated">Compound Wall / Gated</label>
+              <select id="p-gated" [(ngModel)]="devMaster.compoundWallGated" name="devCompoundWall" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-sec">Security Specification</label>
+              <input id="p-sec" type="text" [(ngModel)]="devMaster.securityDetails" name="devSecuritySpec"
+                placeholder="24x7 Boom Barrier Security" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-park">Park / Open Space</label>
+              <select id="p-park" [(ngModel)]="devMaster.park" name="devPark" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-parkspec">Parks &amp; OSR Spec</label>
+              <input id="p-parkspec" type="text" [(ngModel)]="devMaster.parksDetails" name="devParksSpec"
+                placeholder="Landscaped Children Park & Walkway" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-maint">Developer Maintenance (yrs)</label>
+              <input id="p-maint" type="number" [(ngModel)]="devMaster.developerMaintenanceYears" name="devMaintYrs"
+                placeholder="2" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-otherfac">Other Amenities / Facilities</label>
+              <input id="p-otherfac" type="text" [(ngModel)]="devMaster.otherAmenities" name="devOtherAmenities"
+                placeholder="CCTV, Temple, Play Area" class="form-input">
+            </div>
+          </div>
+
+          <!-- 7. RISK, CONTACT & MEDIA DOSSIER -->
+          <div class="form-section-title">7. Risk Audit, Contact &amp; Media / Documents Dossier</div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="p-flood">Flood Zone Risk</label>
+              <select id="p-flood" [(ngModel)]="devMaster.floodZone" name="devFloodZone" class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devFloodZoneOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-wlog">Waterlogging History</label>
+              <select id="p-wlog" [(ngModel)]="devMaster.waterloggingHistory" name="devWaterlogging"
+                class="form-select">
+                <option value="">-- Select --</option>
+                @for (opt of devYesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-contact">Contact Person / Phone</label>
+              <input id="p-contact" type="text" [(ngModel)]="devMaster.contactPersonPhone" name="devContactPerson"
+                placeholder="Mr. Kumar - 9876543210" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-wa">WhatsApp Concierge Number</label>
+              <input id="p-wa" type="text" [(ngModel)]="devMaster.whatsappNumber" name="devWhatsapp"
+                placeholder="9486140936" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-cover">Master Project Cover Photo URL</label>
+              id="p-cover" type="url" [(ngModel)]="devMaster.coverImage" name="devCoverImage" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="p-gal">Gallery Image URLs (comma-separated)</label>
+              <input id="p-gal" type="text" [(ngModel)]="devMaster.galleryUrls" name="devGalleryUrls"
+                placeholder="https://.../1.jpg, https://.../2.jpg" class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-vid">Walkthrough Video URL</label>
+              <input id="p-vid" type="text" [(ngModel)]="devMaster.videos" name="devVideos"
+                placeholder="https://youtube.com/..." class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-drone">4K Drone Aerial Video URL</label>
+              <input id="p-drone" type="text" [(ngModel)]="devMaster.droneVideos" name="devDroneVideos"
+                placeholder="https://.../drone.mp4" class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-lpdf">Sanctioned Layout Plan PDF URL</label>
+              <input id="p-lpdf" type="text" [(ngModel)]="devMaster.layoutPdf" name="devLayoutPdf"
+                placeholder="https://.../layout.pdf" class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-broch">Project Brochure PDF URL</label>
+              <input id="p-broch" type="text" [(ngModel)]="devMaster.brochure" name="devBrochure"
+                placeholder="https://.../brochure.pdf" class="form-input font-mono">
+            </div>
+
+            <div class="form-group">
+              <label for="p-rem">Remarks / Special Notes</label>
+              <input id="p-rem" type="text" [(ngModel)]="devMaster.remarks" name="devRemarks"
+                placeholder="Appreciation outlook & highlights" class="form-input">
+            </div>
+          </div>
+
+          <!-- Subdivided Plot Matrix -->
+          <div class="form-section-title plot-matrix-title">
+            <span>8. Subdivided Plot Inventory (Cadastral Matrix)</span>
+            <button type="button" class="btn-subtle" (click)="addPlotRow()">
+              <span class="material-symbols-outlined">add</span>
+              <span>Add Plot</span>
+            </button>
+          </div>
+
+          <div class="plot-rows-list">
+            @for (plot of newProjectPlots(); track $index) {
+            <div class="plot-row-item">
+              <div class="plot-cell">
+                <label>Plot No.</label>
+                <input type="text" [(ngModel)]="plot.plotNumber" [name]="'plotNum_' + $index" class="form-input">
+              </div>
+              <div class="plot-cell">
+                <label>Sq.Ft</label>
+                <input type="number" [(ngModel)]="plot.plotSizeSqft" [name]="'plotSqft_' + $index" class="form-input">
+              </div>
+              <div class="plot-cell">
+                <label>Facing</label>
+                <select [(ngModel)]="plot.facing" [name]="'plotFace_' + $index" class="form-select">
+                  <option value="East">East</option>
+                  <option value="North">North</option>
+                  <option value="West">West</option>
+                  <option value="South">South</option>
+                </select>
+              </div>
+              <div class="plot-cell">
+                <label>Total Price</label>
+                <input type="text" [(ngModel)]="plot.totalPrice" [name]="'plotPrice_' + $index" class="form-input">
+              </div>
+              <button type="button" class="btn-remove-plot" (click)="removePlotRow($index)" title="Remove plot">
+                <span class="material-symbols-outlined">delete</span>
               </button>
             </div>
-          </form>
-        </div>
-      </section>
+            }
+          </div>
+
+          <div class="form-section-title">9. Key Highlights & Legal Dossier (One per line)</div>
+          <div class="form-group">
+            <textarea [(ngModel)]="newProjectForm.highlightsText" name="highlightsText" rows="4"
+              class="form-textarea"></textarea>
+          </div>
+
+          <div class="form-actions-bar">
+            <button type="button" class="btn-subtle" (click)="setTab('projects')">Cancel</button>
+            <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
+              @if (isSaving()) {
+              <span>Publishing Project...</span>
+              } @else {
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>Publish Developer Project</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
     }
 
     <!-- TAB 4: UPCOMING PROJECTS -->
     @if (activeTab() === 'upcoming') {
-      <section class="tab-pane upcoming-pane">
-        <div class="pane-header-strip">
-          <div>
-            <h2 class="pane-title">Upcoming Projects Pipeline</h2>
-            <p class="pane-desc">Future land releases and pre-launch developments displayed prominently on your developer page</p>
-          </div>
+    <section class="tab-pane upcoming-pane">
+      <div class="pane-header-strip">
+        <div>
+          <h2 class="pane-title">Upcoming Projects Pipeline</h2>
+          <p class="pane-desc">Future land releases and pre-launch developments displayed prominently on your developer
+            page</p>
         </div>
+      </div>
 
-        <!-- Add Upcoming Project Card -->
-        <div class="card-box add-upcoming-box">
-          <h3 class="box-heading">Add New Upcoming Project</h3>
-          <div class="form-row-3">
-            <div class="form-group">
-              <label>Upcoming Project Title *</label>
-              <input type="text" [(ngModel)]="newUpcoming.name" placeholder="e.g. Experion Lakeview Plots" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Locality &amp; City</label>
-              <input type="text" [(ngModel)]="newUpcoming.locality" placeholder="e.g. Kelambakkam, Chennai" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Expected Launch Window</label>
-              <input type="text" [(ngModel)]="newUpcoming.expectedLaunch" placeholder="e.g. Q2 2027" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-row-3">
-            <div class="form-group">
-              <label>Starting Price</label>
-              <input type="text" [(ngModel)]="newUpcoming.startingPrice" placeholder="e.g. ₹ 42 Lakhs" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Planned Extent / Total Units</label>
-              <input type="text" [(ngModel)]="newUpcoming.totalUnits" placeholder="e.g. 64 Villa Plots" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Banner Image URL</label>
-              <input type="url" [(ngModel)]="newUpcoming.bannerUrl" class="form-input">
-            </div>
-          </div>
-
+      <!-- Add Upcoming Project Card -->
+      <div class="card-box add-upcoming-box">
+        <h3 class="box-heading">Add New Upcoming Project</h3>
+        <div class="form-row-3">
           <div class="form-group">
-            <label>Short Teaser Description</label>
-            <input type="text" [(ngModel)]="newUpcoming.description" placeholder="Brief overview of features, road width, amenities" class="form-input">
+            <label>Upcoming Project Title *</label>
+            <input type="text" [(ngModel)]="newUpcoming.name" placeholder="e.g. Experion Lakeview Plots"
+              class="form-input">
           </div>
-
-          <div class="box-btn-row">
-            <button type="button" class="btn-primary-action" (click)="addUpcomingProject()">
-              <span class="material-symbols-outlined">add_circle</span>
-              <span>Add to Upcoming Showcase</span>
-            </button>
+          <div class="form-group">
+            <label>Locality &amp; City</label>
+            <input type="text" [(ngModel)]="newUpcoming.locality" placeholder="e.g. Kelambakkam, Chennai"
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Expected Launch Window</label>
+            <input type="text" [(ngModel)]="newUpcoming.expectedLaunch" placeholder="e.g. Q2 2027" class="form-input">
           </div>
         </div>
 
-        <!-- Existing Upcoming Projects List -->
-        <div class="upcoming-cards-grid">
-          @for (item of upcomingProjects(); track item.id) {
-            <article class="upcoming-item-card">
-              <img [src]="item.bannerUrl" [alt]="item.name" class="upcoming-card-img">
-              <div class="upcoming-card-body">
-                <span class="launch-tag">Expected Launch: {{ item.expectedLaunch }}</span>
-                <h4 class="upcoming-item-title">{{ item.name }}</h4>
-                <p class="upcoming-item-loc"><span class="material-symbols-outlined">location_on</span> {{ item.locality }}, {{ item.city }}</p>
-                <p class="upcoming-item-desc">{{ item.description }}</p>
-                <div class="upcoming-meta-row">
-                  <span><strong>{{ item.startingPrice }}</strong></span>
-                  <span>{{ item.totalUnits }}</span>
-                </div>
-                <div class="upcoming-card-footer">
-                  <button type="button" class="btn-remove-upcoming" (click)="deleteUpcomingProject(item.id)">
-                    <span class="material-symbols-outlined">delete</span>
-                    <span>Remove</span>
-                  </button>
-                </div>
-              </div>
-            </article>
-          }
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Starting Price</label>
+            <input type="text" [(ngModel)]="newUpcoming.startingPrice" placeholder="e.g. ₹ 42 Lakhs" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Planned Extent / Total Units</label>
+            <input type="text" [(ngModel)]="newUpcoming.totalUnits" placeholder="e.g. 64 Villa Plots"
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Banner Image URL</label>
+            <input type="url" [(ngModel)]="newUpcoming.bannerUrl" class="form-input">
+          </div>
         </div>
-      </section>
+
+        <div class="form-group">
+          <label>Short Teaser Description</label>
+          <input type="text" [(ngModel)]="newUpcoming.description"
+            placeholder="Brief overview of features, road width, amenities" class="form-input">
+        </div>
+
+        <div class="box-btn-row">
+          <button type="button" class="btn-primary-action" (click)="addUpcomingProject()">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Add to Upcoming Showcase</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Existing Upcoming Projects List -->
+      <div class="upcoming-cards-grid">
+        @for (item of upcomingProjects(); track item.id) {
+        <article class="upcoming-item-card">
+          <img [src]="item.bannerUrl" [alt]="item.name" class="upcoming-card-img">
+          <div class="upcoming-card-body">
+            <span class="launch-tag">Expected Launch: {{ item.expectedLaunch }}</span>
+            <h4 class="upcoming-item-title">{{ item.name }}</h4>
+            <p class="upcoming-item-loc"><span class="material-symbols-outlined">location_on</span> {{ item.locality }},
+              {{ item.city }}</p>
+            <p class="upcoming-item-desc">{{ item.description }}</p>
+            <div class="upcoming-meta-row">
+              <span><strong>{{ item.startingPrice }}</strong></span>
+              <span>{{ item.totalUnits }}</span>
+            </div>
+            <div class="upcoming-card-footer">
+              <button type="button" class="btn-remove-upcoming" (click)="deleteUpcomingProject(item.id)">
+                <span class="material-symbols-outlined">delete</span>
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+    </section>
     }
 
     <!-- TAB 5: CUSTOMIZE DEVELOPER PAGE -->
     @if (activeTab() === 'customize') {
-      <section class="tab-pane customize-pane">
-        <div class="card-box form-card-box">
-          <div class="form-header-intro">
-            <h2 class="form-title">Customize Developer Page &amp; Company Branding</h2>
-            <p class="form-sub">
-              Update your logo, RERA number, corporate office, contact channels, and company biography in real time.
-            </p>
+    <section class="tab-pane customize-pane">
+      <div class="card-box form-card-box">
+        <div class="form-header-intro">
+          <h2 class="form-title">Customize Developer Page &amp; Company Branding</h2>
+          <p class="form-sub">
+            Update your logo, RERA number, corporate office, contact channels, and company biography in real time.
+          </p>
+        </div>
+
+        <form (submit)="saveCompanyProfile()" class="portal-form">
+          <div class="form-section-title">1. Company Identity &amp; Logo</div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="c-name">Registered Company Name *</label>
+              <input id="c-name" type="text" [(ngModel)]="customForm.name" name="cName" required class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="c-rera">Developer RERA Registration Number *</label>
+              <input id="c-rera" type="text" [(ngModel)]="customForm.reraNumber" name="cRera"
+                placeholder="TNRERA/PROM/..." required class="form-input">
+            </div>
           </div>
 
-          <form (submit)="saveCompanyProfile()" class="portal-form">
-            <div class="form-section-title">1. Company Identity &amp; Logo</div>
-
-            <div class="form-row-2">
-              <div class="form-group">
-                <label for="c-name">Registered Company Name *</label>
-                <input id="c-name" type="text" [(ngModel)]="customForm.name" name="cName" required class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="c-rera">Developer RERA Registration Number *</label>
-                <input id="c-rera" type="text" [(ngModel)]="customForm.reraNumber" name="cRera" placeholder="TNRERA/PROM/..." required class="form-input">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="c-logo">Developer Logo URL *</label>
+              <input id="c-logo" type="url" [(ngModel)]="customForm.logoUrl" name="cLogo" placeholder="https://..."
+                class="form-input">
+              <div class="logo-live-preview">
+                <span>Preview:</span>
+                @if (customForm.logoUrl) {
+                <img [src]="customForm.logoUrl" alt="Logo Preview" class="mini-logo-preview">
+                } @else {
+                <span class="no-logo">No logo provided</span>
+                }
               </div>
             </div>
 
-            <div class="form-row-2">
-              <div class="form-group">
-                <label for="c-logo">Developer Logo URL *</label>
-                <input id="c-logo" type="url" [(ngModel)]="customForm.logoUrl" name="cLogo" placeholder="https://..." class="form-input">
-                <div class="logo-live-preview">
-                  <span>Preview:</span>
-                  @if (customForm.logoUrl) {
-                    <img [src]="customForm.logoUrl" alt="Logo Preview" class="mini-logo-preview">
-                  } @else {
-                    <span class="no-logo">No logo provided</span>
+            <div class="form-group cover-field-group">
+              <div class="field-label-split">
+                <label for="c-cover">Showcase Cover Image Banner (Hero Background)</label>
+                <span class="field-caption">High-resolution banner displayed across public profile</span>
+              </div>
+
+              <div class="input-with-upload-strip">
+                <input id="c-cover" type="url" [(ngModel)]="customForm.coverImageUrl" name="cCover"
+                  placeholder="https://..." class="form-input">
+                <button type="button" class="btn-portal-upload" (click)="devCoverFileInput.click()"
+                  [disabled]="isUploadingCover()">
+                  <span class="material-symbols-outlined">{{ isUploadingCover() ? 'progress_activity' : 'upload'
+                    }}</span>
+                  <span>{{ isUploadingCover() ? 'Uploading...' : 'Upload Image' }}</span>
+                </button>
+                <input #devCoverFileInput type="file" accept="image/*" (change)="onUploadCoverImage($event)"
+                  style="display:none">
+              </div>
+
+              @if (customForm.coverImageUrl) {
+              <div class="cover-live-banner-preview">
+                <img [src]="customForm.coverImageUrl" alt="Cover Preview" class="cover-banner-img">
+                <button type="button" class="btn-remove-cover" (click)="customForm.coverImageUrl = ''"
+                  title="Remove custom cover">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              }
+
+              <div class="portal-presets-row">
+                <span class="presets-tag">Architectural Presets:</span>
+                <div class="presets-buttons-wrap">
+                  @for (preset of architecturalCoverPresets; track preset.label) {
+                  <button type="button" class="btn-preset-chip" [class.active]="customForm.coverImageUrl === preset.url"
+                    (click)="selectCoverPreset(preset.url)">
+                    {{ preset.label }}
+                  </button>
                   }
                 </div>
               </div>
-
-              <div class="form-group">
-                <label for="c-cover">Showcase Cover Image Banner URL</label>
-                <input id="c-cover" type="url" [(ngModel)]="customForm.coverImageUrl" name="cCover" placeholder="https://..." class="form-input">
-              </div>
             </div>
+          </div>
 
-            <div class="form-section-title">2. Track Record &amp; Metrics</div>
+          <div class="form-section-title">2. Track Record &amp; Metrics</div>
 
-            <div class="form-row-3">
-              <div class="form-group">
-                <label for="c-est">Established Year</label>
-                <input id="c-est" type="text" [(ngModel)]="customForm.establishedYear" name="cEst" placeholder="2016" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="c-comp">Projects Completed</label>
-                <input id="c-comp" type="text" [(ngModel)]="customForm.projectsCompleted" name="cComp" placeholder="38+ Landmarks" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="c-sqft">Delivered Extent (Sq.Ft)</label>
-                <input id="c-sqft" type="text" [(ngModel)]="customForm.deliveredSqFt" name="cSqft" placeholder="18M+ sq.ft" class="form-input">
-              </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="c-est">Established Year</label>
+              <input id="c-est" type="text" [(ngModel)]="customForm.establishedYear" name="cEst" placeholder="2016"
+                class="form-input">
             </div>
-
-            <div class="form-section-title">3. Corporate Office &amp; Contact Desk</div>
 
             <div class="form-group">
-              <label for="c-office">Corporate Office Address</label>
-              <input id="c-office" type="text" [(ngModel)]="customForm.corporateOffice" name="cOffice" placeholder="Full office address in Tamil Nadu" class="form-input">
+              <label for="c-comp">Projects Completed</label>
+              <input id="c-comp" type="text" [(ngModel)]="customForm.projectsCompleted" name="cComp"
+                placeholder="38+ Landmarks" class="form-input">
             </div>
 
-            <div class="form-row-3">
-              <div class="form-group">
-                <label for="c-phone">Contact Phone</label>
-                <input id="c-phone" type="tel" [(ngModel)]="customForm.contactPhone" name="cPhone" placeholder="+91 ..." class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="c-email">Official Email</label>
-                <input id="c-email" type="email" [(ngModel)]="customForm.contactEmail" name="cEmail" placeholder="projects@company.com" class="form-input">
-              </div>
-
-              <div class="form-group">
-                <label for="c-web">Company Website</label>
-                <input id="c-web" type="url" [(ngModel)]="customForm.websiteUrl" name="cWeb" placeholder="https://..." class="form-input">
-              </div>
-            </div>
-
-            <div class="form-section-title">4. About Company Narrative</div>
             <div class="form-group">
-              <label for="c-about">Company Overview &amp; Cadastral Guarantees</label>
-              <textarea id="c-about" [(ngModel)]="customForm.about" name="cAbout" rows="4" class="form-textarea" placeholder="Describe your legal guarantees, layout approvals, and infrastructure track record..."></textarea>
+              <label for="c-sqft">Delivered Extent (Sq.Ft)</label>
+              <input id="c-sqft" type="text" [(ngModel)]="customForm.deliveredSqFt" name="cSqft"
+                placeholder="18M+ sq.ft" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-section-title">3. Corporate Office &amp; Contact Desk</div>
+
+          <div class="form-group">
+            <label for="c-office">Corporate Office Address</label>
+            <input id="c-office" type="text" [(ngModel)]="customForm.corporateOffice" name="cOffice"
+              placeholder="Full office address in Tamil Nadu" class="form-input">
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label for="c-phone">Contact Phone</label>
+              <input id="c-phone" type="tel" [(ngModel)]="customForm.contactPhone" name="cPhone" placeholder="+91 ..."
+                class="form-input">
             </div>
 
-            <div class="form-actions-bar">
-              <button type="button" class="btn-subtle" (click)="viewPublicPage()">View Public Showcase</button>
-              <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
-                @if (isSaving()) {
-                  <span>Saving Updates...</span>
-                } @else {
-                  <span class="material-symbols-outlined">save</span>
-                  <span>Save &amp; Update Developer Page</span>
-                }
-              </button>
+            <div class="form-group">
+              <label for="c-email">Official Email</label>
+              <input id="c-email" type="email" [(ngModel)]="customForm.contactEmail" name="cEmail"
+                placeholder="projects@company.com" class="form-input">
             </div>
-          </form>
-        </div>
-      </section>
+
+            <div class="form-group">
+              <label for="c-web">Company Website</label>
+              <input id="c-web" type="url" [(ngModel)]="customForm.websiteUrl" name="cWeb" placeholder="https://..."
+                class="form-input">
+            </div>
+          </div>
+
+          <div class="form-section-title">4. About Company Narrative</div>
+          <div class="form-group">
+            <label for="c-about">Company Overview &amp; Cadastral Guarantees</label>
+            <textarea id="c-about" [(ngModel)]="customForm.about" name="cAbout" rows="4" class="form-textarea"
+              placeholder="Describe your legal guarantees, layout approvals, and infrastructure track record..."></textarea>
+          </div>
+
+          <div class="form-actions-bar">
+            <button type="button" class="btn-subtle" (click)="viewPublicPage()">View Public Showcase</button>
+            <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
+              @if (isSaving()) {
+              <span>Saving Updates...</span>
+              } @else {
+              <span class="material-symbols-outlined">save</span>
+              <span>Save &amp; Update Developer Page</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
     }
 
   </main>
 </div>
 
 <app-footer />
-

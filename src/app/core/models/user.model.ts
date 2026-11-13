@@ -1,4 +1,16 @@
-export type UserRole = 'buyer' | 'seller' | 'developer' | 'admin';
+export type UserRole =
+  | 'buyer'
+  | 'seller'
+  | 'developer'
+  | 'admin'
+  | 'super_admin'
+  | 'co_admin'
+  | 'sales_executive'
+  | 'property_advisor'
+  | 'operations_executive'
+  | 'finance_admin'
+  | 'content_gis_admin'
+  | 'public_visitor';
 
 export interface User {
   id: number;
@@ -7,6 +19,7 @@ export interface User {
   phone: string;
   gender?: 'male' | 'female' | 'other';
   role: UserRole;
+  permissions?: string[];
   developerId?: number;
   companyName?: string;
   pointsBalance: number;

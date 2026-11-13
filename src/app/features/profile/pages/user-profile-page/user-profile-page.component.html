@@ -60,9 +60,12 @@
             <span class="membership-plan">{{ subscriptionService.activePlanName() }}</span>
             <span class="membership-credits">
               @if (subscriptionService.entitlements()) {
-                {{ (subscriptionService.entitlements()!.projectViewLimit - subscriptionService.entitlements()!.projectViewsUsed) > 0 ? (subscriptionService.entitlements()!.projectViewLimit - subscriptionService.entitlements()!.projectViewsUsed) + ' Views Left' : 'Renew / Upgrade' }}
+              {{ (subscriptionService.entitlements()!.projectViewLimit -
+              subscriptionService.entitlements()!.projectViewsUsed) > 0 ?
+              (subscriptionService.entitlements()!.projectViewLimit -
+              subscriptionService.entitlements()!.projectViewsUsed) + ' Views Left' : 'Renew / Upgrade' }}
               } @else {
-                Active Tier
+              Active Tier
               }
             </span>
           </div>
@@ -121,7 +124,8 @@
             (click)="setSection('membership')">
             <span class="material-symbols-outlined nav-icon">card_membership</span>
             <span class="nav-title">My Membership</span>
-            <span class="nav-badge plan-badge">{{ userWorkspace()?.membership?.subscription?.plan_name || subscriptionService.activePlanName() }}</span>
+            <span class="nav-badge plan-badge">{{ userWorkspace()?.membership?.subscription?.plan_name ||
+              subscriptionService.activePlanName() }}</span>
           </button>
 
           <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'visits'"
@@ -181,18 +185,13 @@
             }
           </button>
 
-          <a routerLink="/wallet" class="sidebar-nav-item">
-            <span class="material-symbols-outlined nav-icon">account_balance_wallet</span>
-            <span class="nav-title">Media Wallet &amp; Recharge</span>
-            <span class="nav-badge">{{ walletService.balance() }} Pts</span>
-          </a>
-
           <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'transactions'"
             (click)="setSection('transactions')">
             <span class="material-symbols-outlined nav-icon">receipt_long</span>
             <span class="nav-title">Payment Ledger</span>
           </button>
 
+          @if (authService.isDeveloper() || authService.isAdmin() || myPropertiesCount() > 0) {
           <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'my_properties'"
             (click)="setSection('my_properties')">
             <span class="material-symbols-outlined nav-icon">real_estate_agent</span>
@@ -201,6 +200,7 @@
             <span class="nav-badge">{{ myPropertiesCount() }}</span>
             }
           </button>
+          }
 
           <button type="button" class="sidebar-nav-item" [class.active]="activeSection() === 'preferences'"
             (click)="setSection('preferences')">
@@ -298,7 +298,7 @@
               <div class="card-field-list">
                 <div class="field-row">
                   <span class="field-label">Target Hub / Corridor</span>
-                  <span class="field-value">{{ editCity() }} (OMR, ECR, Porur, Anna Nagar)</span>
+                  <span class="field-value">{{ editCity() }}</span>
                 </div>
                 <div class="field-row">
                   <span class="field-label">Target Investment Budget</span>
@@ -310,11 +310,11 @@
                 </div>
                 <div class="field-row">
                   <span class="field-label">Title Requirement</span>
-                  <span class="field-value">Direct Owner / Verified Title</span>
+                  <span class="field-value">{{ editTitleRequirement() }}</span>
                 </div>
                 <div class="field-row">
                   <span class="field-label">RERA &amp; Cadastral Verification</span>
-                  <span class="field-value">Pre-screened Certified Titles</span>
+                  <span class="field-value">{{ editReraVerification() }}</span>
                 </div>
               </div>
             </div>
@@ -686,7 +686,8 @@
           <div class="section-heading-bar">
             <div>
               <h2 class="section-title">My Membership &amp; Entitlements</h2>
-              <p class="section-subtitle">Active tier subscription, validity expiry countdown, and remaining verification credits.</p>
+              <p class="section-subtitle">Active tier subscription, validity expiry countdown, and remaining
+                verification credits.</p>
             </div>
             <a routerLink="/subscriptions" class="btn-primary-action">
               <span class="material-symbols-outlined">upgrade</span>
@@ -700,7 +701,8 @@
             <div class="hud-top-bar">
               <div class="hud-status-left">
                 <div class="hud-plan-badge" [class.is-paid]="subscriptionService.isPaidSubscriber()">
-                  <span class="material-symbols-outlined">{{ subscriptionService.isPaidSubscriber() ? 'workspace_premium' :
+                  <span class="material-symbols-outlined">{{ subscriptionService.isPaidSubscriber() ?
+                    'workspace_premium' :
                     'explore' }}</span>
                   <span>{{ ent.planName.toUpperCase() }} PLAN</span>
                 </div>
@@ -740,7 +742,8 @@
                 </div>
                 <div class="meter-footer">
                   <span class="meter-rem-text text-sage">{{ ent.projectViewsRemaining }} remaining</span>
-                  <span class="meter-tip tip-sage" title="Repeated visits to unlocked projects never burn credits">Re-visits Free</span>
+                  <span class="meter-tip tip-sage"
+                    title="Repeated visits to unlocked projects never burn credits">Re-visits Free</span>
                 </div>
               </div>
 
@@ -776,7 +779,8 @@
                     </div>
                     <span class="meter-title title-amber">Advisory Sessions</span>
                   </div>
-                  <span class="meter-counts count-amber">{{ ent.advisorySessionsUsed }} / {{ ent.advisorySessionLimit }}</span>
+                  <span class="meter-counts count-amber">{{ ent.advisorySessionsUsed }} / {{ ent.advisorySessionLimit
+                    }}</span>
                 </div>
                 <div class="meter-progress-track track-amber">
                   <div class="meter-progress-fill fill-amber"
@@ -876,7 +880,8 @@
             } @else {
             <div class="no-invoices-box">
               <span class="material-symbols-outlined no-inv-icon">receipt</span>
-              <p>No payment invoices generated yet. Upgrading to any paid tier will automatically produce your official tax
+              <p>No payment invoices generated yet. Upgrading to any paid tier will automatically produce your official
+                tax
                 invoice here.</p>
             </div>
             }
@@ -886,7 +891,8 @@
           <div class="plan-upgrade-banner" style="margin-top: 1.75rem;">
             <div class="banner-content">
               <h4 class="banner-title">Need unlimited legal dossiers &amp; priority site visits?</h4>
-              <p class="banner-desc">Explore the VIP Concierge &amp; Priority Buyer plans with dedicated RERA advocate escorts.</p>
+              <p class="banner-desc">Explore the VIP Concierge &amp; Priority Buyer plans with dedicated RERA advocate
+                escorts.</p>
             </div>
             <a routerLink="/subscriptions" class="btn-banner-upgrade">
               <span>View All 4 Plans</span>
@@ -904,7 +910,8 @@
           <div class="section-heading-bar">
             <div>
               <h2 class="section-title">My Scheduled Site Visits</h2>
-              <p class="section-subtitle">Confirmed physical property walkthroughs with assigned regional relationship executives.</p>
+              <p class="section-subtitle">Confirmed physical property walkthroughs with assigned regional relationship
+                executives.</p>
             </div>
             <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">add_location_alt</span>
@@ -918,8 +925,7 @@
             <div class="workspace-item-card">
               <div class="item-card-header">
                 <div class="item-id-pill">VISIT-{{ v.id }}</div>
-                <span class="status-chip"
-                  [class.status-confirmed]="v.status === 'confirmed'"
+                <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'"
                   [class.status-requested]="v.status === 'requested'"
                   [class.status-completed]="v.status === 'completed'"
                   [class.status-cancelled]="v.status === 'cancelled'">
@@ -1002,7 +1008,8 @@
               <span class="material-symbols-outlined">event_busy</span>
             </div>
             <h3 class="empty-title">No Site Visits Scheduled Yet</h3>
-            <p class="empty-text">Schedule private property walkthroughs with dedicated pickup transport and cadastral legal officer assistance.</p>
+            <p class="empty-text">Schedule private property walkthroughs with dedicated pickup transport and cadastral
+              legal officer assistance.</p>
             <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">travel_explore</span>
               <span>Browse Properties to Visit</span>
@@ -1020,7 +1027,8 @@
           <div class="section-heading-bar">
             <div>
               <h2 class="section-title">My Advisory Consultations</h2>
-              <p class="section-subtitle">Log of past 1-on-1 strategy calls, advisor notes, and downloadable property recommendation dossiers.</p>
+              <p class="section-subtitle">Log of past 1-on-1 strategy calls, advisor notes, and downloadable property
+                recommendation dossiers.</p>
             </div>
             <a routerLink="/subscriptions" class="btn-primary-action">
               <span class="material-symbols-outlined">video_call</span>
@@ -1108,7 +1116,8 @@
               <span class="material-symbols-outlined">headset_mic</span>
             </div>
             <h3 class="empty-title">No Advisory Sessions Logged</h3>
-            <p class="empty-text">Consult our legal and cadastral specialists for title verification, guideline valuation, and investment roadmap planning.</p>
+            <p class="empty-text">Consult our legal and cadastral specialists for title verification, guideline
+              valuation, and investment roadmap planning.</p>
             <a routerLink="/subscriptions" class="btn-primary-action">
               <span class="material-symbols-outlined">calendar_today</span>
               <span>Schedule 1-on-1 Consultation</span>
@@ -1126,7 +1135,8 @@
           <div class="section-heading-bar">
             <div>
               <h2 class="section-title">My Saved Searches &amp; Alerts</h2>
-              <p class="section-subtitle">Stored search criteria with instant Email and WhatsApp alert triggers for new matching plots.</p>
+              <p class="section-subtitle">Stored search criteria with instant Email and WhatsApp alert triggers for new
+                matching plots.</p>
             </div>
             <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">search</span>
@@ -1211,7 +1221,8 @@
               <span class="material-symbols-outlined">manage_search</span>
             </div>
             <h3 class="empty-title">No Saved Searches Stored</h3>
-            <p class="empty-text">Save your custom search parameters to receive automated WhatsApp notifications when new plots enter the registry.</p>
+            <p class="empty-text">Save your custom search parameters to receive automated WhatsApp notifications when
+              new plots enter the registry.</p>
             <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">search</span>
               <span>Find Plots &amp; Save Search</span>
@@ -1229,7 +1240,8 @@
           <div class="section-heading-bar">
             <div>
               <h2 class="section-title">My Bookings &amp; Enquiries</h2>
-              <p class="section-subtitle">Real-time tracker for plots placed on hold, advance tokens, document verification, and SRO registration.</p>
+              <p class="section-subtitle">Real-time tracker for plots placed on hold, advance tokens, document
+                verification, and SRO registration.</p>
             </div>
             <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">add_task</span>
@@ -1273,31 +1285,36 @@
 
                 <!-- 5-Stage Visual Workflow Tracker -->
                 <div class="workflow-stepper">
-                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 1" [class.current]="getBookingStepIndex(b.status) === 1">
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 1"
+                    [class.current]="getBookingStepIndex(b.status) === 1">
                     <div class="step-circle">1</div>
                     <div class="step-label">Plot on Hold</div>
                   </div>
                   <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 2"></div>
 
-                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 2" [class.current]="getBookingStepIndex(b.status) === 2">
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 2"
+                    [class.current]="getBookingStepIndex(b.status) === 2">
                     <div class="step-circle">2</div>
                     <div class="step-label">Token Paid</div>
                   </div>
                   <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 3"></div>
 
-                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 3" [class.current]="getBookingStepIndex(b.status) === 3">
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 3"
+                    [class.current]="getBookingStepIndex(b.status) === 3">
                     <div class="step-circle">3</div>
                     <div class="step-label">Doc Verification</div>
                   </div>
                   <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 4"></div>
 
-                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 4" [class.current]="getBookingStepIndex(b.status) === 4">
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 4"
+                    [class.current]="getBookingStepIndex(b.status) === 4">
                     <div class="step-circle">4</div>
                     <div class="step-label">In Registration</div>
                   </div>
                   <div class="step-line" [class.active]="getBookingStepIndex(b.status) >= 5"></div>
 
-                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 5" [class.current]="getBookingStepIndex(b.status) === 5">
+                  <div class="step-item" [class.completed]="getBookingStepIndex(b.status) >= 5"
+                    [class.current]="getBookingStepIndex(b.status) === 5">
                     <div class="step-circle">5</div>
                     <div class="step-label">Completed</div>
                   </div>
@@ -1310,7 +1327,8 @@
                   </div>
                   <div class="legal-info">
                     <div class="legal-lbl">Assigned Legal &amp; Title Verification Officer</div>
-                    <div class="legal-name">{{ b.assigned_legal_officer || 'Advocate S. Swaminathan (SRO Madras HC)' }}</div>
+                    <div class="legal-name">{{ b.assigned_legal_officer || 'Advocate S. Swaminathan (SRO Madras HC)' }}
+                    </div>
                   </div>
                 </div>
 
@@ -1337,7 +1355,8 @@
               <span class="material-symbols-outlined">hourglass_empty</span>
             </div>
             <h3 class="empty-title">No Plots On Hold Or In Registration</h3>
-            <p class="empty-text">Once you place a plot on hold or submit a token advance, our legal officers will guide the entire title registration workflow here.</p>
+            <p class="empty-text">Once you place a plot on hold or submit a token advance, our legal officers will guide
+              the entire title registration workflow here.</p>
             <a routerLink="/search" class="btn-primary-action">
               <span class="material-symbols-outlined">explore</span>
               <span>Find Verified Ready Plots</span>
@@ -1584,10 +1603,11 @@
           <label for="edit-city" class="form-label">Preferred City / Region</label>
           <select id="edit-city" class="form-input" [ngModel]="editCity()" (ngModelChange)="editCity.set($event)"
             name="city">
-            <option value="Chennai">Chennai (OMR, ECR, Porur, Anna Nagar)</option>
-            <option value="Coimbatore">Coimbatore (Avinashi Rd, RS Puram)</option>
-            <option value="Bengaluru">Bengaluru (Whitefield, Indiranagar)</option>
-            <option value="Hyderabad">Hyderabad (Gachibowli, Hitec City)</option>
+            <option value="">— Auto-fill from searches —</option>
+            <option value="Chennai (OMR, ECR, Porur, Anna Nagar)">Chennai (OMR, ECR, Porur, Anna Nagar)</option>
+            <option value="Coimbatore (Avinashi Rd, RS Puram)">Coimbatore (Avinashi Rd, RS Puram)</option>
+            <option value="Bengaluru (Whitefield, Indiranagar)">Bengaluru (Whitefield, Indiranagar)</option>
+            <option value="Hyderabad (Gachibowli, Hitec City)">Hyderabad (Gachibowli, Hitec City)</option>
           </select>
         </div>
 
@@ -1595,6 +1615,7 @@
           <label for="edit-budget" class="form-label">Target Investment Budget</label>
           <select id="edit-budget" class="form-input" [ngModel]="editBudget()" (ngModelChange)="editBudget.set($event)"
             name="budget">
+            <option value="">— Auto-fill from searches —</option>
             <option value="₹50 L – ₹1 Cr">₹50 Lakhs – ₹1 Crore</option>
             <option value="₹1 Cr – ₹2 Cr">₹1 Crore – ₹2 Crores</option>
             <option value="₹2 Cr – ₹5 Cr">₹2 Crores – ₹5 Crores</option>

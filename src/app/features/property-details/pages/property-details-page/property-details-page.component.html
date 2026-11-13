@@ -6,17 +6,106 @@
   <app-header />
 
   @if (property(); as prop) {
-  <!-- 1. GUEST PREVIEW BANNER (Shown for 1 allowed free guest view) -->
+  <!-- 1. MEMBERSHIP QUOTA REACHED - HIGH ATTENTION BACKDROP BLUR ALERT MODAL -->
+  @if (isEntitlementExhausted() && !isQuotaModalDismissed()) {
+  <div class="quota-modal-backdrop" (click)="dismissQuotaModal()">
+    <div class="quota-alert-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="quota-modal-title">
+      <!-- Architectural Spectrum Accent Stripe -->
+      <div class="quota-modal-top-accent"></div>
+
+      <!-- Close Button -->
+      <button type="button" class="quota-modal-close-btn" (click)="dismissQuotaModal()" aria-label="Close quota alert">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="quota-modal-content">
+        <!-- Visual Badge & Icon -->
+        <div class="quota-modal-header">
+          <div class="quota-modal-icon-wrap">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div class="quota-modal-header-meta">
+            <span class="quota-modal-pill">MEMBERSHIP QUOTA REACHED</span>
+            <span class="quota-modal-tier-tag">{{ property()?.activePlanName || activePlanName() || 'Free Explorer' }} Tier</span>
+          </div>
+        </div>
+
+        <!-- Title & Subtitle -->
+        <h2 id="quota-modal-title" class="quota-modal-title">Project Dossier View Limit Reached</h2>
+        <p class="quota-modal-desc">
+          {{ entitlementExhaustedMessage() || ('You have reached your limit of ' + projectViewLimit() + ' project views on the ' + (property()?.activePlanName || activePlanName() || 'Free Explorer') + ' plan. Upgrade your membership to view complete specifications, cadastral audit, layout plots, and verified legal clearances.') }}
+        </p>
+
+        <!-- Quota Usage Tracker Widget -->
+        <div class="quota-meter-widget">
+          <div class="quota-meter-header">
+            <span class="meter-plan-label">Plan Quota Consumption</span>
+            <span class="meter-usage-count"><strong>{{ projectViewsUsed() }}</strong> / {{ projectViewLimit() }} Project Views (100%)</span>
+          </div>
+          <div class="quota-meter-track">
+            <div class="quota-meter-fill"></div>
+          </div>
+        </div>
+
+        <!-- Protected Intelligence Checklist -->
+        <div class="quota-locked-intel-card">
+          <div class="locked-intel-title">
+            <span class="material-symbols-outlined">shield_lock</span>
+            <span>Protected Architectural Intelligence Gated Under Current Tier:</span>
+          </div>
+          <ul class="locked-intel-list">
+            <li>
+              <span class="material-symbols-outlined bullet-icon">check_circle</span>
+              <span>Cadastral Survey Numbers, FMB Sketch &amp; Patta / Chitta Records</span>
+            </li>
+            <li>
+              <span class="material-symbols-outlined bullet-icon">check_circle</span>
+              <span>Complete 49-Point Specification &amp; Plot Layout Dimensions</span>
+            </li>
+            <li>
+              <span class="material-symbols-outlined bullet-icon">check_circle</span>
+              <span>Direct Verified Developer Escrow &amp; Legal Title Deeds</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Action Buttons Deck -->
+        <div class="quota-modal-actions">
+          <a routerLink="/subscriptions" class="btn-quota-upgrade">
+            <span class="material-symbols-outlined">card_membership</span>
+            <span>Upgrade Membership (From ₹750)</span>
+          </a>
+          <div class="quota-modal-secondary-actions">
+            <button type="button" class="btn-quota-ghost" (click)="dismissQuotaModal()">
+              <span class="material-symbols-outlined">visibility</span>
+              <span>Preview Basic Overview</span>
+            </button>
+            <button type="button" class="btn-quota-ghost" (click)="goBack()">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Back to Search</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- 2. REFINED THEME IN-PAGE BANNER (Shown when viewing page with quota reached) -->
   @if (isEntitlementExhausted()) {
   <div class="entitlement-limit-banner">
     <div class="max-w-content entitlement-banner-inner">
       <div class="entitlement-pill-left">
         <span class="entitlement-badge-chip">MEMBERSHIP QUOTA REACHED</span>
         <span class="entitlement-banner-text">
-          {{ entitlementExhaustedMessage() || 'You have used your project view credits for your current tier.' }}
+          Quota reached ({{ projectViewsUsed() }}/{{ projectViewLimit() }} views used). Viewing basic overview only.
         </span>
       </div>
       <div class="entitlement-banner-actions">
+        <button type="button" class="btn-banner-review" (click)="openQuotaModal()">
+          <span class="material-symbols-outlined">info</span>
+          <span>Review Notice</span>
+        </button>
         <a routerLink="/subscriptions" class="btn-banner-upgrade">
           <span class="material-symbols-outlined">card_membership</span>
           <span>Upgrade Membership (From ₹750)</span>
@@ -43,7 +132,7 @@
   }
 
   <!-- UNLOCKED: CLEAN, STRONG HANU REDDY REALTY STYLE DETAIL SHOWCASE -->
-  <div class="max-w-content hanu-property-page" [class.is-guest-blurred]="isBlockedForGuest()">
+  <div class="max-w-content hanu-property-page" [class.is-guest-blurred]="isBlockedForGuest() || (isEntitlementExhausted() && !isQuotaModalDismissed())">
 
     <!-- GUEST VIEWING: MINIMALIST OVERLAY IF OTP MODAL IS DISMISSED -->
     @if (isBlockedForGuest() && !authService.isOtpModalOpen()) {

@@ -380,7 +380,7 @@ try {
 
     $activeProjectsCount = count($projectsList);
     $upcomingProjectsCount = count($upcomingList);
-    $totalProjects = max($activeProjectsCount, 1);
+    $totalProjects = $activeProjectsCount;
 
     $officialRera = ($devMaster && !empty($devMaster['rera_number'])) 
         ? $devMaster['rera_number'] 
@@ -398,6 +398,7 @@ try {
                 'reraNumber'            => $officialRera,
                 'logoUrl'               => $devMaster && !empty($devMaster['logo_url']) ? $devMaster['logo_url'] : null,
                 'coverImageUrl'         => $devMaster && !empty($devMaster['cover_image_url']) ? $devMaster['cover_image_url'] : null,
+                'bgGradient'            => $devMaster && !empty($devMaster['bg_gradient']) ? $devMaster['bg_gradient'] : null,
                 'totalProperties'       => count($sanitizedProperties),
                 'totalProjects'         => $totalProjects,
                 'activeProjectsCount'   => $activeProjectsCount,

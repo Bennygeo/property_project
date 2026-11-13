@@ -106,6 +106,10 @@ export class RolePortalComponent implements OnInit {
   readonly allRoleOptions = Object.values(ROLE_CATALOG);
 
   ngOnInit(): void {
+    if (!this.adminService.verifyAdminAccess()) {
+      this.router.navigate(['/admin/login']);
+      return;
+    }
     // Determine active role from route data or URL path
     this.route.data.subscribe(data => {
       if (data && data['role']) {

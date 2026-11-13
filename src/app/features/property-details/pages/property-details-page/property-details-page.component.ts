@@ -79,7 +79,16 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly userBehaviorService = inject(UserBehaviorService);
 
   readonly isEntitlementExhausted = signal<boolean>(false);
+  readonly isQuotaModalDismissed = signal<boolean>(false);
   readonly entitlementExhaustedMessage = signal<string>('');
+
+  dismissQuotaModal(): void {
+    this.isQuotaModalDismissed.set(true);
+  }
+
+  openQuotaModal(): void {
+    this.isQuotaModalDismissed.set(false);
+  }
 
   readonly isViewRestricted = computed<boolean>(() => {
     return !!this.property()?.isViewRestricted || this.isEntitlementExhausted();
@@ -366,6 +375,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         this.selectedFloorPlanIndex.set(0);
         this.hasPromptedSiteVisitForSession = false;
         this.isSiteVisitPromptOpen.set(false);
+        this.isQuotaModalDismissed.set(false);
         this.startSiteVisitPromptTimer();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => this.setupWhatsAppObserver(), 400);

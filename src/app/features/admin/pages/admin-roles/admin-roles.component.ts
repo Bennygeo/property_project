@@ -91,6 +91,10 @@ export class AdminRolesComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (!this.adminService.verifyAdminAccess()) {
+      this.router.navigate(['/admin/login']);
+      return;
+    }
     this.loadData();
   }
 

@@ -7,6 +7,7 @@ import { RecentSitesComponent } from '../../components/recent-sites/recent-sites
 import { ValuePropsComponent } from '../../components/value-props/value-props.component';
 import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
 import { FeaturedPropertiesComponent } from '../../components/featured-properties/featured-properties.component';
+import { HomeDevelopersComponent } from '../../components/home-developers/home-developers.component';
 import { WhyChooseUsComponent } from '../../components/why-choose-us/why-choose-us.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { PropertyMediaModalComponent } from '../../components/property-media-modal/property-media-modal.component';
@@ -24,6 +25,7 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
     HeroSearchComponent,
     RecentSitesComponent,
     FeaturedPropertiesComponent,
+    HomeDevelopersComponent,
     WhyChooseUsComponent,
     FooterComponent,
     PropertyMediaModalComponent,
@@ -45,6 +47,9 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
 
         <!-- Recently Added Sites (Two Columns in a Row) -->
         <app-recent-sites />
+
+        <!-- Discover Developers Row -->
+        <app-home-developers />
 
         <!-- Silhouette Building Diagram Standing Over The Line -->
         <!-- <app-economy-banner /> -->
@@ -92,6 +97,12 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       z-index: 1;
     }
     app-featured-properties {
+      display: block;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+    app-home-developers {
       display: block;
       position: relative;
       z-index: 1;

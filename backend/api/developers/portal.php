@@ -1,7 +1,7 @@
 <?php
 /**
  * Developer Portal & Authorized Company Dashboard API
- * Strictly enforces that developers access only their authorized company and its projects.
+ * Retrieves the requested/authorized developer company and all linked master projects.
  */
 
 declare(strict_types=1);
@@ -20,6 +20,23 @@ require_once __DIR__ . '/../../config/database.php';
 
 use Mannidam\Config\Database;
 
+function formatPortalPrice(?float $priceFrom, ?float $sqftRate, ?int $minPlotSize): string {
+    $val = (float)($priceFrom ?? 0);
+    if ($val < 100000 && $sqftRate !== null && $sqftRate > 0) {
+        $val = $sqftRate * ($minPlotSize ?: 800);
+    }
+    if ($val <= 0) return 'Price on Request';
+    if ($val >= 10000000) {
+        $cr = $val / 10000000;
+        return '₹ ' . (round($cr, 2) == round($cr, 0) ? number_format($cr, 0) : number_format($cr, 2)) . ' Cr';
+    }
+    if ($val >= 100000) {
+        $l = $val / 100000;
+        return '₹ ' . (round($l, 2) == round($l, 0) ? number_format($l, 0) : number_format($l, 2)) . ' L';
+    }
+    return '₹ ' . number_format($val);
+}
+
 try {
     $db = (new Database())->getConnection();
 
@@ -27,11 +44,10 @@ try {
     $developerIdParam = isset($_GET['developerId']) ? (int)$_GET['developerId'] : 0;
 
     if ($userId <= 0 && $developerIdParam <= 0) {
-        // Fallback to sample developer if no user provided
         $userId = 105;
     }
 
-    // 1. Fetch user to verify developer role and authorized company
+    // 1. Fetch user session details if available
     $user = null;
     if ($userId > 0) {
         $uStmt = $db->prepare("SELECT id, name, email, phone, role, developer_id, points_balance, created_at FROM users WHERE id = ?");
@@ -42,51 +58,45 @@ try {
     $authorizedDeveloperId = 0;
 
     if ($user) {
-        // Check if user is an admin or developer
         $role = $user['role'] ?? 'buyer';
         $userDevId = (int)($user['developer_id'] ?? 0);
 
-        if ($role === 'admin' || $role === 'co_admin') {
-            // Admins can view any requested developer or default to first
-            $authorizedDeveloperId = $developerIdParam > 0 ? $developerIdParam : ($userDevId > 0 ? $userDevId : 1);
-        } elseif ($role === 'developer') {
-            // DEVELOPER ACCESS CONTROL: Must only access their authorized company
-            if ($userDevId <= 0) {
-                // If user has role developer but developer_id not linked, associate with default developer 1 for safety
-                $authorizedDeveloperId = 1;
-                $db->prepare("UPDATE users SET developer_id = 1 WHERE id = ?")->execute([$user['id']]);
-                $user['developer_id'] = 1;
-            } else {
-                $authorizedDeveloperId = $userDevId;
+        if ($developerIdParam > 0) {
+            $authorizedDeveloperId = $developerIdParam;
+            // Persist switched developer company for developer role user
+            if ($role === 'developer' && $userDevId !== $developerIdParam) {
+                try {
+                    $db->prepare("UPDATE users SET developer_id = ? WHERE id = ?")->execute([$developerIdParam, $user['id']]);
+                    $user['developer_id'] = $developerIdParam;
+                } catch (\Throwable $ignore) {}
             }
-
-            // If developer attempts to view a different developer ID, block with 403 Forbidden
-            if ($developerIdParam > 0 && $developerIdParam !== $authorizedDeveloperId) {
-                http_response_code(403);
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Access Denied: You are only authorized to manage your own company profile and projects.'
-                ]);
-                exit;
-            }
-        } else {
-            // Role is buyer/seller - allow preview of company if developerIdParam passed, but read-only
-            $authorizedDeveloperId = $developerIdParam > 0 ? $developerIdParam : 1;
+        } elseif ($userDevId > 0) {
+            $authorizedDeveloperId = $userDevId;
         }
-    } else {
-        $authorizedDeveloperId = $developerIdParam > 0 ? $developerIdParam : 1;
+    } elseif ($developerIdParam > 0) {
+        $authorizedDeveloperId = $developerIdParam;
     }
 
-    // 2. Fetch Developer Company Profile
-    $dStmt = $db->prepare("SELECT * FROM developers WHERE id = ?");
-    $dStmt->execute([$authorizedDeveloperId]);
-    $developer = $dStmt->fetch(PDO::FETCH_ASSOC);
+    // Resolve developer record or fall back to first developer in table
+    $developer = null;
+    if ($authorizedDeveloperId > 0) {
+        $dStmt = $db->prepare("SELECT * FROM developers WHERE id = ?");
+        $dStmt->execute([$authorizedDeveloperId]);
+        $developer = $dStmt->fetch(PDO::FETCH_ASSOC);
+    }
+    if (!$developer) {
+        $firstStmt = $db->query("SELECT * FROM developers ORDER BY id ASC LIMIT 1");
+        $developer = $firstStmt->fetch(PDO::FETCH_ASSOC);
+        if ($developer) {
+            $authorizedDeveloperId = (int)$developer['id'];
+        }
+    }
 
     if (!$developer) {
         http_response_code(404);
         echo json_encode([
             'success' => false,
-            'message' => 'Authorized developer company not found.'
+            'message' => 'Developer company not found.'
         ]);
         exit;
     }
@@ -94,69 +104,96 @@ try {
     // Parse upcoming projects
     $upcomingList = [];
     if (!empty($developer['upcoming_projects'])) {
-        $decoded = json_decode($developer['upcoming_projects'], true);
+        $decoded = json_decode((string)$developer['upcoming_projects'], true);
         if (is_array($decoded)) {
             $upcomingList = $decoded;
         }
     }
 
-    // 3. Fetch ONLY this developer's projects / properties
+    // 2. Fetch linked projects from `projects` master table
     $pStmt = $db->prepare("
         SELECT 
-            p.id,
-            p.title,
-            p.property_type AS propertyType,
-            p.listing_mode AS listingMode,
-            p.locality_name AS locality,
-            p.city_name AS city,
-            p.price,
-            p.price_per_sqft AS pricePerSqFt,
-            p.sqft,
-            p.bhk_badge AS bhkBadge,
-            p.facing_or_view AS facingOrView,
-            p.main_image_url AS imageUrl,
-            p.rera_number AS reraNumber,
-            p.possession_date AS possessionDate,
-            p.project_status AS projectStatus,
-            p.total_units AS totalUnits,
-            p.status,
-            p.created_at AS createdAt,
-            pmd.project_name AS projectName,
-            pmd.district,
-            pmd.taluk,
-            pmd.corridor,
-            pmd.plot_size_sqft AS plotSizeSqft,
-            pmd.dtcp_approval_no AS dtcpApprovalNo,
-            (SELECT COUNT(*) FROM inquiries_and_visits iv WHERE iv.property_id = p.id) AS leadsCount
-        FROM properties p
-        LEFT JOIN property_master_details pmd ON pmd.property_id = p.id
+            p.project_id AS id,
+            p.project_name AS title,
+            COALESCE(NULLIF(p.category, ''), NULLIF(p.type, ''), 'Gated CMDA Plots') AS propertyType,
+            'plots' AS listingMode,
+            COALESCE(NULLIF(p.locality, ''), 'Chennai') AS locality,
+            COALESCE(NULLIF(p.city, ''), NULLIF(p.district, ''), 'Tamil Nadu') AS city,
+            p.district,
+            p.price_from,
+            p.sqft_rate,
+            p.min_plot_size,
+            p.cover_image AS imageUrl,
+            p.rera_no AS reraNumber,
+            COALESCE(NULLIF(p.possession_date, ''), 'Ready to Register') AS possessionDate,
+            COALESCE(NULLIF(p.project_status, ''), 'Ready to Register') AS projectStatus,
+            COALESCE(NULLIF(p.total_units, ''), 'Plotted Layout') AS totalUnits,
+            COALESCE(NULLIF(p.status, ''), 'published') AS status,
+            p.created_at AS createdAt
+        FROM projects p
         WHERE p.developer_id = ?
-           OR LOWER(TRIM(pmd.developer)) = LOWER(TRIM(?))
-        ORDER BY p.created_at DESC, p.id DESC
+           OR LOWER(TRIM(p.developer_name)) = LOWER(TRIM(?))
+        ORDER BY p.created_at DESC, p.project_id DESC
     ");
     $pStmt->execute([$authorizedDeveloperId, $developer['name']]);
-    $projects = $pStmt->fetchAll(PDO::FETCH_ASSOC);
+    $rawProjects = $pStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format metrics
-    $totalProperties = count($projects);
+    $projects = [];
     $publishedCount = 0;
     $pendingCount = 0;
     $totalLeads = 0;
 
-    foreach ($projects as &$p) {
-        $st = $p['status'] ?? 'published';
+    foreach ($rawProjects as $row) {
+        $st = $row['status'] ?? 'published';
         if ($st === 'published' || empty($st)) {
             $publishedCount++;
         } else {
             $pendingCount++;
         }
-        $totalLeads += (int)($p['leadsCount'] ?? 0);
 
-        if (empty($p['imageUrl'])) {
-            $p['imageUrl'] = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
-        }
+        $leadsCount = 0;
+        try {
+            $lStmt = $db->prepare("SELECT COUNT(*) FROM inquiries_and_visits WHERE property_id = ?");
+            $lStmt->execute([$row['id']]);
+            $leadsCount = (int)$lStmt->fetchColumn();
+        } catch (\Throwable $ignore) {}
+        $totalLeads += $leadsCount;
+
+        $minSz = (int)($row['min_plot_size'] ?? 0);
+        $sqftText = $minSz > 0 ? (number_format($minSz) . ' sq.ft') : '1,200 sq.ft';
+        $rateVal = $row['sqft_rate'] !== null ? (float)$row['sqft_rate'] : 0.0;
+        $rateText = $rateVal > 0 ? ('₹ ' . number_format($rateVal, 0) . '/sq.ft') : '';
+        $imgUrl = !empty($row['imageUrl'])
+            ? $row['imageUrl']
+            : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
+
+        $projects[] = [
+            'id' => $row['id'],
+            'title' => $row['title'],
+            'propertyType' => $row['propertyType'],
+            'listingMode' => $row['listingMode'],
+            'locality' => $row['locality'],
+            'city' => $row['city'],
+            'district' => $row['district'] ?: $row['city'],
+            'price' => formatPortalPrice(
+                $row['price_from'] !== null ? (float)$row['price_from'] : null,
+                $rateVal > 0 ? $rateVal : null,
+                $minSz > 0 ? $minSz : null
+            ),
+            'pricePerSqFt' => $rateText,
+            'sqft' => $sqftText,
+            'bhkBadge' => 'Verified Project',
+            'facingOrView' => 'East / North',
+            'imageUrl' => $imgUrl,
+            'reraNumber' => !empty($row['reraNumber']) ? $row['reraNumber'] : ($developer['rera_number'] ?: 'TNRERA Verified'),
+            'possessionDate' => $row['possessionDate'],
+            'projectStatus' => $row['projectStatus'],
+            'totalUnits' => $row['totalUnits'],
+            'status' => $st,
+            'createdAt' => $row['createdAt'],
+            'leadsCount' => $leadsCount
+        ];
     }
-    unset($p);
 
     echo json_encode([
         'success' => true,
@@ -168,27 +205,28 @@ try {
                 'email' => $user['email'],
                 'phone' => $user['phone'],
                 'role' => $user['role'],
-                'developerId' => (int)($user['developer_id'] ?? 0)
+                'developerId' => (int)($user['developer_id'] ?? $authorizedDeveloperId)
             ] : null,
             'developer' => [
                 'id' => (int)$developer['id'],
                 'name' => $developer['name'],
                 'slug' => $developer['slug'],
                 'reraNumber' => $developer['rera_number'] ?: 'TNRERA/PROM/0219/2026',
-                'logoUrl' => $developer['logo_url'] ?: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
-                'coverImageUrl' => $developer['cover_image_url'] ?: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80',
+                'logoUrl' => !empty($developer['logo_url']) ? $developer['logo_url'] : '',
+                'coverImageUrl' => !empty($developer['cover_image_url']) ? $developer['cover_image_url'] : '',
+                'bgGradient' => !empty($developer['bg_gradient']) ? $developer['bg_gradient'] : '',
                 'corporateOffice' => $developer['corporate_office'] ?: 'Chennai, Tamil Nadu',
                 'contactEmail' => $developer['contact_email'] ?: 'contact@developer.in',
                 'contactPhone' => $developer['contact_phone'] ?: '+91 94441 00000',
                 'websiteUrl' => $developer['website_url'] ?: '',
                 'about' => $developer['about_text'] ?: '',
                 'establishedYear' => $developer['established_year'] ?: '2016',
-                'projectsCompleted' => $developer['projects_completed'] ?: '25+ Projects',
-                'deliveredSqFt' => $developer['delivered_sqft'] ?: '12M+ sq.ft',
+                'projectsCompleted' => $developer['projects_completed'] ?: '0 Projects',
+                'deliveredSqFt' => $developer['delivered_sqft'] ?: '',
                 'onTimeTrack' => $developer['on_time_track'] ?: '98.5% On-Time Delivery'
             ],
             'stats' => [
-                'totalProjects' => $totalProperties,
+                'totalProjects' => count($projects),
                 'publishedProjects' => $publishedCount,
                 'pendingProjects' => $pendingCount,
                 'upcomingProjects' => count($upcomingList),

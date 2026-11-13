@@ -1,643 +1,872 @@
-<div class="builder-showcase-wrapper">
+<div class="builder-showcase-root" [style.background]="builderDossier()?.bgGradient || defaultPageGradient">
   <!-- Top Concierge Bar -->
   <app-top-concierge-bar />
 
   <!-- Navigation Header -->
   <app-header />
 
-  <!-- SUB-NAVIGATION BAR -->
-  <nav class="builder-subnav-bar">
-    <div class="max-w-content subnav-inner">
-      <button type="button" class="btn-subnav-back" (click)="goBack()">
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span>Back to Registry</span>
-      </button>
-
-      <div class="subnav-breadcrumbs">
-        <a routerLink="/" class="crumb-link">Home</a>
-        <span class="crumb-sep">/</span>
-        <a routerLink="/developers" class="crumb-link">Developers</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">{{ builderDossier()?.name || builderName() }}</span>
-      </div>
-
-      <div class="subnav-actions">
-        @if (isAuthorizedDeveloper()) {
-          <a routerLink="/developer" class="btn-dev-workspace-link">
-            <span class="material-symbols-outlined">manage_accounts</span>
-            <span>Developer Portal</span>
-          </a>
-        }
-        <button type="button" class="btn-share-portfolio" (click)="shareBuilderProfile()" title="Share Developer Portfolio">
-          <span class="material-symbols-outlined">share</span>
-          <span>Share Profile</span>
-        </button>
-      </div>
+  <!-- Breadcrumb Navigation Matching Membership Reference -->
+  <nav class="sub-breadcrumb-bar" aria-label="Breadcrumb">
+    <div class="max-w-content breadcrumb-inner">
+      <a routerLink="/" class="crumb-link">
+        <span class="material-symbols-outlined crumb-icon">home</span>
+        <span>Home</span>
+      </a>
+      <span class="crumb-sep">/</span>
+      <a routerLink="/developers" class="crumb-link">
+        <span>Developers</span>
+      </a>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">{{ builderDossier()?.name || builderName() }}</span>
     </div>
   </nav>
 
+  <!-- Authorized Developer Banner -->
   @if (isAuthorizedDeveloper()) {
-    <div class="developer-admin-strip">
-      <div class="max-w-content strip-inner">
-        <div class="strip-text">
-          <span class="material-symbols-outlined">shield_person</span>
-          <span>You are viewing your authorized company profile. You can customize branding, RERA number, and upcoming projects.</span>
-        </div>
-        <div class="strip-btns">
-          <button type="button" class="btn-strip-action" (click)="setTab('customize')">
-            <span class="material-symbols-outlined">tune</span>
-            <span>Customize Page</span>
-          </button>
-          <a routerLink="/developer" class="btn-strip-portal">
-            <span class="material-symbols-outlined">add_business</span>
-            <span>Post New Project</span>
-          </a>
-        </div>
+  <div class="max-w-content admin-notice-wrap">
+    <div class="active-plan-profile-banner">
+      <div class="banner-left">
+        <span class="material-symbols-outlined">shield_person</span>
+        <span>Authorized Developer Profile: <strong>{{ builderDossier()?.name || builderName() }}</strong></span>
+      </div>
+      <div class="banner-right-btns">
+        <button type="button" class="btn-profile-link" (click)="setTab('customize')">
+          <span class="material-symbols-outlined">tune</span>
+          <span>Customize Profile</span>
+        </button>
+        <a routerLink="/developer" class="btn-profile-link">
+          <span class="material-symbols-outlined">add_business</span>
+          <span>Developer Portal</span>
+        </a>
       </div>
     </div>
+  </div>
   }
 
   @if (isLoading()) {
-    <!-- SKELETON LOADER STATE -->
-    <div class="builder-loading-state max-w-content">
-      <div class="loader-spinner"></div>
-      <h3>Loading Verified Developer Portfolio...</h3>
-      <p>Fetching project cadastral records and TNRERA sanction orders from database</p>
-    </div>
+  <!-- SKELETON LOADER STATE -->
+  <div class="builder-loading-state max-w-content">
+    <div class="loader-spinner"></div>
+    <h3 class="sub-hero-title">Loading Developer Portfolio...</h3>
+    <p class="sub-hero-subtitle">Fetching project records and cadastral compliance data</p>
+  </div>
   } @else {
 
-    <!-- 1. EXECUTIVE ARCHITECTURAL SHOWCASE HERO (DISTINCT THEME) -->
-    <header class="executive-builder-hero">
-      <div class="hero-blueprint-grid"></div>
+  <!-- DEVELOPER HERO SECTION (TEXT OVERLAID DIRECTLY ON BACKGROUND IMAGE) -->
+  <header class="builder-hero-section">
+    <div class="max-w-content">
 
-      <div class="max-w-content hero-content-inner">
-        <div class="hero-identity-row">
-          <!-- Developer Corporate Logo Emblem -->
-          <div class="developer-monogram-box">
-            @if (builderDossier()?.logoUrl) {
-              <img [src]="builderDossier()?.logoUrl" [alt]="builderDossier()?.name" class="developer-logo-img">
-            } @else {
-              <span class="material-symbols-outlined monogram-icon">apartment</span>
+      <!-- Unified Hero Container with Background Image & Overlaid Text -->
+      <div class="dev-hero-cover-container"
+        [style.background-image]="'url(' + (builderDossier()?.coverImageUrl || defaultCoverImage) + ')'">
+
+        <!-- Architectural Scrim Layer for Contrast -->
+        <div class="dev-cover-overlay"></div>
+
+        <!-- Overlaid Content Layer -->
+        <div class="dev-hero-overlaid-content">
+
+          <!-- Top Controls Row -->
+          <div class="dev-hero-top-bar">
+            @if (isAuthorizedDeveloper()) {
+            <button type="button" class="btn-change-cover" (click)="setTab('customize')"
+              title="Change Background Cover Photo">
+              <span class="material-symbols-outlined">wallpaper</span>
+              <span>Change Cover Photo</span>
+            </button>
             }
-            <div class="monogram-verified-glow"></div>
           </div>
 
-          <!-- Developer Name & Verification Credentials -->
-          <div class="developer-title-meta">
-            <div class="developer-badges-strip">
-              <span class="badge-tnrera-gold">
-                <span class="material-symbols-outlined">verified</span>
-                <span>TNRERA: {{ builderDossier()?.reraNumber || 'TNRERA/PROM/0219/2026' }}</span>
-              </span>
-              <span class="badge-dtcp-green">
-                <span class="material-symbols-outlined">gavel</span>
-                <span>DTCP / CMDA Approved</span>
-              </span>
-              <span class="badge-verified-cadastral">
-                <span class="material-symbols-outlined">fact_check</span>
-                <span>Cadastral Verified</span>
-              </span>
+          <!-- Identity Main Row -->
+          <div class="identity-main-row">
+
+            <!-- Logo Box -->
+            <div class="dev-logo-container">
+              @if (builderDossier()?.logoUrl) {
+              <img [src]="builderDossier()?.logoUrl" [alt]="builderDossier()?.name" class="dev-logo-image"
+                (error)="onImgError($event)">
+              } @else {
+              <div class="dev-logo-fallback">
+                <span class="material-symbols-outlined">apartment</span>
+              </div>
+              }
             </div>
 
-            <h1 class="developer-official-name">{{ builderDossier()?.name || builderName() }}</h1>
+            <!-- Identity Details & Badges -->
+            <div class="dev-identity-details">
+              <!-- Verification Badges -->
+              <div class="dev-badges-row">
+                <span class="badge-trust badge-rera">
+                  <span>TNRERA: {{ builderDossier()?.reraNumber || 'Verified' }}</span>
+                </span>
+              </div>
 
-            <p class="developer-subtitle">
-              <span class="material-symbols-outlined">location_on</span>
-              <span>Active in <strong>{{ builderDossier()?.districts?.join(', ') || 'Tamil Nadu' }}</strong></span>
-              <span class="sub-dot">•</span>
-              <span>Est. <strong>{{ builderDossier()?.estYear || '2016' }}</strong></span>
-              <span class="sub-dot">•</span>
-              <span><strong>{{ builderDossier()?.complianceRating || '99.4%' }}</strong> Title Clearance</span>
+              <h1 class="dev-hero-name">{{ builderDossier()?.name || builderName() }}</h1>
+
+              <!-- Architectural Spectrum Rule (Motif B) -->
+              <div class="header-spectrum-rule hero-spectrum-rule" aria-hidden="true"></div>
+
+              <p class="dev-hero-meta">
+                <span class="meta-item">
+                  <span class="material-symbols-outlined">location_on</span>
+                  <span>Active in <strong>{{ builderDossier()?.districts?.join(', ') || 'Tamil Nadu'
+                      }}</strong></span>
+                </span>
+                <span class="meta-sep">•</span>
+                <span class="meta-item">
+                  <span>Est. <strong>{{ builderDossier()?.estYear || '2016' }}</strong></span>
+                </span>
+                <span class="meta-sep">•</span>
+                <span class="meta-item">
+                  <span><strong>{{ builderDossier()?.complianceRating || '100%' }}</strong> Title Clearance</span>
+                </span>
+              </p>
+            </div>
+
+            <!-- Actions Row (Icon Only) -->
+            <div class="dev-hero-actions">
+              <a [href]="'https://wa.me/919486140936?text=Hi+Find+a+Plot%2C+I+am+interested+in+projects+by+' + (builderDossier()?.name || builderName())"
+                target="_blank" rel="noopener" class="btn-hero-icon btn-hero-chat"
+                title="Contact Developer" aria-label="Contact Developer">
+                <span class="material-symbols-outlined">chat</span>
+              </a>
+              <a routerLink="/search" [queryParams]="{ developer: builderDossier()?.rawName || builderName() }"
+                class="btn-hero-icon btn-hero-search"
+                title="Search in Registry" aria-label="Search in Registry">
+                <span class="material-symbols-outlined">search</span>
+              </a>
+                <button type="button" class="btn-hero-icon btn-hero-share" (click)="shareBuilderProfile()"
+                  title="Share Developer Portfolio" aria-label="Share Developer Portfolio">
+                  <span class="material-symbols-outlined">share</span>
+                </button>
+            </div>
+          </div>
+
+          <!-- About Developer Narrative & Verification Guarantees (Overlaid Below Developer Name) -->
+          @if (builderDossier()?.about) {
+          <div class="dev-identity-about-block">
+            <p class="about-body-text">
+              {{ builderDossier()?.about }}
             </p>
           </div>
+          }
 
-          <!-- Developer Contact Action CTAs -->
-          <div class="hero-actions-col">
-            <a [href]="'https://wa.me/919486140936?text=Hi+Find+a+Plot%2C+I+am+interested+in+projects+by+' + (builderDossier()?.name || builderName())"
-               target="_blank" rel="noopener" class="btn-hero-wa">
-              <span class="material-symbols-outlined">chat</span>
-              <span>Contact Developer Desk</span>
-            </a>
-            <a routerLink="/search" [queryParams]="{ developer: builderDossier()?.rawName || builderName() }" class="btn-hero-search">
-              <span class="material-symbols-outlined">search</span>
-              <span>Search in Registry</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- KPI COUNTERS BANNER -->
-        <div class="hero-kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label">Total Projects</span>
-            <div class="kpi-value-row">
-              <span class="kpi-num">{{ builderDossier()?.totalProjects || (projectsList().length + upcomingProjects().length) }}</span>
-              <span class="kpi-tag">Portfolio</span>
+          <!-- FIDUCIARY TRUST STRIP (4-COLUMN KPI ROW) -->
+          <div class="fiduciary-trust-strip" role="region" aria-label="Developer Performance Highlights">
+            <div class="trust-strip-item">
+              <span class="material-symbols-outlined trust-strip-icon">domain</span>
+              <div class="trust-strip-content">
+                <span class="trust-strip-title">{{ builderDossier()?.totalProjects || (projectsList().length +
+                  upcomingProjects().length) }} Projects</span>
+                <span class="trust-strip-desc">{{ projectsList().length }} Active • {{ upcomingProjects().length }}
+                  Upcoming</span>
+              </div>
             </div>
-            <span class="kpi-sub">{{ projectsList().length }} Active • {{ upcomingProjects().length }} Upcoming</span>
+
+            <div class="trust-strip-item">
+              <span class="material-symbols-outlined trust-strip-icon">event_upcoming</span>
+              <div class="trust-strip-content">
+                <span class="trust-strip-title">{{ upcomingProjects().length }} Releases</span>
+                <span class="trust-strip-desc">Pre-Launch Land Corridors</span>
+              </div>
+            </div>
+
+            <div class="trust-strip-item">
+              <span class="material-symbols-outlined trust-strip-icon">straighten</span>
+              <div class="trust-strip-content">
+                <span class="trust-strip-title">{{ builderDossier()?.deliveredSqFt || '12M+ sq.ft' }}</span>
+                <span class="trust-strip-desc">{{ builderDossier()?.completedProjects || '25+ Layouts' }}
+                  Delivered</span>
+              </div>
+            </div>
+
+            <div class="trust-strip-item">
+              <span class="material-symbols-outlined trust-strip-icon">payments</span>
+              <div class="trust-strip-content">
+                <span class="trust-strip-title">{{ builderDossier()?.minPrice || '₹ 25 Lakhs' }}</span>
+                <span class="trust-strip-desc">Up to {{ builderDossier()?.maxPrice || '₹ 1.8 Cr' }}</span>
+              </div>
+            </div>
           </div>
 
-          <div class="kpi-card">
-            <span class="kpi-label">Upcoming Releases</span>
-            <div class="kpi-value-row">
-              <span class="kpi-num">{{ upcomingProjects().length }}</span>
-              <span class="kpi-tag">Pre-Launch</span>
-            </div>
-            <span class="kpi-sub">Pipeline Plotted Sites</span>
-          </div>
-
-          <div class="kpi-card">
-            <span class="kpi-label">Delivered Extent</span>
-            <div class="kpi-value-row">
-              <span class="kpi-num">{{ builderDossier()?.deliveredSqFt || '12M+ sq.ft' }}</span>
-            </div>
-            <span class="kpi-sub">Est. {{ builderDossier()?.estYear || '2016' }} • {{ builderDossier()?.completedProjects || '25+ Projects' }}</span>
-          </div>
-
-          <div class="kpi-card kpi-price-card">
-            <span class="kpi-label">Starting Price</span>
-            <div class="kpi-value-row">
-              <span class="kpi-num-price">{{ builderDossier()?.minPrice || '₹ 25 Lakhs' }}</span>
-            </div>
-            <span class="kpi-sub">Up to {{ builderDossier()?.maxPrice || '₹ 1.8 Cr' }}</span>
-          </div>
         </div>
       </div>
-    </header>
 
-    <!-- 2. STICKY IN-PAGE NAVIGATION TABS -->
-    <nav class="builder-nav-tabs-wrapper">
-      <div class="max-w-content tabs-inner">
-        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'properties'" (click)="setTab('properties')">
+    </div>
+  </header>
+
+  <!-- IN-PAGE NAVIGATION TABS (RESTRICTED TO MAXWIDTH) -->
+  <div class="max-w-content dev-tabs-container">
+    <nav class="dev-tabs-wrapper" aria-label="Developer Showcase Sections">
+      <div class="dev-tabs-inner">
+        <button type="button" class="dev-tab-pill" [class.active]="activeTab() === 'properties'"
+          (click)="setTab('properties')">
           <span class="material-symbols-outlined">terrain</span>
-          <span>Properties &amp; Plots ({{ propertiesList().length }})</span>
+          <span>Properties &amp; Plots</span>
+          <span class="tab-count-badge">{{ propertiesList().length }}</span>
         </button>
 
-        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'projects'" (click)="setTab('projects')">
+        <button type="button" class="dev-tab-pill" [class.active]="activeTab() === 'projects'"
+          (click)="setTab('projects')">
           <span class="material-symbols-outlined">domain</span>
-          <span>Master Projects ({{ projectsList().length }})</span>
+          <span>Master Projects</span>
+          <span class="tab-count-badge">{{ projectsList().length }}</span>
         </button>
 
-        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'upcoming'" (click)="setTab('upcoming')">
+        <button type="button" class="dev-tab-pill" [class.active]="activeTab() === 'amenities'"
+          (click)="setTab('amenities')">
+          <span class="material-symbols-outlined">architecture</span>
+          <span>Amenities &amp; Layout Infra</span>
+        </button>
+
+        <button type="button" class="dev-tab-pill" [class.active]="activeTab() === 'location'"
+          (click)="setTab('location')">
+          <span class="material-symbols-outlined">near_me</span>
+          <span>Location &amp; Commute</span>
+        </button>
+
+        <button type="button" class="dev-tab-pill" [class.active]="activeTab() === 'upcoming'"
+          (click)="setTab('upcoming')">
           <span class="material-symbols-outlined">event_upcoming</span>
-          <span>Upcoming Projects ({{ upcomingProjects().length }})</span>
+          <span>Upcoming Projects</span>
+          <span class="tab-count-badge">{{ upcomingProjects().length }}</span>
         </button>
 
-        <button type="button" class="tab-item-btn" [class.active]="activeTab() === 'credentials'" (click)="setTab('credentials')">
+        <button type="button" class="dev-tab-pill" [class.active]="activeTab() === 'credentials'"
+          (click)="setTab('credentials')">
           <span class="material-symbols-outlined">gavel</span>
           <span>Cadastral Compliance</span>
         </button>
 
         @if (isAuthorizedDeveloper()) {
-          <button type="button" class="tab-item-btn tab-btn-customize" [class.active]="activeTab() === 'customize'" (click)="setTab('customize')">
-            <span class="material-symbols-outlined">tune</span>
-            <span>Customize Company</span>
-          </button>
+        <button type="button" class="dev-tab-pill tab-customize" [class.active]="activeTab() === 'customize'"
+          (click)="setTab('customize')">
+          <span class="material-symbols-outlined">tune</span>
+          <span>Customize Profile</span>
+        </button>
         }
       </div>
     </nav>
+  </div>
 
-    <!-- 3. MAIN PORTFOLIO SHOWCASE CONTAINER -->
-    <main class="max-w-content builder-main-content">
+  <!-- MAIN PORTFOLIO CONTENT CONTAINER -->
+  <main class="max-w-content dev-main-content">
 
-      <!-- SECTION: ABOUT DEVELOPER -->
-      <section class="builder-about-card">
-        <div class="section-gold-header">
-          <span class="material-symbols-outlined">info</span>
-          <h2>About {{ builderDossier()?.name || builderName() }}</h2>
+    <!-- TAB 1: ALL PROPERTIES & PLOTS (USING THE EXISTING PROPERTY-CARD COMPONENT) -->
+    @if (activeTab() === 'properties') {
+    <section class="dev-section" id="properties-view">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Properties &amp; Plotted Developments</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Direct developer inventory with verified cadastral boundaries and statutory
+            clearances.</p>
         </div>
-        <p class="about-text-body">
-          {{ builderDossier()?.about }}
-        </p>
+        <span class="count-pill">{{ filteredProperties().length }} Properties</span>
+      </div>
 
-        <div class="credentials-quick-badges">
-          <div class="cred-pill">
-            <span class="material-symbols-outlined">verified</span>
-            <span>100% Clear Title Patta Guarantee</span>
-          </div>
-          <div class="cred-pill">
-            <span class="material-symbols-outlined">account_balance</span>
-            <span>Pre-Approved Bank Loan Tie-ups (SBI, HDFC, ICICI)</span>
-          </div>
-          <div class="cred-pill">
-            <span class="material-symbols-outlined">history_edu</span>
-            <span>30-Year SRO Encumbrance Audit Verified</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION: ALL PROPERTIES & PLOTS (ACTIVE BY DEFAULT) -->
-      @if (activeTab() === 'properties') {
-      <section class="builder-properties-section" id="properties-view">
-        <div class="section-title-row">
-          <div>
-            <span class="section-eyebrow">CADASTRAL VERIFIED LISTINGS</span>
-            <h2 class="section-main-heading">Properties &amp; Land Plots</h2>
-          </div>
-          <span class="badge-project-count">{{ filteredProperties().length }} Properties</span>
-        </div>
-
-        <!-- Filter & Sort Strip -->
-        <div class="properties-filter-toolbar">
-          <div class="filter-chips-row">
-            <button type="button" class="project-chip" [class.active]="selectedProjectFilter() === 'all'" (click)="setProjectFilter('all')">
-              All Projects ({{ propertiesList().length }})
-            </button>
-            @for (proj of projectsList(); track proj.name) {
-            <button type="button" class="project-chip" [class.active]="selectedProjectFilter() === proj.name" (click)="setProjectFilter(proj.name)">
-              {{ proj.name }} ({{ proj.propertyCount }})
-            </button>
-            }
-          </div>
-
-          <div class="sort-select-box">
-            <label for="builder-sort-select">Sort By:</label>
-            <select id="builder-sort-select" [value]="sortBy()" (change)="setSortBy($any($event.target).value)">
-              <option value="featured">Featured First</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="sqft-desc">Plot Extent: Largest</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Properties Grid in Executive Theme -->
-        @if (filteredProperties().length > 0) {
-        <div class="builder-properties-grid">
-          @for (prop of filteredProperties(); track prop.id) {
-          <article class="builder-prop-card">
-            <div class="prop-card-media" [routerLink]="['/property', prop.id]">
-              <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" loading="lazy" decoding="async">
-              <div class="prop-media-overlay"></div>
-
-              <div class="prop-top-badges">
-                <span class="badge-rera-pill">
-                  <span class="material-symbols-outlined">verified</span>
-                  {{ prop.badges.rera }}
-                </span>
-                <span class="badge-tag-pill">{{ prop.badges.specialTag }}</span>
-              </div>
-
-              <div class="prop-bottom-badges">
-                <span class="prop-tour-tag">
-                  <span class="material-symbols-outlined">smart_display</span>
-                  4K Tour &amp; Drone
-                </span>
-                <span class="prop-photos-tag">
-                  <span class="material-symbols-outlined">photo_library</span>
-                  {{ prop.freePhotos.length }} Photos
-                </span>
-              </div>
-            </div>
-
-            <div class="prop-card-content">
-              <!-- Price Banner -->
-              <div class="prop-price-row">
-                <span class="prop-price-main">{{ prop.price }}</span>
-                <span class="prop-rate">{{ prop.pricePerSqFt }}</span>
-              </div>
-
-              <!-- Title & Locality -->
-              <h3 class="prop-card-title">
-                <a [routerLink]="['/property', prop.id]">{{ prop.title }}</a>
-              </h3>
-
-              <p class="prop-locality-text">
-                <span class="material-symbols-outlined">location_on</span>
-                <span>{{ prop.locality }}, {{ prop.city }}</span>
-              </p>
-
-              <!-- Specifications Strip -->
-              <div class="prop-specs-badges">
-                <span class="spec-pill">{{ prop.bhkBadge }}</span>
-                <span class="spec-pill">{{ prop.sqft }}</span>
-                <span class="spec-pill">{{ prop.facingOrView }}</span>
-              </div>
-
-              <!-- Cadastral Highlights -->
-              <div class="prop-highlights-list">
-                @for (hl of prop.highlights.slice(0, 3); track $index) {
-                <div class="hl-bullet">
-                  <span class="material-symbols-outlined">check</span>
-                  <span>{{ hl }}</span>
-                </div>
-                }
-              </div>
-
-              <!-- Card Actions -->
-              <div class="prop-card-actions">
-                <a [routerLink]="['/property', prop.id]" class="btn-view-dossier">
-                  <span>View Cadastral Dossier</span>
-                  <span class="material-symbols-outlined">arrow_forward</span>
-                </a>
-                <a [href]="prop.whatsappUrl" target="_blank" rel="noopener" class="btn-wa-inquire" title="Chat on WhatsApp">
-                  <span class="material-symbols-outlined">chat</span>
-                </a>
-              </div>
-            </div>
-          </article>
+      <!-- Filter & Sort Strip -->
+      <div class="dev-filter-toolbar">
+        <div class="filter-chips-list">
+          <button type="button" class="filter-chip-btn" [class.active]="selectedProjectFilter() === 'all'"
+            (click)="setProjectFilter('all')">
+            All Projects ({{ propertiesList().length }})
+          </button>
+          @for (proj of projectsList(); track proj.name) {
+          <button type="button" class="filter-chip-btn" [class.active]="selectedProjectFilter() === proj.name"
+            (click)="setProjectFilter(proj.name)">
+            {{ proj.name }} ({{ proj.propertyCount }})
+          </button>
           }
         </div>
-        } @else {
-        <div class="no-properties-box">
-          <span class="material-symbols-outlined">search_off</span>
-          <h3>No properties match the selected project filter</h3>
-          <button type="button" class="btn-reset-filter" (click)="setProjectFilter('all')">View All Projects</button>
+
+        <div class="filter-sort-group">
+          <label for="builder-sort-select">Sort By:</label>
+          <select id="builder-sort-select" [value]="sortBy()" (change)="setSortBy($any($event.target).value)"
+            class="sort-select">
+            <option value="featured">Featured First</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="sqft-desc">Plot Extent: Largest</option>
+          </select>
         </div>
+      </div>
+
+      <!-- Plot Size Bracket Filter Chips (Inspired by 99acres) -->
+      <div class="size-filter-strip">
+        <span class="size-filter-label">Plot Size Bracket:</span>
+        <div class="size-filter-chips">
+          <button type="button" class="size-chip-btn" [class.active]="selectedSizeFilter() === 'all'"
+            (click)="setSizeFilter('all')">
+            All Sizes
+          </button>
+          <button type="button" class="size-chip-btn" [class.active]="selectedSizeFilter() === 'compact'"
+            (click)="setSizeFilter('compact')">
+            &lt; 1,000 sq.ft (Compact)
+          </button>
+          <button type="button" class="size-chip-btn" [class.active]="selectedSizeFilter() === 'standard'"
+            (click)="setSizeFilter('standard')">
+            1,000 – 1,500 sq.ft (30×40 Standard)
+          </button>
+          <button type="button" class="size-chip-btn" [class.active]="selectedSizeFilter() === 'medium'"
+            (click)="setSizeFilter('medium')">
+            1,500 – 2,400 sq.ft (Corner / Premium)
+          </button>
+          <button type="button" class="size-chip-btn" [class.active]="selectedSizeFilter() === 'villa'"
+            (click)="setSizeFilter('villa')">
+            2,400+ sq.ft (Executive Villa Plots)
+          </button>
+        </div>
+      </div>
+
+      <!-- STANDARD SITE-WIDE PROPERTY CARD GRID -->
+      @if (filteredProperties().length > 0) {
+      <div class="results-grid">
+        @for (prop of filteredProperties(); track prop.id) {
+        <app-property-card [property]="prop" />
         }
-      </section>
+      </div>
+      } @else {
+      <div class="empty-state-box">
+        <span class="material-symbols-outlined empty-icon">search_off</span>
+        <h3 class="empty-title">No properties match the selected project or size filter</h3>
+        <p class="empty-desc">Try clearing the filters to explore all verified listings by this developer.</p>
+        <button type="button" class="btn-primary-action" (click)="setProjectFilter('all'); setSizeFilter('all')">
+          <span>View All Properties</span>
+        </button>
+      </div>
       }
 
-      <!-- SECTION: MASTER PROJECTS SHOWCASE -->
-      @if (activeTab() === 'projects') {
-      <section class="builder-projects-section">
-        <div class="section-title-row">
-          <div>
-            <span class="section-eyebrow">APPROVED LAYOUT DEVELOPMENTS</span>
-            <h2 class="section-main-heading">Master Projects Portfolio</h2>
-          </div>
-          <span class="badge-project-count">{{ projectsList().length }} Projects</span>
+      <!-- High-Trust Cadastral Master Layout Plan & Brochure Download Card -->
+      <div class="master-plan-download-banner">
+        <div class="mp-banner-left">
+          <h3 class="mp-banner-title">Download Official Cadastral Master Layout Plan &amp; Brochure</h3>
+          <p class="mp-banner-desc">Access the official high-resolution blueprint with individual survey numbers,
+            30–50ft road alignments, OSR park allocations, and statutory clearance orders for verified plotted
+            developments.</p>
         </div>
+        <div class="mp-banner-right">
+          <button type="button" class="btn-primary-action btn-download-plan" (click)="requestMasterPlan()">
+            <span class="material-symbols-outlined">download</span>
+            <span>Download Master Layout Plan (PDF)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+    }
 
-        <div class="projects-showcase-grid">
-          @for (proj of projectsList(); track proj.name) {
-          <article class="project-showcase-card" [class.selected]="selectedProjectFilter() === proj.name">
-            <div class="project-card-media">
-              <img [src]="proj.thumbnail" [alt]="proj.name" (error)="onImgError($event)" loading="lazy" decoding="async">
-              <div class="project-media-gradient"></div>
-              
-              <div class="project-card-badges">
-                @if (proj.reraNumber) {
-                <span class="badge-rera-glass" title="RERA Order: {{ proj.reraNumber }}">
-                  <span class="material-symbols-outlined">verified</span>
-                  {{ proj.reraNumber }}
-                </span>
-                }
-                <span class="badge-units-glass">{{ proj.propertyCount }} Verified Plots</span>
+    <!-- TAB 2: MASTER PROJECTS PORTFOLIO -->
+    @if (activeTab() === 'projects') {
+    <section class="dev-section">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Master Projects Portfolio</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Approved plotted communities, layout sanctions, and master cadastral
+            developments.</p>
+        </div>
+        <span class="count-pill">{{ projectsList().length }} Projects</span>
+      </div>
+
+      <div class="master-projects-grid">
+        @for (proj of projectsList(); track proj.name) {
+        <article class="master-project-card" [class.selected]="selectedProjectFilter() === proj.name">
+          <div class="project-media-wrap">
+            <img [src]="proj.thumbnail" [alt]="proj.name" (error)="onImgError($event)" loading="lazy" decoding="async">
+            <div class="project-media-gradient"></div>
+
+            <div class="project-top-badges">
+              @if (proj.reraNumber) {
+              <span class="badge-trust badge-rera-mini">
+                <span class="material-symbols-outlined">verified</span>
+                <span>{{ proj.reraNumber }}</span>
+              </span>
+              }
+              <span class="badge-trust badge-units-mini">{{ proj.propertyCount }} Verified Plots</span>
+            </div>
+          </div>
+
+          <div class="project-card-body">
+            <div class="project-loc-tag">
+              <span class="material-symbols-outlined">location_on</span>
+              <span>{{ proj.locality }}, {{ proj.district }}</span>
+            </div>
+
+            <h3 class="project-name-heading">{{ proj.name }}</h3>
+
+            <div class="project-specs-row">
+              <div class="proj-spec-col">
+                <span class="spec-label">Starting Price</span>
+                <strong class="spec-val-price">{{ proj.startingPrice }}</strong>
+              </div>
+              <div class="proj-spec-col">
+                <span class="spec-label">Plot Extent</span>
+                <strong class="spec-val-area">{{ proj.startingSqft }}</strong>
               </div>
             </div>
 
-            <div class="project-card-body">
-              <div class="project-loc-tag">
-                <span class="material-symbols-outlined">location_on</span>
-                <span>{{ proj.locality }}, {{ proj.district }}</span>
+            @if (proj.highwayName) {
+            <div class="project-corridor-row">
+              <span class="material-symbols-outlined">add_road</span>
+              <span>{{ proj.highwayName }}</span>
+            </div>
+            }
+
+            <div class="project-card-actions">
+              <button type="button" class="btn-filter-project"
+                (click)="setProjectFilter(proj.name); setTab('properties')">
+                <span class="material-symbols-outlined">filter_list</span>
+                <span>View {{ proj.propertyCount }} Plots in this Project</span>
+              </button>
+              @if (proj.samplePropertyId) {
+              <a [routerLink]="['/property', proj.samplePropertyId]" class="btn-icon-action"
+                title="Open Master Dossier">
+                <span class="material-symbols-outlined">visibility</span>
+              </a>
+              }
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- TAB 3: CATEGORIZED AMENITIES & LAYOUT INFRASTRUCTURE (INSPIRED BY 99ACRES) -->
+    @if (activeTab() === 'amenities') {
+    <section class="dev-section">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Amenities &amp; Layout Infrastructure</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Master-planned internal infrastructure, statutory OSR green parks, and 24/7
+            security provisions.</p>
+        </div>
+        <button type="button" class="btn-primary-action" (click)="requestMasterPlan()">
+          <span class="material-symbols-outlined">download</span>
+          <span>Download Infrastructure Specs</span>
+        </button>
+      </div>
+
+      <div class="amenities-categories-grid">
+        @for (cat of amenityCategories; track cat.name) {
+        <div class="amenity-category-card">
+          <div class="amenity-cat-header">
+            <div class="amenity-cat-icon">
+              <span class="material-symbols-outlined">{{ cat.icon }}</span>
+            </div>
+            <h3 class="amenity-cat-title">{{ cat.name }}</h3>
+          </div>
+          <div class="amenity-items-list">
+            @for (item of cat.items; track item) {
+            <div class="amenity-item-row">
+              <span class="material-symbols-outlined item-check-icon">check_circle</span>
+              <span class="item-text">{{ item }}</span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- TAB 4: STRATEGIC COMMUTE & PROXIMITY MATRIX (INSPIRED BY 99ACRES) -->
+    @if (activeTab() === 'location') {
+    <section class="dev-section">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Strategic Commute &amp; Proximity Highlights</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Proximity to IT employment hubs, engineering universities, international
+            schools, and express corridors.</p>
+        </div>
+      </div>
+
+      <div class="connectivity-grid">
+        @for (grp of connectivityHighlights; track grp.category) {
+        <div class="connectivity-card">
+          <div class="conn-header">
+            <span class="material-symbols-outlined conn-icon">{{ grp.icon }}</span>
+            <h3 class="conn-title">{{ grp.category }}</h3>
+          </div>
+          <div class="conn-list">
+            @for (item of grp.items; track item.name) {
+            <div class="conn-item">
+              <span class="conn-name">{{ item.name }}</span>
+              <span class="conn-time-badge">
+                <span class="material-symbols-outlined">schedule</span>
+                <span>{{ item.time }}</span>
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- TAB 5: UPCOMING PROJECTS PIPELINE -->
+    @if (activeTab() === 'upcoming') {
+    <section class="dev-section">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Upcoming Land Projects ({{ upcomingProjects().length }})</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Future pipeline and pre-launch plotted sites across growth corridors.</p>
+        </div>
+        @if (isAuthorizedDeveloper()) {
+        <a routerLink="/developer" class="btn-secondary-action">
+          <span class="material-symbols-outlined">add_circle</span>
+          <span>Manage Upcoming Projects</span>
+        </a>
+        }
+      </div>
+
+      @if (upcomingProjects().length > 0) {
+      <div class="upcoming-showcase-grid">
+        @for (item of upcomingProjects(); track item.id || item.name) {
+        <article class="upcoming-showcase-card">
+          <div class="upcoming-media-frame">
+            <img
+              [src]="item.bannerUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'"
+              [alt]="item.name" class="upcoming-banner-img">
+            <span class="upcoming-launch-badge">Expected Launch: {{ item.expectedLaunch }}</span>
+          </div>
+          <div class="upcoming-card-content">
+            <span class="upcoming-category-tag">{{ item.propertyType || 'Gated CMDA Plots' }}</span>
+            <h3 class="upcoming-title">{{ item.name }}</h3>
+            <p class="upcoming-location">
+              <span class="material-symbols-outlined">location_on</span>
+              <span>{{ item.locality }}, {{ item.city }}</span>
+            </p>
+            <p class="upcoming-desc">{{ item.description }}</p>
+
+            <div class="upcoming-specs-strip">
+              <div class="spec-cell">
+                <span class="s-label">Starting Price</span>
+                <span class="s-value">{{ item.startingPrice }}</span>
+              </div>
+              <div class="spec-cell">
+                <span class="s-label">Planned Extent</span>
+                <span class="s-value">{{ item.totalUnits }}</span>
+              </div>
+            </div>
+
+            <div class="upcoming-card-actions">
+              <a [href]="'https://wa.me/919486140936?text=Hi+Find+a+Plot%2C+I+want+to+register+interest+for+upcoming+project%3A+' + item.name"
+                target="_blank" rel="noopener" class="btn-primary-action full-width">
+                <span class="material-symbols-outlined">notification_add</span>
+                <span>Register Priority Interest</span>
+              </a>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+      } @else {
+      <div class="empty-state-box">
+        <span class="material-symbols-outlined empty-icon">event_upcoming</span>
+        <h3 class="empty-title">No Pre-Launch Projects Announced</h3>
+        <p class="empty-desc">New plotted developments and phase extensions by {{ builderDossier()?.name ||
+          builderName() }} will be announced here.</p>
+      </div>
+      }
+    </section>
+    }
+
+    <!-- TAB 4: CADASTRAL COMPLIANCE & LEGAL CLEARANCES -->
+    @if (activeTab() === 'credentials') {
+    <section class="dev-section">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Compliance &amp; Legal Sanctions</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Statutory verification matrix and title audit credentials.</p>
+        </div>
+      </div>
+
+      <div class="compliance-cards-grid">
+        <div class="compliance-card">
+          <div class="comp-icon-box">
+            <span class="material-symbols-outlined">verified</span>
+          </div>
+          <h4 class="comp-card-title">TNRERA Statutory Registration</h4>
+          <p class="comp-card-desc">Every active project under {{ builderDossier()?.name || builderName() }} is mapped
+            with official TNRERA sanction orders verifying promoter credentials and project layout maps.</p>
+          <div class="comp-tag-green">Official Registry Clearance</div>
+        </div>
+
+        <div class="compliance-card">
+          <div class="comp-icon-box">
+            <span class="material-symbols-outlined">approval</span>
+          </div>
+          <h4 class="comp-card-title">DTCP / CMDA Sanctions</h4>
+          <p class="comp-card-desc">All layouts adhere to government roadway standards (30–60 ft wide bitumen tar
+            roads), earmarked OSR public parks, and designated utility corridors.</p>
+          <div class="comp-tag-green">Sanctioned Master Plans</div>
+        </div>
+
+        <div class="compliance-card">
+          <div class="comp-icon-box">
+            <span class="material-symbols-outlined">description</span>
+          </div>
+          <h4 class="comp-card-title">Revenue Patta Classification</h4>
+          <p class="comp-card-desc">Direct freehold title deeds guaranteeing individual revenue patta generation upon
+            Sub-Registrar Office registration with nil parent deed ambiguities.</p>
+          <div class="comp-tag-green">Direct SRO Freehold</div>
+        </div>
+
+        <div class="compliance-card">
+          <div class="comp-icon-box">
+            <span class="material-symbols-outlined">account_balance</span>
+          </div>
+          <h4 class="comp-card-title">Pre-Approved Banking Partners</h4>
+          <p class="comp-card-desc">Direct loan sanctions available through SBI, HDFC Bank, ICICI Bank, and Axis Bank
+            with pre-vetted legal paperwork for immediate disbursement.</p>
+          <div class="comp-tag-green">80% Loan Support</div>
+        </div>
+      </div>
+    </section>
+    }
+
+    <!-- TAB 5: IN-PAGE DEVELOPER CUSTOMIZATION (DEVELOPER & SUPER ADMIN) -->
+    @if (activeTab() === 'customize' && isAuthorizedDeveloper()) {
+    <section class="dev-section">
+      <div class="section-title-bar">
+        <div>
+          <h2 class="sub-hero-title">Customize Developer Profile &amp; Branding</h2>
+          <div class="header-spectrum-rule" aria-hidden="true"></div>
+          <p class="sub-hero-subtitle">Update company credentials, logo, background cover image, and corporate
+            details.</p>
+        </div>
+      </div>
+
+      <div class="dev-card customize-form-card">
+        <form (submit)="saveCustomization()" class="inpage-custom-form">
+          <div class="form-row-2">
+            <div class="form-field">
+              <label class="field-label">Company / Developer Name *</label>
+              <input type="text" [(ngModel)]="customEditForm.name" name="name" required class="input-ctrl">
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Developer RERA Registration Number *</label>
+              <input type="text" [(ngModel)]="customEditForm.reraNumber" name="reraNumber" required class="input-ctrl">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-field logo-image-field">
+              <div class="field-label-row">
+                <label class="field-label">Developer Logo *</label>
+                <span class="field-hint">Emblem displayed across showcase hero</span>
+              </div>
+              <div class="input-with-upload">
+                <input type="url" [(ngModel)]="customEditForm.logoUrl" name="logoUrl" placeholder="https://..."
+                  class="input-ctrl">
+                <button type="button" class="btn-field-upload" (click)="logoFileInput.click()"
+                  [disabled]="isUploadingLogo()">
+                  <span class="material-symbols-outlined">{{ isUploadingLogo() ? 'progress_activity' : 'upload'
+                    }}</span>
+                  <span>{{ isUploadingLogo() ? 'Uploading...' : 'Upload Logo' }}</span>
+                </button>
+                <input #logoFileInput type="file" accept="image/*" (change)="onUploadLogoImage($event)"
+                  style="display:none">
               </div>
 
-              <h3 class="project-name-heading">{{ proj.name }}</h3>
+              @if (customEditForm.logoUrl) {
+              <div class="logo-live-preview-box">
+                <div class="logo-preview-badge">
+                  <img [src]="customEditForm.logoUrl" alt="Logo preview" class="logo-preview-img"
+                    (error)="onImgError($event)">
+                </div>
+                <button type="button" class="btn-clear-logo" (click)="customEditForm.logoUrl = ''"
+                  title="Remove custom logo">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              }
+            </div>
 
-              <div class="project-specs-row">
-                <div class="proj-spec-col">
-                  <span class="spec-label">Starting Price</span>
-                  <strong class="spec-val-price">{{ proj.startingPrice }}</strong>
-                </div>
-                <div class="proj-spec-col">
-                  <span class="spec-label">Plot Extent</span>
-                  <strong class="spec-val-area">{{ proj.startingSqft }}</strong>
-                </div>
+            <div class="form-field cover-image-field">
+              <div class="field-label-row">
+                <label class="field-label">Cover Banner Background Image</label>
+                <span class="field-hint">Featured across builder profile hero</span>
+              </div>
+              <div class="input-with-upload">
+                <input type="url" [(ngModel)]="customEditForm.coverImageUrl" name="coverImageUrl"
+                  placeholder="https://..." class="input-ctrl">
+                <button type="button" class="btn-field-upload" (click)="coverFileInput.click()"
+                  [disabled]="isUploadingCover()">
+                  <span class="material-symbols-outlined">{{ isUploadingCover() ? 'progress_activity' : 'upload'
+                    }}</span>
+                  <span>{{ isUploadingCover() ? 'Uploading...' : 'Upload Image' }}</span>
+                </button>
+                <input #coverFileInput type="file" accept="image/*" (change)="onUploadCoverImage($event)"
+                  style="display:none">
               </div>
 
-              @if (proj.highwayName) {
-              <div class="project-corridor-row">
-                <span class="material-symbols-outlined">add_road</span>
-                <span>{{ proj.highwayName }}</span>
+              @if (customEditForm.coverImageUrl) {
+              <div class="cover-live-preview-box">
+                <img [src]="customEditForm.coverImageUrl" alt="Cover Preview" class="cover-preview-img">
+                <button type="button" class="btn-clear-cover" (click)="customEditForm.coverImageUrl = ''"
+                  title="Remove custom cover">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
               </div>
               }
 
-              <div class="project-card-actions">
-                <button type="button" class="btn-filter-project" (click)="setProjectFilter(proj.name); setTab('properties')">
-                  <span class="material-symbols-outlined">filter_list</span>
-                  <span>View {{ proj.propertyCount }} Plots in this Project</span>
+              <div class="cover-presets-strip">
+                <span class="presets-label">Architectural Presets:</span>
+                <div class="presets-buttons">
+                  @for (preset of architecturalCoverPresets; track preset.label) {
+                  <button type="button" class="btn-preset-pill"
+                    [class.active]="customEditForm.coverImageUrl === preset.url"
+                    (click)="selectCoverPreset(preset.url)">
+                    {{ preset.label }}
+                  </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mild Gradient Page Theme Section -->
+          <div class="form-section-banner">
+            <div class="form-section-title">
+              <span class="material-symbols-outlined">palette</span>
+              <span>Developer Page Mild Gradient Background</span>
+            </div>
+            <p class="form-section-desc">
+              Provide a unique, bespoke atmosphere to this developer showcase page. All presets are meticulously
+              calibrated to guarantee high-contrast readability with zero visual clutter.
+            </p>
+
+            <!-- Live Mini Preview -->
+            <div class="theme-live-preview-box" [style.background]="customEditForm.bgGradient || defaultPageGradient">
+              <div class="theme-preview-card">
+                <div class="theme-preview-header">
+                  <span class="material-symbols-outlined theme-icon">apartment</span>
+                  <div>
+                    <strong>{{ customEditForm.name || builderName() }}</strong>
+                    <span class="theme-sub">TNRERA: {{ customEditForm.reraNumber || 'Verified' }} • Bespoke Page
+                      Atmosphere</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Presets Strip: Gradients -->
+            <div class="gradient-presets-container">
+              <label class="field-label">Curated Mild Architectural Gradients:</label>
+              <div class="gradient-chips-grid">
+                @for (preset of mildGradientPresets; track preset.label) {
+                <button type="button" class="btn-gradient-selector"
+                  [class.active]="(customEditForm.bgGradient || defaultPageGradient) === preset.value"
+                  (click)="selectGradientPreset(preset.value)">
+                  <span class="gradient-swatch" [style.background]="preset.value"></span>
+                  <div class="gradient-info">
+                    <span class="gradient-name">{{ preset.label }}</span>
+                    <span class="gradient-badge">{{ preset.badge }}</span>
+                  </div>
                 </button>
-                @if (proj.samplePropertyId) {
-                <a [routerLink]="['/property', proj.samplePropertyId]" class="btn-project-dossier" title="Open Master Dossier">
-                  <span class="material-symbols-outlined">visibility</span>
-                </a>
                 }
               </div>
             </div>
-          </article>
-          }
-        </div>
-      </section>
-      }
 
-      <!-- SECTION: CADASTRAL COMPLIANCE & LEGAL CLEARANCES -->
-      @if (activeTab() === 'credentials') {
-      <section class="builder-compliance-section">
-        <div class="section-title-row">
-          <div>
-            <span class="section-eyebrow">STATUTORY VERIFICATION MATRIX</span>
-            <h2 class="section-main-heading">Compliance &amp; Legal Sanctions</h2>
-          </div>
-        </div>
-
-        <div class="compliance-cards-grid">
-          <div class="compliance-card">
-            <div class="comp-icon-box">
-              <span class="material-symbols-outlined">verified</span>
-            </div>
-            <h4>TNRERA Statutory Registration</h4>
-            <p>Every active project under {{ builderDossier()?.name || builderName() }} is mapped with official TNRERA sanction orders verifying promoter credentials and project layout maps.</p>
-            <div class="comp-tag-green">Official Registry Clearance</div>
-          </div>
-
-          <div class="compliance-card">
-            <div class="comp-icon-box">
-              <span class="material-symbols-outlined">approval</span>
-            </div>
-            <h4>DTCP / CMDA Sanctions</h4>
-            <p>All layouts adhere to government roadway standards (30–60 ft wide bitumen tar roads), earmarked OSR public parks, and designated utility corridors.</p>
-            <div class="comp-tag-green">Sanctioned Master Plans</div>
-          </div>
-
-          <div class="compliance-card">
-            <div class="comp-icon-box">
-              <span class="material-symbols-outlined">description</span>
-            </div>
-            <h4>Revenue Patta Classification</h4>
-            <p>Direct freehold title deeds guaranteeing individual revenue patta generation upon Sub-Registrar Office registration with nil parent deed ambiguities.</p>
-            <div class="comp-tag-green">Direct SRO Freehold</div>
-          </div>
-
-          <div class="compliance-card">
-            <div class="comp-icon-box">
-              <span class="material-symbols-outlined">account_balance</span>
-            </div>
-            <h4>Pre-Approved Banking Partners</h4>
-            <p>Direct loan sanctions available through SBI, HDFC Bank, ICICI Bank, and Axis Bank with pre-vetted legal paperwork for immediate disbursement.</p>
-            <div class="comp-tag-green">80% Loan Support</div>
-          </div>
-        </div>
-      </section>
-      }
-
-      <!-- SECTION: UPCOMING PROJECTS PIPELINE -->
-      @if (activeTab() === 'upcoming') {
-      <section class="builder-upcoming-section">
-        <div class="section-title-row">
-          <div>
-            <span class="section-eyebrow">FUTURE PIPELINE &amp; PRE-LAUNCH DEVELOPMENTS</span>
-            <h2 class="section-main-heading">Upcoming Land Projects ({{ upcomingProjects().length }})</h2>
-          </div>
-          @if (isAuthorizedDeveloper()) {
-            <a routerLink="/developer" class="btn-manage-upcoming">
-              <span class="material-symbols-outlined">add_circle</span>
-              <span>Manage Upcoming Projects</span>
-            </a>
-          }
-        </div>
-
-        @if (upcomingProjects().length > 0) {
-          <div class="upcoming-showcase-grid">
-            @for (item of upcomingProjects(); track item.id || item.name) {
-              <article class="upcoming-showcase-card">
-                <div class="upcoming-media-frame">
-                  <img [src]="item.bannerUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'" [alt]="item.name" class="upcoming-banner-img">
-                  <span class="upcoming-launch-badge">Expected Launch: {{ item.expectedLaunch }}</span>
-                </div>
-                <div class="upcoming-card-content">
-                  <span class="upcoming-category-tag">{{ item.propertyType || 'Gated CMDA Plots' }}</span>
-                  <h3 class="upcoming-title">{{ item.name }}</h3>
-                  <p class="upcoming-location">
-                    <span class="material-symbols-outlined">location_on</span>
-                    <span>{{ item.locality }}, {{ item.city }}</span>
-                  </p>
-                  <p class="upcoming-desc">{{ item.description }}</p>
-
-                  <div class="upcoming-specs-strip">
-                    <div class="spec-cell">
-                      <span class="s-label">Starting Price</span>
-                      <span class="s-value">{{ item.startingPrice }}</span>
-                    </div>
-                    <div class="spec-cell">
-                      <span class="s-label">Planned Extent</span>
-                      <span class="s-value">{{ item.totalUnits }}</span>
-                    </div>
+            <!-- Presets Strip: Mild Flat Colors & Pure White -->
+            <div class="gradient-presets-container" style="margin-top: 14px;">
+              <label class="field-label">Curated Mild Flat Colors &amp; Pure White:</label>
+              <div class="gradient-chips-grid">
+                @for (preset of mildFlatColorPresets; track preset.label) {
+                <button type="button" class="btn-gradient-selector"
+                  [class.active]="(customEditForm.bgGradient || defaultPageGradient) === preset.value"
+                  (click)="selectGradientPreset(preset.value)">
+                  <span class="gradient-swatch" [style.background]="preset.value"></span>
+                  <div class="gradient-info">
+                    <span class="gradient-name">{{ preset.label }}</span>
+                    <span class="gradient-badge">{{ preset.badge }}</span>
                   </div>
-
-                  <div class="upcoming-card-actions">
-                    <a [href]="'https://wa.me/919486140936?text=Hi+Find+a+Plot%2C+I+want+to+register+interest+for+upcoming+project%3A+' + item.name" target="_blank" rel="noopener" class="btn-register-interest">
-                      <span class="material-symbols-outlined">notification_add</span>
-                      <span>Register Priority Interest</span>
-                    </a>
-                  </div>
-                </div>
-              </article>
-            }
-          </div>
-        } @else {
-          <div class="empty-upcoming-box">
-            <span class="material-symbols-outlined">event_upcoming</span>
-            <h3>No Pre-Launch Projects Announced</h3>
-            <p>New plotted developments and phase extensions by {{ builderDossier()?.name || builderName() }} will be announced here.</p>
-          </div>
-        }
-      </section>
-      }
-
-      <!-- SECTION: IN-PAGE DEVELOPER CUSTOMIZATION (DEVELOPER ROLE) -->
-      @if (activeTab() === 'customize' && isAuthorizedDeveloper()) {
-      <section class="builder-customization-section">
-        <div class="section-title-row">
-          <div>
-            <span class="section-eyebrow">DEVELOPER ROLE ACCESS</span>
-            <h2 class="section-main-heading">Customize Company Branding &amp; Details</h2>
-          </div>
-        </div>
-
-        <div class="customize-card-container">
-          <form (submit)="saveCustomization()" class="inpage-custom-form">
-            <div class="form-row-2">
-              <div class="form-field">
-                <label>Company / Developer Name *</label>
-                <input type="text" [(ngModel)]="customEditForm.name" name="name" required class="input-ctrl">
-              </div>
-
-              <div class="form-field">
-                <label>Developer RERA Registration Number *</label>
-                <input type="text" [(ngModel)]="customEditForm.reraNumber" name="reraNumber" required class="input-ctrl">
-              </div>
-            </div>
-
-            <div class="form-row-2">
-              <div class="form-field">
-                <label>Developer Logo URL *</label>
-                <input type="url" [(ngModel)]="customEditForm.logoUrl" name="logoUrl" class="input-ctrl">
-                <div class="preview-mini-wrap" *ngIf="customEditForm.logoUrl">
-                  <span class="text-xs">Logo Preview:</span>
-                  <img [src]="customEditForm.logoUrl" alt="Logo preview" class="preview-img">
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label>Cover Banner Image URL</label>
-                <input type="url" [(ngModel)]="customEditForm.coverImageUrl" name="coverImageUrl" class="input-ctrl">
-              </div>
-            </div>
-
-            <div class="form-row-3">
-              <div class="form-field">
-                <label>Established Year</label>
-                <input type="text" [(ngModel)]="customEditForm.establishedYear" name="establishedYear" class="input-ctrl">
-              </div>
-
-              <div class="form-field">
-                <label>Projects Completed</label>
-                <input type="text" [(ngModel)]="customEditForm.projectsCompleted" name="projectsCompleted" class="input-ctrl">
-              </div>
-
-              <div class="form-field">
-                <label>Delivered Extent (Sq.Ft)</label>
-                <input type="text" [(ngModel)]="customEditForm.deliveredSqFt" name="deliveredSqFt" class="input-ctrl">
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label>Corporate Office Address</label>
-              <input type="text" [(ngModel)]="customEditForm.corporateOffice" name="corporateOffice" class="input-ctrl">
-            </div>
-
-            <div class="form-row-3">
-              <div class="form-field">
-                <label>Contact Phone</label>
-                <input type="text" [(ngModel)]="customEditForm.contactPhone" name="contactPhone" class="input-ctrl">
-              </div>
-
-              <div class="form-field">
-                <label>Contact Email</label>
-                <input type="email" [(ngModel)]="customEditForm.contactEmail" name="contactEmail" class="input-ctrl">
-              </div>
-
-              <div class="form-field">
-                <label>Official Website</label>
-                <input type="url" [(ngModel)]="customEditForm.websiteUrl" name="websiteUrl" class="input-ctrl">
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label>About Company Narrative</label>
-              <textarea [(ngModel)]="customEditForm.about" name="about" rows="4" class="textarea-ctrl"></textarea>
-            </div>
-
-            <div class="form-btn-bar">
-              <button type="button" class="btn-cancel" (click)="setTab('properties')">Cancel</button>
-              <button type="submit" class="btn-save-custom" [disabled]="isSaving()">
-                @if (isSaving()) {
-                  <span>Saving Customizations...</span>
-                } @else {
-                  <span class="material-symbols-outlined">save</span>
-                  <span>Save Developer Profile</span>
+                </button>
                 }
-              </button>
+              </div>
             </div>
-          </form>
-        </div>
-      </section>
-      }
 
-    </main>
+            <!-- Custom Background CSS (Gradient or Flat Hex Color) -->
+            <div class="form-field" style="margin-top: 14px;">
+              <label class="field-label">Custom Background CSS (Flat Hex Color or Linear / Radial Gradient)</label>
+              <input type="text" [(ngModel)]="customEditForm.bgGradient" name="bgGradient"
+                placeholder="#ffffff or linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)"
+                class="input-ctrl font-mono">
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-field">
+              <label class="field-label">Established Year</label>
+              <input type="text" [(ngModel)]="customEditForm.establishedYear" name="establishedYear" class="input-ctrl">
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Projects Completed</label>
+              <input type="text" [(ngModel)]="customEditForm.projectsCompleted" name="projectsCompleted"
+                class="input-ctrl">
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Delivered Extent (Sq.Ft)</label>
+              <input type="text" [(ngModel)]="customEditForm.deliveredSqFt" name="deliveredSqFt" class="input-ctrl">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Corporate Office Address</label>
+            <input type="text" [(ngModel)]="customEditForm.corporateOffice" name="corporateOffice" class="input-ctrl">
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-field">
+              <label class="field-label">Contact Phone</label>
+              <input type="text" [(ngModel)]="customEditForm.contactPhone" name="contactPhone" class="input-ctrl">
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Contact Email</label>
+              <input type="email" [(ngModel)]="customEditForm.contactEmail" name="contactEmail" class="input-ctrl">
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Official Website</label>
+              <input type="url" [(ngModel)]="customEditForm.websiteUrl" name="websiteUrl" class="input-ctrl">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">About Company Narrative</label>
+            <textarea [(ngModel)]="customEditForm.about" name="about" rows="4" class="textarea-ctrl"></textarea>
+          </div>
+
+          <div class="form-btn-bar">
+            <button type="button" class="btn-secondary-action" (click)="setTab('properties')">Cancel</button>
+            <button type="submit" class="btn-primary-action" [disabled]="isSaving()">
+              @if (isSaving()) {
+              <span>Saving Customizations...</span>
+              } @else {
+              <span class="material-symbols-outlined">save</span>
+              <span>Save Developer Profile</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+    }
+
+  </main>
   }
 
   <!-- Footer -->
   <app-footer />
 </div>
-

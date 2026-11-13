@@ -142,6 +142,100 @@
                 }
               </select>
             </div>
+
+            <div class="input-group">
+              <label class="input-label">Property Category *</label>
+              <select class="form-select" [(ngModel)]="master.category" name="category">
+                @for (opt of categoryOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Listing Type *</label>
+              <select class="form-select" [(ngModel)]="master.type" name="type">
+                @for (opt of typeOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Project Stage</label>
+              <select class="form-select" [(ngModel)]="master.projectStage" name="projectStage">
+                @for (opt of projectStageOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Project Status</label>
+              <select class="form-select" [(ngModel)]="master.projectStatus" name="projectStatus">
+                @for (opt of projectStatusOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Launch Date</label>
+              <input type="date" class="form-input" [(ngModel)]="master.launchDate" name="launchDate" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Approval Authority</label>
+              <select class="form-select" [(ngModel)]="master.approvalAuthority" name="approvalAuthority">
+                @for (opt of approvalAuthorityOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Approval Date</label>
+              <input type="date" class="form-input" [(ngModel)]="master.approvalDate" name="approvalDate" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">RERA Compliance Details</label>
+              <input type="text" class="form-input" [(ngModel)]="master.reraDetails" name="reraDetails"
+                placeholder="e.g. TNRERA Phase 1 & 2 Approved" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Brokerage Policy</label>
+              <input type="text" class="form-input" [(ngModel)]="master.brokerage" name="brokerage"
+                placeholder="e.g. 0% Direct SRO Deed" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">No Brokerage (Direct Owner/Dev)</label>
+              <select class="form-select" [(ngModel)]="master.noBrokerage" name="noBrokerage">
+                @for (opt of yesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Featured Showcase</label>
+              <select class="form-select" [(ngModel)]="master.featured" name="featured">
+                @for (opt of yesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Free Public Access</label>
+              <select class="form-select" [(ngModel)]="master.freeAccess" name="freeAccess">
+                @for (opt of yesNoOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
           </div>
         </div>
 
@@ -182,6 +276,12 @@
             </div>
 
             <div class="input-group">
+              <label class="input-label">City *</label>
+              <input type="text" class="form-input" [(ngModel)]="master.city" name="city" placeholder="e.g. Chennai"
+                required />
+            </div>
+
+            <div class="input-group">
               <label class="input-label">District *</label>
               <input type="text" class="form-input" [(ngModel)]="master.district" name="district"
                 placeholder="e.g. Chengalpattu" required />
@@ -194,9 +294,21 @@
             </div>
 
             <div class="input-group">
+              <label class="input-label">GPS Coordinates (Lat, Lng)</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.gps" name="gps"
+                placeholder="e.g. 12.8436, 80.0601" />
+            </div>
+
+            <div class="input-group">
               <label class="input-label">Google Maps Link</label>
               <input type="text" class="form-input" [(ngModel)]="master.googleMapsLink" name="googleMapsLink"
                 placeholder="https://maps.google.com/..." />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Interactive 3D Masterplan URL</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.interactiveMap" name="interactiveMap"
+                placeholder="e.g. assets/secura-masterplan-3d.html" />
             </div>
           </div>
         </div>
@@ -306,6 +418,60 @@
                 }
               </select>
             </div>
+
+            <div class="input-group">
+              <label class="input-label">Total Layout Extent / Area</label>
+              <input type="text" class="form-input" [(ngModel)]="master.totalLayoutArea" name="totalLayoutArea"
+                placeholder="e.g. 14.5 Acres" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Total Plots in Layout</label>
+              <input type="number" class="form-input" [(ngModel)]="master.totalPlots" name="totalPlots"
+                placeholder="e.g. 120" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Total Units (Display)</label>
+              <input type="text" class="form-input" [(ngModel)]="master.totalUnits" name="totalUnits"
+                placeholder="e.g. 120 Villa Plots" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Units Sold / Booked</label>
+              <input type="text" class="form-input" [(ngModel)]="master.unitsSold" name="unitsSold"
+                placeholder="e.g. 42 Plots Sold" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Min Plot Size (sq.ft)</label>
+              <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
+                placeholder="e.g. 600" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Max Plot Size (sq.ft)</label>
+              <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
+                placeholder="e.g. 2400" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Available Plot Sizes Range</label>
+              <input type="text" class="form-input" [(ngModel)]="master.availablePlotSizes" name="availablePlotSizes"
+                placeholder="e.g. 600 - 2,400 sq.ft" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Price From (₹)</label>
+              <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
+                placeholder="e.g. 2800000" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Price To (₹)</label>
+              <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
+                placeholder="e.g. 7600000" />
+            </div>
           </div>
         </div>
 
@@ -388,6 +554,30 @@
               <label class="input-label">Railway Station (Name &amp; km)</label>
               <input type="text" class="form-input" [(ngModel)]="master.railwayStationNearby"
                 name="railwayStationNearby" placeholder="e.g. Guduvanchery - 2.5 km" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Nearby Arterial Roads / Access</label>
+              <input type="text" class="form-input" [(ngModel)]="master.nearbyRoads" name="nearbyRoads"
+                placeholder="e.g. GST Road (NH45), Outer Ring Road" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Nearby Employment &amp; IT Hubs</label>
+              <input type="text" class="form-input" [(ngModel)]="master.employmentHubs" name="employmentHubs"
+                placeholder="e.g. Mahindra World City, Estancia IT Park" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Surrounding Residential Growth</label>
+              <input type="text" class="form-input" [(ngModel)]="master.residentialDevelopment"
+                name="residentialDevelopment" placeholder="e.g. Gated villa townships nearby" />
+            </div>
+
+            <div class="input-group full-col">
+              <label class="input-label">Upcoming Infrastructure Projects</label>
+              <input type="text" class="form-input" [(ngModel)]="master.infrastructureProjects"
+                name="infrastructureProjects" placeholder="e.g. Metro Phase 2 Extension, Kilambakkam Hub" />
             </div>
           </div>
         </div>
@@ -526,8 +716,56 @@
                 name="developerMaintenanceYears" placeholder="e.g. 2" />
             </div>
 
+            <div class="input-group">
+              <label class="input-label">Road Width Description</label>
+              <input type="text" class="form-input" [(ngModel)]="master.roadWidth" name="roadWidth"
+                placeholder="e.g. 30ft & 40ft Blacktop Roads" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Internal Roads Finish</label>
+              <input type="text" class="form-input" [(ngModel)]="master.internalRoads" name="internalRoads"
+                placeholder="e.g. 40ft & 30ft Blacktop Tar" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Street Lights Specification</label>
+              <input type="text" class="form-input" [(ngModel)]="master.streetLightsDetails" name="streetLightsDetails"
+                placeholder="e.g. LED Avenue Lighting" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Drainage System Specification</label>
+              <input type="text" class="form-input" [(ngModel)]="master.drainageDetails" name="drainageDetails"
+                placeholder="e.g. Underground Stormwater Drainage" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Water Supply Specification</label>
+              <input type="text" class="form-input" [(ngModel)]="master.waterDetails" name="waterDetails"
+                placeholder="e.g. Individual OHT Water Supply" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Electricity Supply Specification</label>
+              <input type="text" class="form-input" [(ngModel)]="master.electricityDetails" name="electricityDetails"
+                placeholder="e.g. EB 3-Phase Underground Cabling" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Parks &amp; OSR Specification</label>
+              <input type="text" class="form-input" [(ngModel)]="master.parksDetails" name="parksDetails"
+                placeholder="e.g. Landscaped Children Park & Walkway" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Security &amp; Gated Access Spec</label>
+              <input type="text" class="form-input" [(ngModel)]="master.securityDetails" name="securityDetails"
+                placeholder="e.g. 24x7 Boom Barrier Security" />
+            </div>
+
             <div class="input-group full-col">
-              <label class="input-label">Other Amenities</label>
+              <label class="input-label">Other Amenities / Facilities</label>
               <input type="text" class="form-input" [(ngModel)]="master.otherAmenities" name="otherAmenities"
                 placeholder="e.g. Temple, play area, CCTV, Avenue plantation" />
             </div>
@@ -577,9 +815,48 @@
             </div>
 
             <div class="input-group">
+              <label class="input-label">WhatsApp Concierge Number</label>
+              <input type="text" class="form-input" [(ngModel)]="master.whatsappNumber" name="whatsappNumber"
+                placeholder="e.g. 9486140936" />
+            </div>
+
+            <div class="input-group full-col">
               <label class="input-label">Remarks / Special Highlights</label>
               <input type="text" class="form-input" [(ngModel)]="master.remarks" name="remarks"
                 placeholder="e.g. Near upcoming metro extension, rapid capital appreciation" />
+            </div>
+          </div>
+
+          <!-- Project Media & Statutory Documents Dossier -->
+          <div class="form-grid-2" style="margin-top: 1rem;">
+            <div class="input-group">
+              <label class="input-label">Walkthrough Video URLs</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.videos" name="videos"
+                placeholder="https://youtube.com/... or MP4 link" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">4K Drone Aerial Video URLs</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.droneVideos" name="droneVideos"
+                placeholder="https://... drone survey video link" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Sanctioned Layout Plan PDF URL</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.layoutPdf" name="layoutPdf"
+                placeholder="https://.../layout-plan.pdf" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Project Brochure PDF URL</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.brochure" name="brochure"
+                placeholder="https://.../brochure.pdf" />
+            </div>
+
+            <div class="input-group full-col">
+              <label class="input-label">Additional Gallery Image URLs (comma-separated)</label>
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.galleryUrls" name="galleryUrls"
+                placeholder="https://.../photo1.jpg, https://.../photo2.jpg" />
             </div>
           </div>
         </div>

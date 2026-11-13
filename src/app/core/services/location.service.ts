@@ -100,6 +100,9 @@ export class LocationService {
   /** Currently selected Tamil Nadu district */
   readonly selectedDistrict = signal<string>(this.getStoredDistrict());
 
+  /** Increments every time setDistrict() is called so search bars re-sync when header district changes */
+  readonly districtChangeRevision = signal<number>(0);
+
   /** Additional granular detected locality/suburb if resolved from GPS (e.g. Nagercoil, Adyar) */
   readonly detectedLocality = signal<string | null>(null);
 
@@ -361,6 +364,7 @@ export class LocationService {
 
     const name = matched ? matched.name : districtName;
     this.selectedDistrict.set(name);
+    this.districtChangeRevision.update(n => n + 1);
 
     if (source === 'manual') {
       this.detectedLocality.set(null);

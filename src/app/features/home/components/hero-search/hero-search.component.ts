@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
 import { ListingMode, Property } from '../../../../core/models/property.model';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { LocationService } from '../../../../core/services/location.service';
 import { DealsScrollingBannerComponent } from '../deals-scrolling-banner/deals-scrolling-banner.component';
 
 export interface LocationSuggestion {
@@ -138,101 +139,253 @@ export interface PropertyTypeOption {
               <!-- Trending & Auto-Suggest Dropdown Panel -->
               @if (isLocationSuggestOpen()) {
                 <div class="suggest-dropdown-panel" (click)="$event.stopPropagation()">
-                  <!-- 1. Matched Real-Time Properties Section -->
-                  @if (matchedProperties().length > 0) {
-                    <div class="suggest-section">
-                      <div class="suggest-header suggest-header-props">
-                        <span>Verified Properties &amp; Projects ({{ matchedProperties().length }})</span>
-                      </div>
-                      <div class="suggest-list suggest-list-props">
-                        @for (prop of matchedProperties(); track prop.id) {
-                          <div class="suggest-prop-item" (click)="selectProperty(prop)">
-                            <div class="prop-thumb-wrap">
-                              <img 
-                                [src]="prop.imageUrl || 'hero-bg.jpg'" 
-                                [alt]="prop.title" 
-                                class="prop-thumb"
-                                loading="lazy"
-                                decoding="async"
-                                (error)="onThumbError($event)">
-                              @if (prop.bhkBadge) {
-                                <span class="prop-bhk-tag">{{ prop.bhkBadge }}</span>
-                              }
-                            </div>
-                            <div class="prop-info">
-                              <div class="prop-title-row">
-                                <span class="prop-title" [title]="prop.title">{{ prop.title }}</span>
-                                <span class="prop-price">{{ prop.price }}</span>
-                              </div>
-                              <div class="prop-meta-row">
-                                <span class="prop-loc">
-                                  {{ prop.locality }}, {{ prop.city }}
-                                </span>
-                                <span class="prop-type-pill">{{ prop.propertyType }}</span>
-                              </div>
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
-
-                  <!-- 2. Google Places & Geocoded Locations Section -->
-                  @if (googlePlacesList().length > 0) {
-                    <div class="suggest-section">
-                      <div class="suggest-header suggest-header-places">
-                        <span>Google Places Verified Locations ({{ googlePlacesList().length }})</span>
-                      </div>
-                      <div class="suggest-list">
-                        @for (place of googlePlacesList(); track place.placeId || place.label) {
-                          <div class="suggest-item suggest-item-google" (click)="selectGooglePlace(place)">
-                            <div class="suggest-item-left">
-                              <span class="material-symbols-outlined loc-pin google-pin">explore</span>
-                              <div class="suggest-item-texts">
-                                <div class="suggest-title-flex">
-                                  <span class="suggest-name">{{ place.label }}</span>
-                                  <span class="google-badge-tag">Google Place</span>
+                  <!-- Auto-Listing Mode (no manual custom query typed): strictly 3 tiers -->
+                  @if (isHeroAutoListingMode()) {
+                    @if (locationService.selectedDistrict()) {
+                      <!-- Tier 1: District Selected -> Top Localities in Selected District -->
+                      <div class="suggest-section">
+                        <div class="suggest-header" style="display:flex;align-items:center;justify-content:space-between;">
+                          <span>Top Localities in <strong>{{ locationService.selectedDistrict() }}</strong></span>
+                          <span class="suggest-tag">{{ locationService.selectedDistrict() }} Targeted</span>
+                        </div>
+                        <div class="suggest-list">
+                          @for (item of districtSuggestions(); track item.query + item.label) {
+                            <div class="suggest-item" (click)="selectSuggestionItem(item)">
+                              <div class="suggest-item-left" style="display:flex;align-items:center;gap:8px;">
+                                <span class="material-symbols-outlined loc-pin" style="font-size:18px;color:#5e8f72;">{{ item.icon || (item.type === 'developer' ? 'apartment' : 'location_on') }}</span>
+                                <div class="suggest-item-texts">
+                                  <span class="suggest-name">{{ item.label }}</span>
+                                  <span class="suggest-sub">{{ item.sub }}</span>
                                 </div>
-                                <span class="suggest-sub">{{ place.sub }}</span>
+                              </div>
+                              <span class="suggest-tag">{{ item.type === 'developer' ? 'Developer' : (item.type === 'project' ? 'Project' : 'Locality') }}</span>
+                            </div>
+                          }
+                          @if (districtSuggestions().length === 0) {
+                            <div class="suggest-item" (click)="executeSearch()">
+                              <div class="suggest-item-left" style="display:flex;align-items:center;gap:8px;">
+                                <span class="material-symbols-outlined loc-pin" style="font-size:18px;color:#5e8f72;">location_on</span>
+                                <div class="suggest-item-texts">
+                                  <span class="suggest-name">{{ locationService.selectedDistrict() }}</span>
+                                  <span class="suggest-sub">Search all verified properties in {{ locationService.selectedDistrict() }}</span>
+                                </div>
+                              </div>
+                              <span class="suggest-tag">District</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    } @else if (userSearchHistory().length > 0) {
+                      <!-- Tier 2: No District Selected + User Search History Exists -->
+                      <div class="suggest-section">
+                        <div class="suggest-header" style="display:flex;align-items:center;justify-content:space-between;">
+                          <span>Recent Search History</span>
+                          <div style="display:flex;align-items:center;gap:8px;">
+                            <button type="button" (click)="clearSearchHistory($event)"
+                              style="background:transparent;border:1px solid #cbd5e1;color:#64748b;font-size:10px;font-weight:600;padding:1px 7px;cursor:pointer;text-transform:uppercase;">
+                              Clear History
+                            </button>
+                            <span class="suggest-tag">History</span>
+                          </div>
+                        </div>
+                        <div class="suggest-list">
+                          @for (item of userSearchHistory(); track item.query + item.label) {
+                            <div class="suggest-item" (click)="selectHistoryItem(item)">
+                              <div class="suggest-item-left" style="display:flex;align-items:center;gap:8px;">
+                                <span class="material-symbols-outlined loc-pin" style="font-size:18px;color:#5e8f72;">{{ item.type === 'developer' ? 'apartment' : 'history' }}</span>
+                                <div class="suggest-item-texts">
+                                  <span class="suggest-name">{{ item.label }}</span>
+                                  <span class="suggest-sub">{{ item.sub }}</span>
+                                </div>
+                              </div>
+                              <span class="suggest-tag">{{ item.type === 'developer' ? 'Developer' : 'History' }}</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- Tier 3: No District Selected + No History -> Popular Search Items -->
+                      <div class="suggest-section">
+                        <div class="suggest-header" style="display:flex;align-items:center;justify-content:space-between;">
+                          <span>Popular &amp; Trending Searches</span>
+                          <span class="suggest-tag">Popular</span>
+                        </div>
+                        <div class="suggest-list">
+                          @if (popularSuggestions().length > 0) {
+                            @for (item of popularSuggestions(); track item.query + item.label) {
+                              <div class="suggest-item" (click)="selectSuggestionItem(item)">
+                                <div class="suggest-item-left" style="display:flex;align-items:center;gap:8px;">
+                                  <span class="material-symbols-outlined loc-pin" style="font-size:18px;color:#5e8f72;">{{ item.icon || (item.type === 'developer' ? 'apartment' : 'trending_up') }}</span>
+                                  <div class="suggest-item-texts">
+                                    <span class="suggest-name">{{ item.label }}</span>
+                                    <span class="suggest-sub">{{ item.sub }}</span>
+                                  </div>
+                                </div>
+                                <span class="suggest-tag">{{ item.type === 'developer' ? 'Developer' : 'Popular' }}</span>
+                              </div>
+                            }
+                          } @else {
+                            @for (loc of trendingLocations(); track loc.name) {
+                              <div class="suggest-item" (click)="selectLocation(loc)">
+                                <div class="suggest-item-left">
+                                  <div class="suggest-item-texts">
+                                    <span class="suggest-name">{{ loc.name }}</span>
+                                    <span class="suggest-sub">{{ loc.sub }} • {{ loc.city }}</span>
+                                  </div>
+                                </div>
+                                <span class="suggest-tag">Popular</span>
+                              </div>
+                            }
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Verified Developers & Builders Section in Auto-Listing Mode -->
+                    @if (autoListedDevelopers().length > 0) {
+                      <div class="suggest-section">
+                        <div class="suggest-header" style="display:flex;align-items:center;justify-content:space-between;">
+                          <span>Verified Developers &amp; Builders</span>
+                          <span class="suggest-tag">Developer</span>
+                        </div>
+                        <div class="suggest-list">
+                          @for (dev of autoListedDevelopers(); track dev.name) {
+                            <div class="suggest-item" (click)="selectDeveloper(dev.name, dev.sub)">
+                              <div class="suggest-item-left" style="display:flex;align-items:center;gap:8px;">
+                                <span class="material-symbols-outlined loc-pin" style="font-size:18px;color:#0f3b4a;">apartment</span>
+                                <div class="suggest-item-texts">
+                                  <span class="suggest-name">{{ dev.name }}</span>
+                                  <span class="suggest-sub">{{ dev.sub }}</span>
+                                </div>
+                              </div>
+                              <span class="suggest-tag">Developer</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  } @else {
+                    <!-- Live Typed Search Mode -->
+                    <!-- 0. Matched Verified Developers & Builders Section -->
+                    @if (matchedDevelopers().length > 0) {
+                      <div class="suggest-section">
+                        <div class="suggest-header" style="display:flex;align-items:center;justify-content:space-between;">
+                          <span>Verified Developers &amp; Builders ({{ matchedDevelopers().length }})</span>
+                          <span class="suggest-tag">Developer</span>
+                        </div>
+                        <div class="suggest-list">
+                          @for (dev of matchedDevelopers(); track dev.name) {
+                            <div class="suggest-item" (click)="selectDeveloper(dev.name, dev.sub)">
+                              <div class="suggest-item-left" style="display:flex;align-items:center;gap:8px;">
+                                <span class="material-symbols-outlined loc-pin" style="font-size:18px;color:#0f3b4a;">apartment</span>
+                                <div class="suggest-item-texts">
+                                  <span class="suggest-name">{{ dev.name }}</span>
+                                  <span class="suggest-sub">{{ dev.sub }}</span>
+                                </div>
+                              </div>
+                              <span class="suggest-tag">View Profile →</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- 1. Matched Real-Time Properties Section -->
+                    @if (matchedProperties().length > 0) {
+                      <div class="suggest-section">
+                        <div class="suggest-header suggest-header-props">
+                          <span>Verified Properties &amp; Projects ({{ matchedProperties().length }})</span>
+                        </div>
+                        <div class="suggest-list suggest-list-props">
+                          @for (prop of matchedProperties(); track prop.id) {
+                            <div class="suggest-prop-item" (click)="selectProperty(prop)">
+                              <div class="prop-thumb-wrap">
+                                <img 
+                                  [src]="prop.imageUrl || 'hero-bg.jpg'" 
+                                  [alt]="prop.title" 
+                                  class="prop-thumb"
+                                  loading="lazy"
+                                  decoding="async"
+                                  (error)="onThumbError($event)">
+                                @if (prop.bhkBadge) {
+                                  <span class="prop-bhk-tag">{{ prop.bhkBadge }}</span>
+                                }
+                              </div>
+                              <div class="prop-info">
+                                <div class="prop-title-row">
+                                  <span class="prop-title" [title]="prop.title">{{ prop.title }}</span>
+                                  <span class="prop-price">{{ prop.price }}</span>
+                                </div>
+                                <div class="prop-meta-row">
+                                  <span class="prop-loc">
+                                    {{ prop.locality }}, {{ prop.city }}
+                                  </span>
+                                  <span class="prop-type-pill">{{ prop.propertyType }}</span>
+                                </div>
                               </div>
                             </div>
-                            <span class="suggest-tag-add">+ Select</span>
-                          </div>
-                        }
+                          }
+                        </div>
                       </div>
-                    </div>
-                  }
+                    }
 
-                  <!-- 3. Corridors & Localities Section -->
-                  @if (filteredTrendingLocations().length > 0) {
-                    <div class="suggest-section">
-                      <div class="suggest-header">
-                        <span>{{ propertyService.searchQuery() ? 'Matching Corridors & Localities' : 'Trending High-Growth Corridors' }}</span>
-                      </div>
-                      <div class="suggest-list">
-                        @for (loc of filteredTrendingLocations(); track loc.name) {
-                          <div class="suggest-item" (click)="selectLocation(loc)">
-                            <div class="suggest-item-left">
-                              <div class="suggest-item-texts">
-                                <span class="suggest-name">{{ loc.name }}</span>
-                                <span class="suggest-sub">{{ loc.sub }} • {{ loc.city }}</span>
+                    <!-- 2. Google Places & Geocoded Locations Section -->
+                    @if (googlePlacesList().length > 0) {
+                      <div class="suggest-section">
+                        <div class="suggest-header suggest-header-places">
+                          <span>Google Places Verified Locations ({{ googlePlacesList().length }})</span>
+                        </div>
+                        <div class="suggest-list">
+                          @for (place of googlePlacesList(); track place.placeId || place.label) {
+                            <div class="suggest-item suggest-item-google" (click)="selectGooglePlace(place)">
+                              <div class="suggest-item-left">
+                                <span class="material-symbols-outlined loc-pin google-pin">explore</span>
+                                <div class="suggest-item-texts">
+                                  <div class="suggest-title-flex">
+                                    <span class="suggest-name">{{ place.label }}</span>
+                                    <span class="google-badge-tag">Google Place</span>
+                                  </div>
+                                  <span class="suggest-sub">{{ place.sub }}</span>
+                                </div>
                               </div>
+                              <span class="suggest-tag-add">+ Select</span>
                             </div>
-                            <span class="suggest-tag">{{ loc.tag }}</span>
-                          </div>
-                        }
+                          }
+                        </div>
                       </div>
-                    </div>
-                  }
+                    }
 
-                  <!-- 3. Empty State -->
-                  @if (propertyService.searchQuery() && matchedProperties().length === 0 && filteredTrendingLocations().length === 0) {
-                    <div class="suggest-empty-state">
-                      <div class="empty-texts">
-                        <p class="empty-title">No matching properties for "{{ propertyService.searchQuery() }}"</p>
-                        <p class="empty-sub">Press SEARCH or Enter to check the entire registry.</p>
+                    <!-- 3. Corridors & Localities Section -->
+                    @if (filteredTrendingLocations().length > 0) {
+                      <div class="suggest-section">
+                        <div class="suggest-header">
+                          <span>Matching Corridors &amp; Localities</span>
+                        </div>
+                        <div class="suggest-list">
+                          @for (loc of filteredTrendingLocations(); track loc.name) {
+                            <div class="suggest-item" (click)="selectLocation(loc)">
+                              <div class="suggest-item-left">
+                                <div class="suggest-item-texts">
+                                  <span class="suggest-name">{{ loc.name }}</span>
+                                  <span class="suggest-sub">{{ loc.sub }} • {{ loc.city }}</span>
+                                </div>
+                              </div>
+                              <span class="suggest-tag">{{ loc.tag }}</span>
+                            </div>
+                          }
+                        </div>
                       </div>
-                    </div>
+                    }
+
+                    <!-- 4. Empty State -->
+                    @if (matchedDevelopers().length === 0 && matchedProperties().length === 0 && googlePlacesList().length === 0 && filteredTrendingLocations().length === 0) {
+                      <div class="suggest-empty-state">
+                        <div class="empty-texts">
+                          <p class="empty-title">No matching properties for "{{ propertyService.searchQuery() }}"</p>
+                          <p class="empty-sub">Press SEARCH or Enter to check the entire registry.</p>
+                        </div>
+                      </div>
+                    }
                   }
                 </div>
               }
@@ -2195,6 +2348,43 @@ export class HeroSearchComponent implements OnInit {
   private readonly router = inject(Router);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
+  readonly locationService = inject(LocationService);
+
+  readonly isHeroInputManuallyAdjusted = signal<boolean>(false);
+  private lastHeroDistrictRev = -1;
+
+  constructor() {
+    effect(() => {
+      const headerDist = this.locationService.selectedDistrict();
+      const rev = this.locationService.districtChangeRevision();
+
+      const isExplicitDistrictSwitch = this.lastHeroDistrictRev !== -1 && rev !== this.lastHeroDistrictRev;
+      const isInitialSync = this.lastHeroDistrictRev === -1;
+
+      if (isExplicitDistrictSwitch) {
+        this.lastHeroDistrictRev = rev;
+        this.isHeroInputManuallyAdjusted.set(false);
+        this.googlePlacesList.set([]);
+        this.propertyService.searchQuery.set(headerDist || '');
+      } else if (isInitialSync) {
+        this.lastHeroDistrictRev = rev;
+        if (headerDist && !this.isHeroInputManuallyAdjusted() && !this.propertyService.searchQuery().trim()) {
+          this.propertyService.searchQuery.set(headerDist);
+        }
+      }
+
+      if (headerDist) {
+        this.propertyService.fetchSuggestions('', headerDist).subscribe(res => {
+          this.districtSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+        });
+      } else {
+        this.districtSuggestions.set([]);
+        this.propertyService.fetchSuggestions('', '').subscribe(res => {
+          this.popularSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+        });
+      }
+    });
+  }
 
   // Hero Top Mode Tabs (Buy | Post | Commercial | Agriculture)
   readonly activeHeroTab = signal<'buy' | 'commercial' | 'agricultural'>('buy');
@@ -2289,9 +2479,114 @@ export class HeroSearchComponent implements OnInit {
   ];
   readonly isBudgetDropdownOpen = signal<boolean>(false);
 
-  // 5. Trending & Auto-Suggest
+  // 5. Trending & Auto-Suggest + User-Specific Search History
   readonly isLocationSuggestOpen = signal<boolean>(false);
   readonly googlePlacesList = signal<any[]>([]);
+  readonly userSearchHistory = signal<any[]>([]);
+  readonly districtSuggestions = signal<any[]>([]);
+  readonly popularSuggestions = signal<any[]>([]);
+  readonly buildersList = signal<any[]>([]);
+
+  readonly isHeroAutoListingMode = computed<boolean>(() => {
+    return !this.isHeroInputManuallyAdjusted() || !this.propertyService.searchQuery().trim();
+  });
+
+  readonly autoListedDevelopers = computed(() => {
+    const builders = this.buildersList();
+    if (!builders || builders.length === 0) return [];
+    const dist = this.locationService.selectedDistrict().trim().toLowerCase();
+
+    let ordered = builders;
+    if (dist) {
+      const matched = builders.filter((b: any) =>
+        (b.districts && b.districts.some((d: string) => d.toLowerCase().includes(dist) || dist.includes(d.toLowerCase()))) ||
+        (b.corporateOffice && b.corporateOffice.toLowerCase().includes(dist))
+      );
+      const others = builders.filter((b: any) => !matched.includes(b));
+      ordered = [...matched, ...others];
+    }
+
+    return ordered.slice(0, 4).map((b: any) => {
+      const count = b.projectCount ?? b.propertyCount ?? 0;
+      return {
+        name: b.name,
+        sub: count > 0 ? `Verified Developer • ${count} Projects` : 'Verified Developer • View Profile'
+      };
+    });
+  });
+
+  readonly matchedDevelopers = computed(() => {
+    if (this.isHeroAutoListingMode()) return [];
+    const q = this.propertyService.searchQuery().trim().toLowerCase();
+    if (!q) return [];
+    return this.buildersList()
+      .filter((b: any) => b.name && b.name.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((b: any) => {
+        const count = b.projectCount ?? b.propertyCount ?? 0;
+        return {
+          name: b.name,
+          sub: count > 0 ? `Verified Developer • ${count} Projects` : 'Verified Developer • View Profile'
+        };
+      });
+  });
+
+  refreshUserSearchHistory(): void {
+    this.userSearchHistory.set(this.propertyService.getUserSearchHistory());
+  }
+
+  clearSearchHistory(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.propertyService.clearUserSearchHistory();
+    this.userSearchHistory.set([]);
+  }
+
+  selectDeveloper(devName: string, sub?: string): void {
+    if (!devName) return;
+    this.propertyService.recordUserSearchHistory({
+      label: devName,
+      sub: sub || 'Verified Developer',
+      type: 'developer',
+      query: devName
+    });
+    this.refreshUserSearchHistory();
+    this.isLocationSuggestOpen.set(false);
+    this.router.navigate(['/builder', devName]);
+  }
+
+  selectHistoryItem(item: any): void {
+    const q = item.query || item.label;
+    if (!q) return;
+    if (item.type === 'developer') {
+      this.selectDeveloper(q, item.sub);
+      return;
+    }
+    this.isHeroInputManuallyAdjusted.set(true);
+    this.propertyService.searchQuery.set(q);
+    this.isLocationSuggestOpen.set(false);
+    this.executeSearch();
+  }
+
+  selectSuggestionItem(item: any): void {
+    const q = item.query || item.label;
+    if (!q) return;
+    if (item.type === 'developer') {
+      this.selectDeveloper(q, item.sub);
+      return;
+    }
+    this.isHeroInputManuallyAdjusted.set(true);
+    this.propertyService.recordUserSearchHistory({
+      label: item.label || q,
+      sub: item.sub || '',
+      type: item.type || 'locality',
+      query: q
+    });
+    this.refreshUserSearchHistory();
+    this.propertyService.searchQuery.set(q);
+    this.isLocationSuggestOpen.set(false);
+    this.executeSearch();
+  }
   readonly trendingLocations = signal<LocationSuggestion[]>([
     { name: 'GST Road (NH45)', city: 'Chengalpattu', tag: '300+ Verified Plots', sub: 'Vandalur, Tambaram & Madurantakam', query: 'GST Road', propertyCount: 302 },
     { name: 'Chennai–Bengaluru Highway (NH48)', city: 'Kancheepuram', tag: 'Industrial & Electronics Hub', sub: 'Sriperumbudur, Walajabad & Ranipet', query: 'NH48', propertyCount: 217 },
@@ -2321,10 +2616,14 @@ export class HeroSearchComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.refreshUserSearchHistory();
     this.propertyService.fetchTrendingCorridors().subscribe(corridors => {
       if (corridors && corridors.length > 0) {
         this.trendingLocations.set(corridors);
       }
+    });
+    this.propertyService.fetchBuilders().subscribe(builders => {
+      this.buildersList.set(builders || []);
     });
   }
 
@@ -2343,6 +2642,13 @@ export class HeroSearchComponent implements OnInit {
   });
 
   selectProperty(prop: Property): void {
+    this.propertyService.recordUserSearchHistory({
+      label: prop.title,
+      sub: `${prop.locality || ''}, ${prop.city || ''}`.replace(/^,\s*|,\s*$/g, ''),
+      type: 'project',
+      query: prop.locality || prop.title
+    });
+    this.refreshUserSearchHistory();
     this.isLocationSuggestOpen.set(false);
     this.router.navigate(['/property', prop.id]);
   }
@@ -2470,6 +2776,20 @@ export class HeroSearchComponent implements OnInit {
   }
 
   openLocationSuggest(): void {
+    this.refreshUserSearchHistory();
+    const dist = this.locationService.selectedDistrict();
+    if (this.isHeroAutoListingMode()) {
+      this.googlePlacesList.set([]);
+    }
+    if (dist) {
+      this.propertyService.fetchSuggestions('', dist).subscribe(res => {
+        this.districtSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+      });
+    } else if (this.userSearchHistory().length === 0) {
+      this.propertyService.fetchSuggestions('', '').subscribe(res => {
+        this.popularSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+      });
+    }
     this.isLocationSuggestOpen.set(true);
     this.isTypeDropdownOpen.set(false);
     this.isBudgetDropdownOpen.set(false);
@@ -2477,6 +2797,14 @@ export class HeroSearchComponent implements OnInit {
 
   selectLocation(loc: LocationSuggestion): void {
     const q = loc.query || loc.name;
+    this.isHeroInputManuallyAdjusted.set(true);
+    this.propertyService.recordUserSearchHistory({
+      label: loc.name,
+      sub: `${loc.sub} • ${loc.city}`,
+      type: 'corridor',
+      query: q
+    });
+    this.refreshUserSearchHistory();
     this.propertyService.searchQuery.set(q);
     this.isLocationSuggestOpen.set(false);
     this.executeSearch();
@@ -2484,12 +2812,21 @@ export class HeroSearchComponent implements OnInit {
 
   selectGooglePlace(place: any): void {
     const text = place.label || place.query || place.fullText;
+    this.isHeroInputManuallyAdjusted.set(true);
+    this.propertyService.recordUserSearchHistory({
+      label: place.label || text,
+      sub: place.sub || 'Verified Google Place',
+      type: 'google_place',
+      query: text
+    });
+    this.refreshUserSearchHistory();
     this.propertyService.searchQuery.set(text);
     this.isLocationSuggestOpen.set(false);
     this.executeSearch();
   }
 
   clearSearchInput(): void {
+    this.isHeroInputManuallyAdjusted.set(true);
     this.propertyService.searchQuery.set('');
     this.googlePlacesList.set([]);
   }
@@ -2497,6 +2834,7 @@ export class HeroSearchComponent implements OnInit {
   private heroDebounceTimer: any = null;
 
   onSearchInput(event: Event): void {
+    this.isHeroInputManuallyAdjusted.set(true);
     const val = (event.target as HTMLInputElement).value;
     this.propertyService.searchQuery.set(val);
     this.isLocationSuggestOpen.set(true);
@@ -2747,6 +3085,19 @@ export class HeroSearchComponent implements OnInit {
   // Execute Search -> Navigates to /search with rich query parameters
   executeSearch(): void {
     this.isMobileQuestionnaireOpen.set(false);
+    const activeQ = this.propertyService.searchQuery().trim();
+    const headerDist = this.locationService.selectedDistrict();
+    const isSyncedDistrictOnly = !this.isHeroInputManuallyAdjusted() && !!activeQ && activeQ.toLowerCase() === headerDist.toLowerCase();
+
+    if (activeQ && !isSyncedDistrictOnly) {
+      this.propertyService.recordUserSearchHistory({
+        label: activeQ,
+        sub: 'Home Search Keyword',
+        type: 'locality',
+        query: activeQ
+      });
+      this.refreshUserSearchHistory();
+    }
     const rawBudget = this.propertyService.selectedBudget();
     let budgetParam: string | null = null;
     let minBudgetParam: number | null = null;
@@ -2765,9 +3116,32 @@ export class HeroSearchComponent implements OnInit {
 
     const typesParam = this.selectedTypes().length > 0 ? this.selectedTypes().join(',') : null;
 
+    const hubValue = isSyncedDistrictOnly
+      ? headerDist
+      : (activeQ || (this.isHeroInputManuallyAdjusted() ? '' : headerDist));
+    const budgetLabel = (rawBudget && rawBudget !== 'Select Budget' && rawBudget !== 'Any Budget')
+      ? rawBudget
+      : (this.isCustomBudgetActive()
+          ? `${this.formatBudgetInr(this.customBudgetMin())} – ${this.formatBudgetInr(this.customBudgetMax())}`
+          : '');
+    const assetLabel = this.selectedTypes().length > 0 ? this.selectedTypes().join(', ') : '';
+    const titleLabel = this.selectedStatus() === 'ready'
+      ? 'Ready to Register / Clear Patta'
+      : 'Clear Title / Patta Verified';
+
+    this.propertyService.updateUserAcquisitionPreferences({
+      targetHubCorridor: hubValue,
+      targetBudget: budgetLabel,
+      assetClassification: assetLabel,
+      titleRequirement: titleLabel,
+      reraVerification: 'TNRERA & DTCP Approved'
+    });
+
     this.router.navigate(['/search'], {
       queryParams: {
-        q: this.propertyService.searchQuery() || null,
+        q: isSyncedDistrictOnly ? null : (activeQ || null),
+        district: isSyncedDistrictOnly ? headerDist : null,
+        localities: isSyncedDistrictOnly ? headerDist : null,
         type: typesParam,
         budget: budgetParam,
         minBudget: minBudgetParam,

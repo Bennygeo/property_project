@@ -224,7 +224,6 @@ export interface BuyerDemandItem {
     }
 
     .max-w-content {
-      max-width: 1140px;
       margin: 0 auto;
       padding: 0 1rem;
     }

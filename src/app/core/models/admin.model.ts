@@ -1,10 +1,10 @@
 import { PropertyMasterData } from './property-master.model';
-export type PropertyReviewStatus = 
-  | 'published' 
-  | 'pending_review' 
-  | 'pending_peer_review' 
-  | 'rejected' 
-  | 'revision_requested' 
+export type PropertyReviewStatus =
+  | 'published'
+  | 'pending_review'
+  | 'pending_peer_review'
+  | 'rejected'
+  | 'revision_requested'
   | 'draft';
 
 export interface AdminPropertyItem {
@@ -73,7 +73,11 @@ export interface PostPropertyPayload {
   authorName: string;
   authorRole: string;
   galleryImages?: string[];
+  masterData?: PropertyMasterData;
   masterDetails?: PropertyMasterData;
+  highlights?: string[];
+  plotFactsheet?: any;
+  subdividedPlots?: any[];
 }
 
 export interface ReviewDecisionPayload {

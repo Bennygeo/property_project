@@ -9,6 +9,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
+import { PropertyCardComponent } from '../../../home/components/property-card/property-card.component';
 
 export interface UpcomingProjectItem {
   id?: string;
@@ -47,6 +48,7 @@ export interface BuilderDossier {
   reraNumber?: string;
   logoUrl?: string | null;
   coverImageUrl?: string | null;
+  bgGradient?: string | null;
   corporateOffice?: string;
   contactEmail?: string;
   contactPhone?: string;
@@ -78,7 +80,8 @@ export interface BuilderDossier {
     FormsModule,
     TopConciergeBarComponent,
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    PropertyCardComponent
   ],
   templateUrl: './builder-showcase-page.component.html',
   styleUrls: ['./builder-showcase-page.component.css']
@@ -99,9 +102,89 @@ export class BuilderShowcasePageComponent implements OnInit {
   readonly propertiesList = signal<Property[]>([]);
 
   // Filter & View State
-  readonly activeTab = signal<'properties' | 'projects' | 'upcoming' | 'credentials' | 'customize'>('properties');
+  readonly activeTab = signal<'properties' | 'projects' | 'amenities' | 'location' | 'upcoming' | 'credentials' | 'customize'>('properties');
   readonly selectedProjectFilter = signal<string>('all');
+  readonly selectedSizeFilter = signal<string>('all');
   readonly sortBy = signal<string>('featured');
+
+  // Categorized Plotted Layout Amenities
+  readonly amenityCategories = [
+    {
+      name: 'Core Infrastructure',
+      icon: 'engineering',
+      items: [
+        '30–50 ft Wide Bitumen Tar Roads',
+        'Underground Electrical & Fiber Optics',
+        'Stormwater Concrete Drainage Network',
+        'Dedicated Sewage Treatment Plant (STP)',
+        'Individual Potable Water Connections',
+        'Avenue LED Street Illumination'
+      ]
+    },
+    {
+      name: 'Security & Compound',
+      icon: 'shield',
+      items: [
+        '24/7 Manned Entry Arch Security',
+        'Boom Barrier Access Control',
+        'Perimeter Concrete Compound Wall',
+        'High-Definition CCTV Surveillance',
+        'Dedicated Security Patrol Booth'
+      ]
+    },
+    {
+      name: 'Recreation & Green Spaces',
+      icon: 'park',
+      items: [
+        'Sanctioned OSR Landscaped Park',
+        'Equipped Children\'s Play Zone',
+        'Paved Jogging & Walking Tracks',
+        'Sports Half-Court (Basketball/Badminton)',
+        'Tree-Lined Green Buffer Corridors'
+      ]
+    }
+  ];
+
+  // Strategic Commute & Connectivity Highlights
+  readonly connectivityHighlights = [
+    {
+      category: 'IT & Employment Corridors',
+      icon: 'business_center',
+      items: [
+        { name: 'SIPCOT IT Park (Siruseri)', time: '15 Mins' },
+        { name: 'ETA Technopark & Pacifica', time: '18 Mins' },
+        { name: 'Sholinganallur Junction & SEZ', time: '25 Mins' }
+      ]
+    },
+    {
+      category: 'Educational Institutions',
+      icon: 'school',
+      items: [
+        { name: 'SSN College of Engineering', time: '5 Mins' },
+        { name: 'Hindustan University (HITS)', time: '10 Mins' },
+        { name: 'Chettinad Health City Campus', time: '10 Mins' },
+        { name: 'Sishya School / Gateway International', time: '12 Mins' }
+      ]
+    },
+    {
+      category: 'Healthcare & Hospitals',
+      icon: 'local_hospital',
+      items: [
+        { name: 'Chettinad Super Speciality Hospital', time: '10 Mins' },
+        { name: 'Supreme Speciality Hospital', time: '15 Mins' },
+        { name: 'Apollo Speciality OMR', time: '20 Mins' }
+      ]
+    },
+    {
+      category: 'Transit & Highways',
+      icon: 'alt_route',
+      items: [
+        { name: 'OMR Roadway Direct Access', time: '2 Mins' },
+        { name: 'Kelambakkam Junction', time: '8 Mins' },
+        { name: 'ECR Kovalam Beach Corridor', time: '15 Mins' }
+      ]
+    }
+  ];
 
   // Check if current user is authorized to customize this developer
   readonly isAuthorizedDeveloper = computed(() => {
@@ -126,11 +209,133 @@ export class BuilderShowcasePageComponent implements OnInit {
   });
 
   // In-page Customization form state
+  readonly defaultCoverImage = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80';
+  readonly isUploadingCover = signal<boolean>(false);
+  readonly isUploadingLogo = signal<boolean>(false);
+
+  readonly architecturalCoverPresets = [
+    { label: 'Executive Skyline', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80' },
+    { label: 'Modern Prestige', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1800&q=80' },
+    { label: 'Plotted Land Corridor', url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=80' },
+    { label: 'Green Gated Layout', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1800&q=80' }
+  ];
+
+  readonly mildGradientPresets = [
+    { label: 'Emerald Sage Breeze', value: 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)', badge: 'Eco & Plotted' },
+    { label: 'Coastal Marine Mist', value: 'linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #e0f2fe 100%)', badge: 'Maritime & Teal' },
+    { label: 'Warm Champagne', value: 'linear-gradient(135deg, #fffbeb 0%, #f8fafc 50%, #fef3c7 100%)', badge: 'Heritage Luxury' },
+    { label: 'Slate Platinum', value: 'linear-gradient(135deg, #f1f5f9 0%, #f8fafc 50%, #e2e8f0 100%)', badge: 'Executive Modern' },
+    { label: 'Nordic Botanical Mint', value: 'linear-gradient(135deg, #ecfdf5 0%, #f8fafc 50%, #d1fae5 100%)', badge: 'Gated Townships' },
+    { label: 'Rose Blush Whisper', value: 'linear-gradient(135deg, #fff1f2 0%, #f8fafc 50%, #ffe4e6 100%)', badge: 'Boutique Estates' },
+    { label: 'Lavender Royal Mist', value: 'linear-gradient(135deg, #f5f3ff 0%, #f8fafc 50%, #ede9fe 100%)', badge: 'Royal Enclaves' },
+    { label: 'Pure Studio Canvas', value: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)', badge: 'Minimalist Clean' }
+  ];
+
+  readonly mildFlatColorPresets = [
+    { label: 'Pure White', value: '#ffffff', badge: 'Crisp Minimalist' },
+    { label: 'Soft Alabaster', value: '#fafafa', badge: 'Warm Neutral' },
+    { label: 'Cool Slate Canvas', value: '#f8fafc', badge: 'Executive Modern' },
+    { label: 'Mild Sage Tint', value: '#f0fdf4', badge: 'Eco Meadow' },
+    { label: 'Coastal Sky Blue', value: '#f0f9ff', badge: 'Maritime Calm' },
+    { label: 'Champagne Cream', value: '#fffbeb', badge: 'Heritage Luxury' },
+    { label: 'Soft Botanical Mint', value: '#ecfdf5', badge: 'Botanical Flat' },
+    { label: 'Rose Quartz Tint', value: '#fff1f2', badge: 'Boutique Estates' },
+    { label: 'Lavender Royal Tint', value: '#f5f3ff', badge: 'Royal Enclave' },
+    { label: 'Warm Sandstone', value: '#fefce8', badge: 'Earth & Plotted' }
+  ];
+
+  readonly defaultPageGradient = 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #e8f5e9 100%)';
+
+  selectCoverPreset(url: string): void {
+    this.customEditForm.coverImageUrl = url;
+  }
+
+  selectGradientPreset(gradient: string): void {
+    this.customEditForm.bgGradient = gradient;
+  }
+
+  onUploadCoverImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingCover.set(true);
+
+    this.propertyService.uploadPropertyImage(file).subscribe({
+      next: (res) => {
+        this.isUploadingCover.set(false);
+        if (res && res.success && res.url) {
+          this.customEditForm.coverImageUrl = res.url;
+          this.notificationService.show({
+            type: 'success',
+            title: 'Image Uploaded',
+            message: 'Background cover photo ready. Click Save Profile to apply.',
+            icon: 'wallpaper'
+          });
+        } else {
+          this.notificationService.show({
+            type: 'error',
+            title: 'Upload Failed',
+            message: res?.message || 'Failed to upload image.',
+            icon: 'error'
+          });
+        }
+      },
+      error: () => {
+        this.isUploadingCover.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Upload Error',
+          message: 'Error communicating with upload server.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  onUploadLogoImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingLogo.set(true);
+
+    this.propertyService.uploadPropertyImage(file).subscribe({
+      next: (res) => {
+        this.isUploadingLogo.set(false);
+        if (res && res.success && res.url) {
+          this.customEditForm.logoUrl = res.url;
+          this.notificationService.show({
+            type: 'success',
+            title: 'Logo Uploaded',
+            message: 'Developer company logo uploaded successfully. Click Save Profile to apply.',
+            icon: 'verified'
+          });
+        } else {
+          this.notificationService.show({
+            type: 'error',
+            title: 'Upload Failed',
+            message: res?.message || 'Failed to upload logo image.',
+            icon: 'error'
+          });
+        }
+      },
+      error: () => {
+        this.isUploadingLogo.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Upload Error',
+          message: 'Error communicating with upload server.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
   customEditForm = {
     name: '',
     reraNumber: '',
     logoUrl: '',
     coverImageUrl: '',
+    bgGradient: '',
     corporateOffice: '',
     contactPhone: '',
     contactEmail: '',
@@ -163,6 +368,23 @@ export class BuilderShowcasePageComponent implements OnInit {
       list = list.filter(p => (p.projectName || p.title).toLowerCase() === projFilter.toLowerCase());
     }
 
+    const sizeFilter = this.selectedSizeFilter();
+    if (sizeFilter === 'compact') {
+      list = list.filter(p => (p.plotSizeSqft || this.parseSqft(p.sqft)) < 1000);
+    } else if (sizeFilter === 'standard') {
+      list = list.filter(p => {
+        const sq = p.plotSizeSqft || this.parseSqft(p.sqft);
+        return sq >= 1000 && sq <= 1500;
+      });
+    } else if (sizeFilter === 'medium') {
+      list = list.filter(p => {
+        const sq = p.plotSizeSqft || this.parseSqft(p.sqft);
+        return sq > 1500 && sq <= 2400;
+      });
+    } else if (sizeFilter === 'villa') {
+      list = list.filter(p => (p.plotSizeSqft || this.parseSqft(p.sqft)) > 2400);
+    }
+
     const sort = this.sortBy();
     const sorted = [...list];
 
@@ -176,6 +398,30 @@ export class BuilderShowcasePageComponent implements OnInit {
 
     return sorted;
   });
+
+  setSizeFilter(size: string): void {
+    this.selectedSizeFilter.set(size);
+  }
+
+  requestMasterPlan(projectName?: string): void {
+    const devName = this.builderDossier()?.name || this.builderName();
+    const targetProject = projectName || this.projectsList()[0]?.name || devName;
+    const text = encodeURIComponent(`Hi Find a Plot, I want to download the Sanctioned Cadastral Master Layout Plan & Brochure for ${targetProject} by ${devName}.`);
+    window.open(`https://wa.me/919486140936?text=${text}`, '_blank');
+    this.notificationService.show({
+      type: 'success',
+      title: 'Master Plan Requested',
+      message: 'Connecting to Cadastral Desk for DTCP / TNRERA sanctioned blueprint dossier.',
+      icon: 'download'
+    });
+  }
+
+  private parseSqft(sqftStr?: string): number {
+    if (!sqftStr) return 0;
+    const clean = sqftStr.replace(/[^\d.]/g, '');
+    const num = parseFloat(clean);
+    return isNaN(num) ? 0 : num;
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -205,6 +451,7 @@ export class BuilderShowcasePageComponent implements OnInit {
           reraNumber: d.reraNumber || '',
           logoUrl: d.logoUrl || '',
           coverImageUrl: d.coverImageUrl || '',
+          bgGradient: d.bgGradient || this.defaultPageGradient,
           corporateOffice: d.corporateOffice || '',
           contactPhone: d.contactPhone || '',
           contactEmail: d.contactEmail || '',
@@ -241,7 +488,7 @@ export class BuilderShowcasePageComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'properties' | 'projects' | 'upcoming' | 'credentials' | 'customize'): void {
+  setTab(tab: 'properties' | 'projects' | 'amenities' | 'location' | 'upcoming' | 'credentials' | 'customize'): void {
     this.activeTab.set(tab);
   }
 
@@ -258,9 +505,17 @@ export class BuilderShowcasePageComponent implements OnInit {
     if (!dossier) return;
 
     this.isSaving.set(true);
+    let adminPersona: any = null;
+    try {
+      const stored = localStorage.getItem('findaplot_admin_persona');
+      if (stored) adminPersona = JSON.parse(stored);
+    } catch {}
+
     const payload = {
+      isAdmin: this.authService.currentUser()?.role === 'admin' || !!adminPersona,
       developerId: dossier.id || 1,
       ...this.customEditForm,
+      bgGradient: this.customEditForm.bgGradient || this.defaultPageGradient,
       upcomingProjects: dossier.upcomingProjects || []
     };
 
@@ -273,6 +528,7 @@ export class BuilderShowcasePageComponent implements OnInit {
           reraNumber: this.customEditForm.reraNumber,
           logoUrl: this.customEditForm.logoUrl,
           coverImageUrl: this.customEditForm.coverImageUrl,
+          bgGradient: this.customEditForm.bgGradient || this.defaultPageGradient,
           corporateOffice: this.customEditForm.corporateOffice,
           contactPhone: this.customEditForm.contactPhone,
           contactEmail: this.customEditForm.contactEmail,
@@ -337,7 +593,7 @@ export class BuilderShowcasePageComponent implements OnInit {
         title: `${this.builderDossier()?.name || this.builderName()} — Verified Developer`,
         text: `Explore verified plotted layouts by ${this.builderDossier()?.name || this.builderName()} on Find a Plot`,
         url: window.location.href
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       navigator.clipboard.writeText(window.location.href);
       this.notificationService.show({
