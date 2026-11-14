@@ -160,6 +160,32 @@ app-footer {
   width: 100% !important;
 }
 
+/* ==========================================================================
+   UNIVERSAL ARCHITECTURAL SHIMMER & SKELETON LOADER
+   Smooth hardware-accelerated shimmer to prevent layout shifts (CLS = 0)
+   ========================================================================== */
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 35%,
+    #f8fafc 50%,
+    #e2e8f0 65%,
+    #f1f5f9 100%
+  ) !important;
+  background-size: 250% 100% !important;
+  animation: appGlobalShimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+@keyframes appGlobalShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 p {
   line-height: 1.65;
   color: var(--text-slate-600);

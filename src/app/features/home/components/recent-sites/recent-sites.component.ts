@@ -36,8 +36,9 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       </div>
 
       <!-- Two Columns in a Row -->
-      <div class="recent-sites-grid">
-        @for (prop of recentSites(); track prop.id; let idx = $index) {
+      @if (recentSites().length > 0) {
+        <div class="recent-sites-grid">
+          @for (prop of recentSites(); track prop.id; let idx = $index) {
           <article class="recent-site-card" [routerLink]="['/property', prop.id]">
             <!-- Full Bleed Image Background -->
             <img 
@@ -153,6 +154,14 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           </article>
         }
       </div>
+      } @else {
+        <!-- Shimmer Skeleton Loading State (Prevents layout shift / jerk when initializing) -->
+        <div class="recent-sites-grid skeleton-grid" aria-busy="true" aria-label="Loading recent sites">
+          @for (s of [1, 2]; track s) {
+            <article class="recent-site-card skeleton-recent-card shimmer-effect"></article>
+          }
+        </div>
+      }
     </section>
   `,
   styles: [`

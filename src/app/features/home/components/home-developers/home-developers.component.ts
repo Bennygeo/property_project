@@ -8,7 +8,7 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <section class="max-w-content home-developers-section" *ngIf="!isLoading() && topDevelopers().length > 0">
+    <section class="max-w-content home-developers-section" *ngIf="isLoading() || topDevelopers().length > 0">
       <!-- Section Header -->
       <div class="section-header-row">
         <div class="header-left">
@@ -25,8 +25,17 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
         </div>
       </div>
 
-      <!-- Single Row of 8 Developer Cards -->
-      <div class="developers-row-grid">
+      <!-- Shimmer Skeleton Loading State: 8 Cards (Zero Layout Shift / Anti-Jerk) -->
+      <div *ngIf="isLoading()" class="developers-row-grid skeleton-grid" aria-busy="true" aria-label="Loading verified developers">
+        <div *ngFor="let i of skeletonCards" class="developer-card skeleton-card">
+          <div class="developer-logo-frame skeleton-logo-box shimmer-effect"></div>
+          <div class="skeleton-line skeleton-name shimmer-effect"></div>
+          <div class="skeleton-line skeleton-metric shimmer-effect"></div>
+        </div>
+      </div>
+
+      <!-- Real Loaded Data: Single Row of 8 Developer Cards -->
+      <div *ngIf="!isLoading()" class="developers-row-grid developers-loaded-grid">
         <article *ngFor="let dev of topDevelopers()" class="developer-card">
           <a [routerLink]="['/builder', dev.name]" class="card-main-link"
             [title]="'View projects developed by ' + dev.name">
@@ -244,11 +253,64 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
         gap: 10px;
       }
     }
+
+    /* Shimmer Skeleton Styles */
+    .skeleton-card {
+      pointer-events: none;
+      user-select: none;
+      padding: 14px 10px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-sizing: border-box;
+      height: 148px;
+    }
+
+    .skeleton-logo-box {
+      width: 100%;
+      height: 80px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      padding: 0;
+    }
+
+    .skeleton-line {
+      border-radius: 4px;
+    }
+
+    .skeleton-name {
+      width: 68%;
+      height: 12px;
+      margin-bottom: 6px;
+    }
+
+    .skeleton-metric {
+      width: 36%;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    .developers-loaded-grid {
+      animation: fadeInContent 0.35s ease-out;
+    }
+
+    @keyframes fadeInContent {
+      from {
+        opacity: 0.35;
+      }
+      to {
+        opacity: 1;
+      }
+    }
   `]
 })
 export class HomeDevelopersComponent implements OnInit {
   private readonly propertyService = inject(PropertyService);
 
+  readonly skeletonCards: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
   readonly allDevelopers = signal<DeveloperSummary[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly topDevelopers = computed<DeveloperSummary[]>(() => this.allDevelopers().slice(0, 8));

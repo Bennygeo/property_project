@@ -108,6 +108,21 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
             </a>
           </div>
         </div>
+      } @else if (propertyService.isFetchingApi()) {
+        <!-- Shimmer Skeleton Loading State (Prevents layout shift / jerk when querying API) -->
+        <div class="cards-grid skeleton-cards-grid" aria-busy="true" aria-label="Loading featured properties">
+          @for (sk of [1, 2, 3, 4, 5, 6, 7, 8]; track sk) {
+            <div class="property-skeleton-card">
+              <div class="skeleton-thumb shimmer-effect"></div>
+              <div class="skeleton-body">
+                <div class="skeleton-badge-line shimmer-effect"></div>
+                <div class="skeleton-title-line shimmer-effect"></div>
+                <div class="skeleton-sub-line shimmer-effect"></div>
+                <div class="skeleton-price-line shimmer-effect"></div>
+              </div>
+            </div>
+          }
+        </div>
       } @else {
         <div class="empty-results-box">
           <div class="empty-icon-wrap">
@@ -336,6 +351,49 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 1.25rem;
       }
+    }
+
+    /* Shimmer Skeleton Cards */
+    .property-skeleton-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+      user-select: none;
+    }
+    .skeleton-thumb {
+      width: 100%;
+      height: 180px;
+    }
+    .skeleton-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .skeleton-badge-line {
+      width: 35%;
+      height: 14px;
+      border-radius: 4px;
+    }
+    .skeleton-title-line {
+      width: 80%;
+      height: 18px;
+      border-radius: 4px;
+    }
+    .skeleton-sub-line {
+      width: 60%;
+      height: 13px;
+      border-radius: 4px;
+    }
+    .skeleton-price-line {
+      width: 45%;
+      height: 18px;
+      border-radius: 4px;
+      margin-top: 0.5rem;
     }
 
     /* Empty State */
