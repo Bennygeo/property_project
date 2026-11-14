@@ -98,10 +98,11 @@ export class ElevenLabsTtsService {
       : (prop.plotDetails?.frontageRoadWidth || '30 feet wide');
     const maintYears = prop.masterDetails?.developerMaintenanceYears || 2;
     const priceText = prop.price ? `priced at ${prop.price}` : 'available with bank loan approval';
+    const maintText = maintYears === 1 ? '1 year of completely free site maintenance' : `${maintYears} years of completely free site maintenance`;
 
     return `Hello there! I noticed you have been exploring ${title} in ${locality}. ` +
       `This is a ${approval} development, ${priceText}, featuring ${roadWidth} approach roads, ready electricity and sweet groundwater access. ` +
-      `Plus, the developer includes ${maintYears} years of completely free site maintenance. ` +
+      `Plus, the developer includes ${maintText}. ` +
       `Would you like to book a free guided site visit or get the full dossier on WhatsApp?`;
   }
 

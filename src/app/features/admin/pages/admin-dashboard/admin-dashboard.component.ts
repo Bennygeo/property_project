@@ -234,25 +234,25 @@ export class AdminDashboardComponent {
   readonly personas = ADMIN_PERSONAS;
 
   ngOnInit(): void {
-      if (!this.adminService.verifyAdminAccess()) {
-        this.router.navigate(['/admin/login']);
-        return;
-      }
-
-      this.loadDashboardMetrics();
-      this.loadWhatsappSettings();
-
-      this.route.queryParams.subscribe(params => {
-        if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
-          this.setTab(params['tab'] as AdminActiveTab);
-        }
-      });
-    }
-
-    onSignOut(): void {
-      this.adminService.logout();
+    if (!this.adminService.verifyAdminAccess()) {
       this.router.navigate(['/admin/login']);
+      return;
     }
+
+    this.loadDashboardMetrics();
+    this.loadWhatsappSettings();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
+        this.setTab(params['tab'] as AdminActiveTab);
+      }
+    });
+  }
+
+  onSignOut(): void {
+    this.adminService.logout();
+    this.router.navigate(['/admin/login']);
+  }
 
   // Active Tab View & Modern Enterprise Sidebar State
   readonly activeTab = signal<AdminActiveTab>('review_queue');
@@ -1837,6 +1837,8 @@ export class AdminDashboardComponent {
   // Edit Property Modal State (All 3 admins allowed)
   readonly isEditModalOpen = signal<boolean>(false);
   readonly editingProperty = signal<AdminPropertyItem | null>(null);
+  readonly editingPropertyId = signal<string | null>(null);
+  readonly editModalTab = signal<'basic' | 'legal' | 'infra' | 'location' | 'environment'>('basic');
   readonly editForm = signal<{
     title: string;
     propertyType: string;
@@ -2720,6 +2722,7 @@ export class AdminDashboardComponent {
   // Edit Property Modal Controls (Permitted for all 3 admins)
   openEditModal(prop: AdminPropertyItem): void {
     this.editingProperty.set(prop);
+    this.editModalTab.set('basic');
     this.editForm.set({
       title: prop.title || '',
       propertyType: prop.propertyType || 'Plot / Land',
@@ -2737,6 +2740,217 @@ export class AdminDashboardComponent {
     });
     this.editAuditNotes.set('Updated specifications by ' + this.adminService.activePersona().name);
     this.isEditModalOpen.set(true);
+
+    // Fetch full 1:1 master details from the database so all ~70 options are populated immediately
+    this.propertyService.fetchPropertyDetails(prop.id, 103).subscribe({
+      next: (fullProp) => {
+        if (fullProp) {
+          this.populateAdminMasterFromProperty(fullProp);
+        }
+      }
+    });
+  }
+
+  populateAdminMasterFromProperty(fullProp: any): void {
+    if (!fullProp) return;
+    const md = fullProp.masterDetails || {};
+
+    this.adminMaster = {
+      ...this.adminMaster,
+      propertyId: fullProp.id || fullProp.projectId || this.adminMaster.propertyId,
+      projectName: md.projectName || fullProp.title || fullProp.projectName || this.adminMaster.projectName || '',
+      developer: md.developer || fullProp.developerName || (fullProp.developer?.name ?? '') || '',
+      developerId: fullProp.developerId || null,
+      category: md.category || fullProp.category || fullProp.propertyType || this.adminMaster.category || 'Gated CMDA Plots',
+      type: md.type || fullProp.type || fullProp.listingMode || 'Residential',
+      projectStage: md.projectStage || fullProp.projectStage || 'Ready for Construction',
+      projectStatus: md.projectStatus || fullProp.projectStatus || 'Active',
+      launchDate: md.launchDate || fullProp.launchDate || '',
+      reraNumber: md.reraNumber || fullProp.reraNumber || fullProp.rera_no || '',
+      reraDetails: md.reraDetails || fullProp.reraDetails || '',
+      dtcpApproved: (md.dtcpApproved === 'Yes' || md.dtcpApproved === 'No') ? md.dtcpApproved : (fullProp.approvalAuthority ? 'Yes' : 'Yes'),
+      approvalAuthority: md.approvalAuthority || fullProp.approvalAuthority || 'DTCP / CMDA',
+      dtcpApprovalNo: md.dtcpApprovalNo || fullProp.approvalReference || fullProp.approval_reference || '',
+      approvalDate: md.approvalDate || fullProp.approvalDate || '',
+      pattaType: md.pattaType || 'Individual Patta',
+      clearTitleAvailable: md.clearTitleAvailable || 'Yes',
+      bankLoanApproved: md.bankLoanApproved || 'Yes',
+      brokerage: md.brokerage || fullProp.brokerage || '0% Direct SRO Deed',
+      noBrokerage: md.noBrokerage || 'Yes',
+      featured: md.featured || (fullProp.featured ? 'Yes' : 'No'),
+      freeAccess: md.freeAccess || (fullProp.freeAccess ? 'Yes' : 'No'),
+
+      areaLocation: md.areaLocation || fullProp.locality || '',
+      villageLocality: md.villageLocality || fullProp.locality || '',
+      city: md.city || fullProp.city || 'Chennai',
+      taluk: md.taluk || '',
+      district: md.district || fullProp.district || fullProp.city || 'Chennai',
+      pincode: md.pincode || '',
+      gps: md.gps || fullProp.gps || '',
+      googleMapsLink: md.googleMapsLink || fullProp.googleMapsLink || fullProp.interactiveMap || '',
+      interactiveMap: md.interactiveMap || fullProp.interactiveMap || '',
+
+      totalLayoutArea: md.totalLayoutArea || fullProp.totalLayoutArea || fullProp.total_layout_area || '',
+      totalPlots: md.totalPlots ?? fullProp.totalPlots ?? fullProp.total_plots ?? null,
+      totalUnits: md.totalUnits || fullProp.totalUnits || '',
+      unitsSold: md.unitsSold || fullProp.unitsSold || '0',
+      plotNo: md.plotNo || '',
+      plotSizeSqft: md.plotSizeSqft ?? (parseFloat(fullProp.sqft) || fullProp.minPlotSize || null),
+      plotSizeCents: md.plotSizeCents ?? 0,
+      minPlotSize: md.minPlotSize ?? fullProp.minPlotSize ?? null,
+      maxPlotSize: md.maxPlotSize ?? fullProp.maxPlotSize ?? null,
+      availablePlotSizes: md.availablePlotSizes || fullProp.availablePlotSizes || '',
+      dimension: md.dimension || fullProp.dimensions || '',
+      facing: md.facing || 'East',
+      cornerPlot: md.cornerPlot || (fullProp.cornerPlot ? 'Yes' : 'No'),
+      landUse: md.landUse || fullProp.landType || fullProp.propertyType || 'Residential',
+      pricePerSqft: md.pricePerSqft ?? (fullProp.sqftRate || null),
+      totalPrice: md.totalPrice ?? (fullProp.priceFrom || 0),
+      priceFrom: md.priceFrom ?? fullProp.priceFrom ?? null,
+      priceTo: md.priceTo ?? fullProp.priceTo ?? null,
+      availability: md.availability || 'Available',
+
+      corridor: md.corridor || '',
+      nearbyRoads: md.nearbyRoads || fullProp.nearbyRoads || '',
+      highwayName: md.highwayName || fullProp.nearbyRoads || '',
+      highwayDistance: md.highwayDistance ?? null,
+      petrolBunkDistance: md.petrolBunkDistance ?? null,
+      busStopDistance: md.busStopDistance ?? null,
+      railwayStationNearby: md.railwayStationNearby || fullProp.railwayStation || '',
+      airportDistance: md.airportDistance ?? null,
+      schoolsNearby: md.schoolsNearby || fullProp.schools || '',
+      collegesNearby: md.collegesNearby || '',
+      hospitalNearby: md.hospitalNearby || fullProp.hospitals || '',
+      employmentHubs: md.employmentHubs || fullProp.employmentHubs || '',
+      residentialDevelopment: md.residentialDevelopment || fullProp.residentialDevelopment || '',
+      infrastructureProjects: md.infrastructureProjects || fullProp.infrastructureProjects || '',
+
+      suitedFor: md.suitedFor || 'Immediate Possession',
+      possessionTimeline: md.possessionTimeline || fullProp.possessionDate || 'Immediate',
+
+      electricity: md.electricity || fullProp.electricity || 'Available',
+      electricityDetails: md.electricityDetails || '',
+      waterConnection: md.waterConnection || fullProp.water || 'Available',
+      waterDetails: md.waterDetails || '',
+      drainageFacility: md.drainageFacility || fullProp.drainage || 'Underground',
+      drainageDetails: md.drainageDetails || '',
+      roadWidthFt: md.roadWidthFt ?? (parseInt(fullProp.roadWidth) || 30),
+      roadWidth: md.roadWidth || fullProp.roadWidth || '30ft Blacktop Tar',
+      roadType: md.roadType || (fullProp.internalRoads?.includes('Concrete') ? 'Concrete' : 'Tar Road'),
+      internalRoads: md.internalRoads || fullProp.internalRoads || '',
+      streetLights: md.streetLights || (fullProp.streetLights ? 'Yes' : 'Yes'),
+      streetLightsDetails: md.streetLightsDetails || '',
+      compoundWallGated: md.compoundWallGated || (fullProp.security ? 'Yes' : 'Yes'),
+      securityDetails: md.securityDetails || '',
+      park: md.park || (fullProp.parks ? 'Yes' : 'Yes'),
+      parksDetails: md.parksDetails || '',
+      otherAmenities: md.otherAmenities || fullProp.otherFacilities || '',
+      developerMaintenanceYears: md.developerMaintenanceYears ?? 1,
+
+      floodZone: md.floodZone || 'No',
+      waterloggingHistory: md.waterloggingHistory || 'No',
+      contactPersonPhone: md.contactPersonPhone || fullProp.whatsappNumber || '',
+      whatsappNumber: md.whatsappNumber || fullProp.whatsappNumber || '',
+      coverImage: md.coverImage || fullProp.coverImage || fullProp.imageUrl || '',
+      galleryUrls: md.galleryUrls || '',
+      videos: md.videos || fullProp.videos || '',
+      droneVideos: md.droneVideos || fullProp.droneVideos || '',
+      layoutPdf: md.layoutPdf || fullProp.layoutPdf || '',
+      brochure: md.brochure || fullProp.brochure || '',
+      remarks: md.remarks || ''
+    };
+
+    if (this.adminMaster.plotSizeSqft && !this.adminMaster.plotSizeCents) {
+      this.adminMaster.plotSizeCents = calculateCents(this.adminMaster.plotSizeSqft);
+    }
+  }
+
+  editPropertyFull(prop: AdminPropertyItem): void {
+    this.closeEditModal();
+    this.closeReviewModal();
+    this.editingPropertyId.set(prop.id);
+    this.setTab('post_property');
+
+    this.propertyService.fetchPropertyDetails(prop.id, 103).subscribe({
+      next: (fullProp) => {
+        if (fullProp) {
+          const pAny = fullProp as any;
+          this.populateAdminMasterFromProperty(fullProp);
+          this.newProp.update(p => ({
+            ...p,
+            title: fullProp.title || pAny.projectName || this.adminMaster.projectName,
+            propertyType: fullProp.propertyType || this.adminMaster.category,
+            listingMode: pAny.listingMode || (this.adminMaster.type === 'Residential' ? 'buy' : 'rent'),
+            cityName: fullProp.city || this.adminMaster.city,
+            localityName: fullProp.locality || this.adminMaster.villageLocality,
+            price: fullProp.price || '',
+            pricePerSqft: fullProp.pricePerSqFt || '',
+            sqft: fullProp.sqft || '',
+            mainImageUrl: fullProp.imageUrl || pAny.coverImage || this.adminMaster.coverImage || '',
+            reraNumber: pAny.reraNumber || fullProp.badges?.rera || this.adminMaster.reraNumber || '',
+            interactiveMapUrl: pAny.interactiveMapUrl || pAny.interactiveMap || this.adminMaster.googleMapsLink || ''
+          }));
+
+          const imgUrl = fullProp.imageUrl || pAny.coverImage;
+          if (imgUrl) {
+            this.adminUploadedImages.set([{
+              id: 'cover_' + Date.now(),
+              file: new File([], 'cover.png'),
+              name: 'Current Cover',
+              sizeFormatted: 'Server Image',
+              previewUrl: imgUrl,
+              serverUrl: imgUrl,
+              isCover: true,
+              isUploading: false
+            }]);
+          }
+
+          this.notificationService.show({
+            type: 'info',
+            title: 'Master Specifications Loaded',
+            message: `Loaded all ~70 DB fields for ${prop.title} (ID: ${prop.id}).`,
+            icon: 'edit_note'
+          });
+        }
+      },
+      error: () => {
+        this.notificationService.show({
+          type: 'warning',
+          title: 'Partial Data Loaded',
+          message: 'Could not fetch extended details; editing with available data.',
+          icon: 'warning'
+        });
+      }
+    });
+  }
+
+  cancelEditProperty(): void {
+    this.editingPropertyId.set(null);
+    this.adminMaster = createBlankMasterData();
+    this.adminUploadedImages.set([]);
+    this.newProp.set({
+      title: '',
+      propertyType: 'Apartments & Flats',
+      listingMode: 'buy',
+      cityName: 'Chennai',
+      localityName: 'Anna Nagar',
+      price: '₹ 1.85 Cr',
+      pricePerSqft: '₹ 10,500/sq.ft',
+      sqft: '1,760 sq.ft',
+      bhkBadge: '3 BHK',
+      facingOrView: 'North-East Facing',
+      mainImageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      reraNumber: 'TN/29/Building/0811/2026',
+      interactiveMapUrl: 'assets/secura-masterplan-3d.html',
+      plotDimensions: '40 x 60 ft',
+      plotApproval: 'CMDA Approved',
+      roadWidth: '40 Feet Blacktop',
+      boundaryWall: 'Gated Compound Wall',
+      commercialType: 'Retail Showroom',
+      powerBackup: '100% DG Backup',
+      waterSource: 'Borewell + OHT',
+      farmBoundary: 'Fenced Perimeter'
+    });
   }
 
   closeEditModal(): void {
@@ -2758,12 +2972,25 @@ export class AdminDashboardComponent {
       return;
     }
 
+    // Synchronize basic fields into adminMaster so both are 100% consistent
+    this.adminMaster.projectName = form.title;
+    this.adminMaster.category = form.propertyType;
+    this.adminMaster.city = form.cityName;
+    this.adminMaster.district = this.adminMaster.district || form.cityName;
+    this.adminMaster.villageLocality = form.localityName;
+    this.adminMaster.areaLocation = form.localityName;
+    this.adminMaster.reraNumber = form.reraNumber;
+    this.adminMaster.facing = (form.facingOrView as any) || this.adminMaster.facing;
+
     this.adminService.updateProperty({
       id: prop.id,
-      ...form
+      ...form,
+      masterData: this.adminMaster,
+      masterDetails: this.adminMaster
     }, this.editAuditNotes()).subscribe(success => {
       if (success) {
         this.closeEditModal();
+        this.loadDashboardMetrics();
       }
     });
   }
@@ -2863,6 +3090,23 @@ export class AdminDashboardComponent {
     if (this.isAdminPlot()) {
       payload.plotFactsheet = this.plotFactsheet();
       payload.subdividedPlots = this.adminSubdividedPlots();
+    }
+
+    if (this.editingPropertyId()) {
+      const propId = this.editingPropertyId()!;
+      this.adminService.updateProperty({
+        id: propId,
+        ...payload,
+        masterData: this.adminMaster,
+        masterDetails: this.adminMaster
+      }, `All specifications updated via Property Master Editor by ${this.adminService.activePersona().name}`).subscribe(success => {
+        if (success) {
+          this.cancelEditProperty();
+          this.setTab('all_directory');
+          this.loadDashboardMetrics();
+        }
+      });
+      return;
     }
 
     this.adminService.postProperty(payload).subscribe(success => {

@@ -6757,14 +6757,103 @@
 .edit-property-modal-dialog {
   background: #ffffff;
   width: 100%;
-  max-width: 780px;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  max-width: 860px;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
   border: 1px solid #cbd5e1;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow: hidden;
+}
+
+.edit-property-modal-dialog .btn-jump-full-editor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #5e8f72;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-property-modal-dialog .btn-jump-full-editor:hover {
+  background: #4a755d;
+  color: #ffffff;
+}
+
+.edit-modal-tabs-bar {
+  display: flex;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 1rem;
+  overflow-x: auto;
+  gap: 4px;
+}
+
+.edit-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.edit-tab-btn:hover {
+  color: #0f3b4a;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.edit-tab-btn.active {
+  color: #0f3b4a;
+  border-bottom-color: #5e8f72;
+  background: #ffffff;
+}
+
+.badge-edit-mode {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+}
+
+.btn-cancel-edit-hdr,
+.btn-cancel-edit-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-cancel-edit-hdr:hover,
+.btn-cancel-edit-form:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .edit-property-modal-dialog .modal-header {

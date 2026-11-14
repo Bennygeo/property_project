@@ -1,13 +1,13 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { NotificationService } from './notification.service';
 
-export type VisitorPurposeKey = 
-  | 'build_home' 
-  | 'investment' 
-  | 'premium_plots' 
-  | 'growth_locations' 
-  | 'budget_plots' 
-  | 'large_land' 
+export type VisitorPurposeKey =
+  | 'build_home'
+  | 'investment'
+  | 'premium_plots'
+  | 'growth_locations'
+  | 'budget_plots'
+  | 'large_land'
   | 'exploring';
 
 export interface VisitorPurposeOption {
@@ -124,7 +124,7 @@ export class VisitorPurposeService {
           return val as VisitorPurposeKey;
         }
       }
-    } catch {}
+    } catch { }
     return null;
   }
 
@@ -133,7 +133,7 @@ export class VisitorPurposeService {
       if (typeof localStorage !== 'undefined') {
         return localStorage.getItem(STORAGE_PURPOSE_NOTE) || localStorage.getItem('mannidam_visitor_purpose_note') || '';
       }
-    } catch {}
+    } catch { }
     return '';
   }
 
@@ -153,7 +153,7 @@ export class VisitorPurposeService {
           this.isModalOpen.set(true);
         }, 850);
       }
-    } catch {}
+    } catch { }
   }
 
   public openModal(): void {
@@ -166,7 +166,7 @@ export class VisitorPurposeService {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_DISMISSED_KEY, 'true');
       }
-    } catch {}
+    } catch { }
   }
 
   public savePurpose(key: VisitorPurposeKey, note?: string): void {
@@ -183,7 +183,7 @@ export class VisitorPurposeService {
         }
         localStorage.setItem(STORAGE_DISMISSED_KEY, 'true');
       }
-    } catch {}
+    } catch { }
 
     this.isModalOpen.set(false);
 

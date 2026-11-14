@@ -713,7 +713,25 @@
         <section class="tab-pane-section">
 
           <div class="post-property-container">
-            <div class="form-header-box">
+            <div class="form-header-box" [class.editing-mode]="editingPropertyId()">
+              @if (editingPropertyId()) {
+              <div class="flex items-center justify-between w-full">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="badge-edit-mode">LIVE EDIT MODE</span>
+                    <span class="text-xs text-slate-500 font-mono">REF: {{ editingPropertyId() }}</span>
+                  </div>
+                  <h3 class="form-title text-emerald-800">Edit Architectural Property: {{ adminMaster.projectName || newProp().title }}</h3>
+                  <p class="form-sub">
+                    Editing complete database record across <strong>projects</strong>, <strong>project_details</strong>, and <strong>property_master_details</strong> (~70 fields).
+                  </p>
+                </div>
+                <button type="button" class="btn-cancel-edit-hdr" (click)="cancelEditProperty()">
+                  <span class="material-symbols-outlined">arrow_back</span>
+                  <span>Exit Edit Mode</span>
+                </button>
+              </div>
+              } @else {
               <h3 class="form-title">Post New Architectural Property</h3>
               <p class="form-sub">
                 Logged in as <strong>{{ adminService.activePersona().name }}</strong> ({{
@@ -721,6 +739,7 @@
                 }}).
                 Properties submitted by administrators will be automatically flagged for peer review by your Co-Admin.
               </p>
+              }
             </div>
 
             <form (submit)="$event.preventDefault(); onSubmitNewProperty()" class="post-property-form">
@@ -2111,13 +2130,21 @@
               <div class="form-actions-row">
                 <div class="form-notice">
                   <span class="material-symbols-outlined">info</span>
-                  <span>Clicking submit will route this listing into the Co-Admin peer review queue.</span>
+                  <span>{{ editingPropertyId() ? 'Saving will update this property and all master specifications directly in the database.' : 'Clicking submit will route this listing into the Co-Admin peer review queue.' }}</span>
                 </div>
 
-                <button type="submit" class="btn-submit-post" [disabled]="adminService.isSubmitting()">
-                  <span class="material-symbols-outlined">publish</span>
-                  <span>{{ adminService.isSubmitting() ? 'Submitting...' : 'Submit for Co-Admin Peer Review' }}</span>
-                </button>
+                <div class="flex items-center gap-3">
+                  @if (editingPropertyId()) {
+                  <button type="button" class="btn-cancel-edit-form" (click)="cancelEditProperty()">
+                    <span class="material-symbols-outlined">close</span>
+                    <span>Cancel Edit</span>
+                  </button>
+                  }
+                  <button type="submit" class="btn-submit-post" [disabled]="adminService.isSubmitting()">
+                    <span class="material-symbols-outlined">{{ editingPropertyId() ? 'save' : 'publish' }}</span>
+                    <span>{{ adminService.isSubmitting() ? 'Saving...' : (editingPropertyId() ? 'Update Property & Master Data' : 'Submit for Co-Admin Peer Review') }}</span>
+                  </button>
+                </div>
               </div>
 
             </form>
@@ -2654,9 +2681,14 @@
                   </td>
                   <td>
                     <div class="table-actions-cell">
+                      <button type="button" class="btn-table-edit" (click)="editPropertyFull(prop)"
+                        title="Edit all 70+ master options in full form">
+                        <span class="material-symbols-outlined">edit_square</span>
+                        <span>Full Edit</span>
+                      </button>
                       <button type="button" class="btn-table-edit" (click)="openEditModal(prop)"
-                        title="Edit property details">
-                        <span class="material-symbols-outlined">edit</span>
+                        title="Edit property specifications & options in modal">
+                        <span class="material-symbols-outlined">edit_note</span>
                         <span>Edit</span>
                       </button>
                       <button type="button" class="btn-table-action" (click)="openReviewModal(prop)">

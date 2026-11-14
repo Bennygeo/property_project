@@ -56,42 +56,42 @@ export class WalletService {
           return Number(stored);
         }
       }
-    } catch {}
+    } catch { }
     return 82; // Synced with MySQL initial seed
   }
 
   // Standard recharge packages
   public rechargeOptions: RechargeOption[] = [
-    { 
+    {
       id: 1,
-      rupees: 1000, 
-      points: 20, 
-      bonus: 2, 
-      label: 'Value Pack (+2 Bonus)', 
+      rupees: 1000,
+      points: 20,
+      bonus: 2,
+      label: 'Value Pack (+2 Bonus)',
       subtitle: 'Deep research tier for serious property investors',
-      unlockEstimate: '10–12 Complete 4K Tours & Drone Aerials' 
+      unlockEstimate: '10–12 Complete 4K Tours & Drone Aerials'
     },
-    { 
+    {
       id: 2,
-      rupees: 2000, 
-      points: 40, 
-      bonus: 5, 
-      popular: true, 
+      rupees: 2000,
+      points: 40,
+      bonus: 5,
+      popular: true,
       isRecommended: false,
-      label: 'Pro Pack (+5 Bonus)', 
+      label: 'Pro Pack (+5 Bonus)',
       subtitle: 'Comprehensive multi-property due diligence',
-      unlockEstimate: '20–25 Complete 4K Tours & Drone Aerials' 
+      unlockEstimate: '20–25 Complete 4K Tours & Drone Aerials'
     },
-    { 
+    {
       id: 3,
-      rupees: 5000, 
-      points: 100, 
-      bonus: 15, 
+      rupees: 5000,
+      points: 100,
+      bonus: 15,
       popular: false,
       isRecommended: true,
-      label: 'Institutional Vault (+15 Bonus)', 
+      label: 'Institutional Vault (+15 Bonus)',
       subtitle: 'For developers, wealth advisors & syndicates',
-      unlockEstimate: '50+ Complete 4K Video Walkthroughs' 
+      unlockEstimate: '50+ Complete 4K Video Walkthroughs'
     }
   ];
 
@@ -130,7 +130,7 @@ export class WalletService {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_WALLET_BALANCE, String(points));
       }
-    } catch {}
+    } catch { }
   }
 
   public loadPackagesFromApi(): void {
@@ -188,9 +188,9 @@ export class WalletService {
    * Process wallet recharge in MySQL
    */
   public rechargeWallet(
-    points: number, 
-    bonus = 0, 
-    amountRupees = 0, 
+    points: number,
+    bonus = 0,
+    amountRupees = 0,
     paymentMethod = 'UPI / Razorpay',
     razorpayPaymentId?: string,
     userId = 1

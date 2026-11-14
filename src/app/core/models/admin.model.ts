@@ -32,6 +32,8 @@ export interface AdminPropertyItem {
   rejectionReason?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  masterData?: PropertyMasterData;
+  masterDetails?: PropertyMasterData;
 }
 
 export interface AdminStats {

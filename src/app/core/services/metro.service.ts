@@ -156,10 +156,10 @@ export class MetroService {
   downloadBenchmarkCsv(): void {
     const activeCity = this.activeMetroTab();
     const rows = this.cityData[activeCity];
-    
+
     let csvContent = 'data:text/csv;charset=utf-8,';
     csvContent += 'Micro-Market,Sub-Corridor,Asset Classification,Avg Rate (INR/sq.ft),YoY Growth,Rental Yield,Verified Supply\n';
-    
+
     rows.forEach(item => {
       csvContent += `"${item.loc}","${item.sub}","${item.tag}","${item.rate}","${item.growth}","${item.yield}","${item.supply}"\n`;
     });

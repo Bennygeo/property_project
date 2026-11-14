@@ -48,7 +48,7 @@
             <span class="hanu-badge-type">{{ prop.propertyType }}</span>
             <span class="hanu-badge-free-maint">
               <span>{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears +
-                ' Years Free Maintenance') : 'Free Maintenance Included' }}</span>
+                (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance' : ' Years Free Maintenance')) : 'Free Maintenance Included' }}</span>
             </span>
 
             <!-- Mobile-Only Top-Right Quick Utility Icons (Share & Shortlist) -->
@@ -425,10 +425,10 @@
               <div class="maint-eyebrow-row">
                 <span class="maint-tag">DEVELOPER PRIVILEGE</span>
                 <span class="maint-duration">{{ prop.masterDetails?.developerMaintenanceYears ?
-                  (prop.masterDetails?.developerMaintenanceYears + ' Years Free') : '2 Years Free Support' }}</span>
+                  (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free' : ' Years Free')) : 'Free Maintenance Service' }}</span>
               </div>
               <h3 class="maint-title">{{ prop.masterDetails?.developerMaintenanceYears ?
-                (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance Service Included') : 'Free
+                (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance Service Included' : ' Years Free Maintenance Service Included')) : 'Free
                 Maintenance Service Included' }}</h3>
               <p class="maint-subtitle">Enjoy complete peace of mind with 100% developer-managed caretaker support:
                 includes blacktop road upkeep, avenue tree care, active solar street lighting, and stormwater drain
@@ -692,7 +692,7 @@
                     <div class="infra-card-details">
                       <span class="infra-category-tag">FREE MAINTENANCE SERVICE</span>
                       <h4 class="infra-main-title">{{ prop.masterDetails?.developerMaintenanceYears ?
-                        (prop.masterDetails?.developerMaintenanceYears + ' Years Free Maintenance') : '2 Years Free
+                        (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance' : ' Years Free Maintenance')) : 'Free
                         Maintenance Support' }}</h4>
                       <p class="infra-summary-text">
                         Comprehensive developer caretaker support including road maintenance, avenue tree trimming,

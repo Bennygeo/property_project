@@ -55,7 +55,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
               <span class="material-symbols-outlined gps-icon" [class.spin]="locationService.isDetecting()">
                 {{ locationService.isDetecting() ? 'progress_activity' : 'my_location' }}
               </span>
-              <span>{{ locationService.isDetecting() ? 'Detecting Your Location in Tamil Nadu...' : 'Detect My Exact Location via GPS' }}</span>
+              <span>{{ locationService.isDetecting() ? 'Detecting Your Location...' : 'Detect My Location' }}</span>
             </button>
           </div>
 
@@ -201,9 +201,9 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
 
     .district-modal-card {
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 9px;
       width: 100%;
-      max-width: 680px;
+      max-width: 860px;
       max-height: 88vh;
       display: flex;
       flex-direction: column;
@@ -493,7 +493,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       padding: 5px 11px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 9999px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 500;
       color: #334155;
@@ -564,7 +564,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       padding: 9px 12px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 9px;
+      border-radius: 6px;
       text-align: left;
       cursor: pointer;
       transition: all 0.15s ease;

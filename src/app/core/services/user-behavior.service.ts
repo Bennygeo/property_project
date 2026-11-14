@@ -119,15 +119,15 @@ export class UserBehaviorService {
 
   // Plots count
   public readonly plotsCount = computed(() => {
-    return this.browsingHistory().filter(r => 
+    return this.browsingHistory().filter(r =>
       r.propertyType.toLowerCase().includes('plot')
     ).length;
   });
 
   // Flats count
   public readonly flatsCount = computed(() => {
-    return this.browsingHistory().filter(r => 
-      r.propertyType.toLowerCase().includes('flat') || 
+    return this.browsingHistory().filter(r =>
+      r.propertyType.toLowerCase().includes('flat') ||
       r.propertyType.toLowerCase().includes('apartment')
     ).length;
   });
@@ -207,7 +207,7 @@ export class UserBehaviorService {
     const user = this.currentUser();
     const phone = this.activeUserPhone();
     const isGuest = !user && (phone === 'Guest Visitor');
-    const userLabel = user 
+    const userLabel = user
       ? `${user.name} (${user.phone})`
       : (isGuest ? 'Guest user' : `${phone} user`);
 
@@ -313,7 +313,7 @@ export class UserBehaviorService {
     try {
       const stored = localStorage.getItem(STORAGE_PHONE_KEY) || localStorage.getItem('mannidam_active_buyer_phone');
       if (stored && stored !== '9486140936') return stored;
-    } catch {}
+    } catch { }
     return 'Guest Visitor';
   }
 
@@ -324,7 +324,7 @@ export class UserBehaviorService {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { }
     return [];
   }
 
@@ -332,7 +332,7 @@ export class UserBehaviorService {
     try {
       localStorage.setItem(STORAGE_PHONE_KEY, this.activeUserPhone());
       localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(this.browsingHistory()));
-    } catch {}
+    } catch { }
   }
 
   /**
@@ -390,7 +390,7 @@ export class UserBehaviorService {
 
     // Sync to MySQL Backend via POST /api/analytics/track.php
     const user = this.authService.currentUser();
-    const phoneToTrack = user?.phone?.trim() 
+    const phoneToTrack = user?.phone?.trim()
       || (this.activeUserPhone() !== 'Guest Visitor' ? this.activeUserPhone() : 'guest_' + this.authService.getDeviceFingerprint());
 
     const payload = {

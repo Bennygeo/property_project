@@ -6,12 +6,12 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
 import { environment } from '../../../environments/environment';
-import { 
-  SubscriptionPlan, 
-  UserSubscription, 
-  UserEntitlements, 
+import {
+  SubscriptionPlan,
+  UserSubscription,
+  UserEntitlements,
   SubscriptionInvoice,
-  EntitlementConsumptionResult 
+  EntitlementConsumptionResult
 } from '../models/subscription.model';
 
 declare global {
@@ -210,7 +210,7 @@ export class SubscriptionService {
       try {
         localStorage.removeItem(STORAGE_ACTIVE_PLAN_KEY);
         localStorage.removeItem(STORAGE_ENTITLEMENTS_KEY);
-      } catch {}
+      } catch { }
     }
   }
 
@@ -245,7 +245,7 @@ export class SubscriptionService {
       } else {
         localStorage.removeItem(STORAGE_ACTIVE_PLAN_KEY);
       }
-    } catch {}
+    } catch { }
   }
 
   private saveStoredEntitlements(ent: UserEntitlements | null): void {
@@ -256,7 +256,7 @@ export class SubscriptionService {
       } else {
         localStorage.removeItem(STORAGE_ENTITLEMENTS_KEY);
       }
-    } catch {}
+    } catch { }
   }
 
   private getEffectiveUserId(): number {
@@ -268,7 +268,7 @@ export class SubscriptionService {
    * Fetch 4-tier plans from backend
    */
   public fetchPlans(): Observable<SubscriptionPlan[]> {
-    const tryGet = (baseUrl: string) => 
+    const tryGet = (baseUrl: string) =>
       this.http.get<{ success: boolean; data: { plans: SubscriptionPlan[] } }>(baseUrl);
 
     return tryGet(`${environment.apiUrl}/subscriptions/plans.php`).pipe(
@@ -368,17 +368,17 @@ export class SubscriptionService {
       });
     }
 
-    const tryGet = (baseUrl: string) => 
-      this.http.get<{ 
-        success: boolean; 
-        data: { 
+    const tryGet = (baseUrl: string) =>
+      this.http.get<{
+        success: boolean;
+        data: {
           hasActiveSubscription: boolean;
           subscription: UserSubscription | null;
           daysRemaining: number;
           entitlements: UserEntitlements;
           unlockedProjectIds: string[];
           invoices: SubscriptionInvoice[];
-        } 
+        }
       }>(`${baseUrl}?userId=${uid}`);
 
     return tryGet(`${environment.apiUrl}/subscriptions/current.php`).pipe(
@@ -413,7 +413,7 @@ export class SubscriptionService {
    * Consume entitlement (e.g. project view, comparison, advisory session, site visit)
    */
   public consumeEntitlement(
-    action: 'project_view' | 'comparison' | 'advisory_session' | 'site_visit', 
+    action: 'project_view' | 'comparison' | 'advisory_session' | 'site_visit',
     propertyId?: string
   ): Observable<EntitlementConsumptionResult> {
     const uid = this.getEffectiveUserId();
@@ -423,7 +423,7 @@ export class SubscriptionService {
       propertyId: propertyId ? propertyId.trim() : undefined
     };
 
-    const tryPost = (baseUrl: string) => 
+    const tryPost = (baseUrl: string) =>
       this.http.post<{ success: boolean; data: EntitlementConsumptionResult; error?: string }>(baseUrl, payload);
 
     return tryPost(`${environment.apiUrl}/subscriptions/consume-entitlement.php`).pipe(
@@ -509,7 +509,7 @@ export class SubscriptionService {
     this.isProcessingPayment.set(true);
 
     // 1. Create order on backend
-    const tryCreateOrder = (baseUrl: string) => 
+    const tryCreateOrder = (baseUrl: string) =>
       this.http.post<{ success: boolean; data: any }>(baseUrl, {
         planId: plan.id,
         userId: uid
@@ -566,9 +566,9 @@ export class SubscriptionService {
    * Verify Razorpay payment and activate plan entitlements
    */
   public verifyPayment(
-    plan: SubscriptionPlan, 
-    paymentId: string, 
-    orderId: string, 
+    plan: SubscriptionPlan,
+    paymentId: string,
+    orderId: string,
     signature: string
   ): Observable<{ success: boolean; data: any; message: string }> {
     const uid = this.getEffectiveUserId();
@@ -580,7 +580,7 @@ export class SubscriptionService {
       razorpay_signature: signature
     };
 
-    const tryVerify = (baseUrl: string) => 
+    const tryVerify = (baseUrl: string) =>
       this.http.post<{ success: boolean; data: any; message: string }>(baseUrl, payload);
 
     return (tryVerify(`${environment.apiUrl}/subscriptions/verify-payment.php`).pipe(
@@ -750,7 +750,7 @@ export class SubscriptionService {
    */
   public requestRefund(invoiceId: number, reason: string): Observable<boolean> {
     const uid = this.getEffectiveUserId();
-    const tryPost = (baseUrl: string) => 
+    const tryPost = (baseUrl: string) =>
       this.http.post<{ success: boolean; message: string }>(baseUrl, {
         userId: uid,
         invoiceId,

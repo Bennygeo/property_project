@@ -1273,7 +1273,8 @@
             <div class="modal-header-meta">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-xl">edit_note</span>
-                <h2 class="modal-title">Edit Property Specifications</h2>
+                <h2 class="modal-title">Edit Property Specifications &amp; Master Options</h2>
+                <span class="px-2 py-0.5 bg-emerald-900/60 text-emerald-200 text-xs font-mono rounded">REF: {{ editingProperty()?.id }}</span>
               </div>
               <div class="admin-persona-pill">
                 <span class="persona-indicator"></span>
@@ -1281,15 +1282,47 @@
                   adminService.activePersona().title }})</span>
               </div>
             </div>
-            <button type="button" class="btn-modal-close" (click)="closeEditModal()" aria-label="Close edit modal">
-              <span class="material-symbols-outlined">close</span>
+            <div class="flex items-center gap-2">
+              <button type="button" class="btn-jump-full-editor" (click)="editPropertyFull(editingProperty()!)" title="Open complete form with all ~70 fields in dedicated workspace">
+                <span class="material-symbols-outlined text-sm">open_in_new</span>
+                <span>Full Master Editor</span>
+              </button>
+              <button type="button" class="btn-modal-close" (click)="closeEditModal()" aria-label="Close edit modal">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal Tab Navigation -->
+          <div class="edit-modal-tabs-bar">
+            <button type="button" class="edit-tab-btn" [class.active]="editModalTab() === 'basic'" (click)="editModalTab.set('basic')">
+              <span class="material-symbols-outlined">dashboard</span>
+              <span>Overview &amp; Pricing</span>
+            </button>
+            <button type="button" class="edit-tab-btn" [class.active]="editModalTab() === 'legal'" (click)="editModalTab.set('legal')">
+              <span class="material-symbols-outlined">gavel</span>
+              <span>Legal &amp; Approvals</span>
+            </button>
+            <button type="button" class="edit-tab-btn" [class.active]="editModalTab() === 'infra'" (click)="editModalTab.set('infra')">
+              <span class="material-symbols-outlined">engineering</span>
+              <span>Infrastructure &amp; Maintenance</span>
+            </button>
+            <button type="button" class="edit-tab-btn" [class.active]="editModalTab() === 'location'" (click)="editModalTab.set('location')">
+              <span class="material-symbols-outlined">location_on</span>
+              <span>Location &amp; Distances</span>
+            </button>
+            <button type="button" class="edit-tab-btn" [class.active]="editModalTab() === 'environment'" (click)="editModalTab.set('environment')">
+              <span class="material-symbols-outlined">shield</span>
+              <span>Risk &amp; Notes</span>
             </button>
           </div>
 
           <!-- Scrollable Form Body -->
           <div class="modal-body-scrollable">
-            <div class="edit-form-grid">
 
+            <!-- TAB 1: OVERVIEW & PRICING -->
+            @if (editModalTab() === 'basic') {
+            <div class="edit-form-grid">
               <!-- Title -->
               <div class="form-group col-span-2">
                 <label class="form-label">Property Title *</label>
@@ -1304,7 +1337,11 @@
                 <select class="form-input" [value]="editForm().propertyType"
                   (change)="updateEditField('propertyType', $any($event.target).value)">
                   <option value="Plot / Land">Plot / Land</option>
+                  <option value="Gated CMDA Plots">Gated CMDA Plots</option>
+                  <option value="DTCP Sanctioned Plots">DTCP Sanctioned Plots</option>
                   <option value="Commercial Plots">Commercial Plots</option>
+                  <option value="Apartments &amp; Flats">Apartments &amp; Flats</option>
+                  <option value="Independent Villas">Independent Villas</option>
                 </select>
               </div>
 
@@ -1370,10 +1407,16 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label">RERA Registration No.</label>
-                <input type="text" class="form-input" [value]="editForm().reraNumber"
-                  (input)="updateEditField('reraNumber', $any($event.target).value)"
-                  placeholder="e.g. TNRERA/13/LO/0114/2026" />
+                <label class="form-label">Listing Status</label>
+                <select class="form-input" [value]="editForm().status"
+                  (change)="updateEditField('status', $any($event.target).value)">
+                  <option value="published">Published (Active Live Listing)</option>
+                  <option value="pending_review">Pending Review</option>
+                  <option value="pending_peer_review">Pending Peer Review (Maker-Checker)</option>
+                  <option value="revision_requested">Revision Requested</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="draft">Draft</option>
+                </select>
               </div>
 
               <!-- Main Image URL -->
@@ -1389,37 +1432,322 @@
                   }
                 </div>
               </div>
+            </div>
+            }
 
-              <!-- Status -->
-              <div class="form-group col-span-2">
-                <label class="form-label">Listing Status</label>
-                <select class="form-input" [value]="editForm().status"
-                  (change)="updateEditField('status', $any($event.target).value)">
-                  <option value="published">Published (Active Live Listing)</option>
-                  <option value="pending_review">Pending Review</option>
-                  <option value="pending_peer_review">Pending Peer Review (Maker-Checker)</option>
-                  <option value="revision_requested">Revision Requested</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="draft">Draft</option>
+            <!-- TAB 2: LEGAL & APPROVALS -->
+            @if (editModalTab() === 'legal') {
+            <div class="edit-form-grid">
+              <div class="form-group">
+                <label class="form-label">Project Name</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.projectName"
+                  placeholder="Project / Enclave Name" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Developer / Builder Name</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.developer"
+                  placeholder="e.g. Gsquare, Benny Developers" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">DTCP / CMDA Approved</label>
+                <select class="form-input" [(ngModel)]="adminMaster.dtcpApproved">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
                 </select>
               </div>
 
-              <!-- Audit Trail Notes -->
-              <div class="form-group col-span-2">
-                <label class="form-label text-primary font-bold">
-                  Admin Audit Trail Justification / Reason *
+              <div class="form-group">
+                <label class="form-label">DTCP / CMDA Approval Number</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.dtcpApprovalNo"
+                  placeholder="e.g. 563456453645 / DTCP/2026/09" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">RERA Registration No.</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.reraNumber"
+                  (input)="updateEditField('reraNumber', $any($event.target).value)"
+                  placeholder="e.g. TN/29/Building/0811/2026" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Patta Type</label>
+                <select class="form-input" [(ngModel)]="adminMaster.pattaType">
+                  <option value="Individual Patta">Individual Patta</option>
+                  <option value="Chitta">Chitta</option>
+                  <option value="Promoter Patta">Promoter Patta</option>
+                  <option value="Panchayat">Panchayat</option>
+                  <option value="Not Available">Not Available</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Clear Marketable Title</label>
+                <select class="form-input" [(ngModel)]="adminMaster.clearTitleAvailable">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Pre-Approved Bank Loan</label>
+                <select class="form-input" [(ngModel)]="adminMaster.bankLoanApproved">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+            </div>
+            }
+
+            <!-- TAB 3: INFRASTRUCTURE & MAINTENANCE (PRIMARY FIX) -->
+            @if (editModalTab() === 'infra') {
+            <div class="edit-form-grid">
+              <div class="form-group col-span-2 p-3 bg-emerald-50 border border-emerald-200 rounded">
+                <label class="form-label text-emerald-900 font-bold flex items-center gap-2">
+                  <span class="material-symbols-outlined text-emerald-700">verified</span>
+                  Developer Maintenance Period (Years) *
                 </label>
-                <textarea class="form-input notes-textarea" rows="2" [value]="editAuditNotes()"
-                  (input)="editAuditNotes.set($any($event.target).value)"
-                  placeholder="Provide notes on why this listing was updated (e.g. Corrected cadastral survey extent, updated rate per sq.ft as per deed)..."></textarea>
-                <p class="text-xs text-slate-500 mt-1">
-                  This modification will be permanently logged in the audit trail under {{
-                  adminService.activePersona().name
-                  }}.
+                <input type="number" class="form-input font-bold text-lg text-emerald-900"
+                  [(ngModel)]="adminMaster.developerMaintenanceYears" placeholder="e.g. 1" min="0" max="15" />
+                <p class="text-xs text-emerald-700 mt-1">
+                  Controls the free caretaker &amp; upkeep guarantee on property dossier and buyer views (e.g. 1 Year Free Maintenance).
                 </p>
               </div>
 
+              <div class="form-group">
+                <label class="form-label">Internal Road Width (Ft)</label>
+                <input type="number" class="form-input" [(ngModel)]="adminMaster.roadWidthFt"
+                  placeholder="e.g. 30, 40, 60" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Internal Road Type</label>
+                <select class="form-input" [(ngModel)]="adminMaster.roadType">
+                  <option value="Tar Road">Tar Road</option>
+                  <option value="Concrete">Concrete</option>
+                  <option value="Gravel / Metal">Gravel / Metal</option>
+                  <option value="Mud Road">Mud Road</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Electricity Connection</label>
+                <select class="form-input" [(ngModel)]="adminMaster.electricity">
+                  <option value="Available">Available</option>
+                  <option value="Nearby">Nearby</option>
+                  <option value="Not Available">Not Available</option>
+                  <option value="Applied">Applied</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Water Connection</label>
+                <select class="form-input" [(ngModel)]="adminMaster.waterConnection">
+                  <option value="Available">Available</option>
+                  <option value="Nearby">Nearby</option>
+                  <option value="Not Available">Not Available</option>
+                  <option value="Applied">Applied</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Stormwater Drainage Facility</label>
+                <select class="form-input" [(ngModel)]="adminMaster.drainageFacility">
+                  <option value="Underground">Underground</option>
+                  <option value="Open Drain">Open Drain</option>
+                  <option value="Septic Tank">Septic Tank</option>
+                  <option value="Not Available">Not Available</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Street Lights Installed</label>
+                <select class="form-input" [(ngModel)]="adminMaster.streetLights">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Compound Wall / Gated Perimeter</label>
+                <select class="form-input" [(ngModel)]="adminMaster.compoundWallGated">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Park / Open Recreation Space</label>
+                <select class="form-input" [(ngModel)]="adminMaster.park">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
+              <div class="form-group col-span-2">
+                <label class="form-label">Other Facilities &amp; Amenities</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.otherAmenities"
+                  placeholder="e.g. CCTV Surveillance, Avenue Trees, Children Play Court" />
+              </div>
             </div>
+            }
+
+            <!-- TAB 4: LOCATION & CONNECTIVITY -->
+            @if (editModalTab() === 'location') {
+            <div class="edit-form-grid">
+              <div class="form-group">
+                <label class="form-label">District</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.district"
+                  placeholder="e.g. Chennai, Kanyakumari, Coimbatore" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Taluk</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.taluk"
+                  placeholder="e.g. Vilavancode, Tambaram" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Pincode</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.pincode"
+                  placeholder="e.g. 600051" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Corridor</label>
+                <select class="form-input" [(ngModel)]="adminMaster.corridor">
+                  <option value="">None / Standard</option>
+                  <option value="IT Corridor">IT Corridor</option>
+                  <option value="OMR">OMR</option>
+                  <option value="GST Road">GST Road</option>
+                  <option value="ECR">ECR</option>
+                  <option value="Metro Corridor">Metro Corridor</option>
+                  <option value="Industrial Corridor">Industrial Corridor</option>
+                  <option value="Highway Corridor">Highway Corridor</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Highway Name</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.highwayName"
+                  placeholder="e.g. NH 48, STH road" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Highway Distance (km)</label>
+                <input type="number" class="form-input" [(ngModel)]="adminMaster.highwayDistance"
+                  placeholder="e.g. 1.2" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Bus Stop Distance (km)</label>
+                <input type="number" class="form-input" [(ngModel)]="adminMaster.busStopDistance"
+                  placeholder="e.g. 0.5" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Railway Station Nearby</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.railwayStationNearby"
+                  placeholder="e.g. Tambaram - 6 km" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Airport Distance (km)</label>
+                <input type="number" class="form-input" [(ngModel)]="adminMaster.airportDistance"
+                  placeholder="e.g. 18" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Petrol Bunk Distance (km)</label>
+                <input type="number" class="form-input" [(ngModel)]="adminMaster.petrolBunkDistance"
+                  placeholder="e.g. 1" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Schools Nearby</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.schoolsNearby"
+                  placeholder="e.g. Velammal New Gen School - 2 km" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Colleges Nearby</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.collegesNearby"
+                  placeholder="e.g. SRM University - 4 km" />
+              </div>
+
+              <div class="form-group col-span-2">
+                <label class="form-label">Hospital Nearby</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.hospitalNearby"
+                  placeholder="e.g. Apollo Speciality Hospital - 4 km" />
+              </div>
+            </div>
+            }
+
+            <!-- TAB 5: ENVIRONMENTAL, RISK & AUDIT -->
+            @if (editModalTab() === 'environment') {
+            <div class="edit-form-grid">
+              <div class="form-group">
+                <label class="form-label">Flood Zone Status</label>
+                <select class="form-input" [(ngModel)]="adminMaster.floodZone">
+                  <option value="No">No (Zero Risk / Elevated)</option>
+                  <option value="Low Risk">Low Risk</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="High Risk">High Risk</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Waterlogging History</label>
+                <select class="form-input" [(ngModel)]="adminMaster.waterloggingHistory">
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Suited For</label>
+                <select class="form-input" [(ngModel)]="adminMaster.suitedFor">
+                  <option value="Immediate Possession">Immediate Possession</option>
+                  <option value="Investment">Investment</option>
+                  <option value="Both">Both</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Possession Timeline</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.possessionTimeline"
+                  placeholder="e.g. Ready to build, 3 Months" />
+              </div>
+
+              <div class="form-group col-span-2">
+                <label class="form-label">Contact Person Phone / WhatsApp</label>
+                <input type="text" class="form-input" [(ngModel)]="adminMaster.contactPersonPhone"
+                  placeholder="e.g. 9486140936" />
+              </div>
+
+              <div class="form-group col-span-2">
+                <label class="form-label">Cadastral &amp; Title Verification Remarks</label>
+                <textarea class="form-input" rows="2" [(ngModel)]="adminMaster.remarks"
+                  placeholder="Official registrar / surveyor field notes..."></textarea>
+              </div>
+            </div>
+            }
+
+            <!-- Audit Trail Notes (Always visible at bottom of modal body) -->
+            <div class="mt-4 pt-3 border-t border-slate-200">
+              <label class="form-label text-primary font-bold">
+                Admin Audit Trail Justification / Reason *
+              </label>
+              <textarea class="form-input notes-textarea" rows="2" [value]="editAuditNotes()"
+                (input)="editAuditNotes.set($any($event.target).value)"
+                placeholder="Provide notes on why this listing was updated (e.g. Corrected maintenance years to 1 yr, updated road width, verified DTCP)..."></textarea>
+              <p class="text-xs text-slate-500 mt-1">
+                This modification will be permanently logged in the audit trail under {{
+                adminService.activePersona().name }}.
+              </p>
+            </div>
+
           </div>
 
           <!-- Footer -->
@@ -1430,7 +1758,7 @@
             <button type="button" class="btn-save" [disabled]="adminService.isSubmitting()"
               (click)="onSaveEditedProperty()">
               <span class="material-symbols-outlined">save</span>
-              <span>{{ adminService.isSubmitting() ? 'Saving Changes...' : 'Save & Record Audit Trail' }}</span>
+              <span>{{ adminService.isSubmitting() ? 'Saving All Changes...' : 'Save All Specifications &amp; Master Data' }}</span>
             </button>
           </div>
 

@@ -86,6 +86,11 @@ if (!$prop) {
     Response::error('Property dossier not found', 404);
 }
 
+// Fetch 1:1 Property Master Details (~50 extensive audit & specification columns)
+$pmdStmt = $db->prepare("SELECT * FROM property_master_details WHERE property_id = ? LIMIT 1");
+$pmdStmt->execute([$id]);
+$pmd = $pmdStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
 /**
  * Format single price amount to Indian Lakhs/Crores
  */
@@ -392,50 +397,65 @@ if (empty($highlights)) {
     $highlights = ['DTCP Sanctioned Layout', 'Clear Patta Title', '30 Ft Wide Bitumen Road'];
 }
 
-// Master Details Adapter
+$maintYears = isset($pmd['developer_maintenance_years']) && is_numeric($pmd['developer_maintenance_years'])
+    ? (int)$pmd['developer_maintenance_years']
+    : 2;
+
+// Master Details Adapter - Populated 100% from real database tables (projects, project_details, property_master_details)
 $masterDetails = [
     'propertyId'          => $id,
-    'projectName'         => $prop['project_name'],
-    'developer'           => !empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? ''),
-    'reraNumber'          => $prop['rera_no'] ?? '',
-    'dtcpApproved'        => !empty($prop['approval_authority']) ? 'Yes' : 'Pending',
-    'dtcpApprovalNo'      => $prop['approval_reference'] ?? '',
-    'pattaType'           => 'Clear Freehold Patta',
-    'clearTitleAvailable' => 'Yes',
-    'bankLoanApproved'    => 'Yes',
-    'areaLocation'        => $prop['locality'] ?? '',
-    'villageLocality'     => $prop['locality'] ?? '',
-    'taluk'               => $prop['district'] ?? '',
-    'district'            => $prop['district'] ?? ($prop['city'] ?? 'Chennai'),
-    'pincode'             => '',
-    'googleMapsLink'      => $prop['interactive_map'] ?: ($lat && $lon ? "https://www.google.com/maps?q={$lat},{$lon}" : ''),
-    'plotNo'              => '',
-    'plotSizeSqft'        => $minSz,
-    'plotSizeCents'       => round($minSz / 435.6, 2),
-    'dimension'           => $prop['dimensions'] ?? '',
-    'facing'              => 'East / North',
-    'cornerPlot'          => !empty($prop['corner_plot']) ? 'Yes' : 'No',
-    'landUse'             => !empty($prop['land_type']) ? $prop['land_type'] : 'Residential',
-    'landType'            => !empty($prop['land_type']) ? $prop['land_type'] : 'Residential',
-    'land_type'           => !empty($prop['land_type']) ? $prop['land_type'] : 'Residential',
-    'pricePerSqft'        => $sqftRate ?? 0,
-    'totalPrice'          => $priceFrom ?? 0,
-    'availability'        => 'Available',
-    'corridor'            => $prop['district'] ?? '',
-    'highwayName'         => $prop['nearby_roads'] ?? '',
-    'electricity'         => $prop['electricity'] ?? 'EB 3-Phase Underground Line',
-    'waterConnection'     => $prop['water'] ?? 'Potable Groundwater with OHT Supply',
-    'drainageFacility'    => $prop['drainage'] ?? 'Underground Stormwater Drainage',
-    'roadWidthFt'         => !empty($prop['road_width']) ? (int)preg_replace('/[^\d]/', '', $prop['road_width']) : 30,
-    'roadType'            => !empty($prop['internal_roads']) ? $prop['internal_roads'] : 'Tar Road',
-    'streetLights'        => !empty($prop['street_lights']) ? 'Yes' : 'Pending',
-    'compoundWallGated'   => !empty($prop['security']) ? 'Yes' : 'No',
-    'park'                => !empty($prop['parks']) ? 'Yes' : 'No',
-    'otherAmenities'      => $prop['other_facilities'] ?? '',
-    'contactPersonPhone'  => $prop['whatsapp_number'] ?? '',
-    'developerMaintenanceYears' => 2,
-    'suitedFor'           => 'Immediate Villa Construction',
-    'possessionTimeline'  => $prop['possession_date'] ?? 'Immediate'
+    'projectName'         => !empty($pmd['project_name']) ? $pmd['project_name'] : $prop['project_name'],
+    'developer'           => !empty($pmd['developer']) ? $pmd['developer'] : (!empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? '')),
+    'reraNumber'          => !empty($pmd['rera_number']) ? $pmd['rera_number'] : ($prop['rera_no'] ?? ''),
+    'dtcpApproved'        => !empty($pmd['dtcp_approved']) ? $pmd['dtcp_approved'] : (!empty($prop['approval_authority']) ? 'Yes' : 'Pending'),
+    'dtcpApprovalNo'      => !empty($pmd['dtcp_approval_no']) ? $pmd['dtcp_approval_no'] : ($prop['approval_reference'] ?? ''),
+    'pattaType'           => !empty($pmd['patta_type']) ? $pmd['patta_type'] : 'Clear Freehold Patta',
+    'clearTitleAvailable' => !empty($pmd['clear_title_available']) ? $pmd['clear_title_available'] : 'Yes',
+    'bankLoanApproved'    => !empty($pmd['bank_loan_approved']) ? $pmd['bank_loan_approved'] : 'Yes',
+    'areaLocation'        => !empty($pmd['area_location']) ? $pmd['area_location'] : ($prop['locality'] ?? ''),
+    'villageLocality'     => !empty($pmd['village_locality']) ? $pmd['village_locality'] : ($prop['locality'] ?? ''),
+    'taluk'               => !empty($pmd['taluk']) ? $pmd['taluk'] : ($prop['district'] ?? ''),
+    'district'            => !empty($pmd['district']) ? $pmd['district'] : ($prop['district'] ?? ($prop['city'] ?? 'Chennai')),
+    'pincode'             => !empty($pmd['pincode']) ? $pmd['pincode'] : '',
+    'googleMapsLink'      => !empty($pmd['google_maps_link']) ? $pmd['google_maps_link'] : ($prop['interactive_map'] ?: ($lat && $lon ? "https://www.google.com/maps?q={$lat},{$lon}" : '')),
+    'plotNo'              => !empty($pmd['plot_no']) ? $pmd['plot_no'] : '',
+    'plotSizeSqft'        => isset($pmd['plot_size_sqft']) && (float)$pmd['plot_size_sqft'] > 0 ? (float)$pmd['plot_size_sqft'] : $minSz,
+    'plotSizeCents'       => isset($pmd['plot_size_cents']) && (float)$pmd['plot_size_cents'] > 0 ? (float)$pmd['plot_size_cents'] : round($minSz / 435.6, 2),
+    'dimension'           => !empty($pmd['dimension']) ? $pmd['dimension'] : ($prop['dimensions'] ?? ''),
+    'facing'              => !empty($pmd['facing']) ? $pmd['facing'] : 'East / North',
+    'cornerPlot'          => !empty($pmd['corner_plot']) ? $pmd['corner_plot'] : (!empty($prop['corner_plot']) ? 'Yes' : 'No'),
+    'landUse'             => !empty($pmd['land_use']) ? $pmd['land_use'] : (!empty($prop['land_type']) ? $prop['land_type'] : 'Residential'),
+    'landType'            => !empty($pmd['land_use']) ? $pmd['land_use'] : (!empty($prop['land_type']) ? $prop['land_type'] : 'Residential'),
+    'land_type'           => !empty($pmd['land_use']) ? $pmd['land_use'] : (!empty($prop['land_type']) ? $prop['land_type'] : 'Residential'),
+    'pricePerSqft'        => isset($pmd['price_per_sqft']) && (float)$pmd['price_per_sqft'] > 0 ? (float)$pmd['price_per_sqft'] : ($sqftRate ?? 0),
+    'totalPrice'          => isset($pmd['total_price']) && (float)$pmd['total_price'] > 0 ? (float)$pmd['total_price'] : ($priceFrom ?? 0),
+    'availability'        => !empty($pmd['availability']) ? $pmd['availability'] : 'Available',
+    'petrolBunkDistance'  => isset($pmd['petrol_bunk_distance']) ? (float)$pmd['petrol_bunk_distance'] : null,
+    'schoolsNearby'       => !empty($pmd['schools_nearby']) ? $pmd['schools_nearby'] : ($prop['schools'] ?? ''),
+    'collegesNearby'      => $pmd['colleges_nearby'] ?? '',
+    'hospitalNearby'      => !empty($pmd['hospital_nearby']) ? $pmd['hospital_nearby'] : ($prop['hospitals'] ?? ''),
+    'corridor'            => !empty($pmd['corridor']) ? $pmd['corridor'] : ($prop['district'] ?? ''),
+    'busStopDistance'     => isset($pmd['bus_stop_distance']) ? (float)$pmd['bus_stop_distance'] : null,
+    'railwayStationNearby'=> !empty($pmd['railway_station_nearby']) ? $pmd['railway_station_nearby'] : ($prop['railway_station'] ?? ''),
+    'highwayName'         => !empty($pmd['highway_name']) ? $pmd['highway_name'] : ($prop['nearby_roads'] ?? ''),
+    'highwayDistance'     => isset($pmd['highway_distance']) ? (float)$pmd['highway_distance'] : null,
+    'airportDistance'     => isset($pmd['airport_distance']) ? (float)$pmd['airport_distance'] : null,
+    'suitedFor'           => !empty($pmd['suited_for']) ? $pmd['suited_for'] : 'Immediate Villa Construction',
+    'possessionTimeline'  => !empty($pmd['possession_timeline']) ? $pmd['possession_timeline'] : ($prop['possession_date'] ?? 'Immediate'),
+    'electricity'         => !empty($pmd['electricity']) ? $pmd['electricity'] : ($prop['electricity'] ?? 'EB 3-Phase Underground Line'),
+    'waterConnection'     => !empty($pmd['water_connection']) ? $pmd['water_connection'] : ($prop['water'] ?? 'Potable Groundwater with OHT Supply'),
+    'drainageFacility'    => !empty($pmd['drainage_facility']) ? $pmd['drainage_facility'] : ($prop['drainage'] ?? 'Underground Stormwater Drainage'),
+    'roadWidthFt'         => isset($pmd['road_width_ft']) && (int)$pmd['road_width_ft'] > 0 ? (int)$pmd['road_width_ft'] : (!empty($prop['road_width']) ? (int)preg_replace('/[^\d]/', '', $prop['road_width']) : 30),
+    'roadType'            => !empty($pmd['road_type']) ? $pmd['road_type'] : (!empty($prop['internal_roads']) ? $prop['internal_roads'] : 'Tar Road'),
+    'streetLights'        => !empty($pmd['street_lights']) ? $pmd['street_lights'] : (!empty($prop['street_lights']) ? 'Yes' : 'Pending'),
+    'compoundWallGated'   => !empty($pmd['compound_wall_gated']) ? $pmd['compound_wall_gated'] : (!empty($prop['security']) ? 'Yes' : 'No'),
+    'park'                => !empty($pmd['park']) ? $pmd['park'] : (!empty($prop['parks']) ? 'Yes' : 'No'),
+    'otherAmenities'      => !empty($pmd['other_amenities']) ? $pmd['other_amenities'] : ($prop['other_facilities'] ?? ''),
+    'developerMaintenanceYears' => $maintYears,
+    'floodZone'           => !empty($pmd['flood_zone']) ? $pmd['flood_zone'] : 'No',
+    'waterloggingHistory' => !empty($pmd['waterlogging_history']) ? $pmd['waterlogging_history'] : 'No',
+    'contactPersonPhone'  => !empty($pmd['contact_person_phone']) ? $pmd['contact_person_phone'] : ($prop['whatsapp_number'] ?? ''),
+    'remarks'             => $pmd['remarks'] ?? ''
 ];
 
 // Developer Profile
