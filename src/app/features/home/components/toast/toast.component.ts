@@ -29,7 +29,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       position: fixed;
       bottom: 1.5rem;
       right: 1.5rem;
-      z-index: 2000;
+      z-index: 99999;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -40,37 +40,48 @@ import { NotificationService } from '../../../../core/services/notification.serv
     .toast-item {
       pointer-events: auto;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 0.75rem;
       padding: 0.875rem 1rem;
-      background: #0f172a;
-      color: #ffffff;
-      border-radius: 0.75rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
-      border: 1px solid #334155;
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 8px;
+      box-shadow: none !important;
+      border: 1px solid rgba(94, 143, 114, 0.3);
       animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .toast-item.success {
-      border-left: 4px solid #10b981;
+      border: 1px solid rgba(94, 143, 114, 0.35);
     }
     .toast-item.success .toast-icon {
-      color: #34d399;
+      color: #5e8f72;
     }
     .toast-item.warning {
-      border-left: 4px solid #f59e0b;
+      border: 1px solid rgba(217, 119, 6, 0.3);
     }
     .toast-item.warning .toast-icon {
-      color: #fbbf24;
+      color: #d97706;
     }
     .toast-item.info {
-      border-left: 4px solid #3b82f6;
+      border: 1px solid rgba(15, 59, 74, 0.25);
     }
     .toast-item.info .toast-icon {
-      color: #60a5fa;
+      color: #0f3b4a;
+    }
+    .toast-item.error {
+      border: 1px solid rgba(220, 38, 38, 0.3);
+    }
+    .toast-item.error .toast-icon {
+      color: #dc2626;
     }
     .toast-icon {
       flex-shrink: 0;
-      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toast-icon span {
+      font-size: 20px;
     }
     .toast-body {
       flex: 1;
@@ -79,29 +90,30 @@ import { NotificationService } from '../../../../core/services/notification.serv
     .toast-title {
       font-size: 0.8125rem;
       font-weight: 600;
-      color: #ffffff;
+      color: #0f172a;
       line-height: 1.3;
     }
     .toast-message {
       font-size: 0.75rem;
-      color: #94a3b8;
-      margin-top: 0.25rem;
+      color: #64748b;
+      margin-top: 0.15rem;
       line-height: 1.4;
     }
     .toast-close {
       background: transparent;
       border: none;
-      color: #64748b;
+      color: #94a3b8;
       cursor: pointer;
-      padding: 2px;
+      padding: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 4px;
-      transition: color 0.15s;
+      transition: color 0.15s, background-color 0.15s;
     }
     .toast-close:hover {
-      color: #ffffff;
+      color: #0f172a;
+      background: #f1f5f9;
     }
     .toast-close span {
       font-size: 16px;
@@ -126,6 +138,7 @@ export class ToastComponent {
       case 'success': return 'check_circle';
       case 'warning': return 'warning';
       case 'info': return 'info';
+      case 'error': return 'error';
       default: return 'notifications';
     }
   }
