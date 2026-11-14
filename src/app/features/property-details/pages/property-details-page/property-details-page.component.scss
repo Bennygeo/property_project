@@ -4235,8 +4235,7 @@
     -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.35) 55%, rgba(0, 0, 0, 0) 100%);
 
     .teaser-para {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: 17px;
+      font-size: 14.5px;
       line-height: 1.75;
       color: #334155;
       margin: 0 0 1.15rem 0;
@@ -4266,29 +4265,27 @@
   }
 
   .medium-paywall-heading {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 2rem;
-    font-weight: 400;
+    font-size: 1.75rem;
+    font-weight: 700;
     color: #0f3b4a;
     margin: 0 0 6px 0;
-    line-height: 1.2;
-    letter-spacing: -0.015em;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
 
     @media (max-width: 640px) {
-      font-size: 1.6rem;
+      font-size: 1.4rem;
     }
   }
 
   .medium-paywall-subheading {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.35rem;
-    font-weight: 400;
-    color: #334155;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #475569;
     margin: 0 0 2rem 0;
-    line-height: 1.35;
+    line-height: 1.4;
 
     @media (max-width: 640px) {
-      font-size: 1.15rem;
+      font-size: 1rem;
     }
   }
 
