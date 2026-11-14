@@ -392,35 +392,77 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
           this.authService.syncGuestViews().subscribe();
         }
 
-        // Fetch real-time dossier from MySQL backend with user and device identity
-        // Backend enforces PRD M06 entitlement limits and omits details below banner when limit is reached
+        // Pre-flight check: Verify quota limit BEFORE downloading details.php from DB
         this.isLoading.set(true);
-        this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
-          next: (prop) => {
-            this.isLoading.set(false);
-            if (prop) {
-              this.fetchedProperty.set(prop);
-              if (prop.isViewRestricted) {
-                this.isEntitlementExhausted.set(true);
-                this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
-              } else {
-                this.isEntitlementExhausted.set(false);
+        this.propertyService.checkProjectViewLimit(id, userId, deviceHash).subscribe({
+          next: (limitCheck) => {
+            if (!limitCheck.canDownload) {
+              // User has reached quota limit! DO NOT download details.php from DB
+              this.isLoading.set(false);
+              this.isEntitlementExhausted.set(true);
+              this.entitlementExhaustedMessage.set(limitCheck.upgradeMessage || 'Project view limit reached.');
+
+              // Construct basic property for display (title, price, image only - NO deep project details)
+              const base = (limitCheck as any).basicProperty || this.propertyService.getPropertyById(id);
+              if (base) {
+                const restrictedProp: Property = {
+                  ...base,
+                  isViewRestricted: true,
+                  isMasked: true,
+                  activePlanName: limitCheck.activePlanName,
+                  activePlanId: limitCheck.activePlanId,
+                  projectViewsUsed: limitCheck.projectViewsUsed,
+                  projectViewLimit: limitCheck.projectViewLimit,
+                  upgradeMessage: limitCheck.upgradeMessage,
+                  isShortlisted: this.propertyService.isShortlisted(base.id)
+                };
+                this.fetchedProperty.set(restrictedProp);
+                this.userBehaviorService.trackPropertyView(restrictedProp);
               }
+              return;
             }
-            const resolved = prop || this.propertyService.getPropertyById(id);
-            if (resolved) {
-              this.userBehaviorService.trackPropertyView(resolved);
-              const priceNum = parsePriceToNumber(resolved.price);
-              if (priceNum > 0) {
-                this.loanAmount.set(Math.round(priceNum * 0.8));
+
+            // Quota check passed: download comprehensive details from details.php
+            this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
+              next: (prop) => {
+                this.isLoading.set(false);
+                if (prop) {
+                  this.fetchedProperty.set(prop);
+                  if (prop.isViewRestricted) {
+                    this.isEntitlementExhausted.set(true);
+                    this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
+                  } else {
+                    this.isEntitlementExhausted.set(false);
+                  }
+                }
+                const resolved = prop || this.propertyService.getPropertyById(id);
+                if (resolved) {
+                  this.userBehaviorService.trackPropertyView(resolved);
+                  const priceNum = parsePriceToNumber(resolved.price);
+                  if (priceNum > 0) {
+                    this.loanAmount.set(Math.round(priceNum * 0.8));
+                  }
+                  if (!prop?.isViewRestricted) {
+                    this.loadNearbyLocalities(resolved);
+                  }
+                }
+              },
+              error: () => {
+                this.isLoading.set(false);
               }
-              if (!prop?.isViewRestricted) {
-                this.loadNearbyLocalities(resolved);
-              }
-            }
+            });
           },
           error: () => {
-            this.isLoading.set(false);
+            // Fallback if check endpoint fails: attempt regular fetch
+            this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
+              next: (prop) => {
+                this.isLoading.set(false);
+                if (prop) this.fetchedProperty.set(prop);
+              },
+              error: () => {
+                this.isLoading.set(false);
+              }
+            });
           }
         });
       }

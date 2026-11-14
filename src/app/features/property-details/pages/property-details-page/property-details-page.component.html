@@ -5,7 +5,29 @@
   <!-- Navigation Header -->
   <app-header />
 
-  @if (property(); as prop) {
+  @if (isLoading()) {
+  <!-- ARCHITECTURAL PRELOADER: FETCHING COMPREHENSIVE DETAILS -->
+  <div class="comprehensive-dossier-preloader">
+    <div class="preloader-card">
+      <div class="preloader-orbit">
+        <div class="orbit-spinner outer"></div>
+        <div class="orbit-spinner inner"></div>
+        <span class="material-symbols-outlined orbit-icon">domain_verification</span>
+      </div>
+      <div class="preloader-badge">CADASTRA &amp; RERA VERIFIED DOSSIER</div>
+      <h2 class="preloader-title">Fetching comprehensive details...</h2>
+      <p class="preloader-subtitle">Checking quota limits, verifying cadastral survey records &amp; layout intelligence</p>
+      <div class="preloader-bar-wrap">
+        <div class="preloader-bar-fill"></div>
+      </div>
+      <div class="preloader-steps">
+        <span class="step-item"><span class="step-dot"></span> Quota Verification</span>
+        <span class="step-item"><span class="step-dot"></span> Cadastral Survey</span>
+        <span class="step-item"><span class="step-dot"></span> 49-Pt Specs</span>
+      </div>
+    </div>
+  </div>
+  } @else if (property(); as prop) {
   @if (isFirstGuestPreview()) {
   <div class="guest-preview-banner">
     <div class="max-w-content preview-banner-inner">
@@ -1303,23 +1325,26 @@
         <section class="medium-paywall-wrapper">
           <div class="medium-fade-teaser" aria-hidden="true">
             <p class="teaser-para">
-              {{ prop.title }} is a verified real estate asset situated in the prime growth corridor of {{ prop.locality }}, {{ prop.city }}. Evaluated under our architectural due diligence framework, the property features demarcated road access, clear survey boundaries, and comprehensive legal documentation.
+              {{ prop.title }} is a verified real estate asset situated in the prime growth corridor of {{ prop.locality
+              }}, {{ prop.city }}. Evaluated under our architectural due diligence framework, the property features
+              demarcated road access, clear survey boundaries, and comprehensive legal documentation.
             </p>
             <p class="teaser-para">
-              Before scheduling an acquisition walkthrough, review the complete 49-point property specification matrix, cadastral survey numbers, FMB sketch, Patta / Chitta records, and SRO encumbrance verification below.
+              Before scheduling an acquisition walkthrough, review the complete 49-point property specification matrix,
+              cadastral survey numbers, FMB sketch, Patta / Chitta records, and SRO encumbrance verification below.
             </p>
           </div>
 
           <div class="medium-upgrade-prompt">
             <span class="medium-offer-pill">Membership Quota Reached</span>
 
-            <h2 class="medium-paywall-heading">Access the complete property dossier.</h2>
+            <h2 class="medium-paywall-heading">Access the complete property information.</h2>
             <p class="medium-paywall-subheading">Unlock every verified specification &amp; legal record.</p>
 
             <ul class="medium-benefits-list">
               <li>
                 <span class="medium-check">✓</span>
-                <span>Read complete 49-point property &amp; plot specifications</span>
+                <span>Read comphrehensive property &amp; plot specifications</span>
               </li>
               <li>
                 <span class="medium-check">✓</span>
@@ -1328,10 +1353,6 @@
               <li>
                 <span class="medium-check">✓</span>
                 <span>Inspect DTCP / TNRERA sanction &amp; SRO encumbrance audits</span>
-              </li>
-              <li>
-                <span class="medium-check">✓</span>
-                <span>Explore 3D interactive layout &amp; plot availability studio</span>
               </li>
               <li>
                 <span class="medium-check">✓</span>
@@ -1516,14 +1537,6 @@
       </div>
     </div>
 
-  </div>
-  } @else if (isLoading()) {
-  <!-- LOADING DOSSIER SKELETON / SPINNER STATE -->
-  <div class="max-w-content not-found-box py-24 text-center">
-    <div class="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-    <h3 style="margin-top: 1rem; font-size: 1.125rem; font-weight: 600; color: #334155;">Retrieving verified property
-      dossier...</h3>
-    <p style="color: #64748b; font-size: 0.875rem;">Loading Cadastral & RERA documents from Find a Plot registry</p>
   </div>
   } @else {
   <!-- PROPERTY NOT FOUND STATE -->

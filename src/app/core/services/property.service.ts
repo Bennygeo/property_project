@@ -1313,6 +1313,47 @@ export class PropertyService {
   }
 
   /**
+   * Pre-flight verification: Check if user has quota to view full property details
+   * BEFORE details.php is ever queried or downloaded from the database.
+   */
+  public checkProjectViewLimit(id: string, userId?: number, deviceHash?: string): Observable<{
+    canDownload: boolean;
+    limitReached: boolean;
+    isAlreadyUnlocked?: boolean;
+    activePlanId?: string;
+    activePlanName?: string;
+    projectViewsUsed?: number;
+    projectViewLimit?: number;
+    upgradeMessage?: string;
+  }> {
+    const params = new URLSearchParams();
+    params.set('id', id);
+    if (userId !== undefined && userId !== null && userId > 0) {
+      params.set('userId', String(userId));
+    }
+    if (deviceHash) {
+      params.set('deviceHash', deviceHash);
+    }
+    const qs = params.toString();
+
+    const proxyUrl = `${environment.apiUrl}/properties/check-limit.php?${qs}`;
+    const cliUrl = `${environment.cliApiUrl}/properties/check-limit.php?${qs}`;
+    const apacheUrl = `${environment.apacheApiUrl}/properties/check-limit.php?${qs}`;
+
+    return this.http.get<{ success: boolean; data: any }>(proxyUrl).pipe(
+      catchError(() => this.http.get<{ success: boolean; data: any }>(cliUrl)),
+      catchError(() => this.http.get<{ success: boolean; data: any }>(apacheUrl)),
+      map(res => {
+        if (res && res.success && res.data) {
+          return res.data;
+        }
+        return { canDownload: true, limitReached: false };
+      }),
+      catchError(() => of({ canDownload: true, limitReached: false }))
+    );
+  }
+
+  /**
    * Fetch full 100acress-style property dossier from MySQL PHP Backend
    * Enforces PRD M06 entitlement limits (Free: 2, Smart: 5, Priority: 25, VIP: 50).
    * When limits are exceeded, details below banner are masked and not downloaded from DB.
