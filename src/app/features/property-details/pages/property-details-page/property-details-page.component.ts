@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed, effect, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
@@ -328,6 +328,16 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     return views.includes(id) && views.length === 1;
   });
 
+  constructor() {
+    // When user completes OTP login while on a restricted property, immediately reload to unlock
+    effect(() => {
+      const user = this.authService.currentUser();
+      const currentId = this.propertyId();
+      if (user && currentId && (this.isEntitlementExhausted() || !this.fetchedProperty() || this.fetchedProperty()?.isViewRestricted)) {
+        this.loadProperty(currentId);
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.setupWhatsAppObserver();
@@ -380,92 +390,126 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => this.setupWhatsAppObserver(), 400);
 
-        const currentUser = this.authService.currentUser();
-        const userId = currentUser ? currentUser.id : undefined;
-        const deviceHash = this.authService.getDeviceFingerprint();
+        this.loadProperty(id);
+      }
+    });
+  }
 
-        if (this.authService.isLoggedIn()) {
-          // Record browsing history in MySQL & localStorage for logged in user
-          this.authService.recordPropertyView(id).subscribe();
-        } else {
-          // Guest visitor flow - sync device view count
-          this.authService.syncGuestViews().subscribe();
+  private loadProperty(id: string): void {
+    const currentUser = this.authService.currentUser();
+    const userId = currentUser ? currentUser.id : undefined;
+    const deviceHash = this.authService.getDeviceFingerprint();
+
+    if (this.authService.isLoggedIn()) {
+      // Record browsing history in MySQL & localStorage for logged in user
+      this.authService.recordPropertyView(id).subscribe();
+    } else {
+      // Guest visitor flow - sync device view count
+      this.authService.syncGuestViews().subscribe();
+      // If guest has already viewed another property, immediately insist they sign in
+      if (!this.authService.canViewProperty(id)) {
+        setTimeout(() => {
+          this.authService.openOtpModal('guest_limit');
+        }, 150);
+      }
+    }
+
+    // Pre-flight check: Verify quota limit BEFORE downloading details.php from DB
+    this.isLoading.set(true);
+    this.propertyService.checkProjectViewLimit(id, userId, deviceHash).subscribe({
+      next: (limitCheck) => {
+        if (!limitCheck.canDownload) {
+          // User has reached quota limit! DO NOT download details.php from DB
+          this.isLoading.set(false);
+          this.isEntitlementExhausted.set(true);
+          this.entitlementExhaustedMessage.set(limitCheck.upgradeMessage || 'Project view limit reached.');
+
+          // Construct basic property for display (title, price, image only - NO deep project details)
+          const base = (limitCheck as any).basicProperty || this.propertyService.getPropertyById(id);
+          if (base) {
+            const restrictedProp: Property = {
+              ...base,
+              isViewRestricted: true,
+              isMasked: true,
+              activePlanName: limitCheck.activePlanName,
+              activePlanId: limitCheck.activePlanId,
+              projectViewsUsed: limitCheck.projectViewsUsed,
+              projectViewLimit: limitCheck.projectViewLimit,
+              upgradeMessage: limitCheck.upgradeMessage,
+              isShortlisted: this.propertyService.isShortlisted(base.id)
+            };
+            this.fetchedProperty.set(restrictedProp);
+            this.userBehaviorService.trackPropertyView(restrictedProp);
+          }
+
+          // Insist guest to login via OTP modal immediately
+          if (!this.authService.isLoggedIn()) {
+            setTimeout(() => {
+              this.authService.openOtpModal('guest_limit');
+            }, 150);
+          }
+          return;
         }
 
-        // Pre-flight check: Verify quota limit BEFORE downloading details.php from DB
-        this.isLoading.set(true);
-        this.propertyService.checkProjectViewLimit(id, userId, deviceHash).subscribe({
-          next: (limitCheck) => {
-            if (!limitCheck.canDownload) {
-              // User has reached quota limit! DO NOT download details.php from DB
-              this.isLoading.set(false);
-              this.isEntitlementExhausted.set(true);
-              this.entitlementExhaustedMessage.set(limitCheck.upgradeMessage || 'Project view limit reached.');
-
-              // Construct basic property for display (title, price, image only - NO deep project details)
-              const base = (limitCheck as any).basicProperty || this.propertyService.getPropertyById(id);
-              if (base) {
-                const restrictedProp: Property = {
-                  ...base,
-                  isViewRestricted: true,
-                  isMasked: true,
-                  activePlanName: limitCheck.activePlanName,
-                  activePlanId: limitCheck.activePlanId,
-                  projectViewsUsed: limitCheck.projectViewsUsed,
-                  projectViewLimit: limitCheck.projectViewLimit,
-                  upgradeMessage: limitCheck.upgradeMessage,
-                  isShortlisted: this.propertyService.isShortlisted(base.id)
-                };
-                this.fetchedProperty.set(restrictedProp);
-                this.userBehaviorService.trackPropertyView(restrictedProp);
+        // Quota check passed: download comprehensive details from details.php
+        this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
+          next: (prop) => {
+            this.isLoading.set(false);
+            if (prop) {
+              this.fetchedProperty.set(prop);
+              if (prop.isViewRestricted) {
+                this.isEntitlementExhausted.set(true);
+                this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
+                if (!this.authService.isLoggedIn()) {
+                  setTimeout(() => {
+                    this.authService.openOtpModal('guest_limit');
+                  }, 150);
+                }
+              } else {
+                this.isEntitlementExhausted.set(false);
+                if (!this.authService.isLoggedIn()) {
+                  this.authService.recordGuestPropertyView(id);
+                }
               }
-              return;
             }
-
-            // Quota check passed: download comprehensive details from details.php
-            this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
-              next: (prop) => {
-                this.isLoading.set(false);
-                if (prop) {
-                  this.fetchedProperty.set(prop);
-                  if (prop.isViewRestricted) {
-                    this.isEntitlementExhausted.set(true);
-                    this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
-                  } else {
-                    this.isEntitlementExhausted.set(false);
-                    if (!this.authService.isLoggedIn()) {
-                      this.authService.recordGuestPropertyView(id);
-                    }
-                  }
-                }
-                const resolved = prop || this.propertyService.getPropertyById(id);
-                if (resolved) {
-                  this.userBehaviorService.trackPropertyView(resolved);
-                  const priceNum = parsePriceToNumber(resolved.price);
-                  if (priceNum > 0) {
-                    this.loanAmount.set(Math.round(priceNum * 0.8));
-                  }
-                  if (!prop?.isViewRestricted) {
-                    this.loadNearbyLocalities(resolved);
-                  }
-                }
-              },
-              error: () => {
-                this.isLoading.set(false);
+            const resolved = prop || this.propertyService.getPropertyById(id);
+            if (resolved) {
+              this.userBehaviorService.trackPropertyView(resolved);
+              const priceNum = parsePriceToNumber(resolved.price);
+              if (priceNum > 0) {
+                this.loanAmount.set(Math.round(priceNum * 0.8));
               }
-            });
+              if (!prop?.isViewRestricted) {
+                this.loadNearbyLocalities(resolved);
+              }
+            }
           },
           error: () => {
-            // Fallback if check endpoint fails: attempt regular fetch
-            this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
-              next: (prop) => {
-                this.isLoading.set(false);
-                if (prop) this.fetchedProperty.set(prop);
-              },
-              error: () => {
-                this.isLoading.set(false);
+            this.isLoading.set(false);
+          }
+        });
+      },
+      error: () => {
+        // Fallback if check endpoint fails: attempt regular fetch
+        this.propertyService.fetchPropertyDetails(id, userId, deviceHash).subscribe({
+          next: (prop) => {
+            this.isLoading.set(false);
+            if (prop) {
+              this.fetchedProperty.set(prop);
+              if (prop.isViewRestricted) {
+                this.isEntitlementExhausted.set(true);
+                if (!this.authService.isLoggedIn()) {
+                  setTimeout(() => {
+                    this.authService.openOtpModal('guest_limit');
+                  }, 150);
+                }
+              } else if (!this.authService.isLoggedIn()) {
+                this.authService.recordGuestPropertyView(id);
               }
-            });
+            }
+          },
+          error: () => {
+            this.isLoading.set(false);
           }
         });
       }
