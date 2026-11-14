@@ -254,7 +254,7 @@ if ($userId > 0) {
 
     $activePlanId = 'explorer';
     $activePlanName = 'Free User';
-    $projectViewLimit = 2;
+    $projectViewLimit = 1;
 
     $stmtViews = $db->prepare("
         SELECT DISTINCT property_id 

@@ -175,6 +175,17 @@ export class SubscriptionPageComponent implements OnInit {
       return;
     }
 
+    if (!this.authService.isLoggedIn()) {
+      this.notificationService.show({
+        type: 'info',
+        title: 'Sign In Required',
+        message: 'Please sign in with your mobile number to subscribe or upgrade your plan.',
+        icon: 'login'
+      });
+      this.authService.openOtpModal();
+      return;
+    }
+
     // Free Explorer plan activates immediately
     if (plan.priceInr <= 0) {
       this.subscriptionService.subscribeToPlan(plan);

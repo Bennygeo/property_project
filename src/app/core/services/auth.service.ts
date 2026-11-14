@@ -64,10 +64,10 @@ export class AuthService {
     return perms.includes(permission) || perms.includes('all_access');
   }
 
-  // Guest property views tracking (Max 2 free property views for unauthenticated visitors)
+  // Guest property views tracking (Max 1 free property view for unauthenticated visitors)
   public readonly guestViewedPropertyIds = signal<string[]>(this.getInitialGuestViews());
   public readonly guestViewCount = computed(() => this.guestViewedPropertyIds().length);
-  public readonly hasReachedGuestLimit = computed(() => !this.isLoggedIn() && this.guestViewedPropertyIds().length >= 2);
+  public readonly hasReachedGuestLimit = computed(() => !this.isLoggedIn() && this.guestViewedPropertyIds().length >= 1);
 
   // Modal display signal
   public readonly isOtpModalOpen = signal<boolean>(false);
@@ -180,8 +180,8 @@ export class AuthService {
     if (views.includes(propertyId)) {
       return true;
     }
-    // If guest has viewed fewer than 2 properties, allow viewing
-    return views.length < 2;
+    // If guest has viewed fewer than 1 property, allow viewing
+    return views.length < 1;
   }
 
   /**

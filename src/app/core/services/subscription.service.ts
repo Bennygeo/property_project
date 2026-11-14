@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
@@ -143,6 +143,7 @@ export class SubscriptionService {
   public readonly isProcessingPayment = signal<boolean>(false);
 
   public readonly activePlanId = computed<string>(() => {
+    if (!this.authService.isLoggedIn()) return 'explorer';
     return this.entitlements()?.planId || this.currentSubscription()?.planId || 'explorer';
   });
 
@@ -152,27 +153,32 @@ export class SubscriptionService {
   });
 
   public readonly isPaidSubscriber = computed<boolean>(() => {
+    if (!this.authService.isLoggedIn()) return false;
     const pid = this.activePlanId();
     return pid !== 'explorer' && (this.daysRemaining() > 0 || !this.currentSubscription()?.expiresAt);
   });
 
   constructor() {
     this.fetchPlans().subscribe();
-    this.fetchCurrentSubscription().subscribe();
-  }
-
-  private loadStoredSubscription(): UserSubscription | null {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    try {
-      const raw = localStorage.getItem(STORAGE_ACTIVE_PLAN_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
+    if (this.authService.isLoggedIn()) {
+      this.fetchCurrentSubscription().subscribe();
+    } else {
+      this.resetToFreeExplorer();
     }
+
+    // Automatically sync when user logs in or logs out
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user && user.id > 0) {
+        this.fetchCurrentSubscription(user.id).subscribe();
+      } else {
+        this.resetToFreeExplorer();
+      }
+    });
   }
 
-  private loadStoredEntitlements(): UserEntitlements | null {
-    const defaultExplorer: UserEntitlements = {
+  public getDefaultExplorerEntitlements(): UserEntitlements {
+    return {
       planId: 'explorer',
       planName: 'Explorer',
       projectViewsUsed: 0,
@@ -192,7 +198,36 @@ export class SubscriptionService {
       hasPriorityAdvisor: false,
       expiresAt: null
     };
+  }
 
+  public resetToFreeExplorer(): void {
+    this.currentSubscription.set(null);
+    this.entitlements.set(this.getDefaultExplorerEntitlements());
+    this.unlockedProjectIds.set(new Set<string>());
+    this.daysRemaining.set(0);
+    this.invoices.set([]);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        localStorage.removeItem(STORAGE_ACTIVE_PLAN_KEY);
+        localStorage.removeItem(STORAGE_ENTITLEMENTS_KEY);
+      } catch {}
+    }
+  }
+
+  private loadStoredSubscription(): UserSubscription | null {
+    if (!this.authService.isLoggedIn()) return null;
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = localStorage.getItem(STORAGE_ACTIVE_PLAN_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private loadStoredEntitlements(): UserEntitlements | null {
+    const defaultExplorer: UserEntitlements = this.getDefaultExplorerEntitlements();
+    if (!this.authService.isLoggedIn()) return defaultExplorer;
     if (typeof window === 'undefined' || !window.localStorage) return defaultExplorer;
     try {
       const raw = localStorage.getItem(STORAGE_ENTITLEMENTS_KEY);
@@ -226,7 +261,7 @@ export class SubscriptionService {
 
   private getEffectiveUserId(): number {
     const user = this.authService.currentUser();
-    return (user && user.id > 0) ? user.id : 1;
+    return (user && user.id > 0) ? user.id : 0;
   }
 
   /**
@@ -308,7 +343,31 @@ export class SubscriptionService {
    * Fetch current subscription and real-time entitlements
    */
   public fetchCurrentSubscription(userId?: number): Observable<any> {
+    if (!this.authService.isLoggedIn()) {
+      this.resetToFreeExplorer();
+      return of({
+        hasActiveSubscription: false,
+        subscription: null,
+        daysRemaining: 0,
+        entitlements: this.getDefaultExplorerEntitlements(),
+        unlockedProjectIds: [],
+        invoices: []
+      });
+    }
+
     const uid = userId || this.getEffectiveUserId();
+    if (uid <= 0) {
+      this.resetToFreeExplorer();
+      return of({
+        hasActiveSubscription: false,
+        subscription: null,
+        daysRemaining: 0,
+        entitlements: this.getDefaultExplorerEntitlements(),
+        unlockedProjectIds: [],
+        invoices: []
+      });
+    }
+
     const tryGet = (baseUrl: string) => 
       this.http.get<{ 
         success: boolean; 
@@ -434,6 +493,17 @@ export class SubscriptionService {
    * Subscribe to a plan using Razorpay Gateway with webhook/HMAC signature verification
    */
   public subscribeToPlan(plan: SubscriptionPlan): void {
+    if (!this.authService.isLoggedIn()) {
+      this.notificationService.show({
+        type: 'info',
+        title: 'Sign In Required',
+        message: 'Please sign in with your mobile number to activate or upgrade your subscription plan.',
+        icon: 'login'
+      });
+      this.authService.openOtpModal();
+      return;
+    }
+
     const uid = this.getEffectiveUserId();
     const user = this.authService.currentUser();
     this.isProcessingPayment.set(true);

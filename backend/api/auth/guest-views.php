@@ -74,13 +74,13 @@ if ($method === 'GET') {
 
     // If a specific propertyId is being checked
     if (!empty($propertyId)) {
-        // Allowed if user hasn't used their 2 free views yet, OR if this is the exact same property they already viewed
-        $isAllowed = ($viewCount < 2) || in_array($propertyId, $viewedPropertyIds, true);
+        // Allowed if user hasn't used their 1 free view yet, OR if this is the exact same property they already viewed
+        $isAllowed = ($viewCount < 1) || in_array($propertyId, $viewedPropertyIds, true);
         Response::success([
             'allowed'           => $isAllowed,
             'isFirstView'       => ($viewCount === 0),
             'viewCount'         => $viewCount,
-            'maxAllowed'        => 2,
+            'maxAllowed'        => 1,
             'viewedPropertyIds' => $viewedPropertyIds,
             'clientIp'          => $clientIp,
             'reason'            => $isAllowed ? null : 'guest_limit_reached'
@@ -90,10 +90,10 @@ if ($method === 'GET') {
     // General status check
     Response::success([
         'viewCount'         => $viewCount,
-        'maxAllowed'        => 2,
+        'maxAllowed'        => 1,
         'viewedPropertyIds' => $viewedPropertyIds,
         'clientIp'          => $clientIp,
-        'limitReached'      => ($viewCount >= 2)
+        'limitReached'      => ($viewCount >= 1)
     ], 'Guest views retrieved');
 }
 

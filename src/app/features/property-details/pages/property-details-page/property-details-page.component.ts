@@ -433,6 +433,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
                     this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
                   } else {
                     this.isEntitlementExhausted.set(false);
+                    if (!this.authService.isLoggedIn()) {
+                      this.authService.recordGuestPropertyView(id);
+                    }
                   }
                 }
                 const resolved = prop || this.propertyService.getPropertyById(id);

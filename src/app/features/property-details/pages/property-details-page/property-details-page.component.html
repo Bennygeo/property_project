@@ -37,20 +37,6 @@
   <!-- UNLOCKED: CLEAN, STRONG HANU REDDY REALTY STYLE DETAIL SHOWCASE -->
   <div class="max-w-content hanu-property-page" [class.is-guest-blurred]="isBlockedForGuest()">
 
-    <!-- GUEST VIEWING: MINIMALIST OVERLAY IF OTP MODAL IS DISMISSED -->
-    @if (isBlockedForGuest() && !authService.isOtpModalOpen()) {
-    <div class="guest-blur-overlay">
-      <div class="guest-blur-prompt">
-        <h2 class="blur-prompt-title">Sign In to Continue Exploring</h2>
-        <p class="blur-prompt-sub">You have viewed your free preview. Sign in to view full property details.</p>
-        <div class="blur-prompt-actions">
-          <button type="button" class="btn-prompt-signin" (click)="promptLogin()">Sign In</button>
-          <button type="button" class="btn-prompt-back" (click)="goBack()">Back to Search</button>
-        </div>
-      </div>
-    </div>
-    }
-
     <!-- HEADER SUMMARY BLOCK (BALANCED 2-COLUMN LAYOUT) -->
     <header class="hanu-header-block">
       <div class="hanu-header-split">
@@ -1528,6 +1514,20 @@
     </div>
 
   </div>
+
+  <!-- GUEST VIEWING: CRISP, SHARP DIALOG IN FRONT (OUTSIDE BLURRED CONTAINER) -->
+  @if (isBlockedForGuest() && !authService.isOtpModalOpen()) {
+  <div class="guest-blur-overlay">
+    <div class="guest-blur-prompt">
+      <h2 class="blur-prompt-title">Sign In to Continue Exploring</h2>
+      <p class="blur-prompt-sub">You have viewed your free preview. Sign in to view full property details.</p>
+      <div class="blur-prompt-actions">
+        <button type="button" class="btn-prompt-signin" (click)="promptLogin()">Sign In</button>
+        <button type="button" class="btn-prompt-back" (click)="goBack()">Back to Search</button>
+      </div>
+    </div>
+  </div>
+  }
   } @else {
   <!-- PROPERTY NOT FOUND STATE -->
   <div class="max-w-content not-found-box">
