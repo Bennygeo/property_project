@@ -15,14 +15,6 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
           <!-- Modal Header -->
           <div class="district-modal-header">
             <div class="header-texts">
-              <div class="header-badge-row">
-                <span class="state-pill">
-                  <span class="state-dot"></span>
-                  Tamil Nadu Network
-                </span>
-                <span class="district-count-pill">38 Districts Active</span>
-              </div>
-              <h2 id="district-modal-title" class="district-modal-title">Select Your District</h2>
               <p class="district-modal-subtitle">
                 Find a Plot currently operates across Tamil Nadu. Select your district to explore verified plots, layouts &amp; registered deeds.
               </p>
@@ -279,15 +271,6 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       border-radius: 9999px;
       font-size: 11px;
       font-weight: 600;
-    }
-
-    .district-modal-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: -0.02em;
-      margin: 0 0 0.35rem 0;
-      line-height: 1.2;
     }
 
     .district-modal-subtitle {
