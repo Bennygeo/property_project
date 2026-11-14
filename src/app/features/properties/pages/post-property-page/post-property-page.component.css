@@ -37,6 +37,8 @@
 
 .post-property-page-layout {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-color: #f8fafc;
   font-family: var(--font-sans);
   color: #0f172a;

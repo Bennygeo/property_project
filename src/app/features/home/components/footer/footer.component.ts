@@ -72,6 +72,12 @@ import { RouterLink } from '@angular/router';
     </footer>
   `,
   styles: [`
+    :host {
+      display: block;
+      margin-top: auto;
+      width: 100%;
+    }
+
     .minimal-footer {
       width: 100%;
       background-color: var(--brand-teal, #0f3b4a);
