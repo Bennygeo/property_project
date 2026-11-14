@@ -488,12 +488,13 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  align-items: end;
+  align-items: stretch;
 }
 
 @media (min-width: 640px) {
   .plans-grid {
     grid-template-columns: repeat(2, 1fr);
+    align-items: stretch;
   }
 }
 
@@ -501,7 +502,7 @@
   .plans-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
-    align-items: end;
+    align-items: stretch;
   }
 }
 
@@ -510,11 +511,14 @@
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+  height: 100%;
   position: relative;
   overflow: hidden;
   transition: border-color 0.2s ease;
   box-shadow: none !important;
   box-sizing: border-box;
+  border: 1px solid transparent;
+  padding: 1.75rem 1.35rem 2rem 1.35rem;
 }
 
 .plan-card:hover:not(.is-downgrade-disabled) {
@@ -559,23 +563,15 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 1: EXPLORER (MILD SLATE / PURE ARCHITECTURAL WHITE)                   */
-/* Height: Compact Baseline (min-height: 690px on desktop)                    */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-explorer {
   background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  padding: 1.65rem 1.35rem 2rem 1.35rem;
-}
-
-@media (min-width: 1040px) {
-  .plan-card.plan-explorer {
-    min-height: 770px;
-    align-self: end;
-  }
+  border: 1px solid transparent;
+  padding: 1.75rem 1.35rem 2rem 1.35rem;
 }
 
 .plan-card.plan-explorer:hover:not(.is-downgrade-disabled) {
-  border-color: #94a3b8;
+  border-color: transparent;
   box-shadow: none !important;
 }
 
@@ -616,23 +612,15 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 2: SMART BUYER (THEME BRAND GREEN MILD PASTEL)                        */
-/* Height: Medium Step (min-height: 750px on desktop)                         */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-smart-buyer {
   background: #f2f8f4;
-  border: 1.5px solid #8ebaa0;
+  border: 1px solid transparent;
   padding: 1.75rem 1.35rem 2rem 1.35rem;
 }
 
-@media (min-width: 1040px) {
-  .plan-card.plan-smart-buyer {
-    min-height: 800px;
-    align-self: end;
-  }
-}
-
 .plan-card.plan-smart-buyer:hover:not(.is-downgrade-disabled) {
-  border-color: #5e8f72;
+  border-color: transparent;
   box-shadow: none !important;
 }
 
@@ -673,26 +661,18 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 3: PRIORITY BUYER (THEME BRAND TEAL MILD PASTEL)                      */
-/* Height: Tall Prominent Step (min-height: 825px on desktop)                 */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-priority-buyer {
   background: #f0f6f8;
-  border: 2px solid #7faab7;
-  padding: 1.85rem 1.45rem 2.15rem 1.45rem;
+  border: 1px solid transparent;
+  padding: 1.75rem 1.35rem 2rem 1.35rem;
   box-shadow: none !important;
   position: relative;
   z-index: 2;
 }
 
-@media (min-width: 1040px) {
-  .plan-card.plan-priority-buyer {
-    min-height: 830px;
-    align-self: end;
-  }
-}
-
 .plan-card.plan-priority-buyer:hover:not(.is-downgrade-disabled) {
-  border-color: #0f3b4a;
+  border-color: transparent;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -708,7 +688,7 @@
 .plan-card.plan-priority-buyer .plan-quotas-box {
   background: #e1eff2;
   border: 1px solid #c2e0e5;
-  padding: 0.95rem;
+  padding: 0.875rem;
 }
 
 .plan-card.plan-priority-buyer .quota-icon {
@@ -736,24 +716,16 @@
 
 /* -------------------------------------------------------------------------- */
 /* TIER 4: VIP CONCIERGE (THEME BRAND GOLD/SAND MILD PASTEL)                  */
-/* Height: Tallest Luxury Step (min-height: 900px on desktop)                 */
 /* -------------------------------------------------------------------------- */
 .plan-card.plan-vip-concierge {
   background: #fdfbf6;
-  border: 2px solid #dfc886;
-  padding: 2.05rem 1.45rem 2.35rem 1.45rem;
+  border: 1px solid transparent;
+  padding: 1.75rem 1.35rem 2rem 1.35rem;
   box-shadow: none !important;
 }
 
-@media (min-width: 1040px) {
-  .plan-card.plan-vip-concierge {
-    min-height: 860px;
-    align-self: end;
-  }
-}
-
 .plan-card.plan-vip-concierge:hover:not(.is-downgrade-disabled) {
-  border-color: #b89230;
+  border-color: transparent;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -769,6 +741,7 @@
 .plan-card.plan-vip-concierge .plan-quotas-box {
   background: #f7f0d8;
   border: 1px solid #ebdcb0;
+  padding: 0.875rem;
 }
 
 .plan-card.plan-vip-concierge .quota-icon {
@@ -802,7 +775,7 @@
   .plan-card.plan-smart-buyer,
   .plan-card.plan-priority-buyer,
   .plan-card.plan-vip-concierge {
-    height: auto !important;
+    height: 100% !important;
     min-height: unset !important;
     align-self: stretch !important;
   }
@@ -810,17 +783,16 @@
 
 /* -------------------------------------------------------------------------- */
 /* CURRENT ACTIVE PLAN HIGHLIGHT                                              */
-/* Tactile 10px mild architectural border: noticeable yet elegant & restrained */
+/* Keep 1px border with 0.2 opacity for the active plan                        */
 /* -------------------------------------------------------------------------- */
 .plan-card.is-current {
-  border-width: 10px !important;
-  border-style: solid !important;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
   background-clip: padding-box;
   box-shadow: none !important;
 }
 
 .plan-card.plan-vip-concierge.is-current {
-  border-color: rgba(213, 179, 87, 0.45) !important;
+  border-color: rgba(184, 146, 48, 0.2) !important;
   box-shadow: none !important;
 }
 
@@ -831,7 +803,7 @@
 }
 
 .plan-card.plan-priority-buyer.is-current {
-  border-color: rgba(15, 59, 74, 0.3) !important;
+  border-color: rgba(15, 59, 74, 0.2) !important;
   box-shadow: none !important;
 }
 
@@ -842,7 +814,7 @@
 }
 
 .plan-card.plan-smart-buyer.is-current {
-  border-color: rgba(94, 143, 114, 0.38) !important;
+  border-color: rgba(94, 143, 114, 0.2) !important;
   box-shadow: none !important;
 }
 
@@ -853,7 +825,7 @@
 }
 
 .plan-card.plan-explorer.is-current {
-  border-color: rgba(30, 41, 59, 0.25) !important;
+  border-color: rgba(30, 41, 59, 0.2) !important;
   box-shadow: none !important;
 }
 
@@ -1578,6 +1550,7 @@
 .plan-card:hover:not(.is-current) {
   transform: none !important;
   box-shadow: none !important;
+  border-color: transparent !important;
 }
 
 /* ==========================================================================
