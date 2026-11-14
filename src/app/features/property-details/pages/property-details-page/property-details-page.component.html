@@ -6,25 +6,15 @@
   <app-header />
 
   @if (isLoading()) {
-  <!-- ARCHITECTURAL PRELOADER: FETCHING COMPREHENSIVE DETAILS -->
-  <div class="comprehensive-dossier-preloader">
-    <div class="preloader-card">
-      <div class="preloader-orbit">
-        <div class="orbit-spinner outer"></div>
-        <div class="orbit-spinner inner"></div>
-        <span class="material-symbols-outlined orbit-icon">domain_verification</span>
-      </div>
-      <div class="preloader-badge">CADASTRA &amp; RERA VERIFIED DOSSIER</div>
-      <h2 class="preloader-title">Fetching comprehensive details...</h2>
-      <p class="preloader-subtitle">Checking quota limits, verifying cadastral survey records &amp; layout intelligence</p>
-      <div class="preloader-bar-wrap">
-        <div class="preloader-bar-fill"></div>
-      </div>
-      <div class="preloader-steps">
-        <span class="step-item"><span class="step-dot"></span> Quota Verification</span>
-        <span class="step-item"><span class="step-dot"></span> Cadastral Survey</span>
-        <span class="step-item"><span class="step-dot"></span> 49-Pt Specs</span>
-      </div>
+  <!-- SIMPLE PRELOADER: FETCHING COMPREHENSIVE DETAILS... -->
+  <div class="simple-details-preloader">
+    <div class="preloader-text-wrap">
+      <span class="preloader-label">Fetching comprehensive details</span>
+      <span class="animated-dots" aria-hidden="true">
+        <span class="dot dot-1">.</span>
+        <span class="dot dot-2">.</span>
+        <span class="dot dot-3">.</span>
+      </span>
     </div>
   </div>
   } @else if (property(); as prop) {
