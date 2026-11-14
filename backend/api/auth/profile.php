@@ -32,7 +32,7 @@ if (!$user) {
     $user = [
         'id'            => $userId,
         'name'          => 'Verified Investor ' . str_pad((string)$userId, 4, '0', STR_PAD_LEFT),
-        'email'         => "investor_{$userId}@mannidam.com",
+        'email'         => null,
         'phone'         => '+91 94440 00001',
         'role'          => 'buyer',
         'developerId'   => 0,

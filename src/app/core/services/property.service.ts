@@ -494,7 +494,7 @@ export class PropertyService {
       return new Set<string>();
     }
     try {
-      const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY) || localStorage.getItem('mannidam_user_shortlists');
+      const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY) || localStorage.getItem('findaplot_user_shortlists') || localStorage.getItem('mannidam_user_shortlists');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {

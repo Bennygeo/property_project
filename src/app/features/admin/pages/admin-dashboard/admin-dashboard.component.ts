@@ -3003,7 +3003,7 @@ export class AdminDashboardComponent {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `mannidam_financial_credits_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `findaplot_financial_credits_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -3239,7 +3239,7 @@ export class AdminDashboardComponent {
           const pId = rawPId;
 
           // 1: Developer
-          const developer = String(getCol(1, 'developer', 'builder', 'promoter', 'company') || 'Mannidam Verified Developer').trim();
+          const developer = String(getCol(1, 'developer', 'builder', 'promoter', 'company') || 'Find a Plot Verified Developer').trim();
           // Check for Title column first (Priority: Project Name & Plot fetched from Title column)
           const titleCol = String(getCol(-1, 'title', 'propertytitle', 'listingtitle', 'titlename', 'plottitle', 'propertyname') || '').trim();
 

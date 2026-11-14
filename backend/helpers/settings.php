@@ -81,3 +81,7 @@ class Settings {
     }
 }
 
+if (!class_exists('FindAPlot\Helpers\Settings', false)) {
+    class_alias(\Mannidam\Helpers\Settings::class, 'FindAPlot\Helpers\Settings');
+}
+

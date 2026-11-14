@@ -40,8 +40,8 @@ export interface UserMindsetAnalytics {
   recentViews: any[];
 }
 
-const STORAGE_PHONE_KEY = 'mannidam_active_buyer_phone';
-const STORAGE_HISTORY_KEY = 'mannidam_buyer_browsing_history';
+const STORAGE_PHONE_KEY = 'findaplot_active_buyer_phone';
+const STORAGE_HISTORY_KEY = 'findaplot_buyer_browsing_history';
 
 export function parsePriceToINR(priceStr: string): number {
   if (!priceStr) return 0;
@@ -254,10 +254,10 @@ export class UserBehaviorService {
 
   private getOrCreateSessionId(): string {
     try {
-      let s = sessionStorage.getItem('mannidam_visitor_session_id');
+      let s = sessionStorage.getItem('findaplot_visitor_session_id') || sessionStorage.getItem('mannidam_visitor_session_id');
       if (!s) {
         s = 'sess_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
-        sessionStorage.setItem('mannidam_visitor_session_id', s);
+        sessionStorage.setItem('findaplot_visitor_session_id', s);
       }
       return s;
     } catch {
@@ -311,7 +311,7 @@ export class UserBehaviorService {
     const user = this.authService.currentUser();
     if (user && user.phone) return user.phone.trim();
     try {
-      const stored = localStorage.getItem(STORAGE_PHONE_KEY);
+      const stored = localStorage.getItem(STORAGE_PHONE_KEY) || localStorage.getItem('mannidam_active_buyer_phone');
       if (stored && stored !== '9486140936') return stored;
     } catch {}
     return 'Guest Visitor';
@@ -319,7 +319,7 @@ export class UserBehaviorService {
 
   private getInitialHistory(): BrowsingRecord[] {
     try {
-      const raw = localStorage.getItem(STORAGE_HISTORY_KEY);
+      const raw = localStorage.getItem(STORAGE_HISTORY_KEY) || localStorage.getItem('mannidam_buyer_browsing_history');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;

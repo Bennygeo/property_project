@@ -217,7 +217,6 @@
   align-items: center;
   gap: 0.65rem;
   background: var(--brand-green-subtle);
-  border: 1px solid var(--brand-green);
   border-radius: 8px;
   padding: 5px 10px 5px 6px;
   cursor: pointer;
@@ -279,8 +278,7 @@
   background: var(--brand-green-subtle);
   color: var(--brand-green-dark);
   font-size: 11px;
-  font-weight: 600;
-  border: 1px solid var(--brand-green);
+  font-weight: 500;
   border-radius: 6px;
   padding: 2px 6px;
 }
@@ -698,6 +696,7 @@
   transition: background 0.15s;
   align-self: flex-start;
   font-family: inherit;
+  margin: 0 auto;
 }
 
 .btn-primary-action:hover {
@@ -2657,13 +2656,15 @@ input:checked+.toggle-slider:before {
   background: currentColor;
 }
 
-.status-confirmed, .status-scheduled {
+.status-confirmed,
+.status-scheduled {
   background: #e5f7ec;
   color: #15803d;
   border: 1px solid rgba(21, 128, 61, 0.2);
 }
 
-.status-requested, .status-enquiry {
+.status-requested,
+.status-enquiry {
   background: #fef3c7;
   color: #92400e;
   border: 1px solid rgba(146, 64, 14, 0.2);
@@ -3533,14 +3534,41 @@ input:checked+.toggle-slider:before {
   box-shadow: 0 6px 18px rgba(94, 143, 114, 0.16);
 }
 
-.kicker-sage { color: #2c4938; }
-.title-sage { color: #2c4938; }
-.count-sage { color: #2c4938; font-size: 1.0625rem; }
-.icon-sage { background: rgba(94, 143, 114, 0.2); color: #2c4938; }
-.track-sage { background: rgba(94, 143, 114, 0.2); }
-.fill-sage { background: linear-gradient(90deg, #5e8f72 0%, #2c4938 100%); }
-.text-sage { color: #2c4938; }
-.tip-sage { background: rgba(94, 143, 114, 0.2); border: 1px solid rgba(94, 143, 114, 0.35); color: #2c4938; }
+.kicker-sage {
+  color: #2c4938;
+}
+
+.title-sage {
+  color: #2c4938;
+}
+
+.count-sage {
+  color: #2c4938;
+  font-size: 1.0625rem;
+}
+
+.icon-sage {
+  background: rgba(94, 143, 114, 0.2);
+  color: #2c4938;
+}
+
+.track-sage {
+  background: rgba(94, 143, 114, 0.2);
+}
+
+.fill-sage {
+  background: linear-gradient(90deg, #5e8f72 0%, #2c4938 100%);
+}
+
+.text-sage {
+  color: #2c4938;
+}
+
+.tip-sage {
+  background: rgba(94, 143, 114, 0.2);
+  border: 1px solid rgba(94, 143, 114, 0.35);
+  color: #2c4938;
+}
 
 /* -------------------------------------------------------------------------- */
 /* THEME 2: BRAND TEAL #0f3b4a (ANALYTICS - COMPACT BOX SIZE)                 */
@@ -3557,14 +3585,40 @@ input:checked+.toggle-slider:before {
   box-shadow: 0 6px 18px rgba(15, 59, 74, 0.16);
 }
 
-.kicker-blue { color: #0f3b4a; }
-.title-blue { color: #0f3b4a; }
-.count-blue { color: #0f3b4a; }
-.icon-blue { background: rgba(15, 59, 74, 0.15); color: #0f3b4a; }
-.track-blue { background: rgba(15, 59, 74, 0.18); }
-.fill-blue { background: linear-gradient(90deg, #144f63 0%, #0f3b4a 100%); }
-.text-blue { color: #0f3b4a; }
-.tip-blue { background: rgba(15, 59, 74, 0.15); border: 1px solid rgba(15, 59, 74, 0.3); color: #0f3b4a; }
+.kicker-blue {
+  color: #0f3b4a;
+}
+
+.title-blue {
+  color: #0f3b4a;
+}
+
+.count-blue {
+  color: #0f3b4a;
+}
+
+.icon-blue {
+  background: rgba(15, 59, 74, 0.15);
+  color: #0f3b4a;
+}
+
+.track-blue {
+  background: rgba(15, 59, 74, 0.18);
+}
+
+.fill-blue {
+  background: linear-gradient(90deg, #144f63 0%, #0f3b4a 100%);
+}
+
+.text-blue {
+  color: #0f3b4a;
+}
+
+.tip-blue {
+  background: rgba(15, 59, 74, 0.15);
+  border: 1px solid rgba(15, 59, 74, 0.3);
+  color: #0f3b4a;
+}
 
 /* -------------------------------------------------------------------------- */
 /* THEME 3: BRAND GOLD / SAND #d5b357 (CONSULTING - COMPACT BOX SIZE)         */
@@ -3581,14 +3635,40 @@ input:checked+.toggle-slider:before {
   box-shadow: 0 6px 18px rgba(213, 179, 87, 0.18);
 }
 
-.kicker-amber { color: #80631b; }
-.title-amber { color: #695011; }
-.count-amber { color: #695011; }
-.icon-amber { background: rgba(213, 179, 87, 0.22); color: #80631b; }
-.track-amber { background: rgba(213, 179, 87, 0.25); }
-.fill-amber { background: linear-gradient(90deg, #d5b357 0%, #b89230 100%); }
-.text-amber { color: #80631b; }
-.tip-amber { background: rgba(213, 179, 87, 0.2); border: 1px solid rgba(213, 179, 87, 0.35); color: #80631b; }
+.kicker-amber {
+  color: #80631b;
+}
+
+.title-amber {
+  color: #695011;
+}
+
+.count-amber {
+  color: #695011;
+}
+
+.icon-amber {
+  background: rgba(213, 179, 87, 0.22);
+  color: #80631b;
+}
+
+.track-amber {
+  background: rgba(213, 179, 87, 0.25);
+}
+
+.fill-amber {
+  background: linear-gradient(90deg, #d5b357 0%, #b89230 100%);
+}
+
+.text-amber {
+  color: #80631b;
+}
+
+.tip-amber {
+  background: rgba(213, 179, 87, 0.2);
+  border: 1px solid rgba(213, 179, 87, 0.35);
+  color: #80631b;
+}
 
 /* -------------------------------------------------------------------------- */
 /* THEME 4: ARCHITECTURAL SLATE #334155 (VIP CONCIERGE - EXECUTIVE BOX SIZE)   */
@@ -3605,14 +3685,41 @@ input:checked+.toggle-slider:before {
   box-shadow: 0 6px 18px rgba(51, 65, 85, 0.16);
 }
 
-.kicker-purple { color: #334155; }
-.title-purple { color: #1e293b; }
-.count-purple { color: #0f172a; font-size: 1.02rem; }
-.icon-purple { background: rgba(51, 65, 85, 0.12); color: #334155; }
-.track-purple { background: #e2e8f0; }
-.fill-purple { background: linear-gradient(90deg, #64748b 0%, #334155 100%); }
-.text-purple { color: #334155; }
-.tip-purple { background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; }
+.kicker-purple {
+  color: #334155;
+}
+
+.title-purple {
+  color: #1e293b;
+}
+
+.count-purple {
+  color: #0f172a;
+  font-size: 1.02rem;
+}
+
+.icon-purple {
+  background: rgba(51, 65, 85, 0.12);
+  color: #334155;
+}
+
+.track-purple {
+  background: #e2e8f0;
+}
+
+.fill-purple {
+  background: linear-gradient(90deg, #64748b 0%, #334155 100%);
+}
+
+.text-purple {
+  color: #334155;
+}
+
+.tip-purple {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
 
 /* INVOICES SECTION */
 .invoices-section {
@@ -3807,8 +3914,15 @@ input:checked+.toggle-slider:before {
 }
 
 @keyframes modalEnterProfile {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .refund-modal-header {

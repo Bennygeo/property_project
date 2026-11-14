@@ -24,14 +24,14 @@ DEALLOCATE PREPARE alterIfNotExists;
 
 -- Insert or update Admin credentials for Ezhil, Ram, and Benny
 -- Designated Passwords:
---   Ezhil: ezhil@mannidam.com / ezhil@2026
---   Ram:   ram@mannidam.com   / ram@2026
---   Benny: benny@mannidam.com / benny@2026
+--   Ezhil: ezhil@findaplot.com / ezhil@2026
+--   Ram:   ram@findaplot.com   / ram@2026
+--   Benny: benny@findaplot.com / benny@2026
 INSERT INTO users (id, name, email, phone, password_hash, role, points_balance)
 VALUES 
-  (101, 'Ezhil', 'ezhil@mannidam.com', '+91 94440 10001', '$2y$10$s8batNschbmVOPeuKPmAQO2fe3UfDbJ8qm.VvHaI74k.K7zuVAu8y', 'admin', 5000),
-  (102, 'Ram', 'ram@mannidam.com', '+91 94440 10002', '$2y$10$tN1.taAgnIhI/0Z94zyp6Ojb2h1sKAFx9IuXLeZi5swSWTwBLkZ1G', 'admin', 5000),
-  (103, 'Benny', 'benny@mannidam.com', '+91 94440 00003', '$2y$10$FiDMFPcOMyjptraT5aqkYe.pvJaXj0mwqId8Jd2M8PnZq5HsWKwM6', 'admin', 5000)
+  (101, 'Ezhil', 'ezhil@findaplot.com', '+91 94440 10001', '$2y$10$s8batNschbmVOPeuKPmAQO2fe3UfDbJ8qm.VvHaI74k.K7zuVAu8y', 'admin', 5000),
+  (102, 'Ram', 'ram@findaplot.com', '+91 94440 10002', '$2y$10$tN1.taAgnIhI/0Z94zyp6Ojb2h1sKAFx9IuXLeZi5swSWTwBLkZ1G', 'admin', 5000),
+  (103, 'Benny', 'benny@findaplot.com', '+91 94440 00003', '$2y$10$FiDMFPcOMyjptraT5aqkYe.pvJaXj0mwqId8Jd2M8PnZq5HsWKwM6', 'admin', 5000)
 ON DUPLICATE KEY UPDATE 
   name = VALUES(name),
   role = 'admin',

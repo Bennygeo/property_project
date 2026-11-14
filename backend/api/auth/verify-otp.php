@@ -22,6 +22,7 @@ $input = Response::getJsonInput();
 $phone = trim((string)($input['phone'] ?? ''));
 $otp   = trim((string)($input['otp'] ?? ''));
 $name  = trim((string)($input['name'] ?? ''));
+$email = trim((string)($input['email'] ?? ''));
 
 if (empty($phone)) {
     Response::error('Mobile number is required', 422);
@@ -81,13 +82,14 @@ $user = $stmt->fetch();
 if (!$user) {
     // Register new user as standard 'buyer' with restricted user-only permissions and 40 starter points
     $defaultName = !empty($name) ? $name : 'Verified Investor ' . substr($last10, -4);
-    $defaultEmail = 'investor_' . $last10 . '@mannidam.com';
+    // Do not create a dummy email for new users logging in; set null unless explicitly provided
+    $userEmail = (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) ? $email : null;
     
     $insertStmt = $db->prepare("
         INSERT INTO users (name, email, phone, role, developer_id, department, designation, status, permissions, points_balance)
         VALUES (?, ?, ?, 'buyer', NULL, 'Registered User', 'Verified Buyer / Investor', 'active', ?, 40)
     ");
-    $insertStmt->execute([$defaultName, $defaultEmail, $cleanPhone, $defaultBuyerPermissionsJson]);
+    $insertStmt->execute([$defaultName, $userEmail, $cleanPhone, $defaultBuyerPermissionsJson]);
     $userId = (int)$db->lastInsertId();
 
     // Log welcome bonus points
@@ -127,7 +129,7 @@ if (empty($decodedPermissions) && ($user['role'] ?? 'buyer') === 'buyer') {
 }
 
 // Mock auth token
-$token = 'mannidam_token_' . bin2hex(random_bytes(16));
+$token = 'findaplot_token_' . bin2hex(random_bytes(16));
 
 Response::success([
     'user' => [

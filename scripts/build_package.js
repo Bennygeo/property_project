@@ -67,7 +67,7 @@ console.log('Database schemas consolidated in database/.');
 console.log('=== Step 5: Generating Deployment Guide ===');
 const deploymentGuide = `# Production Deployment & Server Configuration Guide
 
-This archive contains the complete production-ready build for **Find a Plot / Mannidam Real Estate Marketplace**:
+This archive contains the complete production-ready build for **Find a Plot Real Estate Marketplace**:
 - **\`public_html/\`**: Complete web root containing the compiled Angular Single-Page Application (HTML/JS/CSS/Assets) and the PHP REST API (\`/backend/\`).
 - **\`database/\`**: Complete MySQL database schemas, data dumps, and admin configurations.
 
@@ -75,7 +75,7 @@ This archive contains the complete production-ready build for **Find a Plot / Ma
 
 ## 1. Database Setup (phpMyAdmin or MySQL CLI)
 
-1. Create a new MySQL database on your host (e.g., \`mannidam_property_db\` or \`onenesgw_property_project\`).
+1. Create a new MySQL database on your host (e.g., \`findaplot_property_db\` or \`onenesgw_property_project\`).
    - Character set: \`utf8mb4\`
    - Collation: \`utf8mb4_unicode_ci\`
 2. Import the schema:
@@ -114,9 +114,9 @@ This archive contains the complete production-ready build for **Find a Plot / Ma
 ## 4. Default Admin Credentials
 
 Three administrative personas are pre-configured in the database:
-- **Ezhil** (Lead Reviewer): \`ezhil@mannidam.com\` / \`ezhil@2026\`
-- **Ram** (Peer Reviewer): \`ram@mannidam.com\` / \`ram@2026\`
-- **Benny** (Platform Administrator): \`benny@mannidam.com\` / \`benny@2026\`
+- **Ezhil** (Lead Reviewer): \`ezhil@findaplot.com\` / \`ezhil@2026\`
+- **Ram** (Peer Reviewer): \`ram@findaplot.com\` / \`ram@2026\`
+- **Benny** (Platform Administrator): \`benny@findaplot.com\` / \`benny@2026\`
 `;
 
 fs.writeFileSync(path.join(packageDir, 'DEPLOYMENT_GUIDE.md'), deploymentGuide, 'utf8');

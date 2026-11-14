@@ -29,7 +29,7 @@ export const ADMIN_CREDENTIALS: AdminCredentialInfo[] = [
     title: 'Super Administrator & Technology Director',
     avatarInitials: 'BE',
     badgeColor: 'purple',
-    email: 'benny@mannidam.com',
+    email: 'benny@findaplot.com',
     defaultPassword: 'benny@2026',
     department: 'Platform Governance & Technology',
     responsibility: 'Full platform access & role management',

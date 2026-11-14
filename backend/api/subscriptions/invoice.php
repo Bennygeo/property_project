@@ -243,7 +243,7 @@ try {
       <div class="brand-logo-area">
         <h1>FIND<span>A</span>PLOT.IN</h1>
         <div class="company-meta">
-          <strong>Mannidam Real Estate Technologies Private Limited</strong><br>
+          <strong>Find A Plot Technologies Private Limited</strong><br>
           No. 42, Anna Salai, Guindy, Chennai – 600032, Tamil Nadu, India<br>
           <strong>GSTIN:</strong> <?= htmlspecialchars($inv['gstin']) ?> | <strong>SAC Code:</strong> <?= htmlspecialchars($inv['sac_code']) ?><br>
           <strong>Contact:</strong> compliance@findaplot.in | +91 94441 00000

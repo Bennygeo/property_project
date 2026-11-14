@@ -20,9 +20,9 @@ export interface VoicePreset {
   isCustomClone?: boolean;
 }
 
-const STORAGE_KEY_API = 'mannidam_elevenlabs_api_key';
-const STORAGE_KEY_VOICE = 'mannidam_elevenlabs_voice_id';
-const STORAGE_KEY_MODEL = 'mannidam_elevenlabs_model_id';
+const STORAGE_KEY_API = 'findaplot_elevenlabs_api_key';
+const STORAGE_KEY_VOICE = 'findaplot_elevenlabs_voice_id';
+const STORAGE_KEY_MODEL = 'findaplot_elevenlabs_model_id';
 
 @Injectable({
   providedIn: 'root'
@@ -60,7 +60,8 @@ export class ElevenLabsTtsService {
 
   private loadFromStorage(key: string, fallback: string): string {
     if (typeof window === 'undefined' || !window.localStorage) return fallback;
-    return localStorage.getItem(key) || fallback;
+    const legacyKey = key.replace('findaplot_', 'mannidam_');
+    return localStorage.getItem(key) || localStorage.getItem(legacyKey) || fallback;
   }
 
   saveCredentials(apiKey: string, voiceId: string, modelId = 'eleven_multilingual_v2'): void {

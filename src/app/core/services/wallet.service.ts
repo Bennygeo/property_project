@@ -26,7 +26,7 @@ export interface RechargeOption {
   label: string;
 }
 
-const STORAGE_WALLET_BALANCE = 'mannidam_wallet_balance';
+const STORAGE_WALLET_BALANCE = 'findaplot_wallet_balance';
 
 @Injectable({
   providedIn: 'root'
@@ -51,7 +51,7 @@ export class WalletService {
   private getInitialBalance(): number {
     try {
       if (typeof localStorage !== 'undefined') {
-        const stored = localStorage.getItem(STORAGE_WALLET_BALANCE);
+        const stored = localStorage.getItem(STORAGE_WALLET_BALANCE) || localStorage.getItem('mannidam_wallet_balance');
         if (stored !== null && !isNaN(Number(stored))) {
           return Number(stored);
         }
@@ -306,7 +306,7 @@ export class WalletService {
     if (typeof window !== 'undefined' && window.Razorpay) {
       try {
         const options = {
-          key: 'rzp_test_51MockMannidam',
+          key: 'rzp_test_51MockFindAPlot',
           amount: rupees * 100, // in paise
           currency: 'INR',
           name: 'Find a Plot Architectural Registry',
@@ -317,7 +317,7 @@ export class WalletService {
           },
           prefill: {
             name: 'Architectural Buyer',
-            email: 'buyer@mannidam.com',
+            email: 'buyer@findaplot.com',
             contact: '+91 94441 00000'
           },
           theme: {

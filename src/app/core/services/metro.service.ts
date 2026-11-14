@@ -167,7 +167,7 @@ export class MetroService {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `mannidam-sro-benchmark-${activeCity}.csv`);
+    link.setAttribute('download', `findaplot-sro-benchmark-${activeCity}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

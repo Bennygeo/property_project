@@ -9,7 +9,7 @@ namespace Mannidam\Config;
 
 class RazorpayConfig {
     public static function getKeyId(): string {
-        return getenv('RAZORPAY_KEY_ID') ?: 'rzp_test_51MockMannidam';
+        return getenv('RAZORPAY_KEY_ID') ?: 'rzp_test_51MockFindAPlot';
     }
 
     public static function getKeySecret(): string {

@@ -15,7 +15,7 @@ export type UserRole =
 export interface User {
   id: number;
   name: string;
-  email: string;
+  email?: string | null;
   phone: string;
   gender?: 'male' | 'female' | 'other';
   role: UserRole;

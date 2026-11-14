@@ -252,7 +252,7 @@ export class UserProfilePageComponent implements OnInit {
           this.authService.setCurrentUser(data.user);
           this.walletService.setBalance(data.user.pointsBalance);
           this.editName.set(data.user.name);
-          this.editEmail.set(data.user.email);
+          this.editEmail.set(data.user.email || '');
           this.editPhone.set(data.user.phone || '');
         }
         this.syncAcquisitionPreferencesFromSearch(userId, data);
@@ -341,7 +341,7 @@ export class UserProfilePageComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.editName.set(user.name);
-      this.editEmail.set(user.email);
+      this.editEmail.set(user.email || '');
       this.editPhone.set(user.phone || '');
     }
     this.isEditModalOpen.set(true);

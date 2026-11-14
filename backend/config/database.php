@@ -77,3 +77,7 @@ class Database {
         }
     }
 }
+
+if (!class_exists('FindAPlot\Config\Database', false)) {
+    class_alias(\Mannidam\Config\Database::class, 'FindAPlot\Config\Database');
+}

@@ -24,27 +24,24 @@
         <div class="user-avatar-badge">
           <span class="material-symbols-outlined">{{ getUserGenderIcon() }}</span>
           <span class="verified-indicator" title="KYC &amp; Phone Verified">
-            <span class="material-symbols-outlined">verified</span>
           </span>
         </div>
 
         <div class="user-meta-info">
           <div class="user-name-line">
             <h1 class="user-heading">{{ authService.currentUser()?.name || 'Verified User' }}</h1>
-            <span class="role-pill">
-              <span class="material-symbols-outlined">verified_user</span>
-              <span>Verified Account</span>
-            </span>
           </div>
           <div class="user-contact-pills">
             <span class="contact-pill">
               <span class="material-symbols-outlined">call</span>
               <span>{{ authService.currentUser()?.phone || '+91 94441 00000' }}</span>
             </span>
+            @if (authService.currentUser()?.email) {
             <span class="contact-pill">
               <span class="material-symbols-outlined">mail</span>
-              <span>{{ authService.currentUser()?.email || 'investor@mannidam.com' }}</span>
+              <span>{{ authService.currentUser()?.email }}</span>
             </span>
+            }
           </div>
         </div>
       </div>
@@ -76,10 +73,6 @@
           title="Click to view full Wallet &amp; Payment Options">
           <div class="wallet-icon-circle">
             <span class="material-symbols-outlined">toll</span>
-          </div>
-          <div class="wallet-text">
-            <span class="wallet-pts">{{ walletService.balance() }} Points</span>
-            <span class="wallet-val">₹{{ walletService.balance() * 50 }} Media Credit</span>
           </div>
           <button type="button" class="btn-topup-mini"
             (click)="walletService.navigateToWallet(); $event.stopPropagation()" aria-label="Top up points">+ Top
@@ -258,7 +251,6 @@
                   <span class="material-symbols-outlined card-title-icon">badge</span>
                   <h3 class="card-title">Personal Credentials</h3>
                 </div>
-                <span class="status-chip success">Verified</span>
               </div>
 
               <div class="card-field-list">
@@ -376,7 +368,6 @@
                   </span>
                   } @else if (prop.status === 'published') {
                   <span class="status-chip success">
-                    <span class="material-symbols-outlined">verified</span>
                     <span>Live on Marketplace</span>
                   </span>
                   } @else if (prop.status === 'rejected') {
@@ -1587,9 +1578,9 @@
         </div>
 
         <div class="form-group">
-          <label for="edit-email" class="form-label">Email Address</label>
+          <label for="edit-email" class="form-label">Email Address (Optional)</label>
           <input id="edit-email" type="email" class="form-input" [ngModel]="editEmail()"
-            (ngModelChange)="editEmail.set($event)" name="email" placeholder="e.g. arun@gmail.com" required />
+            (ngModelChange)="editEmail.set($event)" name="email" placeholder="e.g. arun@gmail.com" />
         </div>
 
         <div class="form-group">

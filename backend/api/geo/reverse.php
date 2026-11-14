@@ -29,7 +29,7 @@ if ($action === 'search') {
     $url = "https://nominatim.openstreetmap.org/search?q=" . urlencode($query . ', Tamil Nadu, India') . "&format=json&addressdetails=1&limit=5";
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'MannidamMarketplace/1.0 (contact@mannidam.in)');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'FindAPlotMarketplace/1.0 (contact@findaplot.in)');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $response = curl_exec($ch);
@@ -79,7 +79,7 @@ $url = "https://nominatim.openstreetmap.org/reverse?lat={$lat}&lon={$lon}&format
 
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_USERAGENT, 'MannidamMarketplace/1.0 (contact@mannidam.in)');
+curl_setopt($ch, CURLOPT_USERAGENT, 'FindAPlotMarketplace/1.0 (contact@findaplot.in)');
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 

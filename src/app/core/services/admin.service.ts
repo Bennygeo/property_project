@@ -202,7 +202,7 @@ export const ADMIN_PERSONAS: AdminPersona[] = [
   }
 ];
 
-const ADMIN_STORAGE_KEY = 'mannidam_admin_session';
+const ADMIN_STORAGE_KEY = 'findaplot_admin_session';
 const AUTHORIZED_ADMIN_ROLES = [
   'admin',
   'super_admin',
@@ -253,11 +253,12 @@ export class AdminService {
 
   private getStoredAdminSession(): AdminPersona | null {
     try {
-      const userStored = localStorage.getItem('mannidam_auth_user');
+      const userStored = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
       if (userStored) {
         const u = JSON.parse(userStored);
           if (u?.role && !AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
             localStorage.removeItem(ADMIN_STORAGE_KEY);
+            localStorage.removeItem('mannidam_admin_session');
             return null;
           }
           if (u?.role === 'admin' || u?.role === 'super_admin') {
@@ -273,13 +274,14 @@ export class AdminService {
             };
           }
         }
-        const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
+        const stored = localStorage.getItem(ADMIN_STORAGE_KEY) || localStorage.getItem('mannidam_admin_session');
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed?.role && AUTHORIZED_ADMIN_ROLES.includes(parsed.role)) {
             return parsed;
           }
           localStorage.removeItem(ADMIN_STORAGE_KEY);
+          localStorage.removeItem('mannidam_admin_session');
         }
       } catch {
         // ignore
@@ -289,12 +291,13 @@ export class AdminService {
 
   verifyAdminAccess(): boolean {
       try {
-        const userStored = localStorage.getItem('mannidam_auth_user');
+        const userStored = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
         if (userStored) {
           const u = JSON.parse(userStored);
           if (u?.role && !AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
             this.currentAdmin.set(null);
             localStorage.removeItem(ADMIN_STORAGE_KEY);
+            localStorage.removeItem('mannidam_admin_session');
             return false;
           }
         }

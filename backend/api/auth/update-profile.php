@@ -32,17 +32,20 @@ if (empty($name)) {
     Response::error('Full name is required', 422);
 }
 
-if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+$emailParam = !empty($email) ? $email : null;
+if ($emailParam !== null && !filter_var($emailParam, FILTER_VALIDATE_EMAIL)) {
     Response::error('A valid email address is required', 422);
 }
 
 $db = (new Database())->getConnection();
 
 // Check if email already in use by another user
-$checkStmt = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
-$checkStmt->execute([$email, $userId]);
-if ($checkStmt->fetch()) {
-    Response::error('Email address is already in use by another account', 409);
+if ($emailParam !== null) {
+    $checkStmt = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
+    $checkStmt->execute([$emailParam, $userId]);
+    if ($checkStmt->fetch()) {
+        Response::error('Email address is already in use by another account', 409);
+    }
 }
 
 $updateStmt = $db->prepare("
@@ -50,7 +53,7 @@ $updateStmt = $db->prepare("
     SET name = ?, email = ?, phone = COALESCE(NULLIF(?, ''), phone)
     WHERE id = ?
 ");
-$updateStmt->execute([$name, $email, $phone, $userId]);
+$updateStmt->execute([$name, $emailParam, $phone, $userId]);
 
 $userStmt = $db->prepare("SELECT id, name, email, phone, role, points_balance AS pointsBalance, created_at AS createdAt FROM users WHERE id = ?");
 $userStmt->execute([$userId]);

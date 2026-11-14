@@ -647,7 +647,7 @@ export class SubscriptionService {
 
   private openRazorpayCheckout(plan: SubscriptionPlan, orderData: any, user: any): void {
     const uid = this.getEffectiveUserId();
-    const keyId = orderData.keyId || 'rzp_test_51MockMannidam';
+    const keyId = orderData.keyId || 'rzp_test_51MockFindAPlot';
     const amountPaise = orderData.amountPaise || (plan.priceInr * 100);
 
     const completeVerification = (razorpayPaymentId: string, razorpayOrderId: string, signature: string) => {

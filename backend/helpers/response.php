@@ -70,3 +70,7 @@ class Response {
         return is_array($data) ? $data : [];
     }
 }
+
+if (!class_exists('FindAPlot\Helpers\Response', false)) {
+    class_alias(\Mannidam\Helpers\Response::class, 'FindAPlot\Helpers\Response');
+}

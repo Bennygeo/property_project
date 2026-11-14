@@ -6,8 +6,8 @@ import { User, UserRole, UserProfileResponse } from '../models/user.model';
 import { NotificationService } from './notification.service';
 import { environment } from '../../../environments/environment';
 
-const STORAGE_KEY = 'mannidam_auth_user';
-const GUEST_VIEWS_STORAGE_KEY = 'mannidam_guest_viewed_properties';
+const STORAGE_KEY = 'findaplot_auth_user';
+const GUEST_VIEWS_STORAGE_KEY = 'findaplot_guest_viewed_properties';
 
 export const ADMIN_PORTAL_ROLES: readonly string[] = [
   'admin',
@@ -80,7 +80,7 @@ export class AuthService {
 
   private getInitialGuestViews(): string[] {
     try {
-      const raw = localStorage.getItem(GUEST_VIEWS_STORAGE_KEY);
+      const raw = localStorage.getItem(GUEST_VIEWS_STORAGE_KEY) || localStorage.getItem('mannidam_guest_viewed_properties');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) return parsed;
@@ -93,7 +93,7 @@ export class AuthService {
 
   private getInitialUser(): User | null {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('mannidam_auth_user');
       if (stored) {
         return JSON.parse(stored);
       }
@@ -247,7 +247,7 @@ export class AuthService {
   public quickDemoLogin(): void {
     let points = 82;
     try {
-      const storedPoints = localStorage.getItem('mannidam_wallet_balance');
+      const storedPoints = localStorage.getItem('findaplot_wallet_balance') || localStorage.getItem('mannidam_wallet_balance');
       if (storedPoints !== null && !isNaN(Number(storedPoints))) {
         points = Number(storedPoints);
       }
@@ -256,7 +256,7 @@ export class AuthService {
     const demoUser: User = {
       id: 1,
       name: 'Arun Kumar',
-      email: 'arunkumar@mannidam.com',
+      email: 'arunkumar@findaplot.com',
       phone: '+91 94441 00000',
       role: 'buyer',
       permissions: [...DEFAULT_USER_PERMISSIONS],
@@ -337,7 +337,7 @@ export class AuthService {
           const fallbackUser: User = {
             id: 1,
             name: name || 'Arun Kumar',
-            email: 'user@mannidam.com',
+            email: undefined,
             phone: phone || '+91 94441 00000',
             role: 'buyer',
             permissions: [...DEFAULT_USER_PERMISSIONS],
@@ -422,11 +422,14 @@ export class AuthService {
     this.currentUser.set(normalizedUser);
     try {
       if (previousUserId && previousUserId !== normalizedUser.id) {
+        localStorage.removeItem('findaplot_view_history');
         localStorage.removeItem('mannidam_view_history');
+        localStorage.removeItem('findaplot_shortlisted_properties');
         localStorage.removeItem('mannidam_shortlisted_properties');
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedUser));
       if (!ADMIN_PORTAL_ROLES.includes(normalizedUser.role)) {
+        localStorage.removeItem('findaplot_admin_session');
         localStorage.removeItem('mannidam_admin_session');
         localStorage.removeItem('findaplot_admin_persona');
       }
@@ -446,10 +449,10 @@ export class AuthService {
 
     // Local storage history cache
     try {
-      const historyRaw = localStorage.getItem('mannidam_view_history') || '[]';
+      const historyRaw = localStorage.getItem('findaplot_view_history') || localStorage.getItem('mannidam_view_history') || '[]';
       const historyList: string[] = JSON.parse(historyRaw);
       const updated = [propertyId, ...historyList.filter(id => id !== propertyId)].slice(0, 50);
-      localStorage.setItem('mannidam_view_history', JSON.stringify(updated));
+      localStorage.setItem('findaplot_view_history', JSON.stringify(updated));
     } catch {
       // Ignore
     }
@@ -469,6 +472,7 @@ export class AuthService {
     const url = `${environment.apiUrl}/auth/clear-views.php`;
 
     try {
+      localStorage.removeItem('findaplot_view_history');
       localStorage.removeItem('mannidam_view_history');
     } catch {
       // Ignore
@@ -699,6 +703,8 @@ export class AuthService {
     this.currentUser.set(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('mannidam_auth_user');
+      localStorage.removeItem('findaplot_admin_session');
       localStorage.removeItem('mannidam_admin_session');
       localStorage.removeItem('findaplot_admin_persona');
     } catch {

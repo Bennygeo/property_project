@@ -130,7 +130,7 @@ function fetchFallbackLocalities(string $input, string $district, array $tnCurat
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'MannidamRealEstateMarketplace/2.0 (info@mannidam.in)');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'FindAPlotRealEstateMarketplace/2.0 (info@findaplot.in)');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 3);
     $response = curl_exec($ch);
@@ -347,7 +347,7 @@ if ($action === 'details') {
                 $nomUrl = "https://nominatim.openstreetmap.org/details?place_id={$osmNumericId}&format=json";
                 $ch = curl_init($nomUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_USERAGENT, 'MannidamMarketplace/2.0');
+                curl_setopt($ch, CURLOPT_USERAGENT, 'FindAPlotMarketplace/2.0');
                 curl_setopt($ch, CURLOPT_TIMEOUT, 3);
                 $nomRes = curl_exec($ch);
                 curl_close($ch);

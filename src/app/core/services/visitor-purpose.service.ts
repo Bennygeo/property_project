@@ -20,9 +20,9 @@ export interface VisitorPurposeOption {
   lightBg: string;
 }
 
-const STORAGE_PURPOSE_KEY = 'mannidam_visitor_purpose';
-const STORAGE_PURPOSE_NOTE = 'mannidam_visitor_purpose_note';
-const STORAGE_DISMISSED_KEY = 'mannidam_visitor_purpose_dismissed';
+const STORAGE_PURPOSE_KEY = 'findaplot_visitor_purpose';
+const STORAGE_PURPOSE_NOTE = 'findaplot_visitor_purpose_note';
+const STORAGE_DISMISSED_KEY = 'findaplot_visitor_purpose_dismissed';
 
 @Injectable({
   providedIn: 'root'
@@ -110,7 +110,7 @@ export class VisitorPurposeService {
   private getStoredPurpose(): VisitorPurposeKey | null {
     try {
       if (typeof localStorage !== 'undefined') {
-        const val = localStorage.getItem(STORAGE_PURPOSE_KEY);
+        const val = localStorage.getItem(STORAGE_PURPOSE_KEY) || localStorage.getItem('mannidam_visitor_purpose');
         const validKeys: VisitorPurposeKey[] = [
           'build_home',
           'investment',
@@ -131,7 +131,7 @@ export class VisitorPurposeService {
   private getStoredNote(): string {
     try {
       if (typeof localStorage !== 'undefined') {
-        return localStorage.getItem(STORAGE_PURPOSE_NOTE) || '';
+        return localStorage.getItem(STORAGE_PURPOSE_NOTE) || localStorage.getItem('mannidam_visitor_purpose_note') || '';
       }
     } catch {}
     return '';
@@ -144,8 +144,8 @@ export class VisitorPurposeService {
     if (typeof window === 'undefined') return;
 
     try {
-      const storedPurpose = localStorage.getItem(STORAGE_PURPOSE_KEY);
-      const dismissed = localStorage.getItem(STORAGE_DISMISSED_KEY);
+      const storedPurpose = localStorage.getItem(STORAGE_PURPOSE_KEY) || localStorage.getItem('mannidam_visitor_purpose');
+      const dismissed = localStorage.getItem(STORAGE_DISMISSED_KEY) || localStorage.getItem('mannidam_visitor_purpose_dismissed');
 
       if (!storedPurpose && !dismissed) {
         // Subtle entrance delay after initial UI paint
