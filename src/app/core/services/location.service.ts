@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, NgZone } from '@angular/core';
 import { PropertyService, ReverseGeocodeResult } from './property.service';
 import { NotificationService } from './notification.service';
 
@@ -86,6 +86,7 @@ export const TAMIL_NADU_DISTRICTS: TamilNaduDistrict[] = [
 export class LocationService {
   private propertyService = inject(PropertyService);
   private notificationService = inject(NotificationService);
+  private ngZone = inject(NgZone);
 
   private readonly STORAGE_KEY = 'fap_user_district';
   private readonly STORAGE_SOURCE_KEY = 'fap_user_location_source';
@@ -158,15 +159,27 @@ export class LocationService {
     if (typeof navigator === 'undefined' || !navigator.permissions) return;
     try {
       const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      if (status.state === 'denied') {
-        this.isBlocked.set(true);
-      }
-      status.onchange = () => {
+      this.ngZone.run(() => {
         if (status.state === 'denied') {
           this.isBlocked.set(true);
         } else if (status.state === 'granted') {
           this.isBlocked.set(false);
         }
+      });
+
+      status.onchange = () => {
+        this.ngZone.run(() => {
+          if (status.state === 'denied') {
+            this.isBlocked.set(true);
+          } else if (status.state === 'granted') {
+            this.isBlocked.set(false);
+            const isManual = localStorage.getItem(this.STORAGE_MANUAL_FLAG) === 'true';
+            if (!isManual) {
+              // Browser permission was just granted! Immediately detect GPS location without refresh
+              this.detectLocation({ autoPromptOnBlock: false, silentOnSuccess: false });
+            }
+          }
+        });
       };
     } catch {
       // Permission API not supported for geolocation in some browsers
@@ -211,10 +224,12 @@ export class LocationService {
    */
   detectLocation(options: { autoPromptOnBlock?: boolean; silentOnSuccess?: boolean } = {}): void {
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      this.isBlocked.set(true);
-      if (options.autoPromptOnBlock) {
-        this.openDistrictModal();
-      }
+      this.ngZone.run(() => {
+        this.isBlocked.set(true);
+        if (options.autoPromptOnBlock) {
+          this.openDistrictModal();
+        }
+      });
       return;
     }
 
@@ -222,79 +237,64 @@ export class LocationService {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const { latitude, longitude } = position.coords;
-        this.isBlocked.set(false);
+        this.ngZone.run(() => {
+          const { latitude, longitude } = position.coords;
+          this.isBlocked.set(false);
 
-        // Reverse geocode via PropertyService
-        this.propertyService.reverseGeocode(latitude, longitude).subscribe({
-          next: (res: ReverseGeocodeResult | null) => {
-            this.isDetecting.set(false);
-            if (res) {
-              const matchedDistrict = this.matchToTamilNaduDistrict(res, latitude, longitude);
-              if (matchedDistrict) {
-                this.setDistrict(matchedDistrict.name, 'gps');
-                const locality = res.locality || res.city;
-                if (locality && locality.toLowerCase() !== matchedDistrict.name.toLowerCase()) {
-                  this.detectedLocality.set(locality);
-                }
-                if (!options.silentOnSuccess) {
-                  this.notificationService.show({
-                    type: 'success',
-                    title: 'Location Detected',
-                    message: `${matchedDistrict.name}, Tamil Nadu`,
-                    icon: 'location_on'
-                  }, 4000);
-                }
-                this.closeDistrictModal();
-                return;
-              }
-            }
+          // 1. Instantly determine and set nearest Tamil Nadu district (0ms mathematical resolution!)
+          const nearest = this.findNearestDistrict(latitude, longitude);
+          this.setDistrict(nearest.name, 'gps');
+          this.isDetecting.set(false);
 
-            // Fallback: If reverse geocode is empty or unspecific, use nearest Tamil Nadu district by GPS coordinates
-            const nearest = this.findNearestDistrict(latitude, longitude);
-            this.setDistrict(nearest.name, 'gps');
-            if (!options.silentOnSuccess) {
-              this.notificationService.show({
-                type: 'success',
-                title: 'Location Detected',
-                message: `${nearest.name}, Tamil Nadu`,
-                icon: 'location_on'
-              }, 4000);
-            }
-            this.closeDistrictModal();
-          },
-          error: () => {
-            // Even if network reverse geocoding endpoint fails, resolve district mathematically via GPS coordinates
-            this.isDetecting.set(false);
-            const nearest = this.findNearestDistrict(latitude, longitude);
-            this.setDistrict(nearest.name, 'gps');
-            if (!options.silentOnSuccess) {
-              this.notificationService.show({
-                type: 'success',
-                title: 'Location Detected',
-                message: `${nearest.name}, Tamil Nadu`,
-                icon: 'location_on'
-              }, 4000);
-            }
-            this.closeDistrictModal();
+          if (!options.silentOnSuccess) {
+            this.notificationService.show({
+              type: 'success',
+              title: 'Location Detected',
+              message: `${nearest.name}, Tamil Nadu`,
+              icon: 'location_on'
+            }, 4000);
           }
+          this.closeDistrictModal();
+
+          // 2. In background, refine granular locality (e.g. Nagercoil, Adyar) via reverse geocode
+          this.propertyService.reverseGeocode(latitude, longitude).subscribe({
+            next: (res: ReverseGeocodeResult | null) => {
+              this.ngZone.run(() => {
+                if (res) {
+                  const matchedDistrict = this.matchToTamilNaduDistrict(res, latitude, longitude);
+                  if (matchedDistrict && matchedDistrict.name !== nearest.name) {
+                    this.setDistrict(matchedDistrict.name, 'gps');
+                  }
+                  const locality = res.locality || res.city;
+                  if (locality && locality.toLowerCase() !== (matchedDistrict?.name || nearest.name).toLowerCase()) {
+                    this.detectedLocality.set(locality);
+                  }
+                }
+              });
+            },
+            error: () => {
+              // Nearest district is already active and set
+            }
+          });
         });
       },
       (error) => {
-        this.isDetecting.set(false);
-        // Error code 1 = PERMISSION_DENIED
-        if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
-          this.isBlocked.set(true);
-        }
+        this.ngZone.run(() => {
+          this.isDetecting.set(false);
+          // Error code 1 = PERMISSION_DENIED
+          if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
+            this.isBlocked.set(true);
+          }
 
-        if (options.autoPromptOnBlock || !options.silentOnSuccess) {
-          this.openDistrictModal();
-        }
+          if (options.autoPromptOnBlock || !options.silentOnSuccess) {
+            this.openDistrictModal();
+          }
+        });
       },
       {
-        enableHighAccuracy: true,
-        timeout: 9000,
-        maximumAge: 60000
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 300000
       }
     );
   }
@@ -357,34 +357,36 @@ export class LocationService {
    * Select a Tamil Nadu district (manual or via GPS)
    */
   setDistrict(districtName: string, source: 'manual' | 'gps' = 'manual'): void {
-    const matched = this.districts.find(
-      d => d.name.toLowerCase() === districtName.toLowerCase() ||
-        d.altNames?.some(a => a.toLowerCase() === districtName.toLowerCase())
-    );
+    this.ngZone.run(() => {
+      const matched = this.districts.find(
+        d => d.name.toLowerCase() === districtName.toLowerCase() ||
+          d.altNames?.some(a => a.toLowerCase() === districtName.toLowerCase())
+      );
 
-    const name = matched ? matched.name : districtName;
-    this.selectedDistrict.set(name);
-    this.districtChangeRevision.update(n => n + 1);
+      const name = matched ? matched.name : districtName;
+      this.selectedDistrict.set(name);
+      this.districtChangeRevision.update(n => n + 1);
 
-    if (source === 'manual') {
-      this.detectedLocality.set(null);
-    }
-
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(this.STORAGE_KEY, name);
-        localStorage.setItem(this.STORAGE_SOURCE_KEY, source);
-        if (source === 'manual') {
-          localStorage.setItem(this.STORAGE_MANUAL_FLAG, 'true');
-        } else {
-          localStorage.removeItem(this.STORAGE_MANUAL_FLAG);
-        }
-      } catch (err) {
-        console.warn('Could not persist district to localStorage', err);
+      if (source === 'manual') {
+        this.detectedLocality.set(null);
       }
-    }
 
-    this.closeDistrictModal();
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(this.STORAGE_KEY, name);
+          localStorage.setItem(this.STORAGE_SOURCE_KEY, source);
+          if (source === 'manual') {
+            localStorage.setItem(this.STORAGE_MANUAL_FLAG, 'true');
+          } else {
+            localStorage.removeItem(this.STORAGE_MANUAL_FLAG);
+          }
+        } catch (err) {
+          console.warn('Could not persist district to localStorage', err);
+        }
+      }
+
+      this.closeDistrictModal();
+    });
   }
 
   openDistrictModal(): void {

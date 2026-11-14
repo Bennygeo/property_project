@@ -641,6 +641,7 @@ export class FeaturedPropertiesComponent {
   readonly locationService = inject(LocationService);
 
   readonly isAllTamilNaduView = signal<boolean>(false);
+  private lastDistrictRev = -1;
 
   // Strictly capped to at most 8 properties on the Home page
   readonly displayedProperties = computed(() => {
@@ -651,7 +652,15 @@ export class FeaturedPropertiesComponent {
     // Automatically query and refresh properties whenever the selected district or category filter changes
     effect(() => {
       const district = this.locationService.selectedDistrict();
+      const rev = this.locationService.districtChangeRevision();
       const cat = this.propertyService.activeCategoryFilter();
+
+      // If district changed via GPS or manual switch, reset "All Tamil Nadu" view so the detected district loads
+      if (this.lastDistrictRev !== -1 && rev !== this.lastDistrictRev) {
+        this.isAllTamilNaduView.set(false);
+      }
+      this.lastDistrictRev = rev;
+
       const isAll = this.isAllTamilNaduView();
 
       this.propertyService.loadPropertiesFromApi({
