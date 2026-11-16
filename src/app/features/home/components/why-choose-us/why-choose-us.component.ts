@@ -12,25 +12,23 @@ import { RouterModule } from '@angular/router';
       <div class="why-header-row">
         <div class="why-header-left">
           <div class="eyebrow-pill">
-            <span class="material-symbols-outlined text-teal">verified_user</span>
             <span>WHY CHOOSE FINDAPLOT</span>
           </div>
           <h2 class="why-title">Don't Just Buy a Plot. Buy the Right Plot.</h2>
           <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="why-lead">
-            Finding a plot is easy—choosing the right one isn't. Instead of weeks of site visits and sales pitches, our unbiased advisory team narrows 50+ options down to the top 3–5 plots backed by real data.
+            Finding a plot is easy—choosing the right one isn't. Instead of weeks of site visits and sales pitches, our unbiased advisory team narrows many options down to the top few plots backed by real data.
           </p>
         </div>
 
         <div class="why-header-right">
           <div class="compact-summary-box">
             <div class="summary-heading">
-              <span class="material-symbols-outlined text-emerald">filter_alt</span>
-              <span>From 50 Plots to the Best 3–5</span>
+              <span>From Many Plots to the Best Few</span>
             </div>
             <div class="summary-metrics">
               <div class="s-metric">
-                <span class="s-val">50+ → 3–5</span>
+                <span class="s-val">Many → Few</span>
                 <span class="s-lbl">Curated Shortlist</span>
               </div>
               <div class="s-sep" aria-hidden="true"></div>
@@ -53,12 +51,9 @@ import { RouterModule } from '@angular/router';
         <!-- Card 1: Location Analysis -->
         <div class="analysis-card">
           <div class="analysis-top">
-            <div class="analysis-icon bg-blue">
-              <span class="material-symbols-outlined text-blue">share_location</span>
-            </div>
+            <h3 class="analysis-title">Location Analysis</h3>
             <span class="analysis-pill bg-blue-tint text-blue">Appreciation</span>
           </div>
-          <h3 class="analysis-title">Location Analysis</h3>
           <p class="analysis-summary">Neighborhood &amp; connectivity check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
@@ -71,12 +66,9 @@ import { RouterModule } from '@angular/router';
         <!-- Card 2: Legal Verification -->
         <div class="analysis-card">
           <div class="analysis-top">
-            <div class="analysis-icon bg-emerald">
-              <span class="material-symbols-outlined text-emerald">gavel</span>
-            </div>
+            <h3 class="analysis-title">Legal Verification</h3>
             <span class="analysis-pill bg-emerald-tint text-emerald">Zero Risk</span>
           </div>
-          <h3 class="analysis-title">Legal Verification</h3>
           <p class="analysis-summary">Statutory &amp; title due diligence.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
@@ -89,12 +81,9 @@ import { RouterModule } from '@angular/router';
         <!-- Card 3: Price Comparison -->
         <div class="analysis-card">
           <div class="analysis-top">
-            <div class="analysis-icon bg-amber">
-              <span class="material-symbols-outlined text-amber">price_check</span>
-            </div>
+            <h3 class="analysis-title">Price Comparison</h3>
             <span class="analysis-pill bg-amber-tint text-amber">Fair Value</span>
           </div>
-          <h3 class="analysis-title">Price Comparison</h3>
           <p class="analysis-summary">True market value benchmarking.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
@@ -107,12 +96,9 @@ import { RouterModule } from '@angular/router';
         <!-- Card 4: Site Evaluation -->
         <div class="analysis-card">
           <div class="analysis-top">
-            <div class="analysis-icon bg-purple">
-              <span class="material-symbols-outlined text-purple">architecture</span>
-            </div>
+            <h3 class="analysis-title">Site Evaluation</h3>
             <span class="analysis-pill bg-purple-tint text-purple">Ground Check</span>
           </div>
-          <h3 class="analysis-title">Site Evaluation</h3>
           <p class="analysis-summary">On-site buildability &amp; risk check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
@@ -125,12 +111,9 @@ import { RouterModule } from '@angular/router';
         <!-- Card 5: Future Growth -->
         <div class="analysis-card">
           <div class="analysis-top">
-            <div class="analysis-icon bg-emerald">
-              <span class="material-symbols-outlined text-emerald">trending_up</span>
-            </div>
+            <h3 class="analysis-title">Future Growth</h3>
             <span class="analysis-pill bg-emerald-tint text-emerald">Capital Gains</span>
           </div>
-          <h3 class="analysis-title">Future Growth</h3>
           <p class="analysis-summary">Macro-development &amp; demand study.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
@@ -143,12 +126,9 @@ import { RouterModule } from '@angular/router';
         <!-- Card 6: Investment Score -->
         <div class="analysis-card">
           <div class="analysis-top">
-            <div class="analysis-icon bg-blue">
-              <span class="material-symbols-outlined text-blue">fact_check</span>
-            </div>
+            <h3 class="analysis-title">Investment Score</h3>
             <span class="analysis-pill bg-blue-tint text-blue">100-Pt Rating</span>
           </div>
-          <h3 class="analysis-title">Investment Score</h3>
           <p class="analysis-summary">Objective multi-parameter scorecard.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
@@ -174,7 +154,6 @@ import { RouterModule } from '@angular/router';
         </div>
         <a routerLink="/subscriptions" class="btn-advisory-primary">
           <span>Explore Advisory Packages</span>
-          <span class="material-symbols-outlined">arrow_forward</span>
         </a>
       </div>
     </section>
@@ -200,11 +179,6 @@ import { RouterModule } from '@angular/router';
     .text-amber { color: #d97706; }
     .text-purple { color: #7c3aed; }
 
-    .bg-blue { background: #f0f9ff; }
-    .bg-emerald { background: #ecfdf5; }
-    .bg-amber { background: #fffbeb; }
-    .bg-purple { background: #faf5ff; }
-
     .bg-blue-tint { background: #e0f2fe; }
     .bg-emerald-tint { background: #d1fae5; }
     .bg-amber-tint { background: #fef3c7; }
@@ -228,7 +202,6 @@ import { RouterModule } from '@angular/router';
     .eyebrow-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
       padding: 4px 10px;
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
@@ -238,9 +211,6 @@ import { RouterModule } from '@angular/router';
       letter-spacing: 0.08em;
       color: var(--brand-teal, #0f3b4a);
       margin-bottom: 0.65rem;
-    }
-    .eyebrow-pill span.material-symbols-outlined {
-      font-size: 14px;
     }
 
     .why-title {
@@ -293,15 +263,9 @@ import { RouterModule } from '@angular/router';
       gap: 0.85rem;
     }
     .summary-heading {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 700;
       color: var(--brand-teal, #0f3b4a);
-    }
-    .summary-heading span.material-symbols-outlined {
-      font-size: 18px;
     }
     .summary-metrics {
       display: flex;
@@ -370,18 +334,8 @@ import { RouterModule } from '@angular/router';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 0.75rem;
-    }
-    .analysis-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .analysis-icon span {
-      font-size: 19px;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
     }
     .analysis-pill {
       font-size: 10.5px;
@@ -389,13 +343,14 @@ import { RouterModule } from '@angular/router';
       padding: 2px 8px;
       border-radius: 4px;
       letter-spacing: 0.02em;
+      white-space: nowrap;
     }
 
     .analysis-title {
-      font-size: 1rem;
+      font-size: 1.025rem;
       font-weight: 700;
       color: var(--text-slate-950, #020617);
-      margin: 0 0 0.25rem 0;
+      margin: 0;
       line-height: 1.3;
     }
     .analysis-summary {
@@ -486,7 +441,6 @@ import { RouterModule } from '@angular/router';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
       background: #ffffff;
       color: #0f3b4a;
       font-size: 13px;
@@ -499,9 +453,6 @@ import { RouterModule } from '@angular/router';
     }
     .btn-advisory-primary:hover {
       background: #f1f5f9;
-    }
-    .btn-advisory-primary span.material-symbols-outlined {
-      font-size: 16px;
     }
   `]
 })
