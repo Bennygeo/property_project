@@ -11,13 +11,10 @@ import { RouterModule } from '@angular/router';
       <!-- 1. Compact Header Row -->
       <div class="why-header-row">
         <div class="why-header-left">
-          <div class="eyebrow-pill">
-            <span>WHY CHOOSE FINDAPLOT</span>
-          </div>
-          <h2 class="why-title">Don't Just Buy a Plot. Buy the Right Plot.</h2>
+          <h2 class="why-title">Why Choose Find a Plot</h2>
           <div class="header-spectrum-rule" aria-hidden="true"></div>
           <p class="why-lead">
-            Finding a plot is easy—choosing the right one isn't. Instead of weeks of site visits and sales pitches, our unbiased advisory team narrows many options down to the top few plots backed by real data.
+            <strong class="why-lead-bold">Finding a plot is easy—choosing the right one isn't.</strong> Instead of weeks of site visits and sales pitches, our unbiased advisory team narrows many options down to the top few plots backed by real data.
           </p>
         </div>
 
@@ -250,6 +247,10 @@ import { RouterModule } from '@angular/router';
       letter-spacing: -0.01em;
       margin: 0;
       max-width: 44rem;
+    }
+    .why-lead-bold {
+      color: var(--text-slate-950, #020617);
+      font-weight: 700;
     }
 
     /* Compact Summary Box */
