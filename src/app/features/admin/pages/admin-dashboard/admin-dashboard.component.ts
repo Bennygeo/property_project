@@ -114,6 +114,7 @@ import {
   SavedSearchItem,
   PlotBookingItem
 } from '../../../../core/models/workspace.model';
+import { ReraValidationService, ReraValidationResult } from '../../../../core/services/rera-validation.service';
 
 export type AdminActiveTab =
   | 'review_queue'
@@ -229,9 +230,29 @@ export class AdminDashboardComponent {
   readonly notificationService = inject(NotificationService);
   readonly userBehaviorService = inject(UserBehaviorService);
   private readonly http = inject(HttpClient);
+  readonly reraValidator = inject(ReraValidationService);
   readonly router = inject(Router);
   readonly route = inject(ActivatedRoute);
   readonly personas = ADMIN_PERSONAS;
+
+  readonly newPropReraValidation = computed<ReraValidationResult>(() => {
+    const raw = this.adminMaster.reraNumber || this.newProp().reraNumber;
+    return this.reraValidator.validate(raw, this.newProp().propertyType);
+  });
+
+  applyCanonicalRera(): void {
+    const res = this.newPropReraValidation();
+    if (res.canonicalRera) {
+      this.newProp.update(p => ({ ...p, reraNumber: res.canonicalRera }));
+      this.adminMaster.reraNumber = res.canonicalRera;
+      this.notificationService.show({
+        type: 'info',
+        title: 'RERA Standardized',
+        message: `Applied canonical format: ${res.canonicalRera}`,
+        icon: 'verified'
+      });
+    }
+  }
 
   ngOnInit(): void {
     if (!this.adminService.verifyAdminAccess()) {
@@ -3021,9 +3042,36 @@ export class AdminDashboardComponent {
       pricePerSqft: this.adminMaster.pricePerSqft ? `₹ ${this.adminMaster.pricePerSqft.toLocaleString('en-IN')}/sq.ft` : raw.pricePerSqft,
       sqft: this.adminMaster.plotSizeSqft ? `${this.adminMaster.plotSizeSqft} sq.ft` : raw.sqft,
       facingOrView: this.adminMaster.facing ? `${this.adminMaster.facing} Facing` : raw.facingOrView,
-      reraNumber: this.adminMaster.reraNumber || raw.reraNumber,
+      reraNumber: (this.adminMaster.reraNumber || raw.reraNumber || '').trim(),
       interactiveMapUrl: this.adminMaster.interactiveMap || raw.interactiveMapUrl
     };
+
+    // Statutory RERA Validation
+    const reraInput = data.reraNumber;
+    if (reraInput) {
+      const reraVal = this.reraValidator.validate(reraInput, data.propertyType);
+      if (!reraVal.isValid) {
+        this.notificationService.show({
+          type: 'warning',
+          title: 'Invalid RERA Reference',
+          message: `${reraVal.message} ${reraVal.warning || ''}`,
+          icon: 'gavel'
+        });
+        return;
+      }
+      if (reraVal.canonicalRera) {
+        data.reraNumber = reraVal.canonicalRera;
+        this.adminMaster.reraNumber = reraVal.canonicalRera;
+      }
+    } else if (this.reraValidator.isReraStrictlyRequired(data.propertyType)) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'RERA Registration Required',
+        message: 'Statutory RERA registration reference or exemption status is required for this property category.',
+        icon: 'gavel'
+      });
+      return;
+    }
 
     let finalMainImageUrl = data.mainImageUrl;
     const coverUploaded = this.adminUploadedImages().find(img => img.isCover);

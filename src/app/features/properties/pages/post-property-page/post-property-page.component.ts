@@ -28,6 +28,7 @@ import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../../../core/services/property.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { ReraValidationService, ReraValidationResult } from '../../../../core/services/rera-validation.service';
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -68,7 +69,13 @@ export class PostPropertyPageComponent {
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);
   readonly notificationService = inject(NotificationService);
+  readonly reraValidator = inject(ReraValidationService);
   readonly router = inject(Router);
+
+  readonly postPropReraValidation = computed<ReraValidationResult>(() => {
+    const raw = this.master.reraNumber || this.form.reraNumber;
+    return this.reraValidator.validate(raw, this.master.category || this.form.propertyType);
+  });
 
   readonly isSubmitting = signal<boolean>(false);
   readonly submittedPropId = signal<string | null>(null);
@@ -535,6 +542,33 @@ export class PostPropertyPageComponent {
         title: 'Plot Pricing Required',
         message: 'Please enter Plot Size (sq.ft) and Price Per Sq.Ft in Section 3.',
         icon: 'error'
+      });
+      return;
+    }
+
+    // Statutory RERA Validation
+    const effectiveRera = (this.master.reraNumber || this.form.reraNumber || '').trim();
+    if (effectiveRera) {
+      const reraVal = this.reraValidator.validate(effectiveRera, this.form.propertyType);
+      if (!reraVal.isValid) {
+        this.notificationService.show({
+          type: 'warning',
+          title: 'Invalid RERA Reference',
+          message: `${reraVal.message} ${reraVal.warning || ''}`,
+          icon: 'gavel'
+        });
+        return;
+      }
+      if (reraVal.canonicalRera) {
+        this.form.reraNumber = reraVal.canonicalRera;
+        this.master.reraNumber = reraVal.canonicalRera;
+      }
+    } else if (this.reraValidator.isReraStrictlyRequired(this.form.propertyType)) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'RERA Registration Required',
+        message: 'Statutory RERA registration reference or exemption status is required for this property category.',
+        icon: 'gavel'
       });
       return;
     }

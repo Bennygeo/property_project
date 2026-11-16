@@ -46,6 +46,57 @@ try {
     $useProjectsTable = true;
 }
 
+/**
+ * Validate and canonicalize RERA registration references
+ */
+function validateAndFormatReraNumber(string $rawRera, string $propertyType = ''): array {
+    $rera = trim($rawRera);
+    if (empty($rera)) {
+        return ['valid' => true, 'canonical' => ''];
+    }
+
+    $lower = strtolower($rera);
+    if (str_contains($lower, 'applied') || str_contains($lower, 'under process') || str_contains($lower, 'in progress') || str_contains($lower, 'pending')) {
+        return ['valid' => true, 'canonical' => 'Applied (Under Statutory Process)'];
+    }
+    if (str_contains($lower, 'exempt') || str_contains($lower, 'pre-rera') || str_contains($lower, 'regularised')) {
+        return ['valid' => true, 'canonical' => 'Exempted from RERA (Pre-2017 / Sub-threshold)'];
+    }
+
+    $std = str_replace(['\\', '  '], ['/', ' '], $rera);
+    $std = preg_replace('#^TNRERA/#i', 'TN/', $std);
+
+    // Standard TNRERA: TN/{01-38}/{Type}/{serial}/{year}
+    if (preg_match('#^TN/(\d{1,2})/(Layout|Building|Project|Regularisation-Layout|Regularization-Layout)/(\d{1,6})/(\d{4})$#i', $std, $m)) {
+        $dist = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+        $type = ucfirst(strtolower($m[2]));
+        if (stripos($m[2], 'layout') !== false && stripos($m[2], 'regular') === false) $type = 'Layout';
+        if (stripos($m[2], 'building') !== false) $type = 'Building';
+        if (stripos($m[2], 'regular') !== false) $type = 'Regularisation-Layout';
+        $serial = str_pad($m[3], 4, '0', STR_PAD_LEFT);
+        $year = (int)$m[4];
+        $currYear = (int)date('Y');
+        if ($year >= 2017 && $year <= $currYear + 2) {
+            return ['valid' => true, 'canonical' => "TN/{$dist}/{$type}/{$serial}/{$year}"];
+        }
+    }
+
+    // Other RERA states and short format recognition
+    if (preg_match('#^(PRM/KA/RERA|KA-RERA|P\d{11}|P024|P025|TSRERA|APRERA|TNRERA)#i', $std)) {
+        return ['valid' => true, 'canonical' => strtoupper($std)];
+    }
+
+    // Tolerant check for existing valid references (e.g. Patta, Approval Deed)
+    if (strlen($std) >= 5 && (stripos($std, 'RERA') !== false || stripos($std, 'TN/') !== false || stripos($std, 'Approved') !== false || stripos($std, 'Patta') !== false)) {
+        return ['valid' => true, 'canonical' => $std];
+    }
+
+    return [
+        'valid' => false,
+        'error' => "Invalid RERA format ('$rawRera'). Expected official TNRERA format: TN/{DistrictCode}/{Layout|Building}/{RegNo}/{Year} (e.g. TN/29/Layout/0123/2025) or 'Applied - Under Process'."
+    ];
+}
+
 if ($method === 'GET') {
     if ($useProjectsTable) {
         // 1. Fetch KPI metrics from projects
@@ -686,6 +737,17 @@ if ($method === 'POST') {
 
     if (empty($title)) {
         Response::error('Property title is required', 400);
+    }
+
+    // Statutory RERA Validation & Canonicalization
+    if (!empty($reraNumber)) {
+        $reraCheck = validateAndFormatReraNumber($reraNumber, $propertyType);
+        if (!$reraCheck['valid']) {
+            Response::error($reraCheck['error'], 422);
+        }
+        if (!empty($reraCheck['canonical'])) {
+            $reraNumber = $reraCheck['canonical'];
+        }
     }
 
     $status = ($authorRole === 'admin' || $authorRole === 'co_admin') 
