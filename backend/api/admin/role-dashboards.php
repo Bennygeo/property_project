@@ -169,8 +169,8 @@ if ($role === 'sales_executive') {
                 p.price, 
                 p.price_per_sqft, 
                 p.sqft,
-                COALESCE(p.locality_name, p.locality, 'Locality') AS locality, 
-                COALESCE(p.city_name, p.city, 'Tamil Nadu') AS city, 
+                COALESCE(p.locality_name, 'Locality') AS locality, 
+                COALESCE(p.city_name, 'Tamil Nadu') AS city, 
                 COALESCE(p.main_image_url, '') AS image,
                 MAX(views.viewed_at) AS last_viewed_at
             FROM (
