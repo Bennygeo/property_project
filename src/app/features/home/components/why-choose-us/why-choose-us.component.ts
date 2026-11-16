@@ -57,9 +57,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Neighborhood &amp; connectivity check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="bullet-check">✓</span> Highways, schools &amp; hospitals</li>
-            <li><span class="bullet-check">✓</span> Transit &amp; commercial hubs</li>
-            <li><span class="bullet-check">✓</span> Metro, bypass &amp; airport plans</li>
+            <li><span class="check-arrow">→</span> Highways, schools &amp; hospitals</li>
+            <li><span class="check-arrow">→</span> Transit &amp; commercial hubs</li>
+            <li><span class="check-arrow">→</span> Metro, bypass &amp; airport plans</li>
           </ul>
         </div>
 
@@ -72,9 +72,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Statutory &amp; title due diligence.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="bullet-check">✓</span> RERA &amp; DTCP / CMDA approvals</li>
-            <li><span class="bullet-check">✓</span> Parent deeds &amp; Patta check</li>
-            <li><span class="bullet-check">✓</span> 30-yr EC &amp; Survey No. audit</li>
+            <li><span class="check-arrow">→</span> RERA &amp; DTCP / CMDA approvals</li>
+            <li><span class="check-arrow">→</span> Parent deeds &amp; Patta check</li>
+            <li><span class="check-arrow">→</span> 30-yr EC &amp; Survey No. audit</li>
           </ul>
         </div>
 
@@ -87,9 +87,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">True market value benchmarking.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="bullet-check">✓</span> Nearby SRO deed benchmarks</li>
-            <li><span class="bullet-check">✓</span> Similar plot price comparison</li>
-            <li><span class="bullet-check">✓</span> Historical &amp; future price trends</li>
+            <li><span class="check-arrow">→</span> Nearby SRO deed benchmarks</li>
+            <li><span class="check-arrow">→</span> Similar plot price comparison</li>
+            <li><span class="check-arrow">→</span> Historical &amp; future price trends</li>
           </ul>
         </div>
 
@@ -102,9 +102,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">On-site buildability &amp; risk check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="bullet-check">✓</span> Road width, access &amp; dimensions</li>
-            <li><span class="bullet-check">✓</span> Corner, facing &amp; elevation</li>
-            <li><span class="bullet-check">✓</span> Drainage, flood &amp; soil check</li>
+            <li><span class="check-arrow">→</span> Road width, access &amp; dimensions</li>
+            <li><span class="check-arrow">→</span> Corner, facing &amp; elevation</li>
+            <li><span class="check-arrow">→</span> Drainage, flood &amp; soil check</li>
           </ul>
         </div>
 
@@ -117,9 +117,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Macro-development &amp; demand study.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="bullet-check">✓</span> Govt. infra &amp; IT / industrial parks</li>
-            <li><span class="bullet-check">✓</span> Schools &amp; commercial expansion</li>
-            <li><span class="bullet-check">✓</span> Residential demand &amp; investments</li>
+            <li><span class="check-arrow">→</span> Govt. infra &amp; IT / industrial parks</li>
+            <li><span class="check-arrow">→</span> Schools &amp; commercial expansion</li>
+            <li><span class="check-arrow">→</span> Residential demand &amp; investments</li>
           </ul>
         </div>
 
@@ -132,9 +132,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Objective multi-parameter scorecard.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="bullet-check">✓</span> Legal safety &amp; location quality</li>
-            <li><span class="bullet-check">✓</span> Price fairness &amp; accessibility</li>
-            <li><span class="bullet-check">✓</span> Readiness, livability &amp; ROI</li>
+            <li><span class="check-arrow">→</span> Legal safety &amp; location quality</li>
+            <li><span class="check-arrow">→</span> Price fairness &amp; accessibility</li>
+            <li><span class="check-arrow">→</span> Readiness, livability &amp; ROI</li>
           </ul>
         </div>
       </div>
@@ -390,10 +390,10 @@ import { RouterModule } from '@angular/router';
       color: #334155;
       line-height: 1.4;
     }
-    .bullet-check {
-      color: #059669;
-      font-weight: 800;
-      font-size: 12px;
+    .check-arrow {
+      color: var(--brand-teal, #0f3b4a);
+      font-weight: 700;
+      font-size: 13px;
     }
 
     /* 3. Compact Bottom Advisory Strip */
