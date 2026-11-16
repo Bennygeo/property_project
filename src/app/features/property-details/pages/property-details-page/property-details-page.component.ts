@@ -19,6 +19,7 @@ import { MetroService } from '../../../../core/services/metro.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
+import { CompareService } from '../../../../core/services/compare.service';
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -77,6 +78,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly notificationService = inject(NotificationService);
   readonly authService = inject(AuthService);
   readonly userBehaviorService = inject(UserBehaviorService);
+  readonly compareService = inject(CompareService);
 
   readonly isEntitlementExhausted = signal<boolean>(false);
   readonly isQuotaModalDismissed = signal<boolean>(false);

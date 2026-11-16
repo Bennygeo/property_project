@@ -2,6 +2,7 @@ import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
+import { CompareService } from '../../../../core/services/compare.service';
 import { Property } from '../../../../core/models/property.model';
 import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
@@ -78,6 +79,13 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                   <span class="badge-sparkle material-symbols-outlined">auto_awesome</span>
                   <span>Recently Added</span>
                 </span>
+
+                @if (compareService.isInCompare(prop.id)) {
+                  <span class="badge-in-compare">
+                    <span class="material-symbols-outlined badge-sparkle">compare_arrows</span>
+                    <span>In Compare</span>
+                  </span>
+                }
               </div>
 
               <!-- Top Right Floating Actions -->
@@ -92,6 +100,15 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                   aria-label="Message on WhatsApp">
                   <span class="material-symbols-outlined">chat</span>
                 </a>
+
+                <button 
+                  type="button" 
+                  class="btn-action-icon btn-action-compare" 
+                  [class.is-comparing]="compareService.isInCompare(prop.id)"
+                  (click)="$event.stopPropagation(); compareService.toggleCompare(prop)"
+                  [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : (compareService.isExplorerOrGuest() ? 'Upgrade plan to compare properties' : 'Compare property side-by-side')">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                </button>
 
                 <button 
                   type="button" 
@@ -434,6 +451,22 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       font-size: 14px;
     }
 
+    .badge-in-compare {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #0f3b4a;
+      color: #ffffff;
+      padding: 4px 9px;
+      border-radius: 3px !important;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
     .card-badge-rera {
       width: 44px;
       height: 44px;
@@ -487,6 +520,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
     .btn-action-wa:hover {
       color: #25d366 !important;
+    }
+
+    .btn-action-compare.is-comparing {
+      color: #0f3b4a;
+      background: rgba(255, 255, 255, 0.95);
+      border-color: #5e8f72;
     }
 
     .btn-action-fav.is-shortlisted {
@@ -661,6 +700,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
 })
 export class RecentSitesComponent {
   readonly propertyService = inject(PropertyService);
+  readonly compareService = inject(CompareService);
   readonly formatPriceIndian = formatPriceIndian;
 
   // The 2 most recently added properties

@@ -131,7 +131,13 @@
             </div>
             <div class="quota-item">
               <span class="material-symbols-outlined quota-icon">compare_arrows</span>
-              <span class="quota-text"><strong>{{ plan.comparisonLimit }}</strong> Comparisons</span>
+              <span class="quota-text">
+                @if (plan.comparisonLimit > 0) {
+                  <strong>{{ plan.comparisonLimit }}</strong> Comparisons
+                } @else {
+                  <strong>No Comparisons</strong>
+                }
+              </span>
             </div>
             <div class="quota-item">
               <span class="material-symbols-outlined quota-icon">support_agent</span>

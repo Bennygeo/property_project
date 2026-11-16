@@ -596,38 +596,6 @@
               <input type="text" class="form-input" [(ngModel)]="master.unitsSold" name="unitsSold"
                 placeholder="e.g. 42 Plots Sold" />
             </div>
-
-            @if (!isAdminPrivilege()) {
-              <div class="input-group">
-                <label class="input-label">Min Plot Size (sq.ft)</label>
-                <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
-                  placeholder="e.g. 600" />
-              </div>
-
-              <div class="input-group">
-                <label class="input-label">Max Plot Size (sq.ft)</label>
-                <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
-                  placeholder="e.g. 2400" />
-              </div>
-
-              <div class="input-group">
-                <label class="input-label">Available Plot Sizes Range</label>
-                <input type="text" class="form-input" [(ngModel)]="master.availablePlotSizes" name="availablePlotSizes"
-                  placeholder="e.g. 600 - 2,400 sq.ft" />
-              </div>
-
-              <div class="input-group">
-                <label class="input-label">Price From (₹)</label>
-                <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
-                  placeholder="e.g. 2800000" />
-              </div>
-
-              <div class="input-group">
-                <label class="input-label">Price To (₹)</label>
-                <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
-                  placeholder="e.g. 7600000" />
-              </div>
-            }
           </div>
         </div>
 

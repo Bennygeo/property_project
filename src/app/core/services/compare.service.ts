@@ -1,6 +1,22 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { Property } from '../models/property.model';
 import { NotificationService } from './notification.service';
+import { SubscriptionService } from './subscription.service';
+import { AuthService } from './auth.service';
+
+export interface CompareUpgradePrompt {
+  reason: 'explorer' | 'limit_reached';
+  currentPlanId: string;
+  currentPlanName: string;
+  used: number;
+  limit: number;
+  recommendedPlanId: string;
+  recommendedPlanName: string;
+  recommendedPlanLimit: number;
+  recommendedPlanPrice: string;
+}
 
 export interface CoreDifferenceItem {
   type: 'price' | 'rate' | 'road' | 'area' | 'approval' | 'facing' | 'location';
@@ -58,9 +74,14 @@ export function formatPriceLakhsOrCrores(amount: number): string {
 })
 export class CompareService {
   private readonly notificationService = inject(NotificationService);
+  private readonly subscriptionService = inject(SubscriptionService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  // Maximum properties to compare is strictly 2
+  // Maximum properties to compare side-by-side at once is 2
   public readonly MAX_COMPARE_COUNT = 2;
+
+  private readonly _isAdminRoute = signal<boolean>(this.router.url.startsWith('/admin'));
 
   // Selected properties signal (max length 2)
   private readonly _selectedProperties = signal<Property[]>([]);
@@ -69,8 +90,121 @@ export class CompareService {
   // Modal open/close state
   public readonly isCompareModalOpen = signal<boolean>(false);
 
+  // Upgrade prompt modal state
+  public readonly isUpgradeModalOpen = signal<boolean>(false);
+  public readonly upgradePrompt = signal<CompareUpgradePrompt | null>(null);
+  public readonly isConsumingComparison = signal<boolean>(false);
+
   // Toggle to show only different rows in specs matrix
   public readonly showOnlyDifferences = signal<boolean>(false);
+
+  // Track unique pairs already compared under current user & plan
+  private readonly _comparedPairs = signal<Set<string>>(new Set<string>());
+  public readonly comparedPairs = this._comparedPairs.asReadonly();
+
+  public readonly activePlanId = computed<string>(() => this.subscriptionService.activePlanId());
+  public readonly activePlanName = computed<string>(() => this.subscriptionService.activePlanName());
+
+  public readonly comparisonLimit = computed<number>(() => {
+    if (this._isAdminRoute() || this.authService.isAdmin()) {
+      return 999;
+    }
+    const planId = this.activePlanId();
+    if (!this.authService.isLoggedIn() || planId === 'explorer') {
+      return 0;
+    }
+    const tierFallback: Record<string, number> = {
+      explorer: 0,
+      smart_buyer: 2,
+      priority_buyer: 5,
+      vip_concierge: 20
+    };
+    const ent = this.subscriptionService.entitlements();
+    if (ent && ent.planId === planId && typeof ent.comparisonLimit === 'number') {
+      return ent.comparisonLimit;
+    }
+    return tierFallback[planId] ?? 0;
+  });
+
+  public readonly comparisonsUsed = computed<number>(() => {
+    return this.subscriptionService.entitlements()?.comparisonsUsed ?? 0;
+  });
+
+  public readonly comparisonsRemaining = computed<number>(() => {
+    return Math.max(0, this.comparisonLimit() - this.comparisonsUsed());
+  });
+
+  public readonly isExplorerOrGuest = computed<boolean>(() => {
+    if (this._isAdminRoute() || this.authService.isAdmin()) {
+      return false;
+    }
+    return !this.authService.isLoggedIn() || this.activePlanId() === 'explorer' || this.comparisonLimit() <= 0;
+  });
+
+  constructor() {
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this._isAdminRoute.set(e.urlAfterRedirects.startsWith('/admin'));
+      });
+
+    effect(() => {
+      const userId = this.authService.currentUser()?.id || 0;
+      const planId = this.activePlanId();
+      const used = this.comparisonsUsed();
+      this._comparedPairs.set(this.loadComparedPairs(userId, planId, used));
+      if (!this._isAdminRoute() && !this.authService.isAdmin() && (!this.authService.isLoggedIn() || planId === 'explorer')) {
+        if (this._selectedProperties().length > 0) {
+          this._selectedProperties.set([]);
+        }
+        if (this.isCompareModalOpen()) {
+          this.isCompareModalOpen.set(false);
+        }
+      }
+    });
+  }
+
+  public isAdminContext(): boolean {
+    return this.router.url.startsWith('/admin') || this.authService.isAdmin();
+  }
+
+  private getPairStorageKey(userId: number, planId: string): string {
+    return `fap_compared_pairs_${userId}_${planId}`;
+  }
+
+  private loadComparedPairs(userId: number, planId: string, usedCount: number): Set<string> {
+    if (userId <= 0 || planId === 'explorer' || usedCount === 0 || typeof window === 'undefined' || !window.localStorage) {
+      return new Set<string>();
+    }
+    try {
+      const raw = localStorage.getItem(this.getPairStorageKey(userId, planId));
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? new Set<string>(parsed) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  }
+
+  private saveComparedPairs(pairs: Set<string>): void {
+    const userId = this.authService.currentUser()?.id || 0;
+    const planId = this.activePlanId();
+    if (userId <= 0 || typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+    try {
+      localStorage.setItem(this.getPairStorageKey(userId, planId), JSON.stringify(Array.from(pairs)));
+    } catch { }
+  }
+
+  private buildPairKey(id1: string, id2: string): string {
+    return [id1.trim().toUpperCase(), id2.trim().toUpperCase()].sort().join('::');
+  }
+
+  public isCurrentPairAlreadyCompared(): boolean {
+    const list = this._selectedProperties();
+    if (list.length < 2) return false;
+    return this._comparedPairs().has(this.buildPairKey(list[0].id, list[1].id));
+  }
 
   /**
    * Property 1 (Left column)
@@ -398,8 +532,9 @@ export class CompareService {
   /**
    * Toggle comparison for a property:
    * - If already present: remove it
+   * - Enforces plan limits (Explorer = 0, Smart Buyer = 2, Priority Buyer = 5, VIP = 20)
    * - If not present and length < 2: add it
-   * - If not present and length >= 2: notify user of max 2 limit
+   * - If not present and length >= 2: notify user of max 2 tray slots
    */
   toggleCompare(property: Property): void {
     const current = this._selectedProperties();
@@ -417,12 +552,39 @@ export class CompareService {
       return;
     }
 
+    if (!this.isAdminContext()) {
+      if (this.isExplorerOrGuest()) {
+        if (current.length > 0) {
+          this._selectedProperties.set([]);
+        }
+        this.openUpgradeModal('explorer');
+        this.notificationService.show({
+          type: 'warning',
+          title: 'Upgrade Required to Compare',
+          message: 'Comparison is not available on the Explorer plan. Upgrade to Smart Buyer (2 comparisons), Priority Buyer (5 comparisons), or VIP Concierge (20 comparisons).',
+          icon: 'workspace_premium'
+        });
+        return;
+      }
+
+      if (this.comparisonsRemaining() <= 0) {
+        this.openUpgradeModal('limit_reached');
+        this.notificationService.show({
+          type: 'warning',
+          title: 'Comparison Limit Reached',
+          message: `You have used all ${this.comparisonLimit()} comparisons on your ${this.activePlanName()} plan. Please upgrade your plan to compare more properties.`,
+          icon: 'workspace_premium'
+        });
+        return;
+      }
+    }
+
     if (current.length >= this.MAX_COMPARE_COUNT) {
-      // Limit exceeded (max 2 properties)
+      // Limit exceeded (max 2 properties in side-by-side tray)
       this.notificationService.show({
         type: 'warning',
-        title: 'Compare Limit (Max 2)',
-        message: 'You can compare a maximum of 2 properties at a time. Remove one from the compare dock to add this one.',
+        title: 'Compare Tray Full (2 Selected)',
+        message: 'You can compare 2 properties side-by-side at a time. Remove one from the compare dock or click "Compare Side-by-Side".',
         icon: 'compare_arrows'
       });
       return;
@@ -486,18 +648,161 @@ export class CompareService {
   }
 
   /**
-   * Open compare modal
+   * Open compare modal (consuming 1 comparison quota for new client pairs)
    */
   openCompare(): void {
-    if (this._selectedProperties().length > 0) {
-      this.isCompareModalOpen.set(true);
-    } else {
+    const selected = this._selectedProperties();
+
+    if (this.isAdminContext()) {
+      if (selected.length > 0) {
+        this.isCompareModalOpen.set(true);
+      } else {
+        this.notificationService.show({
+          type: 'info',
+          title: 'No Properties Selected',
+          message: 'Please pick up to 2 properties to compare.',
+          icon: 'compare_arrows'
+        });
+      }
+      return;
+    }
+
+    if (this.isExplorerOrGuest()) {
+      this.openUpgradeModal('explorer');
+      return;
+    }
+
+    if (selected.length === 0) {
       this.notificationService.show({
         type: 'info',
         title: 'No Properties Selected',
-        message: 'Please pick up to 2 properties to compare.',
+        message: 'Please select 2 properties to compare side-by-side.',
         icon: 'compare_arrows'
       });
+      return;
+    }
+
+    if (selected.length < 2) {
+      this.notificationService.show({
+        type: 'info',
+        title: 'Select 2nd Property',
+        message: 'Please select 1 more property to launch your side-by-side comparison.',
+        icon: 'compare_arrows'
+      });
+      return;
+    }
+
+    const p1 = selected[0];
+    const p2 = selected[1];
+    const pairKey = this.buildPairKey(p1.id, p2.id);
+
+    // Re-opening the same pair under active subscription does not burn an additional credit
+    if (this._comparedPairs().has(pairKey)) {
+      this.isCompareModalOpen.set(true);
+      return;
+    }
+
+    if (this.comparisonsRemaining() <= 0) {
+      this.openUpgradeModal('limit_reached');
+      return;
+    }
+
+    if (this.isConsumingComparison()) {
+      return;
+    }
+
+    this.isConsumingComparison.set(true);
+    this.subscriptionService.consumeEntitlement('comparison', `${p1.id},${p2.id}`).subscribe({
+      next: (res) => {
+        this.isConsumingComparison.set(false);
+        if (res && res.allowed) {
+          const nextPairs = new Set(this._comparedPairs());
+          nextPairs.add(pairKey);
+          this._comparedPairs.set(nextPairs);
+          this.saveComparedPairs(nextPairs);
+
+          this.isCompareModalOpen.set(true);
+          const rem = res.comparisonsRemaining ?? this.comparisonsRemaining();
+          this.notificationService.show({
+            type: 'success',
+            title: 'Comparison Unlocked',
+            message: `1 comparison credit used (${rem} remaining on your ${this.activePlanName()} plan).`,
+            icon: 'compare_arrows'
+          });
+        } else {
+          this.openUpgradeModal(this.isExplorerOrGuest() ? 'explorer' : 'limit_reached');
+          this.notificationService.show({
+            type: 'warning',
+            title: 'Upgrade Plan to Compare',
+            message: res?.message || 'Comparison limit reached. Please upgrade your plan to compare more properties.',
+            icon: 'workspace_premium'
+          });
+        }
+      },
+      error: () => {
+        this.isConsumingComparison.set(false);
+        this.openUpgradeModal('limit_reached');
+      }
+    });
+  }
+
+  /**
+   * Open the upgrade prompt modal when Explorer tries comparing or paid tier hits quota limit
+   */
+  openUpgradeModal(reason: 'explorer' | 'limit_reached'): void {
+    const planId = this.activePlanId();
+    const planName = !this.authService.isLoggedIn() ? 'Explorer (Guest)' : this.activePlanName();
+    const used = this.comparisonsUsed();
+    const limit = this.comparisonLimit();
+
+    let recommendedPlanId = 'smart_buyer';
+    let recommendedPlanName = 'Smart Buyer';
+    let recommendedPlanLimit = 2;
+    let recommendedPlanPrice = '₹750';
+
+    if (planId === 'smart_buyer') {
+      recommendedPlanId = 'priority_buyer';
+      recommendedPlanName = 'Priority Buyer';
+      recommendedPlanLimit = 5;
+      recommendedPlanPrice = '₹7,500';
+    } else if (planId === 'priority_buyer' || planId === 'vip_concierge') {
+      recommendedPlanId = 'vip_concierge';
+      recommendedPlanName = 'VIP Concierge';
+      recommendedPlanLimit = 20;
+      recommendedPlanPrice = '₹20,000';
+    }
+
+    this.upgradePrompt.set({
+      reason,
+      currentPlanId: planId,
+      currentPlanName: planName,
+      used,
+      limit,
+      recommendedPlanId,
+      recommendedPlanName,
+      recommendedPlanLimit,
+      recommendedPlanPrice
+    });
+    this.isUpgradeModalOpen.set(true);
+  }
+
+  /**
+   * Close the upgrade prompt modal
+   */
+  closeUpgradeModal(): void {
+    this.isUpgradeModalOpen.set(false);
+  }
+
+  /**
+   * Navigate to subscription plans page (optionally highlighting a recommended plan)
+   */
+  navigateToUpgrade(planId?: string): void {
+    this.closeUpgradeModal();
+    this.closeCompare();
+    if (planId) {
+      this.router.navigate(['/subscriptions'], { queryParams: { plan: planId } });
+    } else {
+      this.router.navigate(['/subscriptions']);
     }
   }
 

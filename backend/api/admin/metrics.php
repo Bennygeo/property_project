@@ -110,7 +110,7 @@ if ($method === 'GET') {
                 COALESCE(e.project_views_used, 0) AS viewsUsed,
                 COALESCE(e.project_view_limit, 2) AS viewLimit,
                 COALESCE(e.comparisons_used, 0) AS comparisonsUsed,
-                COALESCE(e.comparison_limit, 1) AS comparisonLimit,
+                COALESCE(e.comparison_limit, 0) AS comparisonLimit,
                 COALESCE(e.advisory_sessions_used, 0) AS advisoryUsed,
                 COALESCE(e.advisory_session_limit, 1) AS advisoryLimit,
                 COALESCE(e.site_visits_used, 0) AS visitsUsed,

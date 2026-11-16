@@ -748,15 +748,24 @@
                     </div>
                     <span class="meter-title title-blue">Comparisons</span>
                   </div>
-                  <span class="meter-counts count-blue">{{ ent.comparisonsUsed }} / {{ ent.comparisonLimit }}</span>
+                  @if (ent.comparisonLimit > 0) {
+                    <span class="meter-counts count-blue">{{ ent.comparisonsUsed }} / {{ ent.comparisonLimit }}</span>
+                  } @else {
+                    <span class="meter-counts count-blue">0 / 0</span>
+                  }
                 </div>
                 <div class="meter-progress-track track-blue">
                   <div class="meter-progress-fill fill-blue"
-                    [style.width.%]="calculatePercentage(ent.comparisonsUsed, ent.comparisonLimit)"></div>
+                    [style.width.%]="ent.comparisonLimit > 0 ? calculatePercentage(ent.comparisonsUsed, ent.comparisonLimit) : 0"></div>
                 </div>
                 <div class="meter-footer">
-                  <span class="meter-rem-text text-blue">{{ ent.comparisonsRemaining }} remaining</span>
-                  <span class="meter-tip tip-blue">Matrix Workspace</span>
+                  @if (ent.comparisonLimit > 0) {
+                    <span class="meter-rem-text text-blue">{{ ent.comparisonsRemaining }} remaining</span>
+                    <span class="meter-tip tip-blue">Matrix Workspace</span>
+                  } @else {
+                    <span class="meter-rem-text text-blue">Not Included in Explorer</span>
+                    <a routerLink="/subscriptions" class="meter-tip tip-blue" style="text-decoration: underline; font-weight: 600;">Upgrade Plan</a>
+                  }
                 </div>
               </div>
 

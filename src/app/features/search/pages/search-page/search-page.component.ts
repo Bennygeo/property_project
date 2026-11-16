@@ -17,6 +17,7 @@ import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { AiChatModalComponent } from '../../../home/components/ai-chat-modal/ai-chat-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LocationService } from '../../../../core/services/location.service';
+import { CompareService } from '../../../../core/services/compare.service';
 import { MOCK_50_PROPERTIES } from '../../../../core/services/mock-properties-data';
 
 export interface FilterOption {
@@ -88,6 +89,7 @@ export class SearchPageComponent implements OnInit {
   readonly metroService = inject(MetroService);
   readonly authService = inject(AuthService);
   readonly locationService = inject(LocationService);
+  readonly compareService = inject(CompareService);
 
   // Tracks whether the user manually adjusted the search bar/district on /search
   readonly isSearchManuallyAdjusted = signal<boolean>(false);

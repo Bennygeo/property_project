@@ -16,6 +16,16 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           <!-- MODAL HEADER -->
           <div class="modal-header">
             <div class="header-left">
+              <div class="modal-title-group">
+                <span class="material-symbols-outlined modal-title-ic">compare_arrows</span>
+                <h2 id="compare-modal-title" class="modal-title-heading">Side-by-Side Property Comparison</h2>
+              </div>
+              @if (!compareService.isAdminContext()) {
+                <span class="modal-plan-quota-badge">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">workspace_premium</span>
+                  <span>{{ compareService.activePlanName() }} &bull; {{ compareService.comparisonsUsed() }}/{{ compareService.comparisonLimit() }} Comparisons Used</span>
+                </span>
+              }
             </div>
 
             <div class="header-right-controls">
@@ -351,6 +361,91 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             </div>
           </div>
 
+        </div>
+      </div>
+    }
+
+    <!-- UPGRADE PLAN MODAL (WHEN EXPLORER CLICKS COMPARE OR QUOTA LIMIT REACHED) -->
+    @if (compareService.isUpgradeModalOpen() && compareService.upgradePrompt(); as prompt) {
+      <div class="compare-backdrop upgrade-backdrop" (click)="onUpgradeBackdropClick($event)">
+        <div class="upgrade-modal-card" role="dialog" aria-modal="true" aria-labelledby="compare-upgrade-title">
+          <div class="upgrade-modal-header">
+            <div class="upgrade-badge-pill" [class.is-explorer]="prompt.reason === 'explorer'">
+              <span class="material-symbols-outlined">workspace_premium</span>
+              <span>{{ prompt.reason === 'explorer' ? 'Membership Required' : 'Comparison Quota Exhausted' }}</span>
+            </div>
+            <button type="button" class="btn-upgrade-close" (click)="compareService.closeUpgradeModal()" title="Close">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="upgrade-modal-body">
+            <div class="upgrade-hero-icon-wrap">
+              <span class="material-symbols-outlined">compare_arrows</span>
+            </div>
+
+            <h2 id="compare-upgrade-title" class="upgrade-modal-title">
+              {{ prompt.reason === 'explorer'
+                ? 'Side-by-Side Comparison Requires a Paid Plan'
+                : 'You Have Reached Your Comparison Limit (' + prompt.used + '/' + prompt.limit + ')' }}
+            </h2>
+
+            <p class="upgrade-modal-desc">
+              @if (prompt.reason === 'explorer') {
+                The <strong>{{ prompt.currentPlanName }}</strong> tier includes <strong>0 comparisons</strong>. Upgrade your plan to unlock side-by-side cadastral, pricing, road width, and DTCP/RERA specification comparisons.
+              } @else {
+                You have used all <strong>{{ prompt.limit }}</strong> property comparisons included in your <strong>{{ prompt.currentPlanName }}</strong> plan. Upgrade to <strong>{{ prompt.recommendedPlanName }}</strong> to continue comparing plots side-by-side.
+              }
+            </p>
+
+            <div class="upgrade-tiers-list">
+              <div class="tier-row" [class.is-recommended]="prompt.recommendedPlanId === 'smart_buyer'" [class.is-current]="prompt.currentPlanId === 'smart_buyer'">
+                <div class="tier-row-left">
+                  <span class="tier-name">Smart Buyer</span>
+                  <span class="tier-sub">5 Project Views &bull; Corridor Growth Report</span>
+                </div>
+                <div class="tier-row-right">
+                  <span class="tier-cmp-badge">2 Comparisons</span>
+                  <span class="tier-price">₹750</span>
+                </div>
+              </div>
+
+              <div class="tier-row" [class.is-recommended]="prompt.recommendedPlanId === 'priority_buyer'" [class.is-current]="prompt.currentPlanId === 'priority_buyer'">
+                <div class="tier-row-left">
+                  <span class="tier-name">Priority Buyer</span>
+                  <span class="tier-sub">25 Project Views &bull; 1 Site Visit &bull; Advisor</span>
+                </div>
+                <div class="tier-row-right">
+                  <span class="tier-cmp-badge">5 Comparisons</span>
+                  <span class="tier-price">₹7,500</span>
+                </div>
+              </div>
+
+              <div class="tier-row" [class.is-recommended]="prompt.recommendedPlanId === 'vip_concierge'" [class.is-current]="prompt.currentPlanId === 'vip_concierge'">
+                <div class="tier-row-left">
+                  <span class="tier-name">VIP Concierge</span>
+                  <span class="tier-sub">50 Project Views &bull; 3 Site Visits &bull; Legal Escort</span>
+                </div>
+                <div class="tier-row-right">
+                  <span class="tier-cmp-badge">20 Comparisons</span>
+                  <span class="tier-price">₹20,000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="upgrade-modal-footer">
+            @if (prompt.currentPlanId !== 'vip_concierge') {
+              <button type="button" class="btn-upgrade-primary" (click)="compareService.navigateToUpgrade(prompt.recommendedPlanId)">
+                <span class="material-symbols-outlined">bolt</span>
+                <span>Upgrade to {{ prompt.recommendedPlanName }}</span>
+              </button>
+            }
+            <button type="button" class="btn-upgrade-secondary" (click)="compareService.navigateToUpgrade()">
+              <span class="material-symbols-outlined">workspace_premium</span>
+              <span>View All Plans</span>
+            </button>
+          </div>
         </div>
       </div>
     }
@@ -1303,6 +1398,267 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
         width: 30%;
       }
     }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .modal-title-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-title-ic {
+      font-size: 20px;
+      color: #5e8f72;
+    }
+
+    .modal-title-heading {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .modal-plan-quota-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f0f9f4;
+      border: 1px solid #cce3d6;
+      color: #2c4938;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* UPGRADE MODAL STYLES */
+    .upgrade-backdrop {
+      z-index: 1080;
+    }
+
+    .upgrade-modal-card {
+      width: 100%;
+      max-width: 540px;
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.45);
+      overflow: hidden;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .upgrade-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .upgrade-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .upgrade-badge-pill.is-explorer {
+      background: #e0f2fe;
+      color: #075985;
+    }
+
+    .upgrade-badge-pill .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    .btn-upgrade-close {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .btn-upgrade-close:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    .upgrade-modal-body {
+      padding: 22px 24px 18px;
+      text-align: center;
+    }
+
+    .upgrade-hero-icon-wrap {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #5e8f72 0%, #3d634d 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upgrade-hero-icon-wrap .material-symbols-outlined {
+      font-size: 28px;
+    }
+
+    .upgrade-modal-title {
+      margin: 0 0 8px;
+      font-size: 19px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    .upgrade-modal-desc {
+      margin: 0 0 18px;
+      font-size: 13.5px;
+      color: #475569;
+      line-height: 1.55;
+    }
+
+    .upgrade-tiers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .tier-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .tier-row.is-recommended {
+      background: #f0f9f4;
+      border-color: #5e8f72;
+      box-shadow: 0 0 0 1px rgba(94, 143, 114, 0.25);
+    }
+
+    .tier-row.is-current {
+      opacity: 0.65;
+    }
+
+    .tier-row-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tier-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .tier-sub {
+      font-size: 11.5px;
+      color: #64748b;
+    }
+
+    .tier-row-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .tier-cmp-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #1e293b;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .tier-row.is-recommended .tier-cmp-badge {
+      background: #5e8f72;
+      color: #ffffff;
+    }
+
+    .tier-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      min-width: 58px;
+      text-align: right;
+    }
+
+    .upgrade-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 24px 20px;
+      border-top: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+    }
+
+    .btn-upgrade-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #5e8f72 0%, #416851 100%);
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(94, 143, 114, 0.35);
+    }
+
+    .btn-upgrade-primary:hover {
+      background: linear-gradient(135deg, #497259 0%, #2c4938 100%);
+    }
+
+    .btn-upgrade-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #1e293b;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-upgrade-secondary:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
   `]
 })
 export class PropertyCompareModalComponent {
@@ -1330,6 +1686,12 @@ export class PropertyCompareModalComponent {
   onBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('compare-backdrop')) {
       this.compareService.closeCompare();
+    }
+  }
+
+  onUpgradeBackdropClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('upgrade-backdrop')) {
+      this.compareService.closeUpgradeModal();
     }
   }
 

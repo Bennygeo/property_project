@@ -163,24 +163,26 @@ if ($role === 'sales_executive') {
         // Query real viewed properties for this visitor
         $pSql = "
             SELECT 
-                COALESCE(p.id, prj.project_id) AS id, 
-                COALESCE(NULLIF(p.title, ''), prj.project_name, 'Property') AS title, 
-                COALESCE(NULLIF(p.property_type, ''), prj.category, prj.type, 'Residential Plot') AS property_type, 
-                COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from / 100000, 2), ' Lakhs') ELSE 'Price on Request' END) AS price, 
+                COALESCE(p.id, prj.project_id, views.property_id) AS id, 
+                COALESCE(NULLIF(p.title, ''), NULLIF(prj.project_name, ''), NULLIF(views.v_title, ''), 'Verified Property Listing') AS title, 
+                COALESCE(NULLIF(p.property_type, ''), NULLIF(prj.category, ''), NULLIF(prj.type, ''), NULLIF(views.v_type, ''), 'Residential Plot') AS property_type, 
+                COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from / 100000, 2), ' Lakhs') ELSE NULL END, NULLIF(views.v_price, ''), 'Price on Request') AS price, 
                 COALESCE(NULLIF(p.price_per_sqft, ''), CASE WHEN prj.sqft_rate > 0 THEN CONCAT('₹ ', FORMAT(prj.sqft_rate, 0), '/sq.ft') ELSE '' END) AS price_per_sqft, 
-                COALESCE(NULLIF(p.sqft, ''), CASE WHEN prj.min_plot_size > 0 THEN CONCAT(FORMAT(prj.min_plot_size, 0), ' sq.ft') ELSE '' END) AS sqft,
-                COALESCE(NULLIF(p.locality_name, ''), prj.locality, 'Locality') AS locality, 
-                COALESCE(NULLIF(p.city_name, ''), prj.city, 'Tamil Nadu') AS city, 
-                COALESCE(NULLIF(p.main_image_url, ''), prj.cover_image, '') AS image,
+                COALESCE(NULLIF(p.sqft, ''), CASE WHEN prj.min_plot_size > 0 THEN CONCAT(FORMAT(prj.min_plot_size, 0), ' sq.ft') ELSE '' END) AS sqft, 
+                COALESCE(NULLIF(p.locality_name, ''), NULLIF(prj.locality, ''), NULLIF(views.v_locality, ''), 'Locality') AS locality, 
+                COALESCE(NULLIF(p.city_name, ''), NULLIF(prj.city, ''), NULLIF(views.v_city, ''), 'Tamil Nadu') AS city, 
+                COALESCE(NULLIF(p.main_image_url, ''), NULLIF(prj.cover_image, ''), 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80') AS image,
                 MAX(views.viewed_at) AS last_viewed_at
             FROM (
-                SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at FROM user_view_history WHERE user_id = :uid
-                " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
+                SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at, '' AS v_title, '' AS v_type, '' AS v_price, '' AS v_locality, '' AS v_city FROM user_view_history WHERE user_id = :uid
+                " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at, property_title AS v_title, property_type AS v_type, price AS v_price, locality AS v_locality, city AS v_city FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
             ) AS views
             LEFT JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
             LEFT JOIN projects prj ON CAST(prj.project_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
-            WHERE (p.title IS NOT NULL AND p.title != '') OR (prj.project_name IS NOT NULL AND prj.project_name != '')
-            GROUP BY COALESCE(p.id, prj.project_id)
+            WHERE (p.title IS NOT NULL AND p.title != '' AND p.title != '-')
+               OR (prj.project_name IS NOT NULL AND prj.project_name != '' AND prj.project_name != '-')
+               OR (views.v_title IS NOT NULL AND views.v_title != '' AND views.v_title != '-')
+            GROUP BY COALESCE(p.id, prj.project_id, views.property_id)
             ORDER BY last_viewed_at DESC
         ";
         $pStmt = $db->prepare($pSql);
@@ -190,6 +192,29 @@ if ($role === 'sales_executive') {
         }
         $pStmt->execute($params);
         $props = $pStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Sanitize property attributes
+        foreach ($props as &$prp) {
+            if (empty($prp['property_type']) || $prp['property_type'] === '-') {
+                $prp['property_type'] = 'Residential Plot';
+            }
+            if (empty($prp['title']) || $prp['title'] === '-') {
+                $prp['title'] = 'Verified Property Listing';
+            }
+            if (empty($prp['locality']) || $prp['locality'] === '-') {
+                $prp['locality'] = 'Tamil Nadu';
+            }
+            if (empty($prp['city']) || $prp['city'] === '-') {
+                $prp['city'] = 'Tamil Nadu';
+            }
+            if (empty($prp['price']) || $prp['price'] === '-') {
+                $prp['price'] = 'Price on Request';
+            }
+            if (empty($prp['image'])) {
+                $prp['image'] = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
+            }
+        }
+        unset($prp);
 
         $v['viewed_count'] = count($props);
         $v['viewed_properties_count'] = count($props);
@@ -263,19 +288,21 @@ if ($role === 'property_advisor') {
         // Fetch viewed properties summary for the advisor
         $pSql = "
             SELECT 
-                COALESCE(p.id, prj.project_id) AS id, 
-                COALESCE(NULLIF(p.title, ''), prj.project_name, 'Property') AS title, 
-                COALESCE(NULLIF(p.property_type, ''), prj.category, prj.type, 'Residential Plot') AS property_type, 
-                COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from / 100000, 2), ' Lakhs') ELSE 'Price on Request' END) AS price, 
-                COALESCE(NULLIF(p.locality_name, ''), prj.locality, 'Locality') AS locality
+                COALESCE(p.id, prj.project_id, views.property_id) AS id, 
+                COALESCE(NULLIF(p.title, ''), NULLIF(prj.project_name, ''), NULLIF(views.v_title, ''), 'Verified Plot') AS title, 
+                COALESCE(NULLIF(p.property_type, ''), NULLIF(prj.category, ''), NULLIF(prj.type, ''), 'Residential Plot') AS property_type, 
+                COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from / 100000, 2), ' Lakhs') ELSE NULL END, 'Price on Request') AS price, 
+                COALESCE(NULLIF(p.locality_name, ''), NULLIF(prj.locality, ''), 'Locality') AS locality
             FROM (
-                SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id FROM user_view_history WHERE user_id = :uid
-                " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
+                SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, '' AS v_title FROM user_view_history WHERE user_id = :uid
+                " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, property_title AS v_title FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
             ) AS views
             LEFT JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
             LEFT JOIN projects prj ON CAST(prj.project_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
-            WHERE (p.title IS NOT NULL AND p.title != '') OR (prj.project_name IS NOT NULL AND prj.project_name != '')
-            GROUP BY COALESCE(p.id, prj.project_id)
+            WHERE (p.title IS NOT NULL AND p.title != '' AND p.title != '-') 
+               OR (prj.project_name IS NOT NULL AND prj.project_name != '' AND prj.project_name != '-')
+               OR (views.v_title IS NOT NULL AND views.v_title != '' AND views.v_title != '-')
+            GROUP BY COALESCE(p.id, prj.project_id, views.property_id)
             LIMIT 5
         ";
         $pStmt = $db->prepare($pSql);

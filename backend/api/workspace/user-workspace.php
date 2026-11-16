@@ -109,7 +109,7 @@ try {
                 'project_views_used' => 0,
                 'project_view_limit' => 2,
                 'comparisons_used' => 0,
-                'comparison_limit' => 1,
+                'comparison_limit' => 0,
                 'advisory_sessions_used' => 0,
                 'advisory_session_limit' => 1,
                 'site_visits_used' => 0,

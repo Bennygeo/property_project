@@ -83,7 +83,7 @@ try {
         UPDATE user_entitlements 
         SET plan_id = 'explorer',
             project_view_limit = 2,
-            comparison_limit = 1,
+            comparison_limit = 0,
             advisory_session_limit = 1,
             site_visit_limit = 0,
             has_location_report = 0,

@@ -16,7 +16,14 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           <div class="dock-slots-group">
             <div class="dock-badge-indicator">
               <span class="material-symbols-outlined dock-icon">compare_arrows</span>
-              <span class="dock-title-text">Compare ({{ compareService.selectedProperties().length }}/2)</span>
+              <div class="dock-badge-meta">
+                <span class="dock-title-text">Compare ({{ compareService.selectedProperties().length }}/2)</span>
+                @if (!compareService.isAdminContext()) {
+                  <span class="dock-quota-pill">
+                    {{ compareService.activePlanName() }} &bull; {{ compareService.comparisonsRemaining() }}/{{ compareService.comparisonLimit() }} Left
+                  </span>
+                }
+              </div>
             </div>
 
             <div class="slots-container">
@@ -75,9 +82,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
               type="button" 
               class="btn-dock-compare"
               [class.pulse-active]="compareService.selectedProperties().length === 2"
+              [class.is-waiting]="compareService.selectedProperties().length < 2"
+              [disabled]="compareService.selectedProperties().length < 2 || compareService.isConsumingComparison()"
               (click)="compareService.openCompare()">
               <span class="material-symbols-outlined">compare</span>
-              <span>Compare Side-by-Side</span>
+              <span>{{ compareService.isConsumingComparison() ? 'Unlocking...' : (compareService.selectedProperties().length < 2 ? 'Select 2nd Property' : 'Compare Side-by-Side') }}</span>
               <span class="dock-count-chip">{{ compareService.selectedProperties().length }}/2</span>
             </button>
 
@@ -121,7 +130,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: #09131d;
       border: 1px solid rgba(255, 255, 255, 0.16);
       box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(2, 132, 199, 0.25);
-      border-radius: 18px;
+      border-radius: 9px;
       padding: 10px 16px;
       display: flex;
       align-items: center;
@@ -142,13 +151,30 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     .dock-badge-indicator {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-size: 13px;
       font-weight: 700;
       color: #72a987;
       white-space: nowrap;
-      padding-right: 6px;
+      padding-right: 10px;
       border-right: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .dock-badge-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .dock-quota-pill {
+      font-size: 10px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(94, 143, 114, 0.22);
+      border: 1px solid rgba(114, 169, 135, 0.35);
+      padding: 1px 6px;
+      border-radius: 999px;
+      line-height: 1.3;
     }
 
     .dock-icon {
@@ -338,6 +364,17 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       background: linear-gradient(135deg, #497259 0%, #2c4938 100%);
       transform: translateY(-1px);
       box-shadow: 0 6px 18px rgba(94, 143, 114, 0.45);
+    }
+
+    .btn-dock-compare.is-waiting,
+    .btn-dock-compare:disabled {
+      background: #334155;
+      color: #cbd5e1;
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.85;
     }
 
     .btn-dock-compare.pulse-active {

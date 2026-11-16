@@ -1195,24 +1195,24 @@
                       [src]="prop.image || 'assets/images/placeholder.jpg'" 
                       [alt]="prop.title || 'Plot image'" 
                       (error)="$any($event.target).src = 'assets/images/placeholder.jpg'" />
-                    <span class="prop-type-tag">{{ prop.property_type || 'Plot' }}</span>
+                    <span class="prop-type-tag">{{ (prop.property_type && prop.property_type !== '-') ? prop.property_type : 'Residential Plot' }}</span>
                   </div>
                   <div class="prop-card-content">
-                    <h4 class="prop-title" [title]="prop.title || 'Verified Plot'">
-                      {{ prop.title || 'Verified Property Listing' }}
+                    <h4 class="prop-title" [title]="(prop.title && prop.title !== '-') ? prop.title : 'Verified Plot'">
+                      {{ (prop.title && prop.title !== '-') ? prop.title : 'Verified Property Listing' }}
                     </h4>
                     <div class="prop-location">
                       <span class="material-symbols-outlined">location_on</span>
-                      <span>{{ prop.locality || 'Locality' }}, {{ prop.city || 'Tamil Nadu' }}</span>
+                      <span>{{ (prop.locality && prop.locality !== '-') ? prop.locality : 'Tamil Nadu' }}{{ (prop.city && prop.city !== '-' && prop.city !== prop.locality) ? (', ' + prop.city) : '' }}</span>
                     </div>
                     <div class="prop-metrics-row">
                       <div class="metric-item">
-                        <span class="metric-val">{{ prop.price || 'Price on Request' }}</span>
+                        <span class="metric-val">{{ (prop.price && prop.price !== '-') ? prop.price : 'Price on Request' }}</span>
                         <span class="metric-sub">Total Price</span>
                       </div>
                       <div class="metric-item">
-                        <span class="metric-val">{{ prop.sqft || 'Standard Plot' }}</span>
-                        <span class="metric-sub">{{ prop.price_per_sqft || 'Verified Rate' }}</span>
+                        <span class="metric-val">{{ (prop.sqft && prop.sqft !== '-') ? prop.sqft : 'Standard Plot' }}</span>
+                        <span class="metric-sub">{{ (prop.price_per_sqft && prop.price_per_sqft !== '-') ? prop.price_per_sqft : 'Verified Rate' }}</span>
                       </div>
                     </div>
                     <div class="prop-telemetry-row">

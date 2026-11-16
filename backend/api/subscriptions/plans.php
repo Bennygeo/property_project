@@ -26,7 +26,7 @@ $defaultPlans = [
         'priceInr'             => 0.0,
         'durationDays'         => 365,
         'projectViewLimit'     => 2,
-        'comparisonLimit'      => 1,
+        'comparisonLimit'      => 0,
         'advisorySessionLimit' => 1,
         'siteVisitLimit'       => 0,
         'hasLocationReport'    => false,
@@ -35,7 +35,6 @@ $defaultPlans = [
         'description'          => 'Ideal for initial discovery of plotted developments, layouts and emerging locations across Tamil Nadu.',
         'features'             => [
             '2 Detailed Project Views',
-            '1 Side-by-Side Comparison',
             '1 Intro Advisory Session',
             'Direct SRO Regulatory Checklist',
             'Community Support'
@@ -49,7 +48,7 @@ $defaultPlans = [
         'priceInr'             => 750.0,
         'durationDays'         => 30,
         'projectViewLimit'     => 5,
-        'comparisonLimit'      => 3,
+        'comparisonLimit'      => 2,
         'advisorySessionLimit' => 2,
         'siteVisitLimit'       => 0,
         'hasLocationReport'    => true,
@@ -58,7 +57,7 @@ $defaultPlans = [
         'description'          => 'For active buyers shortlisting plots in high-growth corridors with location intelligence.',
         'features'             => [
             '5 Detailed Project Views',
-            '3 Side-by-Side Comparisons',
+            '2 Side-by-Side Comparisons',
             '2 Advisory Sessions',
             'Location & Corridor Growth Report',
             'RERA Document Verification Extract',
@@ -73,7 +72,7 @@ $defaultPlans = [
         'priceInr'             => 7500.0,
         'durationDays'         => 60,
         'projectViewLimit'     => 25,
-        'comparisonLimit'      => 10,
+        'comparisonLimit'      => 5,
         'advisorySessionLimit' => 4,
         'siteVisitLimit'       => 1,
         'hasLocationReport'    => true,
@@ -82,7 +81,7 @@ $defaultPlans = [
         'description'          => 'Comprehensive advisory with dedicated expert and field visit coordination.',
         'features'             => [
             '25 Detailed Project Views',
-            '10 Side-by-Side Comparisons',
+            '5 Side-by-Side Comparisons',
             '4 Comprehensive Advisory Sessions',
             '1 Chauffeured Physical Site Visit',
             'Dedicated Property Advisor',

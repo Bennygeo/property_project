@@ -60,7 +60,7 @@ try {
                 advisory_session_limit, site_visits_used, site_visit_limit,
                 expires_at
             ) VALUES (
-                ?, 'explorer', 0, 2, 0, 1, 0, 1, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
+                ?, 'explorer', 0, 2, 0, 0, 0, 1, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
             )
         ");
         $ins->execute([$userId]);
@@ -147,16 +147,42 @@ try {
     }
 
     if ($action === 'comparison') {
+        $planComparisonMap = [
+            'explorer'       => 0,
+            'smart_buyer'    => 2,
+            'priority_buyer' => 5,
+            'vip_concierge'  => 20
+        ];
+        $planId = (string)($ent['plan_id'] ?? 'explorer');
         $used  = (int)$ent['comparisons_used'];
-        $limit = (int)$ent['comparison_limit'];
+        $limit = $planComparisonMap[$planId] ?? (int)$ent['comparison_limit'];
 
-        if ($used >= $limit) {
+        if ((int)$ent['comparison_limit'] !== $limit) {
+            $syncCmp = $db->prepare("UPDATE user_entitlements SET comparison_limit = ? WHERE user_id = ?");
+            $syncCmp->execute([$limit, $userId]);
+        }
+
+        if ($planId === 'explorer' || $limit <= 0) {
             $db->rollBack();
-            Response::error('Comparison limit reached for your plan. Upgrade your subscription to compare more projects.', 403, [
+            Response::error('Side-by-side comparison is not available on the Free Explorer plan. Please upgrade to Smart Buyer, Priority Buyer, or VIP Concierge to compare properties.', 403, [
                 'allowed'         => false,
                 'limitReached'    => true,
                 'action'          => 'comparison',
-                'planId'          => $ent['plan_id'],
+                'planId'          => $planId,
+                'used'            => $used,
+                'limit'           => 0,
+                'upgradeRequired' => true
+            ]);
+            exit;
+        }
+
+        if ($used >= $limit) {
+            $db->rollBack();
+            Response::error("Comparison limit ({$limit}) reached for your plan. Please upgrade your subscription to compare more properties.", 403, [
+                'allowed'         => false,
+                'limitReached'    => true,
+                'action'          => 'comparison',
+                'planId'          => $planId,
                 'used'            => $used,
                 'limit'           => $limit,
                 'upgradeRequired' => true

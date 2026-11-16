@@ -154,66 +154,71 @@ if ($method === 'GET') {
 }
 
 if ($method === 'POST' || $method === 'DELETE') {
-    $rawInput = file_get_contents('php://input');
-    $body = json_decode($rawInput, true) ?? [];
+    try {
+        $rawInput = file_get_contents('php://input');
+        $body = json_decode($rawInput, true) ?? [];
 
-    $propertyId = trim((string)($body['propertyId'] ?? $_GET['propertyId'] ?? ''));
-    $action = strtolower(trim((string)($body['action'] ?? ($method === 'DELETE' ? 'remove' : 'toggle'))));
-    $userId = resolveUserId($db, $body);
+        $propertyId = trim((string)($body['propertyId'] ?? $_GET['propertyId'] ?? ''));
+        $action = strtolower(trim((string)($body['action'] ?? ($method === 'DELETE' ? 'remove' : 'toggle'))));
+        $userId = resolveUserId($db, $body);
 
-    if (empty($propertyId)) {
-        Response::error('Property ID is required', 400);
+        if (empty($propertyId)) {
+            Response::error('Property ID is required', 400);
+            exit;
+        }
+
+        // Check if property exists in projects table (case-insensitive)
+        $checkPropStmt = $db->prepare("SELECT project_id AS id, project_name AS title, status FROM projects WHERE UPPER(TRIM(project_id)) = UPPER(TRIM(?))");
+        $checkPropStmt->execute([$propertyId]);
+        $prop = $checkPropStmt->fetch(PDO::FETCH_ASSOC);
+
+        $canonicalId = $prop ? (string)$prop['id'] : $propertyId;
+
+        if ($prop && ($prop['status'] ?? '') === 'archived') {
+            $cleanStmt = $db->prepare("DELETE FROM user_shortlists WHERE UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
+            $cleanStmt->execute([$propertyId]);
+
+            Response::error('Property has been archived by administrator', 404);
+            exit;
+        }
+
+        // Check if shortlist entry exists
+        $checkShortlistStmt = $db->prepare("SELECT id FROM user_shortlists WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
+        $checkShortlistStmt->execute([$userId, $canonicalId]);
+        $existing = $checkShortlistStmt->fetch();
+
+        $shouldRemove = ($action === 'remove') || ($action === 'toggle' && $existing);
+
+        if ($shouldRemove) {
+            $delStmt = $db->prepare("DELETE FROM user_shortlists WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
+            $delStmt->execute([$userId, $canonicalId]);
+
+            Response::success([
+                'propertyId'    => $canonicalId,
+                'isShortlisted' => false,
+                'action'        => 'removed',
+                'userId'        => $userId
+            ], 'Property removed from shortlist');
+        } else {
+            $insStmt = $db->prepare("
+                INSERT INTO user_shortlists (user_id, property_id, created_at)
+                VALUES (?, ?, NOW())
+                ON DUPLICATE KEY UPDATE created_at = NOW()
+            ");
+            $insStmt->execute([$userId, $canonicalId]);
+
+            Response::success([
+                'propertyId'    => $canonicalId,
+                'isShortlisted' => true,
+                'action'        => 'added',
+                'userId'        => $userId
+            ], 'Property saved to shortlist');
+        }
+        exit;
+    } catch (\Throwable $e) {
+        Response::error('Unable to update shortlist: ' . $e->getMessage(), 500);
         exit;
     }
-
-    // Check if property exists in projects table (case-insensitive)
-    $checkPropStmt = $db->prepare("SELECT project_id AS id, project_name AS title, status FROM projects WHERE UPPER(TRIM(project_id)) = UPPER(TRIM(?))");
-    $checkPropStmt->execute([$propertyId]);
-    $prop = $checkPropStmt->fetch(PDO::FETCH_ASSOC);
-
-    $canonicalId = $prop ? (string)$prop['id'] : $propertyId;
-
-    if ($prop && ($prop['status'] ?? '') === 'archived') {
-        $cleanStmt = $db->prepare("DELETE FROM user_shortlists WHERE UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
-        $cleanStmt->execute([$propertyId]);
-
-        Response::error('Property has been archived by administrator', 404);
-        exit;
-    }
-
-    // Check if shortlist entry exists
-    $checkShortlistStmt = $db->prepare("SELECT id FROM user_shortlists WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
-    $checkShortlistStmt->execute([$userId, $canonicalId]);
-    $existing = $checkShortlistStmt->fetch();
-
-    $shouldRemove = ($action === 'remove') || ($action === 'toggle' && $existing);
-
-    if ($shouldRemove) {
-        $delStmt = $db->prepare("DELETE FROM user_shortlists WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
-        $delStmt->execute([$userId, $canonicalId]);
-
-        Response::success([
-            'propertyId'    => $canonicalId,
-            'isShortlisted' => false,
-            'action'        => 'removed',
-            'userId'        => $userId
-        ], 'Property removed from shortlist');
-    } else {
-        $insStmt = $db->prepare("
-            INSERT INTO user_shortlists (user_id, property_id, created_at)
-            VALUES (?, ?, NOW())
-            ON DUPLICATE KEY UPDATE created_at = NOW()
-        ");
-        $insStmt->execute([$userId, $canonicalId]);
-
-        Response::success([
-            'propertyId'    => $canonicalId,
-            'isShortlisted' => true,
-            'action'        => 'added',
-            'userId'        => $userId
-        ], 'Property saved to shortlist');
-    }
-    exit;
 }
 
 Response::error('Method not allowed', 405);

@@ -708,7 +708,7 @@
       @if (viewMode() === 'list') {
       <div class="results-list">
         @for (prop of displayedProperties(); track prop.id) {
-        <article class="list-dossier-card">
+        <article class="list-dossier-card" [class.is-in-compare]="compareService.isInCompare(prop.id)">
           <!-- Left Half: Full-bleed Image with Creative Atmospheric Gradient -->
           <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
             <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
@@ -794,6 +794,14 @@
                   rel="noopener" title="Inquire on WhatsApp" aria-label="Inquire on WhatsApp">
                   <span class="material-symbols-outlined">chat</span>
                 </a>
+
+                <button type="button" class="btn-list-compare"
+                  [class.comparing]="compareService.isInCompare(prop.id)"
+                  (click)="compareService.toggleCompare(prop)"
+                  [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property'">
+                  <span class="material-symbols-outlined">compare_arrows</span>
+                  <span>{{ compareService.isInCompare(prop.id) ? 'Comparing' : 'Compare' }}</span>
+                </button>
 
                 <button type="button" class="btn-list-shortlist"
                   [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
@@ -946,7 +954,7 @@
         @if (viewMode() === 'list') {
         <div class="results-list">
           @for (prop of suggestedProperties(); track prop.id) {
-          <article class="list-dossier-card">
+          <article class="list-dossier-card" [class.is-in-compare]="compareService.isInCompare(prop.id)">
             <!-- Left Half: Full-bleed Image with Creative Atmospheric Gradient -->
             <div class="list-thumb-wrapper" [routerLink]="['/property', prop.id]">
               <img [src]="prop.imageUrl" [alt]="prop.title" (error)="onImgError($event)" class="list-thumb-img"
@@ -1020,6 +1028,14 @@
                     rel="noopener" title="Inquire on WhatsApp" aria-label="Inquire on WhatsApp">
                     <span class="material-symbols-outlined">chat</span>
                   </a>
+
+                  <button type="button" class="btn-list-compare"
+                    [class.comparing]="compareService.isInCompare(prop.id)"
+                    (click)="compareService.toggleCompare(prop)"
+                    [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property'">
+                    <span class="material-symbols-outlined">compare_arrows</span>
+                    <span>{{ compareService.isInCompare(prop.id) ? 'Comparing' : 'Compare' }}</span>
+                  </button>
 
                   <button type="button" class="btn-list-shortlist"
                     [class.shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"

@@ -204,7 +204,7 @@ if ($userId > 0) {
                     advisory_session_limit, site_visits_used, site_visit_limit,
                     expires_at
                 ) VALUES (
-                    ?, 'explorer', 0, 2, 0, 1, 0, 1, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
+                    ?, 'explorer', 0, 2, 0, 0, 0, 1, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
                 )
             ");
             $ins->execute([$userId]);

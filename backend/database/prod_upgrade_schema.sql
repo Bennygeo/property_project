@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `subscription_plans` (
   `price_inr` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `duration_days` INT(11) NOT NULL DEFAULT 30,
   `project_view_limit` INT(11) NOT NULL DEFAULT 2,
-  `comparison_limit` INT(11) NOT NULL DEFAULT 1,
+  `comparison_limit` INT(11) NOT NULL DEFAULT 0,
   `advisory_session_limit` INT(11) NOT NULL DEFAULT 1,
   `site_visit_limit` INT(11) NOT NULL DEFAULT 0,
   `has_location_report` TINYINT(1) NOT NULL DEFAULT 0,
@@ -167,9 +167,9 @@ CREATE TABLE IF NOT EXISTS `subscription_plans` (
 
 INSERT INTO `subscription_plans` (`id`, `name`, `badge_text`, `price_inr`, `duration_days`, `project_view_limit`, `comparison_limit`, `advisory_session_limit`, `site_visit_limit`, `has_location_report`, `has_dedicated_advisor`, `has_priority_advisor`, `description`, `features_json`, `is_active`, `sort_order`)
 VALUES
-('explorer', 'Explorer', 'Free Forever', 0.00, 365, 2, 1, 1, 0, 0, 0, 0, 'Ideal for initial discovery of plotted developments, layouts and emerging locations across Tamil Nadu.', '["2 Detailed Project Views","1 Side-by-Side Comparison","1 Intro Advisory Session","Direct SRO Regulatory Checklist","Community Support"]', 1, 1),
-('smart_buyer', 'Smart Buyer', 'Most Popular', 750.00, 30, 5, 3, 2, 0, 1, 0, 0, 'For active buyers shortlisting plots in high-growth corridors with location intelligence.', '["5 Detailed Project Views","3 Side-by-Side Comparisons","2 Advisory Sessions","Location & Corridor Growth Report","RERA Document Verification Extract","WhatsApp Concierge Desk"]', 1, 2),
-('priority_buyer', 'Priority Buyer', 'Best Value', 7500.00, 60, 25, 10, 4, 1, 1, 1, 0, 'Comprehensive advisory with dedicated expert and field visit coordination.', '["25 Detailed Project Views","10 Side-by-Side Comparisons","4 Comprehensive Advisory Sessions","1 Chauffeured Physical Site Visit","Dedicated Property Advisor","Patta & Cadastral Verification Dossier","Land Appreciation Intelligence"]', 1, 3),
+('explorer', 'Explorer', 'Free Forever', 0.00, 365, 2, 0, 1, 0, 0, 0, 0, 'Ideal for initial discovery of plotted developments, layouts and emerging locations across Tamil Nadu.', '["2 Detailed Project Views","1 Intro Advisory Session","Direct SRO Regulatory Checklist","Community Support"]', 1, 1),
+('smart_buyer', 'Smart Buyer', 'Most Popular', 750.00, 30, 5, 2, 2, 0, 1, 0, 0, 'For active buyers shortlisting plots in high-growth corridors with location intelligence.', '["5 Detailed Project Views","2 Side-by-Side Comparisons","2 Advisory Sessions","Location & Corridor Growth Report","RERA Document Verification Extract","WhatsApp Concierge Desk"]', 1, 2),
+('priority_buyer', 'Priority Buyer', 'Best Value', 7500.00, 60, 25, 5, 4, 1, 1, 1, 0, 'Comprehensive advisory with dedicated expert and field visit coordination.', '["25 Detailed Project Views","5 Side-by-Side Comparisons","4 Comprehensive Advisory Sessions","1 Chauffeured Physical Site Visit","Dedicated Property Advisor","Patta & Cadastral Verification Dossier","Land Appreciation Intelligence"]', 1, 3),
 ('vip_concierge', 'VIP Concierge', 'Executive', 20000.00, 90, 50, 20, 8, 3, 1, 1, 1, 'White-glove advisory, multiple site visits and legal title clearance for high-net-worth investors.', '["50 Detailed Project Views","20 Side-by-Side Comparisons","8 In-Depth Advisory Sessions","3 Chauffeured Physical Site Visits","Priority Advisory Partner (Direct Line)","Full Legal & SRO Title Check Assistance","Custom Layout & Subdivision Analysis","Negotiation & Booking Escort"]', 1, 4)
 ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `price_inr` = VALUES(`price_inr`), `description` = VALUES(`description`);
 
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `user_entitlements` (
   `project_views_used` INT(11) NOT NULL DEFAULT 0,
   `project_view_limit` INT(11) NOT NULL DEFAULT 2,
   `comparisons_used` INT(11) NOT NULL DEFAULT 0,
-  `comparison_limit` INT(11) NOT NULL DEFAULT 1,
+  `comparison_limit` INT(11) NOT NULL DEFAULT 0,
   `advisory_sessions_used` INT(11) NOT NULL DEFAULT 0,
   `advisory_session_limit` INT(11) NOT NULL DEFAULT 1,
   `site_visits_used` INT(11) NOT NULL DEFAULT 0,
@@ -405,5 +405,27 @@ WHERE `sender_name` LIKE '%Kavitha%'
 UPDATE `properties`
 SET `whatsapp_url` = CONCAT('https://wa.me/919486140936?text=Hi%20Find%20a%20Plot%2C%20I%20am%20interested%20in%20', REPLACE(REPLACE(REPLACE(title, ' ', '%20'), '&', '%26'), '#', '%23'))
 WHERE `whatsapp_url` LIKE '%wa.me%' OR `whatsapp_url` IS NULL OR `whatsapp_url` = '';
+
+-- Safely drop invalid foreign key constraints referencing properties view
+DELIMITER //
+CREATE PROCEDURE `DropViewForeignKeys`()
+BEGIN
+  IF EXISTS (
+    SELECT * FROM information_schema.TABLE_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'user_shortlists' AND CONSTRAINT_NAME = 'user_shortlists_ibfk_2'
+  ) THEN
+    ALTER TABLE `user_shortlists` DROP FOREIGN KEY `user_shortlists_ibfk_2`;
+  END IF;
+
+  IF EXISTS (
+    SELECT * FROM information_schema.TABLE_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'inquiries_and_visits' AND CONSTRAINT_NAME = 'inquiries_and_visits_ibfk_1'
+  ) THEN
+    ALTER TABLE `inquiries_and_visits` DROP FOREIGN KEY `inquiries_and_visits_ibfk_1`;
+  END IF;
+END //
+DELIMITER ;
+CALL `DropViewForeignKeys`();
+DROP PROCEDURE `DropViewForeignKeys`;
 
 SET FOREIGN_KEY_CHECKS = 1;

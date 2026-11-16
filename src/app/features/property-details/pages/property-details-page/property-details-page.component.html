@@ -52,10 +52,15 @@
                 Maintenance')) : 'Free Maintenance Included' }}</span>
             </span>
 
-            <!-- Mobile-Only Top-Right Quick Utility Icons (Share & Shortlist) -->
+            <!-- Mobile-Only Top-Right Quick Utility Icons (Share, Compare & Shortlist) -->
             <div class="mobile-hdr-quick-icons">
               <button type="button" class="btn-mob-icon" (click)="shareProperty()" aria-label="Share Property">
                 <span class="material-symbols-outlined">share</span>
+              </button>
+              <button type="button" class="btn-mob-icon" [class.comparing]="compareService.isInCompare(prop.id)"
+                (click)="compareService.toggleCompare(prop)" aria-label="Compare Property"
+                [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property'">
+                <span class="material-symbols-outlined">compare_arrows</span>
               </button>
               <button type="button" class="btn-mob-icon" [class.shortlisted]="propertyService.isShortlisted(prop.id)"
                 (click)="propertyService.toggleShortlist(prop.id)" aria-label="Shortlist Property">
@@ -165,6 +170,13 @@
               <button type="button" class="btn-hdr-utility" (click)="shareProperty()" title="Share Property Dossier">
                 <span class="material-symbols-outlined">share</span>
                 <span>Share</span>
+              </button>
+
+              <button type="button" class="btn-hdr-utility" [class.comparing]="compareService.isInCompare(prop.id)"
+                (click)="compareService.toggleCompare(prop)"
+                [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : (compareService.isExplorerOrGuest() ? 'Upgrade plan to compare properties' : 'Compare property side-by-side')">
+                <span class="material-symbols-outlined">compare_arrows</span>
+                <span>{{ compareService.isInCompare(prop.id) ? 'In Compare' : 'Compare' }}</span>
               </button>
 
               <button type="button" class="btn-hdr-utility" [class.shortlisted]="propertyService.isShortlisted(prop.id)"
@@ -1381,6 +1393,13 @@
               <button type="button" class="btn-hdr-utility" (click)="shareProperty()" title="Share Property Dossier">
                 <span class="material-symbols-outlined">share</span>
                 <span>Share</span>
+              </button>
+
+              <button type="button" class="btn-hdr-utility" [class.comparing]="compareService.isInCompare(prop.id)"
+                (click)="compareService.toggleCompare(prop)"
+                [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : (compareService.isExplorerOrGuest() ? 'Upgrade plan to compare properties' : 'Compare property side-by-side')">
+                <span class="material-symbols-outlined">compare_arrows</span>
+                <span>{{ compareService.isInCompare(prop.id) ? 'In Compare' : 'Compare' }}</span>
               </button>
 
               <button type="button" class="btn-hdr-utility" [class.shortlisted]="propertyService.isShortlisted(prop.id)"

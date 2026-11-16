@@ -85,13 +85,28 @@ try {
                 has_location_report, has_dedicated_advisor, has_priority_advisor,
                 expires_at
             ) VALUES (
-                ?, 'explorer', 0, 2, 0, 1, 0, 1, 0, 0, 0, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
+                ?, 'explorer', 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
             )
         ");
         $ins->execute([$userId]);
 
         $entStmt->execute([$userId]);
         $entitlement = $entStmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Enforce tier-specific comparison limits
+    $planComparisonMap = [
+        'explorer'       => 0,
+        'smart_buyer'    => 2,
+        'priority_buyer' => 5,
+        'vip_concierge'  => 20
+    ];
+    $currentPlanId = (string)($entitlement['planId'] ?? 'explorer');
+    $expectedCmpLimit = $planComparisonMap[$currentPlanId] ?? (int)($entitlement['comparisonLimit'] ?? 0);
+    if ((int)($entitlement['comparisonLimit'] ?? -1) !== $expectedCmpLimit) {
+        $syncCmp = $db->prepare("UPDATE user_entitlements SET comparison_limit = ? WHERE user_id = ?");
+        $syncCmp->execute([$expectedCmpLimit, $userId]);
+        $entitlement['comparisonLimit'] = $expectedCmpLimit;
     }
 
     // 3. Unique Project Views count & list
@@ -146,8 +161,8 @@ try {
             'projectViewLimit'     => (int)($entitlement['projectViewLimit'] ?? 2),
             'projectViewsRemaining'=> max(0, (int)($entitlement['projectViewLimit'] ?? 2) - (int)($entitlement['projectViewsUsed'] ?? 0)),
             'comparisonsUsed'      => (int)($entitlement['comparisonsUsed'] ?? 0),
-            'comparisonLimit'      => (int)($entitlement['comparisonLimit'] ?? 1),
-            'comparisonsRemaining' => max(0, (int)($entitlement['comparisonLimit'] ?? 1) - (int)($entitlement['comparisonsUsed'] ?? 0)),
+            'comparisonLimit'      => (int)($entitlement['comparisonLimit'] ?? 0),
+            'comparisonsRemaining' => max(0, (int)($entitlement['comparisonLimit'] ?? 0) - (int)($entitlement['comparisonsUsed'] ?? 0)),
             'advisorySessionsUsed' => (int)($entitlement['advisorySessionsUsed'] ?? 0),
             'advisorySessionLimit' => (int)($entitlement['advisorySessionLimit'] ?? 1),
             'advisorySessionsRemaining' => max(0, (int)($entitlement['advisorySessionLimit'] ?? 1) - (int)($entitlement['advisorySessionsUsed'] ?? 0)),
@@ -175,8 +190,8 @@ try {
             'projectViewLimit'     => 2,
             'projectViewsRemaining'=> 2,
             'comparisonsUsed'      => 0,
-            'comparisonLimit'      => 1,
-            'comparisonsRemaining' => 1,
+            'comparisonLimit'      => 0,
+            'comparisonsRemaining' => 0,
             'advisorySessionsUsed' => 0,
             'advisorySessionLimit' => 1,
             'advisorySessionsRemaining' => 1,

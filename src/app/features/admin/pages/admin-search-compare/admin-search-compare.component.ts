@@ -9,8 +9,6 @@ import { AdminService } from '../../../../core/services/admin.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { PropertyCardComponent } from '../../../home/components/property-card/property-card.component';
-import { PropertyCompareDockComponent } from '../../../../shared/components/property-compare/property-compare-dock/property-compare-dock.component';
-import { PropertyCompareModalComponent } from '../../../../shared/components/property-compare/property-compare-modal/property-compare-modal.component';
 import { formatPriceIndian } from '../../../../core/utils/price-helper';
 
 function parsePriceToNumber(priceStr: string | undefined): number {
@@ -35,9 +33,7 @@ function parsePriceToNumber(priceStr: string | undefined): number {
     CommonModule,
     RouterModule,
     FormsModule,
-    PropertyCardComponent,
-    PropertyCompareDockComponent,
-    PropertyCompareModalComponent
+    PropertyCardComponent
   ],
   templateUrl: './admin-search-compare.component.html',
   styleUrls: ['./admin-search-compare.component.css']

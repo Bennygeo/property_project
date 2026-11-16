@@ -94,7 +94,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
             type="button"
             class="btn-card-compare" 
             [class.comparing]="compareService.isInCompare(property.id)"
-            [title]="compareService.isInCompare(property.id) ? 'Remove from comparison' : 'Compare property (max 2)'"
+            [title]="compareService.isInCompare(property.id) ? 'Remove from comparison' : (compareService.isExplorerOrGuest() ? 'Upgrade plan to compare properties' : 'Compare property side-by-side')"
             (click)="$event.stopPropagation(); compareService.toggleCompare(property)">
             <span class="material-symbols-outlined">compare_arrows</span>
           </button>
@@ -366,12 +366,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       border: none;
       cursor: pointer;
       box-shadow: none;
-      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
-      transition: transform 0.15s ease;
-    }
-
-    .btn-card-compare:hover {
-      transform: scale(1.15);
     }
 
     .btn-card-compare.comparing {
@@ -647,7 +641,7 @@ export class PropertyCardComponent {
   }
 
   @Input({ required: true }) property!: Property;
-  @Input() showCompare: boolean = false;
+  @Input() showCompare: boolean = true;
   readonly formatPriceIndian = formatPriceIndian;
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);

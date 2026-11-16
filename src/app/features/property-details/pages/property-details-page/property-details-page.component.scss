@@ -704,7 +704,7 @@
 
 .hdr-utility-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   width: 100%;
 }
@@ -713,21 +713,32 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
+  gap: 5px;
+  padding: 9px 8px;
   background: #f1f5f9;
   color: #334155;
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   box-shadow: none !important;
   transition: all 0.15s ease;
+  white-space: nowrap;
 
   &:hover {
     background: #e2e8f0;
     color: #0f172a;
+  }
+
+  &.comparing {
+    color: #0f3b4a;
+    background: #e5f7ec;
+    border: 1px solid #5e8f72;
+
+    span.material-symbols-outlined {
+      color: #0f3b4a;
+    }
   }
 
   &.shortlisted {
@@ -3392,6 +3403,16 @@
 
       .material-symbols-outlined {
         font-size: 17px;
+      }
+
+      &.comparing {
+        background: #e5f7ec;
+        border-color: #5e8f72;
+        color: #0f3b4a;
+
+        .material-symbols-outlined {
+          color: #0f3b4a;
+        }
       }
 
       &.shortlisted {
