@@ -408,7 +408,7 @@ import { RouterModule } from '@angular/router';
 
     /* 3. Compact Bottom Advisory Strip (Architectural Signature Asymmetric Radius) */
     .advisory-strip {
-      background: var(--brand-teal, #0f3b4a);
+      background: var(--brand-sold);
       border-radius: 6px 20px 20px 20px !important;
       padding: 1.5rem 1.75rem;
       display: flex;
@@ -475,7 +475,7 @@ import { RouterModule } from '@angular/router';
       font-size: 14px;
       font-weight: 600;
       padding: 0.55rem 1.2rem;
-      border-radius: 6px 14px 14px 14px;
+      border-radius: 6px 14px 14px 14px !important;
       text-decoration: none;
       white-space: nowrap;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
