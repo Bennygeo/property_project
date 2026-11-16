@@ -99,6 +99,11 @@ if ($useProjectsTable) {
         ':id'      => $propertyId
     ]);
 
+    try {
+        $syncProp = $db->prepare("UPDATE properties SET status = :status, reviewed_by_name = :revName, reviewed_at = NOW() WHERE id = :id");
+        $syncProp->execute([':status' => $newStatus, ':revName' => $reviewerName, ':id' => $propertyId]);
+    } catch (\Throwable $e) {}
+
     // Log this action to admin_activity_logs
     try {
         $actionType = $action === 'approve' ? 'approve_peer_review' : ($action === 'reject' ? 'reject_property' : 'request_revision');

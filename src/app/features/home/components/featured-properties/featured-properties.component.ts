@@ -580,14 +580,7 @@ import { PropertyCardComponent } from '../property-card/property-card.component'
       padding: 0.55rem 1.2rem;
       border-radius: 6px 14px 14px 14px;
       text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    .btn-insist-search:hover {
-      background: #f1f5f9;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
     .btn-insist-search .btn-arrow {
       font-size: 18px;

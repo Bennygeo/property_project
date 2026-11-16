@@ -751,9 +751,11 @@ if ($method === 'POST') {
         }
     }
 
-    $status = ($authorRole === 'admin' || $authorRole === 'co_admin') 
-        ? 'pending_peer_review' 
-        : 'pending_review';
+    $status = !empty($input['status']) && in_array($input['status'], ['published', 'pending_review', 'pending_peer_review'], true)
+        ? $input['status']
+        : (($authorRole === 'admin' || $authorRole === 'co_admin') 
+            ? 'pending_peer_review' 
+            : 'pending_review');
 
     if ($useProjectsTable) {
         $masterData = $input['masterData'] ?? $input['masterDetails'] ?? [];

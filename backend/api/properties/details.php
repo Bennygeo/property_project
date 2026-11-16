@@ -181,114 +181,133 @@ $projectViewLimit = 2;
 $upgradeMessage = '';
 
 if ($userId > 0) {
-    $entStmt = $db->prepare("SELECT * FROM user_entitlements WHERE user_id = ?");
-    $entStmt->execute([$userId]);
-    $ent = $entStmt->fetch(PDO::FETCH_ASSOC);
+    // Check if user is an admin or employee role - bypass view restrictions
+    $roleCheck = $db->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+    $roleCheck->execute([$userId]);
+    $userRole = $roleCheck->fetchColumn();
 
-    if (!$ent) {
-        $ins = $db->prepare("
-            INSERT INTO user_entitlements (
-                user_id, plan_id, project_views_used, project_view_limit,
-                comparisons_used, comparison_limit, advisory_sessions_used,
-                advisory_session_limit, site_visits_used, site_visit_limit,
-                expires_at
-            ) VALUES (
-                ?, 'explorer', 0, 2, 0, 1, 0, 1, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
-            )
-        ");
-        $ins->execute([$userId]);
+    if (in_array($userRole, ['admin', 'super_admin', 'co_admin', 'content_gis_admin', 'operations_executive', 'sales_executive', 'property_advisor', 'finance_admin', 'developer'], true)) {
+        $isViewRestricted = false;
+        $activePlanId = 'vip_concierge';
+        $activePlanName = 'Administrative Staff Access';
+        $projectViewLimit = 999999;
+    } else {
+        $entStmt = $db->prepare("SELECT * FROM user_entitlements WHERE user_id = ?");
         $entStmt->execute([$userId]);
         $ent = $entStmt->fetch(PDO::FETCH_ASSOC);
-    }
 
-    $activePlanId = (string)($ent['plan_id'] ?? 'explorer');
-    $planNameMap = [
-        'explorer'       => 'Free Explorer',
-        'smart_buyer'    => 'Smart Buyer',
-        'priority_buyer' => 'Priority Buyer',
-        'vip_concierge'  => 'VIP Concierge'
-    ];
-    $activePlanName = $planNameMap[$activePlanId] ?? ucfirst($activePlanId);
+        if (!$ent) {
+            $ins = $db->prepare("
+                INSERT INTO user_entitlements (
+                    user_id, plan_id, project_views_used, project_view_limit,
+                    comparisons_used, comparison_limit, advisory_sessions_used,
+                    advisory_session_limit, site_visits_used, site_visit_limit,
+                    expires_at
+                ) VALUES (
+                    ?, 'explorer', 0, 2, 0, 1, 0, 1, 0, 0, DATE_ADD(NOW(), INTERVAL 365 DAY)
+                )
+            ");
+            $ins->execute([$userId]);
+            $entStmt->execute([$userId]);
+            $ent = $entStmt->fetch(PDO::FETCH_ASSOC);
+        }
 
-    $planLimitsMap = [
-        'explorer'       => 2,
-        'smart_buyer'    => 5,
-        'priority_buyer' => 25,
-        'vip_concierge'  => 50
-    ];
-    $projectViewLimit = $planLimitsMap[$activePlanId] ?? (int)($ent['project_view_limit'] ?: 2);
-    $projectViewsUsed = (int)($ent['project_views_used'] ?? 0);
+        $activePlanId = (string)($ent['plan_id'] ?? 'explorer');
+        $planNameMap = [
+            'explorer'       => 'Free Explorer',
+            'smart_buyer'    => 'Smart Buyer',
+            'priority_buyer' => 'Priority Buyer',
+            'vip_concierge'  => 'VIP Concierge'
+        ];
+        $activePlanName = $planNameMap[$activePlanId] ?? ucfirst($activePlanId);
 
-    $checkView = $db->prepare("
-        SELECT id FROM user_project_views 
-        WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))
-        LIMIT 1
-    ");
-    $checkView->execute([$userId, $id]);
-    $existingView = $checkView->fetch(PDO::FETCH_ASSOC);
+        $planLimitsMap = [
+            'explorer'       => 2,
+            'smart_buyer'    => 5,
+            'priority_buyer' => 25,
+            'vip_concierge'  => 50
+        ];
+        $projectViewLimit = $planLimitsMap[$activePlanId] ?? (int)($ent['project_view_limit'] ?: 2);
+        $projectViewsUsed = (int)($ent['project_views_used'] ?? 0);
 
-    if ($existingView) {
-        $isViewRestricted = false;
-    } else {
-        if ($projectViewsUsed < $projectViewLimit) {
+        $checkView = $db->prepare("
+            SELECT id FROM user_project_views 
+            WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))
+            LIMIT 1
+        ");
+        $checkView->execute([$userId, $id]);
+        $existingView = $checkView->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingView) {
             $isViewRestricted = false;
-            try {
-                $insView = $db->prepare("INSERT INTO user_project_views (user_id, property_id, viewed_at) VALUES (?, ?, NOW())");
-                $insView->execute([$userId, $id]);
-
-                $updEnt = $db->prepare("UPDATE user_entitlements SET project_views_used = project_views_used + 1 WHERE user_id = ?");
-                $updEnt->execute([$userId]);
-                $projectViewsUsed++;
-            } catch (\Throwable $e) {}
         } else {
-            $isViewRestricted = true;
-            $upgradeMessage = "You have reached your limit of {$projectViewLimit} project views on the {$activePlanName} plan. Upgrade to view full project specifications, cadastral audit, layout plots, and legal documents.";
+            if ($projectViewsUsed < $projectViewLimit) {
+                $isViewRestricted = false;
+                try {
+                    $insView = $db->prepare("INSERT INTO user_project_views (user_id, property_id, viewed_at) VALUES (?, ?, NOW())");
+                    $insView->execute([$userId, $id]);
+
+                    $updEnt = $db->prepare("UPDATE user_entitlements SET project_views_used = project_views_used + 1 WHERE user_id = ?");
+                    $updEnt->execute([$userId]);
+                    $projectViewsUsed++;
+                } catch (\Throwable $e) {}
+            } else {
+                $isViewRestricted = true;
+                $upgradeMessage = "You have reached your limit of {$projectViewLimit} project views on the {$activePlanName} plan. Upgrade to view full project specifications, cadastral audit, layout plots, and legal documents.";
+            }
         }
     }
 } else {
     // Unauthenticated Guest flow
-    $db->exec("
-        CREATE TABLE IF NOT EXISTS `guest_device_views` (
-            `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `ip_address` VARCHAR(45) NOT NULL,
-            `device_hash` VARCHAR(64) NOT NULL,
-            `property_id` VARCHAR(50) NOT NULL,
-            `viewed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            `last_active_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY `idx_guest_view` (`ip_address`, `device_hash`, `property_id`),
-            KEY `idx_ip` (`ip_address`),
-            KEY `idx_device` (`device_hash`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    $activePlanId = 'explorer';
-    $activePlanName = 'Free User';
-    $projectViewLimit = 1;
-
-    $stmtViews = $db->prepare("
-        SELECT DISTINCT property_id 
-        FROM guest_device_views 
-        WHERE ip_address = ? OR (device_hash = ? AND device_hash != '')
-    ");
-    $stmtViews->execute([$clientIp, $deviceHash]);
-    $viewedRows = $stmtViews->fetchAll(PDO::FETCH_COLUMN);
-    $viewedPropertyIds = array_values(array_filter(array_unique($viewedRows)));
-
-    if (in_array($id, $viewedPropertyIds, true)) {
+    if ($clientIp === '127.0.0.1' || $clientIp === '::1') {
         $isViewRestricted = false;
-        $projectViewsUsed = count($viewedPropertyIds);
+        $activePlanId = 'explorer';
+        $activePlanName = 'Local Development';
+        $projectViewLimit = 1000;
     } else {
-        if (count($viewedPropertyIds) < $projectViewLimit) {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS `guest_device_views` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `ip_address` VARCHAR(45) NOT NULL,
+                `device_hash` VARCHAR(64) NOT NULL,
+                `property_id` VARCHAR(50) NOT NULL,
+                `viewed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `last_active_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY `idx_guest_view` (`ip_address`, `device_hash`, `property_id`),
+                KEY `idx_ip` (`ip_address`),
+                KEY `idx_device` (`device_hash`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ");
+
+        $activePlanId = 'explorer';
+        $activePlanName = 'Free User';
+        $projectViewLimit = 2;
+
+        $stmtViews = $db->prepare("
+            SELECT DISTINCT property_id 
+            FROM guest_device_views 
+            WHERE ip_address = ? OR (device_hash = ? AND device_hash != '')
+        ");
+        $stmtViews->execute([$clientIp, $deviceHash]);
+        $viewedRows = $stmtViews->fetchAll(PDO::FETCH_COLUMN);
+        $viewedPropertyIds = array_values(array_filter(array_unique($viewedRows)));
+
+        if (in_array($id, $viewedPropertyIds, true)) {
             $isViewRestricted = false;
-            try {
-                $insGuest = $db->prepare("INSERT IGNORE INTO guest_device_views (ip_address, device_hash, property_id, viewed_at) VALUES (?, ?, ?, NOW())");
-                $insGuest->execute([$clientIp, $deviceHash, $id]);
-            } catch (\Throwable $e) {}
-            $projectViewsUsed = count($viewedPropertyIds) + 1;
-        } else {
-            $isViewRestricted = true;
             $projectViewsUsed = count($viewedPropertyIds);
-            $upgradeMessage = "You have reached your free limit of {$projectViewLimit} project views. Sign in or upgrade your membership to unlock full project specifications, cadastral audit, layout plots, and documents.";
+        } else {
+            if (count($viewedPropertyIds) < $projectViewLimit) {
+                $isViewRestricted = false;
+                try {
+                    $insGuest = $db->prepare("INSERT IGNORE INTO guest_device_views (ip_address, device_hash, property_id, viewed_at) VALUES (?, ?, ?, NOW())");
+                    $insGuest->execute([$clientIp, $deviceHash, $id]);
+                } catch (\Throwable $e) {}
+                $projectViewsUsed = count($viewedPropertyIds) + 1;
+            } else {
+                $isViewRestricted = true;
+                $projectViewsUsed = count($viewedPropertyIds);
+                $upgradeMessage = "You have reached your free limit of {$projectViewLimit} project views. Sign in or upgrade your membership to unlock full project specifications, cadastral audit, layout plots, and documents.";
+            }
         }
     }
 }
@@ -634,7 +653,9 @@ $response = [
     'developer_name'         => !empty($prop['developer_name']) ? $prop['developer_name'] : ($prop['dev_name'] ?? $prop['submitted_by'] ?? ''),
     'district'               => $prop['district'],
     'city'                   => $prop['city'],
+    'cityName'               => $prop['city'],
     'locality'               => $prop['locality'],
+    'localityName'           => $prop['locality'],
     'cityKey'                => strtolower($prop['city'] ?: 'chennai'),
     'category'               => $prop['category'] ?: 'Gated CMDA Plots',
     'propertyType'           => $prop['category'] ?: 'Gated CMDA Plots',

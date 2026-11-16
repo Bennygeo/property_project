@@ -566,6 +566,63 @@ class PropertyMasterHelper {
                 self::saveMasterDetails($db, $projectId, $d);
             }
 
+            // Sync into `properties` table so unified search, role dashboards, and legacy queries stay 100% in sync
+            try {
+                $propPriceStr = '';
+                if ($priceFrom > 0 && $priceTo > $priceFrom) {
+                    $propPriceStr = '₹ ' . ($priceFrom >= 10000000 ? number_format($priceFrom/10000000, 2) . ' Cr' : number_format($priceFrom/100000, 2) . ' L')
+                                  . ' - '
+                                  . ($priceTo >= 10000000 ? number_format($priceTo/10000000, 2) . ' Cr' : number_format($priceTo/100000, 2) . ' L');
+                } elseif ($priceFrom > 0) {
+                    $propPriceStr = '₹ ' . ($priceFrom >= 10000000 ? number_format($priceFrom/10000000, 2) . ' Cr' : number_format($priceFrom/100000, 2) . ' L');
+                }
+                $propRateStr = $sqftRate > 0 ? ('₹ ' . number_format($sqftRate, 0) . '/sq.ft') : '';
+                $propSqftStr = $minPlotSize > 0 ? (number_format($minPlotSize, 0) . ' sq.ft') : '';
+
+                $syncPropSql = "
+                    INSERT INTO properties (
+                        id, city_id, locality_id, title, property_type, listing_mode, locality_name, city_name,
+                        price, price_per_sqft, sqft, bhk_badge, facing_or_view, main_image_url, rera_number,
+                        status, submitted_by_user_id, submitted_by_name, submitted_by_role
+                    ) VALUES (
+                        :id, 1, 1, :title, :propertyType, :listingMode, :localityName, :cityName,
+                        :price, :pricePerSqft, :sqft, :bhkBadge, :facingOrView, :mainImageUrl, :reraNumber,
+                        :status, 101, :submittedByName, 'admin'
+                    ) ON DUPLICATE KEY UPDATE
+                        title = VALUES(title),
+                        property_type = VALUES(property_type),
+                        listing_mode = VALUES(listing_mode),
+                        locality_name = VALUES(locality_name),
+                        city_name = VALUES(city_name),
+                        price = VALUES(price),
+                        price_per_sqft = VALUES(price_per_sqft),
+                        sqft = VALUES(sqft),
+                        main_image_url = VALUES(main_image_url),
+                        rera_number = VALUES(rera_number),
+                        status = VALUES(status)
+                ";
+                $syncStmt = $db->prepare($syncPropSql);
+                $syncStmt->execute([
+                    ':id'               => $projectId,
+                    ':title'            => $projectName,
+                    ':propertyType'     => $category ?: 'Gated CMDA Plots',
+                    ':listingMode'      => $type ?: 'plots',
+                    ':localityName'     => $locality,
+                    ':cityName'         => $city,
+                    ':price'            => $propPriceStr,
+                    ':pricePerSqft'     => $propRateStr,
+                    ':sqft'             => $propSqftStr,
+                    ':bhkBadge'         => $category,
+                    ':facingOrView'     => 'East Facing',
+                    ':mainImageUrl'     => $coverImage,
+                    ':reraNumber'       => $reraNo,
+                    ':status'           => $status,
+                    ':submittedByName'  => $submittedBy ?: 'Admin'
+                ]);
+            } catch (\Throwable $pe) {
+                error_log('Sync properties table notice: ' . $pe->getMessage());
+            }
+
             return true;
         } catch (\Throwable $e) {
             error_log('Failed to save project and details: ' . $e->getMessage());

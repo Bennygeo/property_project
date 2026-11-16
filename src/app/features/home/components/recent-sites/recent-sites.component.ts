@@ -347,13 +347,6 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       text-decoration: none;
       box-sizing: border-box;
       padding: 1.25rem 1.35rem;
-      transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .recent-site-card:hover {
-      border-color: var(--brand-green, #5e8f72);
-      transform: translateY(-1px);
-      box-shadow: 0 10px 25px -5px rgba(15, 59, 74, 0.2);
     }
 
     /* Background Image */

@@ -132,24 +132,6 @@
         @if (isDistrictDropdownOpen()) {
         <div class="district-dropdown-backdrop" (click)="isDistrictDropdownOpen.set(false)" aria-hidden="true"></div>
         <div class="district-custom-dropdown expanded-dropdown" (click)="$event.stopPropagation()" role="listbox">
-          <div class="district-dropdown-header">
-            <div class="dist-header-title-wrap">
-              <div class="dist-header-badge-row">
-                <span class="material-symbols-outlined dist-badge-icon">location_on</span>
-                <span class="dist-header-title">Target Area &amp; Regional Districts</span>
-                <span class="dist-header-badge">{{ totalDistrictsCount() }} Districts</span>
-                <span class="dist-header-badge-sub">{{ totalAllPropertiesCount() }} Verified Dossiers</span>
-              </div>
-              <span class="dist-header-sub">Select your target district to focus localities, cadastral deeds, and
-                verified property dossiers</span>
-            </div>
-
-            <button type="button" class="btn-close-dropdown" (click)="isDistrictDropdownOpen.set(false)"
-              title="Close dropdown">
-              <span class="material-symbols-outlined">close</span>
-            </button>
-          </div>
-
           <!-- In-Dropdown Search Filter Bar -->
           <div class="district-search-bar" (click)="$event.stopPropagation(); scrollToTop()">
             <span class="material-symbols-outlined dist-search-icon">search</span>

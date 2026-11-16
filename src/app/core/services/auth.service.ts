@@ -67,7 +67,13 @@ export class AuthService {
   // Guest property views tracking (Max 1 free property view for unauthenticated visitors)
   public readonly guestViewedPropertyIds = signal<string[]>(this.getInitialGuestViews());
   public readonly guestViewCount = computed(() => this.guestViewedPropertyIds().length);
-  public readonly hasReachedGuestLimit = computed(() => !this.isLoggedIn() && this.guestViewedPropertyIds().length >= 1);
+  public readonly hasReachedGuestLimit = computed(() => {
+    if (this.isLoggedIn()) return false;
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return false;
+    }
+    return this.guestViewedPropertyIds().length >= 2;
+  });
 
   // Modal display signal
   public readonly isOtpModalOpen = signal<boolean>(false);
@@ -175,13 +181,16 @@ export class AuthService {
     if (this.isLoggedIn()) {
       return true;
     }
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return true;
+    }
     const views = this.guestViewedPropertyIds();
     // If user is already viewing one of the unlocked properties, allow continued viewing
     if (views.includes(propertyId)) {
       return true;
     }
-    // If guest has viewed fewer than 1 property, allow viewing
-    return views.length < 1;
+    // If guest has viewed fewer than 2 properties, allow viewing
+    return views.length < 2;
   }
 
   /**

@@ -261,7 +261,7 @@ import { RouterModule } from '@angular/router';
     }
     .why-lead-bold {
       color: var(--text-slate-950, #020617);
-      font-weight: 700;
+      font-weight: 600;
     }
 
     /* Compact Summary Box */
@@ -329,7 +329,7 @@ import { RouterModule } from '@angular/router';
 
     .analysis-card {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #f5f5f5;
       border-radius: 6px;
       padding: 1.15rem 1.25rem;
       display: flex;
@@ -408,7 +408,7 @@ import { RouterModule } from '@angular/router';
 
     /* 3. Compact Bottom Advisory Strip (Architectural Signature Asymmetric Radius) */
     .advisory-strip {
-      background: var(--brand-sold);
+      background: var(--brand-teal);
       border-radius: 6px 20px 20px 20px !important;
       padding: 1.5rem 1.75rem;
       display: flex;
@@ -450,14 +450,14 @@ import { RouterModule } from '@angular/router';
     }
     .advisory-strip-title {
       font-size: 1rem;
-      font-weight: 400;
+      font-weight: 500;
       color: #ffffff;
       margin: 0;
       letter-spacing: -0.01em;
     }
     .advisory-strip-tags {
       font-size: 12px;
-      color: #cbd5e1;
+      color: white;
       margin: 0;
       line-height: 1.5;
     }
@@ -478,13 +478,6 @@ import { RouterModule } from '@angular/router';
       border-radius: 6px 14px 14px 14px !important;
       text-decoration: none;
       white-space: nowrap;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    .btn-advisory-primary:hover {
-      background: #f1f5f9;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
     .btn-advisory-primary .btn-arrow {
       font-size: 18px;

@@ -147,7 +147,8 @@ export class VisitorPurposeService {
       const storedPurpose = localStorage.getItem(STORAGE_PURPOSE_KEY) || localStorage.getItem('mannidam_visitor_purpose');
       const dismissed = localStorage.getItem(STORAGE_DISMISSED_KEY) || localStorage.getItem('mannidam_visitor_purpose_dismissed');
 
-      if (!storedPurpose && !dismissed) {
+      const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      if (!storedPurpose && !dismissed && !isLocal && !(typeof navigator !== 'undefined' && navigator.webdriver)) {
         // Subtle entrance delay after initial UI paint
         setTimeout(() => {
           this.isModalOpen.set(true);

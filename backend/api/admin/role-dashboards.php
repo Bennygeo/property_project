@@ -163,23 +163,24 @@ if ($role === 'sales_executive') {
         // Query real viewed properties for this visitor
         $pSql = "
             SELECT 
-                p.id, 
-                p.title, 
-                p.property_type, 
-                p.price, 
-                p.price_per_sqft, 
-                p.sqft,
-                COALESCE(p.locality_name, 'Locality') AS locality, 
-                COALESCE(p.city_name, 'Tamil Nadu') AS city, 
-                COALESCE(p.main_image_url, '') AS image,
+                COALESCE(p.id, prj.project_id) AS id, 
+                COALESCE(NULLIF(p.title, ''), prj.project_name, 'Property') AS title, 
+                COALESCE(NULLIF(p.property_type, ''), prj.category, prj.type, 'Residential Plot') AS property_type, 
+                COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from / 100000, 2), ' Lakhs') ELSE 'Price on Request' END) AS price, 
+                COALESCE(NULLIF(p.price_per_sqft, ''), CASE WHEN prj.sqft_rate > 0 THEN CONCAT('₹ ', FORMAT(prj.sqft_rate, 0), '/sq.ft') ELSE '' END) AS price_per_sqft, 
+                COALESCE(NULLIF(p.sqft, ''), CASE WHEN prj.min_plot_size > 0 THEN CONCAT(FORMAT(prj.min_plot_size, 0), ' sq.ft') ELSE '' END) AS sqft,
+                COALESCE(NULLIF(p.locality_name, ''), prj.locality, 'Locality') AS locality, 
+                COALESCE(NULLIF(p.city_name, ''), prj.city, 'Tamil Nadu') AS city, 
+                COALESCE(NULLIF(p.main_image_url, ''), prj.cover_image, '') AS image,
                 MAX(views.viewed_at) AS last_viewed_at
             FROM (
                 SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at FROM user_view_history WHERE user_id = :uid
                 " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
             ) AS views
-            JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
-            WHERE p.title IS NOT NULL AND p.title != ''
-            GROUP BY p.id
+            LEFT JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
+            LEFT JOIN projects prj ON CAST(prj.project_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
+            WHERE (p.title IS NOT NULL AND p.title != '') OR (prj.project_name IS NOT NULL AND prj.project_name != '')
+            GROUP BY COALESCE(p.id, prj.project_id)
             ORDER BY last_viewed_at DESC
         ";
         $pStmt = $db->prepare($pSql);
@@ -261,13 +262,20 @@ if ($role === 'property_advisor') {
 
         // Fetch viewed properties summary for the advisor
         $pSql = "
-            SELECT p.id, p.title, p.property_type, p.price, p.locality_name AS locality
+            SELECT 
+                COALESCE(p.id, prj.project_id) AS id, 
+                COALESCE(NULLIF(p.title, ''), prj.project_name, 'Property') AS title, 
+                COALESCE(NULLIF(p.property_type, ''), prj.category, prj.type, 'Residential Plot') AS property_type, 
+                COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from / 100000, 2), ' Lakhs') ELSE 'Price on Request' END) AS price, 
+                COALESCE(NULLIF(p.locality_name, ''), prj.locality, 'Locality') AS locality
             FROM (
                 SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id FROM user_view_history WHERE user_id = :uid
                 " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
             ) AS views
-            JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
-            GROUP BY p.id
+            LEFT JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
+            LEFT JOIN projects prj ON CAST(prj.project_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
+            WHERE (p.title IS NOT NULL AND p.title != '') OR (prj.project_name IS NOT NULL AND prj.project_name != '')
+            GROUP BY COALESCE(p.id, prj.project_id)
             LIMIT 5
         ";
         $pStmt = $db->prepare($pSql);

@@ -492,7 +492,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
 
     .card-builder-text {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 400;
       color: #64748b;
       overflow: hidden;
