@@ -57,9 +57,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Neighborhood &amp; connectivity check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="check-arrow">→</span> Highways, schools &amp; hospitals</li>
-            <li><span class="check-arrow">→</span> Transit &amp; commercial hubs</li>
-            <li><span class="check-arrow">→</span> Metro, bypass &amp; airport plans</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Highways, schools &amp; hospitals</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Transit &amp; commercial hubs</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Metro, bypass &amp; airport plans</li>
           </ul>
         </div>
 
@@ -72,9 +72,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Statutory &amp; title due diligence.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="check-arrow">→</span> RERA &amp; DTCP / CMDA approvals</li>
-            <li><span class="check-arrow">→</span> Parent deeds &amp; Patta check</li>
-            <li><span class="check-arrow">→</span> 30-yr EC &amp; Survey No. audit</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> RERA &amp; DTCP / CMDA approvals</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Parent deeds &amp; Patta check</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> 30-yr EC &amp; Survey No. audit</li>
           </ul>
         </div>
 
@@ -87,9 +87,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">True market value benchmarking.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="check-arrow">→</span> Nearby SRO deed benchmarks</li>
-            <li><span class="check-arrow">→</span> Similar plot price comparison</li>
-            <li><span class="check-arrow">→</span> Historical &amp; future price trends</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Nearby SRO deed benchmarks</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Similar plot price comparison</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Historical &amp; future price trends</li>
           </ul>
         </div>
 
@@ -102,9 +102,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">On-site buildability &amp; risk check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="check-arrow">→</span> Road width, access &amp; dimensions</li>
-            <li><span class="check-arrow">→</span> Corner, facing &amp; elevation</li>
-            <li><span class="check-arrow">→</span> Drainage, flood &amp; soil check</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Road width, access &amp; dimensions</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Corner, facing &amp; elevation</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Drainage, flood &amp; soil check</li>
           </ul>
         </div>
 
@@ -117,9 +117,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Macro-development &amp; demand study.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="check-arrow">→</span> Govt. infra &amp; IT / industrial parks</li>
-            <li><span class="check-arrow">→</span> Schools &amp; commercial expansion</li>
-            <li><span class="check-arrow">→</span> Residential demand &amp; investments</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Govt. infra &amp; IT / industrial parks</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Schools &amp; commercial expansion</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Residential demand &amp; investments</li>
           </ul>
         </div>
 
@@ -132,9 +132,9 @@ import { RouterModule } from '@angular/router';
           <p class="analysis-summary">Objective multi-parameter scorecard.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
           <ul class="analysis-list">
-            <li><span class="check-arrow">→</span> Legal safety &amp; location quality</li>
-            <li><span class="check-arrow">→</span> Price fairness &amp; accessibility</li>
-            <li><span class="check-arrow">→</span> Readiness, livability &amp; ROI</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Legal safety &amp; location quality</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Price fairness &amp; accessibility</li>
+            <li><svg class="check-arrow" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6h9M6.5 2L10.5 6l-4 4"/></svg> Readiness, livability &amp; ROI</li>
           </ul>
         </div>
       </div>
@@ -392,8 +392,12 @@ import { RouterModule } from '@angular/router';
     }
     .check-arrow {
       color: var(--brand-teal, #0f3b4a);
-      font-weight: 700;
-      font-size: 13px;
+      width: 11px;
+      height: 11px;
+      min-width: 11px;
+      margin-top: 3px;
+      flex-shrink: 0;
+      display: inline-block;
     }
 
     /* 3. Compact Bottom Advisory Strip */
