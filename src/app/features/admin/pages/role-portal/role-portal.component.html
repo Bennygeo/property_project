@@ -559,30 +559,86 @@
           <!-- 1. SALES EXECUTIVE TABLE: LIVE LOGGED-IN VISITORS -->
           @if (activeRole() === 'sales_executive') {
             <div class="table-card">
-              <div class="card-header">
+              <!-- WORKSPACE HEADER & PIPELINE TABS -->
+              <div class="card-header sales-card-header">
                 <div class="header-text">
                   <h3>Platform Visitors &amp; Site Visit Lead Activity</h3>
-                  <p>Live chronological list of logged-in visitors. Inspect viewed properties, record call/WhatsApp transcripts, and transfer site visit leads to Property Advisors.</p>
+                  <p>Track visitors in real time. Inspect explored properties, record call/WhatsApp transcripts, and transfer site visit leads to Property Advisors.</p>
                 </div>
-                <div class="header-actions">
-                  <div class="filter-pills-row">
-                    <button type="button" class="filter-pill-btn" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">
-                      All ({{ dashboardData()?.visitors?.length || 0 }})
-                    </button>
-                    <button type="button" class="filter-pill-btn" [class.active]="statusFilter() === 'new'" (click)="statusFilter.set('new')">
-                      New
-                    </button>
-                    <button type="button" class="filter-pill-btn" [class.active]="statusFilter() === 'contacted'" (click)="statusFilter.set('contacted')">
-                      Contacted
-                    </button>
-                    <button type="button" class="filter-pill-btn" [class.active]="statusFilter() === 'interested_site_visit'" (click)="statusFilter.set('interested_site_visit')">
-                      Interested
-                    </button>
-                    <button type="button" class="filter-pill-btn" [class.active]="statusFilter() === 'transferred_advisor'" (click)="statusFilter.set('transferred_advisor')">
-                      Transferred
+
+                <!-- TWO MAIN PIPELINE TABS -->
+                <div class="pipeline-tab-switcher">
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill" 
+                    [class.active]="salesActiveTab() === 'unattempted'"
+                    (click)="salesActiveTab.set('unattempted')">
+                    <span class="material-symbols-outlined tab-icon">mark_chat_unread</span>
+                    <span class="tab-label">Unattempted</span>
+                    <span class="tab-badge-pill" [class.highlight]="unattemptedCount() > 0">
+                      {{ unattemptedCount() }}
+                    </span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill" 
+                    [class.active]="salesActiveTab() === 'attempted'"
+                    (click)="salesActiveTab.set('attempted')">
+                    <span class="material-symbols-outlined tab-icon">task_alt</span>
+                    <span class="tab-label">Attempted</span>
+                    <span class="tab-badge-pill">
+                      {{ attemptedCount() }}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- DATE FILTER & STATUS BAR -->
+              <div class="sales-filter-toolbar">
+                <div class="date-filter-presets">
+                  <span class="filter-toolbar-label">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span>Date Filter:</span>
+                  </span>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'all'" (click)="setDatePreset('all')">
+                    All Time
+                  </button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'today'" (click)="setDatePreset('today')">
+                    Today
+                  </button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'yesterday'" (click)="setDatePreset('yesterday')">
+                    Yesterday
+                  </button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === '7days'" (click)="setDatePreset('7days')">
+                    Last 7 Days
+                  </button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === '30days'" (click)="setDatePreset('30days')">
+                    Last 30 Days
+                  </button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'custom'" (click)="setDatePreset('custom')">
+                    Custom Range
+                  </button>
+                </div>
+
+                @if (dateFilterPreset() === 'custom') {
+                  <div class="custom-date-picker-wrap">
+                    <label class="date-input-group">
+                      <span>From:</span>
+                      <input type="date" [ngModel]="customFromDate()" (ngModelChange)="customFromDate.set($event)" />
+                    </label>
+                    <label class="date-input-group">
+                      <span>To:</span>
+                      <input type="date" [ngModel]="customToDate()" (ngModelChange)="customToDate.set($event)" />
+                    </label>
+                    <button type="button" class="btn-clear-date-filter" (click)="clearCustomDates()">
+                      Reset
                     </button>
                   </div>
-                  <span class="record-count">{{ filteredVisitors().length }} Listed</span>
+                }
+
+                <div class="header-actions">
+                  <span class="record-count">{{ filteredVisitors().length }} in {{ salesActiveTab() === 'unattempted' ? 'Unattempted' : 'Attempted' }}</span>
                 </div>
               </div>
 
@@ -591,12 +647,12 @@
                   <thead>
                     <tr>
                       <th style="min-width: 170px;">Visitor &amp; Contact</th>
-                      <th style="min-width: 130px;">Last Activity</th>
+                      <th style="min-width: 130px;">Last Activity Date</th>
                       <th style="min-width: 150px;">Intention of Visit</th>
                       <th style="min-width: 130px;">Projects Viewed</th>
                       <th style="min-width: 100px;">Direct Outreach</th>
                       <th style="min-width: 200px;">Call Notes &amp; Feedback</th>
-                      <th style="min-width: 160px; text-align: right;">Status &amp; Advisor Handover</th>
+                      <th style="min-width: 160px; text-align: right;">Status &amp; Handover</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -622,7 +678,7 @@
                           </div>
                         </td>
 
-                        <!-- Last Activity (Chronological) -->
+                        <!-- Last Activity Date (Chronological) -->
                         <td>
                           <div class="activity-time-cell">
                             <span class="activity-date">{{ v.last_active | date:'mediumDate' }}</span>
@@ -667,7 +723,7 @@
                               class="btn-action-icon call" 
                               (click)="openPhone(v)" 
                               [disabled]="!v.phone"
-                              title="Call Visitor Directly">
+                              title="Call Visitor Directly (moves to Attempted)">
                               <span class="material-symbols-outlined">call</span>
                             </button>
                             <button 
@@ -675,7 +731,7 @@
                               class="btn-action-icon whatsapp" 
                               (click)="openWhatsApp(v)" 
                               [disabled]="!v.phone"
-                              title="Send WhatsApp Concierge Message">
+                              title="Send WhatsApp Concierge Message (moves to Attempted)">
                               <span class="material-symbols-outlined">chat</span>
                             </button>
                           </div>
@@ -695,7 +751,7 @@
                               class="btn-save-note" 
                               (click)="saveVisitorNotes(v)"
                               [disabled]="isSaving()"
-                              title="Save call notes">
+                              title="Save call notes (moves to Attempted)">
                               <span class="material-symbols-outlined">save</span>
                               <span>Save</span>
                             </button>
@@ -738,9 +794,19 @@
                       <tr>
                         <td colspan="7" class="empty-table-cell">
                           <div class="empty-state-box">
-                            <span class="material-symbols-outlined">person_off</span>
-                            <h4>No visitors found</h4>
-                            <p>No registered user activity matches the selected filter.</p>
+                            <span class="material-symbols-outlined">
+                              {{ salesActiveTab() === 'unattempted' ? 'mark_chat_read' : 'assignment_late' }}
+                            </span>
+                            <h4>
+                              {{ salesActiveTab() === 'unattempted' ? 'No unattempted visitors' : 'No attempted leads yet' }}
+                            </h4>
+                            <p>
+                              @if (salesActiveTab() === 'unattempted') {
+                                All registered visitors for this date filter have had sales actions taken. New visitor activity will automatically appear here.
+                              } @else {
+                                As soon as you log a call, send a WhatsApp message, add notes, or change a visitor's status, they will be tracked here.
+                              }
+                            </p>
                           </div>
                         </td>
                       </tr>
@@ -1122,29 +1188,31 @@
         <div class="modal-body">
           @if (visitor.viewed_properties && visitor.viewed_properties.length > 0) {
             <div class="viewed-props-grid">
-              @for (prop of visitor.viewed_properties; track prop.id) {
+              @for (prop of visitor.viewed_properties; track (prop.id || $index)) {
                 <div class="viewed-prop-card">
                   <div class="prop-card-media">
                     <img 
                       [src]="prop.image || 'assets/images/placeholder.jpg'" 
-                      [alt]="prop.title" 
+                      [alt]="prop.title || 'Plot image'" 
                       (error)="$any($event.target).src = 'assets/images/placeholder.jpg'" />
                     <span class="prop-type-tag">{{ prop.property_type || 'Plot' }}</span>
                   </div>
                   <div class="prop-card-content">
-                    <h4 class="prop-title" [title]="prop.title">{{ prop.title }}</h4>
+                    <h4 class="prop-title" [title]="prop.title || 'Verified Plot'">
+                      {{ prop.title || 'Verified Property Listing' }}
+                    </h4>
                     <div class="prop-location">
                       <span class="material-symbols-outlined">location_on</span>
                       <span>{{ prop.locality || 'Locality' }}, {{ prop.city || 'Tamil Nadu' }}</span>
                     </div>
                     <div class="prop-metrics-row">
                       <div class="metric-item">
-                        <span class="metric-val">₹{{ prop.price | number:'1.0-0' }}</span>
+                        <span class="metric-val">{{ prop.price || 'Price on Request' }}</span>
                         <span class="metric-sub">Total Price</span>
                       </div>
                       <div class="metric-item">
-                        <span class="metric-val">{{ prop.sqft | number }} sq.ft</span>
-                        <span class="metric-sub">₹{{ prop.price_per_sqft | number:'1.0-0' }}/sq.ft</span>
+                        <span class="metric-val">{{ prop.sqft || 'Standard Plot' }}</span>
+                        <span class="metric-sub">{{ prop.price_per_sqft || 'Verified Rate' }}</span>
                       </div>
                     </div>
                     <div class="prop-telemetry-row">
@@ -1152,8 +1220,8 @@
                         <span class="material-symbols-outlined">visibility</span>
                         <span>{{ prop.view_count || 1 }} views</span>
                       </span>
-                      @if (prop.last_viewed) {
-                        <span class="telemetry-time">Active {{ prop.last_viewed | date:'short' }}</span>
+                      @if (prop.last_viewed || prop.last_viewed_at) {
+                        <span class="telemetry-time">Active {{ (prop.last_viewed || prop.last_viewed_at) | date:'short' }}</span>
                       }
                     </div>
                     <div class="prop-action-row">

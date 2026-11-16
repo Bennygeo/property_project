@@ -94,22 +94,104 @@ export class RolePortalComponent implements OnInit {
   readonly selectedVisitorForModal = signal<any | null>(null);
   readonly isSaving = signal<boolean>(false);
 
+  // Sales Executive Pipeline Tabs: 'unattempted' vs 'attempted'
+  readonly salesActiveTab = signal<'unattempted' | 'attempted'>('unattempted');
+
+  // Date Filter State
+  readonly dateFilterPreset = signal<string>('all'); // 'all', 'today', 'yesterday', '7days', '30days', 'custom'
+  readonly customFromDate = signal<string>('');
+  readonly customToDate = signal<string>('');
+
+  // Unattempted and Attempted Counts
+  readonly unattemptedCount = computed<number>(() => {
+    const data = this.dashboardData();
+    if (!data?.visitors || !Array.isArray(data.visitors)) return 0;
+    return data.visitors.filter((v: any) => this.isVisitorUnattempted(v)).length;
+  });
+
+  readonly attemptedCount = computed<number>(() => {
+    const data = this.dashboardData();
+    if (!data?.visitors || !Array.isArray(data.visitors)) return 0;
+    return data.visitors.filter((v: any) => !this.isVisitorUnattempted(v)).length;
+  });
+
+  isVisitorUnattempted(v: any): boolean {
+    const isNew = !v.interaction_status || v.interaction_status === 'new';
+    const noNotes = !v.notes || v.notes.trim() === '';
+    return isNew && noNotes;
+  }
+
+  setDatePreset(preset: string): void {
+    this.dateFilterPreset.set(preset);
+    if (preset !== 'custom') {
+      this.customFromDate.set('');
+      this.customToDate.set('');
+    }
+  }
+
+  clearCustomDates(): void {
+    this.customFromDate.set('');
+    this.customToDate.set('');
+    this.dateFilterPreset.set('all');
+  }
+
   // Filtered Visitors for Sales Executive
   readonly filteredVisitors = computed<any[]>(() => {
     const data = this.dashboardData();
     if (!data?.visitors || !Array.isArray(data.visitors)) return [];
     const query = this.searchQuery().trim().toLowerCase();
-    const filter = this.statusFilter();
+    const activeTab = this.salesActiveTab();
+    const preset = this.dateFilterPreset();
+    const fromDate = this.customFromDate();
+    const toDate = this.customToDate();
+
+    // Date references
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(todayStart.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     return data.visitors.filter((v: any) => {
-      const matchesQuery = !query ||
-        (v.name && v.name.toLowerCase().includes(query)) ||
-        (v.phone && v.phone.toLowerCase().includes(query)) ||
-        (v.intention && v.intention.toLowerCase().includes(query)) ||
-        (v.notes && v.notes.toLowerCase().includes(query));
+      // 1. Pipeline Tab Filter: Unattempted vs Attempted
+      const isUnattempted = this.isVisitorUnattempted(v);
+      if (activeTab === 'unattempted' && !isUnattempted) return false;
+      if (activeTab === 'attempted' && isUnattempted) return false;
 
-      const matchesFilter = filter === 'all' || v.interaction_status === filter;
-      return matchesQuery && matchesFilter;
+      // 2. Search Query Filter
+      if (query) {
+        const matchesQuery = 
+          (v.name && v.name.toLowerCase().includes(query)) ||
+          (v.phone && v.phone.toLowerCase().includes(query)) ||
+          (v.intention && v.intention.toLowerCase().includes(query)) ||
+          (v.notes && v.notes.toLowerCase().includes(query));
+        if (!matchesQuery) return false;
+      }
+
+      // 3. Date Filter
+      if (preset !== 'all' && v.last_active) {
+        const itemDate = new Date(v.last_active);
+        if (preset === 'today') {
+          if (itemDate < todayStart) return false;
+        } else if (preset === 'yesterday') {
+          if (itemDate < yesterdayStart || itemDate >= todayStart) return false;
+        } else if (preset === '7days') {
+          if (itemDate < sevenDaysAgo) return false;
+        } else if (preset === '30days') {
+          if (itemDate < thirtyDaysAgo) return false;
+        } else if (preset === 'custom') {
+          if (fromDate) {
+            const from = new Date(fromDate + 'T00:00:00');
+            if (itemDate < from) return false;
+          }
+          if (toDate) {
+            const to = new Date(toDate + 'T23:59:59');
+            if (itemDate > to) return false;
+          }
+        }
+      }
+
+      return true;
     });
   });
 
@@ -202,6 +284,7 @@ export class RolePortalComponent implements OnInit {
       return;
     }
     window.location.href = `tel:${visitor.phone}`;
+    this.logOutreachAction(visitor, 'call');
   }
 
   openWhatsApp(visitor: any): void {
@@ -234,11 +317,23 @@ export class RolePortalComponent implements OnInit {
       message: `Chat link generated for ${visitor.name}`,
       icon: 'chat'
     });
+    this.logOutreachAction(visitor, 'whatsapp');
+  }
+
+  logOutreachAction(visitor: any, type: 'call' | 'whatsapp'): void {
+    if (!visitor.interaction_status || visitor.interaction_status === 'new') {
+      visitor.interaction_status = 'contacted';
+      if (!visitor.notes || visitor.notes.trim() === '') {
+        visitor.notes = `${type === 'call' ? 'Phone call initiated' : 'WhatsApp concierge opened'} on ${new Date().toLocaleDateString('en-IN')}`;
+      }
+      this.saveLeadInteraction(visitor, `${type === 'call' ? 'Call' : 'WhatsApp'} logged - moved to Attempted`);
+    }
   }
 
   updateVisitorStatus(visitor: any, newStatus: string): void {
     visitor.interaction_status = newStatus;
-    this.saveLeadInteraction(visitor, 'Status updated');
+    const msg = newStatus === 'new' ? 'Status reset to New' : 'Status updated - moved to Attempted';
+    this.saveLeadInteraction(visitor, msg);
   }
 
   updateVisitorIntention(visitor: any, newIntention: string): void {
@@ -247,7 +342,10 @@ export class RolePortalComponent implements OnInit {
   }
 
   saveVisitorNotes(visitor: any): void {
-    this.saveLeadInteraction(visitor, 'Call feedback & notes saved');
+    if (!visitor.interaction_status || visitor.interaction_status === 'new') {
+      visitor.interaction_status = 'contacted';
+    }
+    this.saveLeadInteraction(visitor, 'Call feedback & notes saved - moved to Attempted');
   }
 
   transferToAdvisor(visitor: any): void {

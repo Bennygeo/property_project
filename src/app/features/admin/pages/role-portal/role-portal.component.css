@@ -1091,6 +1091,194 @@
    SALES EXECUTIVE & VISITOR INTERACTION STYLES
    ========================================================================== */
 
+.sales-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+/* Two Main Pipeline Tabs */
+.pipeline-tab-switcher {
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  gap: 4px;
+}
+
+.pipeline-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pipeline-tab-pill:hover {
+  color: #0F172A;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.pipeline-tab-pill.active {
+  background: #FFFFFF;
+  color: #4338CA;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.pipeline-tab-pill .tab-icon {
+  font-size: 18px;
+}
+
+.pipeline-tab-pill.active .tab-icon {
+  color: #4338CA;
+}
+
+.tab-badge-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #E2E8F0;
+  color: #475569;
+  min-width: 20px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.pipeline-tab-pill.active .tab-badge-pill {
+  background: #EEF2FF;
+  color: #4338CA;
+}
+
+.tab-badge-pill.highlight {
+  background: #FEE2E2 !important;
+  color: #DC2626 !important;
+  font-weight: 800;
+}
+
+/* Date Filter & Toolbar */
+.sales-filter-toolbar {
+  padding: 0.75rem 1.5rem;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.date-filter-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  margin-right: 4px;
+}
+
+.filter-toolbar-label .material-symbols-outlined {
+  font-size: 16px;
+  color: #64748B;
+}
+
+.date-chip-btn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.date-chip-btn:hover {
+  border-color: #94A3B8;
+  color: #0F172A;
+  background: #F1F5F9;
+}
+
+.date-chip-btn.active {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* Custom Date Picker Group */
+.custom-date-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.date-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.date-input-group input[type="date"] {
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: inherit;
+  color: #0F172A;
+  outline: none;
+}
+
+.date-input-group input[type="date"]:focus {
+  border-color: #4338CA;
+}
+
+.btn-clear-date-filter {
+  background: #F1F5F9;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-clear-date-filter:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
 .filter-pills-row {
   display: flex;
   align-items: center;

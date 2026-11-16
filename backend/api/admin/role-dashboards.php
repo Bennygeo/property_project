@@ -163,14 +163,22 @@ if ($role === 'sales_executive') {
         // Query real viewed properties for this visitor
         $pSql = "
             SELECT 
-                p.id, p.title, p.property_type, p.price, p.price_per_sqft, p.sqft,
-                p.locality_name AS locality, p.city_name AS city, p.main_image_url AS image,
+                p.id, 
+                p.title, 
+                p.property_type, 
+                p.price, 
+                p.price_per_sqft, 
+                p.sqft,
+                COALESCE(p.locality_name, p.locality, 'Locality') AS locality, 
+                COALESCE(p.city_name, p.city, 'Tamil Nadu') AS city, 
+                COALESCE(p.main_image_url, '') AS image,
                 MAX(views.viewed_at) AS last_viewed_at
             FROM (
                 SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at FROM user_view_history WHERE user_id = :uid
                 " . ($uphone !== '' ? "UNION ALL SELECT CAST(property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci AS property_id, viewed_at FROM user_browsing_analytics WHERE user_phone = :uphone" : "") . "
             ) AS views
             JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = views.property_id
+            WHERE p.title IS NOT NULL AND p.title != ''
             GROUP BY p.id
             ORDER BY last_viewed_at DESC
         ";
@@ -183,8 +191,12 @@ if ($role === 'sales_executive') {
         $props = $pStmt->fetchAll(PDO::FETCH_ASSOC);
 
         $v['viewed_count'] = count($props);
+        $v['viewed_properties_count'] = count($props);
         $v['viewed_properties'] = $props;
         $totalViews += count($props);
+
+        // Determine if attempted
+        $v['is_attempted'] = ($v['interaction_status'] !== 'new' || !empty(trim($v['notes'] ?? '')));
 
         // Auto-detect intention if not set
         if (empty($v['intention'])) {
@@ -263,16 +275,22 @@ if ($role === 'property_advisor') {
         $props = $pStmt->fetchAll(PDO::FETCH_ASSOC);
 
         $consultations[] = [
-            'id'               => $c['interaction_id'],
-            'userId'           => $c['user_id'],
-            'clientName'       => $c['client_name'] ?: 'Investor #' . $c['user_id'],
-            'phone'            => $c['phone'],
-            'email'            => $c['email'],
-            'intention'        => $c['intention'],
-            'salesNotes'       => $c['sales_notes'],
-            'transferredAt'    => $c['transferred_at'],
-            'status'           => 'Assigned to Advisor Desk',
-            'viewedProperties' => $props
+            'id'                     => $c['interaction_id'],
+            'userId'                 => $c['user_id'],
+            'user_id'                => $c['user_id'],
+            'clientName'             => $c['client_name'] ?: 'Investor #' . $c['user_id'],
+            'client_name'            => $c['client_name'] ?: 'Investor #' . $c['user_id'],
+            'phone'                  => $c['phone'],
+            'email'                  => $c['email'],
+            'intention'              => $c['intention'],
+            'salesNotes'             => $c['sales_notes'],
+            'sales_notes'            => $c['sales_notes'],
+            'transferredAt'          => $c['transferred_at'],
+            'transferred_at'         => $c['transferred_at'],
+            'status'                 => 'Assigned to Advisor Desk',
+            'viewedProperties'       => $props,
+            'viewed_properties'      => $props,
+            'viewed_properties_count'=> count($props)
         ];
     }
 
