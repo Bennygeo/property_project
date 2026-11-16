@@ -76,6 +76,8 @@ export interface SubscriptionInvoice {
 export interface EntitlementConsumptionResult {
   allowed: boolean;
   isRepeatView?: boolean;
+  isRepeatComparison?: boolean;
+  pairKey?: string;
   creditsBurned?: number;
   projectViewsUsed?: number;
   projectViewLimit?: number;
@@ -92,5 +94,30 @@ export interface EntitlementConsumptionResult {
   limitReached?: boolean;
   upgradeRequired?: boolean;
   message?: string;
+}
+
+export interface UserComparisonRecord {
+  id: number;
+  property_id_1: string;
+  property_id_2: string;
+  pair_key: string;
+  compared_at: string;
+  title_1?: string;
+  price_1?: string;
+  image_1?: string;
+  title_2?: string;
+  price_2?: string;
+  image_2?: string;
+}
+
+export interface UserComparisonHistoryResult {
+  userId: number;
+  planId: string;
+  used: number;
+  limit: number;
+  remaining: number;
+  pairs: string[];
+  propertyIds: string[];
+  comparisons: UserComparisonRecord[];
 }
 

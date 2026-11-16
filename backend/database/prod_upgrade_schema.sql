@@ -265,6 +265,20 @@ CREATE TABLE IF NOT EXISTS `user_view_history` (
   KEY `property_id` (`property_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `user_property_comparisons` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `property_id_1` VARCHAR(50) NOT NULL,
+  `property_id_2` VARCHAR(50) NOT NULL,
+  `pair_key` VARCHAR(110) NOT NULL,
+  `compared_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_pair` (`user_id`, `pair_key`),
+  KEY `idx_user_prop1` (`user_id`, `property_id_1`),
+  KEY `idx_user_prop2` (`user_id`, `property_id_2`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- ----------------------------------------------------------------------------
 -- 6. USER PROFILE PRD WORKSPACE TABS

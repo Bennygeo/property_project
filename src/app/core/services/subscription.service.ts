@@ -136,6 +136,8 @@ export class SubscriptionService {
   public readonly currentSubscription = signal<UserSubscription | null>(this.loadStoredSubscription());
   public readonly entitlements = signal<UserEntitlements | null>(this.loadStoredEntitlements());
   public readonly unlockedProjectIds = signal<Set<string>>(new Set<string>());
+  public readonly comparedPairs = signal<Set<string>>(new Set<string>());
+  public readonly comparedPropertyIds = signal<Set<string>>(new Set<string>());
   public readonly invoices = signal<SubscriptionInvoice[]>([]);
   public readonly daysRemaining = signal<number>(0);
   public readonly isLoading = signal<boolean>(false);
@@ -203,6 +205,8 @@ export class SubscriptionService {
     this.currentSubscription.set(null);
     this.entitlements.set(this.getDefaultExplorerEntitlements());
     this.unlockedProjectIds.set(new Set<string>());
+    this.comparedPairs.set(new Set<string>());
+    this.comparedPropertyIds.set(new Set<string>());
     this.daysRemaining.set(0);
     this.invoices.set([]);
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -376,6 +380,8 @@ export class SubscriptionService {
           daysRemaining: number;
           entitlements: UserEntitlements;
           unlockedProjectIds: string[];
+          comparedPairs?: string[];
+          comparedPropertyIds?: string[];
           invoices: SubscriptionInvoice[];
         }
       }>(`${baseUrl}?userId=${uid}`);
@@ -399,6 +405,12 @@ export class SubscriptionService {
           if (Array.isArray(data.unlockedProjectIds)) {
             this.unlockedProjectIds.set(new Set(data.unlockedProjectIds.map(id => id.trim().toUpperCase())));
           }
+          if (Array.isArray(data.comparedPairs)) {
+            this.comparedPairs.set(new Set(data.comparedPairs.map(p => p.trim().toUpperCase())));
+          }
+          if (Array.isArray(data.comparedPropertyIds)) {
+            this.comparedPropertyIds.set(new Set(data.comparedPropertyIds.map(id => id.trim().toUpperCase())));
+          }
         }
       }),
       catchError(err => {
@@ -413,13 +425,15 @@ export class SubscriptionService {
    */
   public consumeEntitlement(
     action: 'project_view' | 'comparison' | 'advisory_session' | 'site_visit',
-    propertyId?: string
+    propertyId?: string,
+    propertyId2?: string
   ): Observable<EntitlementConsumptionResult> {
     const uid = this.getEffectiveUserId();
     const payload = {
       userId: uid,
       action,
-      propertyId: propertyId ? propertyId.trim() : undefined
+      propertyId: propertyId ? propertyId.trim() : undefined,
+      propertyId2: propertyId2 ? propertyId2.trim() : undefined
     };
 
     const tryPost = (baseUrl: string) =>
@@ -444,6 +458,29 @@ export class SubscriptionService {
               return next;
             });
           }
+          if (action === 'comparison') {
+            if (res.pairKey) {
+              this.comparedPairs.update(set => {
+                const next = new Set(set);
+                next.add(res.pairKey!.trim().toUpperCase());
+                return next;
+              });
+            }
+            if (propertyId) {
+              this.comparedPropertyIds.update(set => {
+                const next = new Set(set);
+                next.add(propertyId.trim().toUpperCase());
+                return next;
+              });
+            }
+            if (propertyId2) {
+              this.comparedPropertyIds.update(set => {
+                const next = new Set(set);
+                next.add(propertyId2.trim().toUpperCase());
+                return next;
+              });
+            }
+          }
           // Update cached entitlements
           this.entitlements.update(ent => {
             if (!ent) return ent;
@@ -451,7 +488,7 @@ export class SubscriptionService {
               const used = res.projectViewsUsed ?? (ent.projectViewsUsed + 1);
               return { ...ent, projectViewsUsed: used, projectViewsRemaining: Math.max(0, ent.projectViewLimit - used) };
             }
-            if (action === 'comparison') {
+            if (action === 'comparison' && !res.isRepeatComparison) {
               const used = res.comparisonsUsed ?? (ent.comparisonsUsed + 1);
               return { ...ent, comparisonsUsed: used, comparisonsRemaining: Math.max(0, ent.comparisonLimit - used) };
             }
@@ -486,6 +523,23 @@ export class SubscriptionService {
   public isProjectUnlocked(propertyId: string): boolean {
     if (!propertyId) return false;
     return this.unlockedProjectIds().has(propertyId.trim().toUpperCase());
+  }
+
+  /**
+   * Check if a comparison pair was already completed (free repeat comparison)
+   */
+  public isPairCompared(propertyId1: string, propertyId2: string): boolean {
+    if (!propertyId1 || !propertyId2) return false;
+    const pairKey = [propertyId1.trim().toUpperCase(), propertyId2.trim().toUpperCase()].sort().join('::');
+    return this.comparedPairs().has(pairKey);
+  }
+
+  /**
+   * Check if a project has already been compared in any comparison
+   */
+  public isPropertyCompared(propertyId: string): boolean {
+    if (!propertyId) return false;
+    return this.comparedPropertyIds().has(propertyId.trim().toUpperCase());
   }
 
   /**

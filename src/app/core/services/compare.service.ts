@@ -106,7 +106,7 @@ export class CompareService {
   public readonly activePlanName = computed<string>(() => this.subscriptionService.activePlanName());
 
   public readonly comparisonLimit = computed<number>(() => {
-    if (this._isAdminRoute() || this.authService.isAdmin()) {
+    if (this._isAdminRoute()) {
       return 999;
     }
     const planId = this.activePlanId();
@@ -135,7 +135,7 @@ export class CompareService {
   });
 
   public readonly isExplorerOrGuest = computed<boolean>(() => {
-    if (this._isAdminRoute() || this.authService.isAdmin()) {
+    if (this._isAdminRoute()) {
       return false;
     }
     return !this.authService.isLoggedIn() || this.activePlanId() === 'explorer' || this.comparisonLimit() <= 0;
@@ -152,8 +152,12 @@ export class CompareService {
       const userId = this.authService.currentUser()?.id || 0;
       const planId = this.activePlanId();
       const used = this.comparisonsUsed();
-      this._comparedPairs.set(this.loadComparedPairs(userId, planId, used));
-      if (!this._isAdminRoute() && !this.authService.isAdmin() && (!this.authService.isLoggedIn() || planId === 'explorer')) {
+      const localPairs = this.loadComparedPairs(userId, planId, used);
+      const dbPairs = this.subscriptionService.comparedPairs();
+      const merged = new Set<string>([...Array.from(localPairs), ...Array.from(dbPairs)]);
+      this._comparedPairs.set(merged);
+
+      if (!this._isAdminRoute() && (!this.authService.isLoggedIn() || planId === 'explorer')) {
         if (this._selectedProperties().length > 0) {
           this._selectedProperties.set([]);
         }
@@ -165,7 +169,7 @@ export class CompareService {
   }
 
   public isAdminContext(): boolean {
-    return this.router.url.startsWith('/admin') || this.authService.isAdmin();
+    return this.router.url.startsWith('/admin');
   }
 
   private getPairStorageKey(userId: number, planId: string): string {
@@ -530,9 +534,26 @@ export class CompareService {
   }
 
   /**
+   * Check if a property is part of user's already compared history in DB or cache
+   */
+  isPropertyInComparedHistory(propertyId: string): boolean {
+    if (!propertyId) return false;
+    const cleanId = propertyId.trim().toUpperCase();
+    if (this.subscriptionService.isPropertyCompared(cleanId)) {
+      return true;
+    }
+    for (const key of this._comparedPairs()) {
+      const parts = key.split('::');
+      if (parts.includes(cleanId)) return true;
+    }
+    return false;
+  }
+
+  /**
    * Toggle comparison for a property:
    * - If already present: remove it
    * - Enforces plan limits (Explorer = 0, Smart Buyer = 2, Priority Buyer = 5, VIP = 20)
+   * - Already compared projects remain selectable even when limit is reached
    * - If not present and length < 2: add it
    * - If not present and length >= 2: notify user of max 2 tray slots
    */
@@ -567,7 +588,14 @@ export class CompareService {
         return;
       }
 
-      if (this.comparisonsRemaining() <= 0) {
+      // Check if comparison limit is exhausted
+      const isAlreadyCompared = this.isPropertyInComparedHistory(property.id);
+      const isPairAlreadyCompared = current.length === 1 && (
+        this._comparedPairs().has(this.buildPairKey(current[0].id, property.id)) ||
+        this.subscriptionService.isPairCompared(current[0].id, property.id)
+      );
+
+      if (this.comparisonsRemaining() <= 0 && !isAlreadyCompared && !isPairAlreadyCompared) {
         this.openUpgradeModal('limit_reached');
         this.notificationService.show({
           type: 'warning',
@@ -697,8 +725,14 @@ export class CompareService {
     const pairKey = this.buildPairKey(p1.id, p2.id);
 
     // Re-opening the same pair under active subscription does not burn an additional credit
-    if (this._comparedPairs().has(pairKey)) {
+    if (this._comparedPairs().has(pairKey) || this.subscriptionService.isPairCompared(p1.id, p2.id)) {
       this.isCompareModalOpen.set(true);
+      this.notificationService.show({
+        type: 'info',
+        title: 'Already Compared',
+        message: 'Viewing previously compared properties (0 credits deducted).',
+        icon: 'history'
+      });
       return;
     }
 
@@ -712,7 +746,7 @@ export class CompareService {
     }
 
     this.isConsumingComparison.set(true);
-    this.subscriptionService.consumeEntitlement('comparison', `${p1.id},${p2.id}`).subscribe({
+    this.subscriptionService.consumeEntitlement('comparison', p1.id, p2.id).subscribe({
       next: (res) => {
         this.isConsumingComparison.set(false);
         if (res && res.allowed) {
@@ -723,12 +757,21 @@ export class CompareService {
 
           this.isCompareModalOpen.set(true);
           const rem = res.comparisonsRemaining ?? this.comparisonsRemaining();
-          this.notificationService.show({
-            type: 'success',
-            title: 'Comparison Unlocked',
-            message: `1 comparison credit used (${rem} remaining on your ${this.activePlanName()} plan).`,
-            icon: 'compare_arrows'
-          });
+          if (res.isRepeatComparison) {
+            this.notificationService.show({
+              type: 'info',
+              title: 'Already Compared',
+              message: 'This pair was already compared in database (0 credits deducted).',
+              icon: 'history'
+            });
+          } else {
+            this.notificationService.show({
+              type: 'success',
+              title: 'Comparison Unlocked & Tracked',
+              message: `1 comparison credit used (${rem} remaining on your ${this.activePlanName()} plan). Activity recorded in database.`,
+              icon: 'compare_arrows'
+            });
+          }
         } else {
           this.openUpgradeModal(this.isExplorerOrGuest() ? 'explorer' : 'limit_reached');
           this.notificationService.show({

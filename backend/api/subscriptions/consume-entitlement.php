@@ -176,9 +176,36 @@ try {
             exit;
         }
 
+        // Canonical sorted pair key
+        $p1 = trim((string)($input['propertyId'] ?? $input['property_id'] ?? ''));
+        $p2 = trim((string)($input['propertyId2'] ?? $input['property_id_2'] ?? ''));
+        $pairIds = array_values(array_filter([$p1, $p2]));
+        sort($pairIds);
+        $pairKey = count($pairIds) >= 2 ? strtoupper($pairIds[0]) . '::' . strtoupper($pairIds[1]) : '';
+
+        // Check if this pair was already compared by this user in DB
+        if (!empty($pairKey)) {
+            $chkPair = $db->prepare("SELECT id FROM user_property_comparisons WHERE user_id = ? AND pair_key = ?");
+            $chkPair->execute([$userId, $pairKey]);
+            if ($chkPair->fetch()) {
+                $db->rollBack();
+                Response::success([
+                    'allowed'              => true,
+                    'isRepeatComparison'   => true,
+                    'creditsBurned'        => 0,
+                    'pairKey'              => $pairKey,
+                    'comparisonsUsed'      => $used,
+                    'comparisonLimit'      => $limit,
+                    'comparisonsRemaining' => max(0, $limit - $used),
+                    'message'              => 'Properties were already compared previously. Available without burning credit.'
+                ], 'Repeat comparison authorized');
+                exit;
+            }
+        }
+
         if ($used >= $limit) {
             $db->rollBack();
-            Response::error("Comparison limit ({$limit}) reached for your plan. Please upgrade your subscription to compare more properties.", 403, [
+            Response::error("Comparison limit ({$limit}) reached for your {$planId} plan. Please upgrade your subscription to compare more properties.", 403, [
                 'allowed'         => false,
                 'limitReached'    => true,
                 'action'          => 'comparison',
@@ -190,6 +217,15 @@ try {
             exit;
         }
 
+        // Record comparison activity in MySQL DB
+        if (!empty($pairKey) && count($pairIds) >= 2) {
+            $insCmp = $db->prepare("
+                INSERT IGNORE INTO user_property_comparisons (user_id, property_id_1, property_id_2, pair_key, compared_at)
+                VALUES (?, ?, ?, ?, NOW())
+            ");
+            $insCmp->execute([$userId, $pairIds[0], $pairIds[1], $pairKey]);
+        }
+
         $updEnt = $db->prepare("UPDATE user_entitlements SET comparisons_used = comparisons_used + 1 WHERE user_id = ?");
         $updEnt->execute([$userId]);
         $db->commit();
@@ -197,11 +233,13 @@ try {
         $newUsed = $used + 1;
         Response::success([
             'allowed'              => true,
+            'isRepeatComparison'   => false,
             'creditsBurned'        => 1,
+            'pairKey'              => $pairKey,
             'comparisonsUsed'      => $newUsed,
             'comparisonLimit'      => $limit,
             'comparisonsRemaining' => max(0, $limit - $newUsed)
-        ], 'Comparison credit consumed');
+        ], 'Comparison credit consumed and recorded in database');
         exit;
     }
 

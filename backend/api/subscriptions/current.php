@@ -150,6 +150,23 @@ try {
         $daysRemaining = max(0, (int)ceil($diff / 86400));
     }
 
+    // 6. Fetch user compared property pairs and property IDs
+    $comparedPairs = [];
+    $comparedPropertyIds = [];
+    try {
+        $cmpStmt = $db->prepare("SELECT pair_key, property_id_1, property_id_2 FROM user_property_comparisons WHERE user_id = ?");
+        $cmpStmt->execute([$userId]);
+        $userComparisons = $cmpStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($userComparisons as $uc) {
+            if (!empty($uc['pair_key'])) $comparedPairs[] = strtoupper(trim($uc['pair_key']));
+            if (!empty($uc['property_id_1'])) $comparedPropertyIds[] = strtoupper(trim($uc['property_id_1']));
+            if (!empty($uc['property_id_2'])) $comparedPropertyIds[] = strtoupper(trim($uc['property_id_2']));
+        }
+        $comparedPairs = array_values(array_unique($comparedPairs));
+        $comparedPropertyIds = array_values(array_unique($comparedPropertyIds));
+    } catch (\Throwable $e) {}
+
     Response::success([
         'hasActiveSubscription' => !empty($activeSub),
         'subscription'          => $activeSub ?: null,
@@ -175,6 +192,8 @@ try {
             'expiresAt'            => $entitlement['expiresAt'] ?? null
         ],
         'unlockedProjectIds'    => array_column($unlockedProjectViews, 'property_id'),
+        'comparedPairs'         => $comparedPairs,
+        'comparedPropertyIds'   => $comparedPropertyIds,
         'invoices'             => $invoices
     ], 'Current subscription and entitlements retrieved successfully');
 } catch (\Throwable $e) {
@@ -204,6 +223,8 @@ try {
             'expiresAt'            => null
         ],
         'unlockedProjectIds'    => [],
+        'comparedPairs'         => [],
+        'comparedPropertyIds'   => [],
         'invoices'             => []
     ], 'Baseline subscription and entitlements retrieved (fallback default)');
 }
