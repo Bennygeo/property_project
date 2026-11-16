@@ -48,7 +48,8 @@
             <span class="hanu-badge-type">{{ prop.propertyType }}</span>
             <span class="hanu-badge-free-maint">
               <span>{{ prop.masterDetails?.developerMaintenanceYears ? (prop.masterDetails?.developerMaintenanceYears +
-                (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance' : ' Years Free Maintenance')) : 'Free Maintenance Included' }}</span>
+                (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance' : ' Years Free
+                Maintenance')) : 'Free Maintenance Included' }}</span>
             </span>
 
             <!-- Mobile-Only Top-Right Quick Utility Icons (Share & Shortlist) -->
@@ -146,11 +147,19 @@
 
           <!-- Quick Action Buttons Deck -->
           <div class="header-actions-deck">
+            @if (isViewRestricted()) {
+            <a routerLink="/subscriptions" class="btn-hdr-site-visit" style="text-decoration:none;"
+              title="Upgrade Membership Plan">
+              <span class="material-symbols-outlined">workspace_premium</span>
+              <span>Upgrade Plan</span>
+            </a>
+            } @else {
             <button type="button" class="btn-hdr-site-visit" (click)="openSiteVisitModal()"
               title="Schedule Free In-Person Site Inspection">
               <span class="material-symbols-outlined">event_available</span>
               <span>Schedule Site Visit</span>
             </button>
+            }
 
             <div class="hdr-utility-actions">
               <button type="button" class="btn-hdr-utility" (click)="shareProperty()" title="Share Property Dossier">
@@ -425,10 +434,12 @@
               <div class="maint-eyebrow-row">
                 <span class="maint-tag">DEVELOPER PRIVILEGE</span>
                 <span class="maint-duration">{{ prop.masterDetails?.developerMaintenanceYears ?
-                  (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free' : ' Years Free')) : 'Free Maintenance Service' }}</span>
+                  (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1
+                  ? ' Year Free' : ' Years Free')) : 'Free Maintenance Service' }}</span>
               </div>
               <h3 class="maint-title">{{ prop.masterDetails?.developerMaintenanceYears ?
-                (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance Service Included' : ' Years Free Maintenance Service Included')) : 'Free
+                (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ?
+                ' Year Free Maintenance Service Included' : ' Years Free Maintenance Service Included')) : 'Free
                 Maintenance Service Included' }}</h3>
               <p class="maint-subtitle">Enjoy complete peace of mind with 100% developer-managed caretaker support:
                 includes blacktop road upkeep, avenue tree care, active solar street lighting, and stormwater drain
@@ -692,7 +703,8 @@
                     <div class="infra-card-details">
                       <span class="infra-category-tag">FREE MAINTENANCE SERVICE</span>
                       <h4 class="infra-main-title">{{ prop.masterDetails?.developerMaintenanceYears ?
-                        (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears === 1 ? ' Year Free Maintenance' : ' Years Free Maintenance')) : 'Free
+                        (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears
+                        === 1 ? ' Year Free Maintenance' : ' Years Free Maintenance')) : 'Free
                         Maintenance Support' }}</h4>
                       <p class="infra-summary-text">
                         Comprehensive developer caretaker support including road maintenance, avenue tree trimming,
@@ -1332,10 +1344,6 @@
               </li>
               <li>
                 <span class="medium-check">✓</span>
-                <span>Connect directly with verified developers &amp; relationship advisors</span>
-              </li>
-              <li>
-                <span class="medium-check">✓</span>
                 <span>Access ground water table, soil profile &amp; transit benchmarks</span>
               </li>
             </ul>
@@ -1365,11 +1373,19 @@
 
           <!-- Quick Action Buttons Deck -->
           <div class="header-actions-deck">
+            @if (isViewRestricted()) {
+            <a routerLink="/subscriptions" class="btn-hdr-site-visit" style="text-decoration:none;"
+              title="Upgrade Membership Plan">
+              <span class="material-symbols-outlined">workspace_premium</span>
+              <span>Upgrade Plan</span>
+            </a>
+            } @else {
             <button type="button" class="btn-hdr-site-visit" (click)="openSiteVisitModal()"
               title="Schedule Free In-Person Site Inspection">
               <span class="material-symbols-outlined">event_available</span>
               <span>Schedule Site Visit</span>
             </button>
+            }
 
             <div class="hdr-utility-actions">
               <button type="button" class="btn-hdr-utility" (click)="shareProperty()" title="Share Property Dossier">
@@ -1506,10 +1522,17 @@
           </svg>
           <span>Chat</span>
         </a>
+        @if (isViewRestricted()) {
+        <a routerLink="/subscriptions" class="btn-mob-dock-visit" style="text-decoration:none;">
+          <span class="material-symbols-outlined">workspace_premium</span>
+          <span>Upgrade</span>
+        </a>
+        } @else {
         <button type="button" class="btn-mob-dock-visit" (click)="openSiteVisitModal()">
           <span class="material-symbols-outlined">event_available</span>
           <span>Book Visit</span>
         </button>
+        }
       </div>
     </div>
 
@@ -1520,7 +1543,8 @@
   <div class="guest-blur-overlay">
     <div class="guest-blur-prompt">
       <h2 class="blur-prompt-title">Sign In to Continue Exploring</h2>
-      <p class="blur-prompt-sub">You have viewed your 1 free property preview. Sign in with your mobile number to view full specifications, cadastral audit, and legal records for this property.</p>
+      <p class="blur-prompt-sub">You have viewed your 1 free property preview. Sign in with your mobile number to view
+        full specifications, cadastral audit, and legal records for this property.</p>
       <div class="blur-prompt-actions">
         <button type="button" class="btn-prompt-signin" (click)="promptLogin()">Sign In with Mobile</button>
         <button type="button" class="btn-prompt-back" (click)="goBack()">Back to Search</button>
@@ -1578,7 +1602,7 @@
   }
 
   <!-- 50-SECOND HIGH-INTENT SITE VISIT INVITATION MODAL -->
-  @if (isSiteVisitPromptOpen() && property(); as prop) {
+  @if (isSiteVisitPromptOpen() && !isViewRestricted() && !isBlockedForGuest() && property(); as prop) {
   <div class="site-visit-backdrop" (click)="closeSiteVisitPrompt()">
     <div class="site-visit-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
       aria-labelledby="sv-modal-title">
@@ -1724,7 +1748,7 @@
 
   <!-- Global Modals & Notifications -->
   <!-- 30-SECOND 3D-SHADED 2D VIRTUAL PROPERTY PRESENTER (ELEVENLABS VOICE + LIP-SYNC) -->
-  @if (!isBlockedForGuest() && property(); as prop) {
+  @if (!isBlockedForGuest() && !isViewRestricted() && property(); as prop) {
   <app-virtual-property-presenter [property]="prop" [triggerDelaySeconds]="3"
     (scheduleVisitClicked)="openSiteVisitModal()" />
   }

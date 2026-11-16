@@ -386,7 +386,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
         this.hasPromptedSiteVisitForSession = false;
         this.isSiteVisitPromptOpen.set(false);
         this.isQuotaModalDismissed.set(false);
-        this.startSiteVisitPromptTimer();
+        this.clearSiteVisitPromptTimer();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => this.setupWhatsAppObserver(), 400);
 
@@ -422,6 +422,8 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
           // User has reached quota limit! DO NOT download details.php from DB
           this.isLoading.set(false);
           this.isEntitlementExhausted.set(true);
+          this.clearSiteVisitPromptTimer();
+          this.isSiteVisitPromptOpen.set(false);
           this.entitlementExhaustedMessage.set(limitCheck.upgradeMessage || 'Project view limit reached.');
 
           // Construct basic property for display (title, price, image only - NO deep project details)
@@ -459,6 +461,8 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
               this.fetchedProperty.set(prop);
               if (prop.isViewRestricted) {
                 this.isEntitlementExhausted.set(true);
+                this.clearSiteVisitPromptTimer();
+                this.isSiteVisitPromptOpen.set(false);
                 this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
                 if (!this.authService.isLoggedIn()) {
                   setTimeout(() => {
@@ -470,6 +474,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
                 if (!this.authService.isLoggedIn()) {
                   this.authService.recordGuestPropertyView(id);
                 }
+                this.startSiteVisitPromptTimer();
               }
             }
             const resolved = prop || this.propertyService.getPropertyById(id);
@@ -498,13 +503,19 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
               this.fetchedProperty.set(prop);
               if (prop.isViewRestricted) {
                 this.isEntitlementExhausted.set(true);
+                this.clearSiteVisitPromptTimer();
+                this.isSiteVisitPromptOpen.set(false);
                 if (!this.authService.isLoggedIn()) {
                   setTimeout(() => {
                     this.authService.openOtpModal('guest_limit');
                   }, 150);
                 }
-              } else if (!this.authService.isLoggedIn()) {
-                this.authService.recordGuestPropertyView(id);
+              } else {
+                this.isEntitlementExhausted.set(false);
+                if (!this.authService.isLoggedIn()) {
+                  this.authService.recordGuestPropertyView(id);
+                }
+                this.startSiteVisitPromptTimer();
               }
             }
           },
@@ -731,6 +742,16 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     const prop = this.property();
     if (!prop) return;
 
+    if (this.isViewRestricted() || this.isEntitlementExhausted() || this.isBlockedForGuest() || prop.isViewRestricted) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Membership Quota Reached',
+        message: 'You have reached your membership view quota. Please upgrade your membership plan to schedule physical site visits.',
+        icon: 'lock'
+      });
+      return;
+    }
+
     this.isSubmittingVisit.set(true);
 
     this.propertyService.submitSiteVisitLead({
@@ -819,10 +840,15 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
   /**
    * Start 50-Second High-Intent Site Visit Timer
-   * Triggers an invitation dialog if user stays on the page for >50s
+   * Triggers an invitation dialog if user stays on the page for >50s,
+   * provided the user is not restricted by membership quota or guest limit.
    */
   startSiteVisitPromptTimer(): void {
     this.clearSiteVisitPromptTimer();
+    // Do not schedule site visit prompt if user reached quota or view is restricted
+    if (this.isViewRestricted() || this.isEntitlementExhausted() || this.isBlockedForGuest() || this.property()?.isViewRestricted) {
+      return;
+    }
     this.siteVisitPromptTimer = setTimeout(() => {
       this.checkAndTriggerSiteVisitPrompt();
     }, 50000); // 50 seconds
@@ -836,8 +862,14 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   }
 
   checkAndTriggerSiteVisitPrompt(): void {
-    // Only prompt if not previously shown in this view and not blocked by guest limit
-    if (this.hasPromptedSiteVisitForSession || this.isBlockedForGuest()) {
+    // Only prompt if not previously shown in this view and not blocked by guest limit or membership quota
+    if (
+      this.hasPromptedSiteVisitForSession ||
+      this.isBlockedForGuest() ||
+      this.isViewRestricted() ||
+      this.isEntitlementExhausted() ||
+      this.property()?.isViewRestricted
+    ) {
       return;
     }
 
@@ -866,6 +898,16 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   }
 
   openSiteVisitModal(): void {
+    if (this.isViewRestricted() || this.isEntitlementExhausted() || this.isBlockedForGuest() || this.property()?.isViewRestricted) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Membership Quota Reached',
+        message: 'You have reached your membership view quota. Please upgrade your membership plan to schedule site visits.',
+        icon: 'lock'
+      });
+      return;
+    }
+
     const user = this.authService.currentUser();
     if (user) {
       if (user.name && !this.promptBuyerName()) this.promptBuyerName.set(user.name);

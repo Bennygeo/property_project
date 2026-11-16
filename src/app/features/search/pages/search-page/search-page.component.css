@@ -2727,7 +2727,6 @@ input[type="radio"] {
 .no-items-status-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-left: 4px solid #c76f56;
   border-radius: 0;
   padding: 1.5rem 1.75rem;
   box-shadow: none;
