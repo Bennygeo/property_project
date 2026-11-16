@@ -347,8 +347,7 @@
             <div class="snapshot-text">
               <span class="snapshot-label">Plot Extent</span>
               <strong class="snapshot-val text-emerald">{{ prop.sqft }}</strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.plotSizeCents ? (prop.masterDetails?.plotSizeCents + '
-                Cents') : (prop.plotDetails?.dimensionRanges || 'Standard Layout') }}</span>
+              <span class="snapshot-sub">{{ (prop.masterDetails?.plotSizeCents && prop.masterDetails?.plotSizeCents >= 0.5) ? (prop.masterDetails?.plotSizeCents + ' Cents') : (prop.plotDetails?.dimensionRanges || 'Standard Layout') }}</span>
             </div>
           </div>
 
@@ -761,18 +760,9 @@
                   </div>
 
                   <div class="hanu-spec-item">
-                    <span class="spec-label">Plot Extent (Sq.Ft)</span>
+                    <span class="spec-label">Plot Extent</span>
                     <span class="spec-value font-bold text-slate-900">
-                      {{ prop.masterDetails?.plotSizeSqft ? (prop.masterDetails?.plotSizeSqft + ' sq.ft') : prop.sqft }}
-                    </span>
-                  </div>
-
-                  <div class="hanu-spec-item">
-                    <span class="spec-label">Plot Extent (Cents)</span>
-                    <span class="spec-value font-bold text-emerald">
-                      {{ prop.masterDetails?.plotSizeCents ? (prop.masterDetails?.plotSizeCents + ' Cents') :
-                      (prop.bhkBadge
-                      || 'Approved Plot') }}
+                      {{ prop.sqft }}
                     </span>
                   </div>
 
