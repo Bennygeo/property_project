@@ -151,6 +151,7 @@ import { RouterModule } from '@angular/router';
         </div>
         <a routerLink="/subscriptions" class="btn-advisory-primary">
           <span>Explore Advisory Packages</span>
+          <span class="material-symbols-outlined btn-arrow">arrow_forward</span>
         </a>
       </div>
     </section>
@@ -274,8 +275,8 @@ import { RouterModule } from '@angular/router';
       gap: 0.85rem;
     }
     .summary-heading {
-      font-size: 13.5px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 500;
       color: var(--brand-teal, #0f3b4a);
     }
     .summary-metrics {
@@ -291,8 +292,8 @@ import { RouterModule } from '@angular/router';
       flex-direction: column;
     }
     .s-val {
-      font-size: 1.15rem;
-      font-weight: 800;
+      font-size: 1rem;
+      font-weight: 500;
       color: var(--brand-teal, #0f3b4a);
       line-height: 1.15;
     }
@@ -333,12 +334,6 @@ import { RouterModule } from '@angular/router';
       padding: 1.15rem 1.25rem;
       display: flex;
       flex-direction: column;
-      transition: all 0.2s ease;
-    }
-    .analysis-card:hover {
-      border-color: #cbd5e1;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
     }
 
     .analysis-top {
@@ -358,8 +353,8 @@ import { RouterModule } from '@angular/router';
     }
 
     .analysis-title {
-      font-size: 1.025rem;
-      font-weight: 700;
+      font-size: 1rem;
+      font-weight: 500;
       color: var(--text-slate-950, #020617);
       margin: 0;
       line-height: 1.3;
@@ -411,23 +406,42 @@ import { RouterModule } from '@angular/router';
       display: inline-block;
     }
 
-    /* 3. Compact Bottom Advisory Strip */
+    /* 3. Compact Bottom Advisory Strip (Architectural Signature Asymmetric Radius) */
     .advisory-strip {
-      background: #0f3b4a;
-      border-radius: 6px;
-      padding: 1.25rem 1.5rem;
+      background: var(--brand-teal, #0f3b4a);
+      border-radius: 6px 20px 20px 20px !important;
+      padding: 1.5rem 1.75rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.25rem;
       color: #ffffff;
+      position: relative;
+      overflow: hidden;
     }
     @media (min-width: 1024px) {
       .advisory-strip {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        padding: 1.35rem 1.75rem;
+        padding: 1.75rem 2.25rem;
       }
+    }
+    .advisory-strip::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(
+        90deg,
+        #dc3522 0%, #dc3522 16.66%,
+        #f59e0b 16.66%, #f59e0b 33.33%,
+        #84cc16 33.33%, #84cc16 50%,
+        #0ea5e9 50%, #0ea5e9 66.66%,
+        #94a3b8 66.66%, #94a3b8 83.33%,
+        #334155 83.33%, #334155 100%
+      );
     }
     .advisory-strip-content {
       display: flex;
@@ -435,40 +449,50 @@ import { RouterModule } from '@angular/router';
       gap: 0.35rem;
     }
     .advisory-strip-title {
-      font-size: 1.05rem;
-      font-weight: 700;
+      font-size: 1rem;
+      font-weight: 400;
       color: #ffffff;
       margin: 0;
       letter-spacing: -0.01em;
     }
     .advisory-strip-tags {
-      font-size: 12.5px;
+      font-size: 12px;
       color: #cbd5e1;
       margin: 0;
       line-height: 1.5;
     }
     .advisory-strip-tags span {
-      font-weight: 600;
+      font-weight: 500;
       color: #e2e8f0;
     }
 
     .btn-advisory-primary {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.5rem;
       background: #ffffff;
       color: #0f3b4a;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 0.65rem 1.25rem;
-      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0.55rem 1.2rem;
+      border-radius: 6px 14px 14px 14px;
       text-decoration: none;
       white-space: nowrap;
-      transition: background 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .btn-advisory-primary:hover {
       background: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    .btn-advisory-primary .btn-arrow {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+    }
+    .btn-advisory-primary:hover .btn-arrow {
+      transform: translateX(3px);
     }
   `]
 })
-export class WhyChooseUsComponent {}
+export class WhyChooseUsComponent { }
