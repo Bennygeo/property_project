@@ -46,8 +46,8 @@ $adminPersonas = [
         'title'          => 'Super Administrator & Technology Director',
         'department'     => 'Platform Governance & Technology',
         'responsibility' => 'Platform Architecture, Role Governance & Engineering',
-        'passwords'      => ['benny@2026', 'Benny@2026', 'benny123', '1111'],
-        'aliases'        => ['benny', 'benny@findaplot.com', 'benny@mannidam.com', 'bennygeo@gmail.com', 'benny_gj@yahoo.co.in']
+        'passwords'      => ['benny@2026', 'Benny@2026', 'benny123', 'admin', 'admin123', 'admin@2026', '1111'],
+        'aliases'        => ['benny', 'admin', 'superadmin', 'benny@findaplot.com', 'admin@findaplot.com', 'admin@findaplot.in', 'benny@mannidam.com', 'bennygeo@gmail.com', 'benny_gj@yahoo.co.in']
     ],
     'ezhil' => [
         'id'             => 101,

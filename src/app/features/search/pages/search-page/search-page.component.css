@@ -3032,15 +3032,15 @@ input[type="radio"] {
    GUEST VIEW LIMIT ALERT
    ========================================================================== */
 .search-guest-alert {
-  background: #faf5e6;
-  border: 1px solid #faf5e6;
-  border-radius: 0;
+  background: #ffffff;
+  border: 1px solid rgba(94, 143, 114, 0.35);
+  border-radius: 8px;
   padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  box-shadow: none;
+  box-shadow: none !important;
   flex-wrap: wrap;
 }
 
@@ -3053,8 +3053,8 @@ input[type="radio"] {
 .alert-icon-wrap {
   width: 38px;
   height: 38px;
-  border-radius: 0;
-  background: #faf5e6;
+  border-radius: 8px;
+  background: rgba(94, 143, 114, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3063,7 +3063,7 @@ input[type="radio"] {
 
 .alert-lock-icon {
   font-size: 22px;
-  color: #a88836;
+  color: #5e8f72;
 }
 
 .alert-text-block {
@@ -3074,14 +3074,14 @@ input[type="radio"] {
 
 .alert-bold {
   font-size: 14px;
-  font-weight: 500;
-  color: #0f3b4a;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .alert-desc {
   margin: 0;
   font-size: 13px;
-  color: #a88836;
+  color: #64748b;
 }
 
 .btn-search-signin {

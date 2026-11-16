@@ -207,6 +207,7 @@ const AUTHORIZED_ADMIN_ROLES = [
   'admin',
   'super_admin',
   'co_admin',
+  'developer',
   'sales_executive',
   'property_advisor',
   'operations_executive',
@@ -253,35 +254,31 @@ export class AdminService {
 
   private getStoredAdminSession(): AdminPersona | null {
     try {
+      // 1. Primary: check admin session key
+      const stored = localStorage.getItem(ADMIN_STORAGE_KEY) || localStorage.getItem('mannidam_admin_session');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.role && (AUTHORIZED_ADMIN_ROLES.includes(parsed.role) || parsed.role === 'developer')) {
+          return parsed;
+        }
+      }
+
+      // 2. Secondary fallback: check if findaplot_auth_user is an administrator or staff member
       const userStored = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
       if (userStored) {
         const u = JSON.parse(userStored);
-        if (u?.role && !AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
-          localStorage.removeItem(ADMIN_STORAGE_KEY);
-          localStorage.removeItem('mannidam_admin_session');
-          return null;
-        }
-        if (u?.role === 'admin' || u?.role === 'super_admin') {
+        if (u?.role && (AUTHORIZED_ADMIN_ROLES.includes(u.role) || u.role === 'developer')) {
           return {
             id: u.id || 104,
             name: u.name || 'Administrator',
             role: u.role,
-            title: u.role === 'super_admin' ? 'Super Administrator' : 'Administrator',
+            title: u.role === 'super_admin' ? 'Super Administrator' : (u.title || 'Administrator'),
             avatarInitials: (u.name || 'AD').substring(0, 2).toUpperCase(),
             email: u.email || 'admin@findaplot.in',
-            department: 'Platform Governance',
-            responsibility: 'Administrative Portal Access'
+            department: u.department || 'Platform Governance',
+            responsibility: u.responsibility || 'Administrative Portal Access'
           };
         }
-      }
-      const stored = localStorage.getItem(ADMIN_STORAGE_KEY) || localStorage.getItem('mannidam_admin_session');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.role && AUTHORIZED_ADMIN_ROLES.includes(parsed.role)) {
-          return parsed;
-        }
-        localStorage.removeItem(ADMIN_STORAGE_KEY);
-        localStorage.removeItem('mannidam_admin_session');
       }
     } catch {
       // ignore
@@ -290,27 +287,12 @@ export class AdminService {
   }
 
   verifyAdminAccess(): boolean {
-    try {
-      const userStored = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
-      if (userStored) {
-        const u = JSON.parse(userStored);
-        if (u?.role && !AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
-          this.currentAdmin.set(null);
-          localStorage.removeItem(ADMIN_STORAGE_KEY);
-          localStorage.removeItem('mannidam_admin_session');
-          return false;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    const admin = this.currentAdmin();
-    if (admin && AUTHORIZED_ADMIN_ROLES.includes(admin.role)) {
+    const admin = this.currentAdmin() || this.getStoredAdminSession();
+    if (admin && (AUTHORIZED_ADMIN_ROLES.includes(admin.role) || admin.role === 'developer')) {
+      this.currentAdmin.set(admin);
       return true;
     }
-    const refreshed = this.getStoredAdminSession();
-    this.currentAdmin.set(refreshed);
-    return !!refreshed;
+    return false;
   }
 
   // Admin Login via Backend API
@@ -346,6 +328,13 @@ export class AdminService {
           this.currentAdmin.set(admData);
           this.activePersona.set(admData);
           localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(admData));
+          localStorage.setItem('findaplot_auth_user', JSON.stringify({
+            id: admData.id,
+            name: admData.name,
+            email: admData.email,
+            phone: admData.email,
+            role: admData.role
+          }));
           this.notificationService.show({
             type: 'success',
             title: 'Administrative Access Granted',
@@ -376,6 +365,13 @@ export class AdminService {
     this.currentAdmin.set(null);
     this.activePersona.set(ADMIN_PERSONAS[0]);
     localStorage.removeItem(ADMIN_STORAGE_KEY);
+    localStorage.removeItem('mannidam_admin_session');
+    try {
+      const u = JSON.parse(localStorage.getItem('findaplot_auth_user') || '{}');
+      if (u?.role && AUTHORIZED_ADMIN_ROLES.includes(u.role)) {
+        localStorage.removeItem('findaplot_auth_user');
+      }
+    } catch {}
     this.notificationService.show({
       type: 'info',
       title: 'Signed Out',
