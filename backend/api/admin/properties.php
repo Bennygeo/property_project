@@ -159,6 +159,7 @@ if ($method === 'GET') {
                 p.developer_name AS developerName,
                 p.developer_id AS developerId,
                 CASE 
+                    WHEN p.price_from > 0 AND p.price_to > p.price_from THEN CONCAT('₹', ROUND(p.price_from / 100000, 2), ' L - ₹', ROUND(p.price_to / 100000, 2), ' L')
                     WHEN p.price_from > 0 THEN CONCAT('₹', ROUND(p.price_from / 100000, 2), ' L')
                     ELSE 'Price on Request'
                 END AS price,

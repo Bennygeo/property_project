@@ -392,34 +392,82 @@
             <span class="group-badge">PLOT DETAILS</span>
           </div>
           <div class="block-draft-hatch" aria-hidden="true"></div>
+          @if (isAdminPrivilege()) {
+          <p class="section-subtext">
+            Admin Range Mode: Specify plot range (sq.ft) and price ranges. Plot No. and sq.ft rate are optional.
+          </p>
+          } @else {
           <p class="section-subtext">
             Enter sq.ft and rate. Cents (sq.ft ÷ 435.6) and Total Price are auto-calculated in real time.
           </p>
+          }
 
           <div class="form-grid-3">
-            <div class="input-group">
-              <label class="input-label">Plot No. *</label>
-              <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
-                placeholder="e.g. A-12" required />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Plot Size (sq.ft) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.plotSizeSqft" name="plotSizeSqft"
-                (ngModelChange)="onPlotSizeSqftChange()" placeholder="e.g. 1200" required />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">
-                Plot Size (cents)
-                <span class="auto-calc-tag">Auto: sq.ft ÷ 435.6</span>
-              </label>
-              <div class="calc-box-wrapper">
-                <input type="number" step="0.01" class="form-input auto-calc-field font-mono"
-                  [ngModel]="master.plotSizeCents" name="plotSizeCents" readonly />
-                <span class="calc-unit-pill">Cents</span>
+            @if (isAdminPrivilege()) {
+              <!-- Admin Mode: Plot No. (Optional) -->
+              <div class="input-group">
+                <label class="input-label">
+                  Plot / Unit No.
+                  <span class="auto-calc-tag" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
+                </label>
+                <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
+                  placeholder="e.g. A-12 (Optional)" />
               </div>
-            </div>
+
+              <!-- Admin Mode: Min Plot Size (sq.ft) -->
+              <div class="input-group">
+                <label class="input-label">Min Plot Size (sq.ft) *</label>
+                <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
+                  (ngModelChange)="onPlotRangeChange()" placeholder="e.g. 500" required />
+              </div>
+
+              <!-- Admin Mode: Max Plot Size (sq.ft) -->
+              <div class="input-group">
+                <label class="input-label">Max Plot Size (sq.ft) *</label>
+                <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
+                  (ngModelChange)="onPlotRangeChange()" placeholder="e.g. 2400" required />
+              </div>
+
+              <!-- Admin Mode: Plot Extent Range Preview -->
+              <div class="input-group">
+                <label class="input-label">
+                  Plot Extent Range
+                  <span class="auto-calc-tag">Auto Range</span>
+                </label>
+                <div class="calc-box-wrapper">
+                  <input type="text" class="form-input auto-calc-field font-semibold"
+                    [value]="getFormattedPlotRange()" readonly />
+                  <span class="calc-unit-pill">{{ getPlotRangeCents() }}</span>
+                </div>
+              </div>
+            } @else {
+              <!-- Standard User Mode: Plot No. * -->
+              <div class="input-group">
+                <label class="input-label">Plot No. *</label>
+                <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
+                  placeholder="e.g. A-12" required />
+              </div>
+
+              <!-- Standard User Mode: Plot Size (sq.ft) * -->
+              <div class="input-group">
+                <label class="input-label">Plot Size (sq.ft) *</label>
+                <input type="number" class="form-input" [(ngModel)]="master.plotSizeSqft" name="plotSizeSqft"
+                  (ngModelChange)="onPlotSizeSqftChange()" placeholder="e.g. 1200" required />
+              </div>
+
+              <!-- Standard User Mode: Plot Size (cents) -->
+              <div class="input-group">
+                <label class="input-label">
+                  Plot Size (cents)
+                  <span class="auto-calc-tag">Auto: sq.ft ÷ 435.6</span>
+                </label>
+                <div class="calc-box-wrapper">
+                  <input type="number" step="0.01" class="form-input auto-calc-field font-mono"
+                    [ngModel]="master.plotSizeCents" name="plotSizeCents" readonly />
+                  <span class="calc-unit-pill">Cents</span>
+                </div>
+              </div>
+            }
 
             <div class="input-group">
               <label class="input-label">Dimension (ft)</label>
@@ -457,23 +505,64 @@
               </select>
             </div>
 
-            <div class="input-group">
-              <label class="input-label">Price per sq.ft (₹) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
-                (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200" required />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">
-                Total Price (₹)
-                <span class="auto-calc-tag">Auto: sq.ft × rate</span>
-              </label>
-              <div class="calc-box-wrapper">
-                <input type="number" class="form-input auto-calc-field font-bold" [ngModel]="master.totalPrice"
-                  name="totalPrice" readonly />
-                <span class="calc-unit-pill highlight">{{ getFormattedTotalPrice() }}</span>
+            @if (isAdminPrivilege()) {
+              <!-- Admin Mode: Price From * -->
+              <div class="input-group">
+                <label class="input-label">Starting Price / Price From (₹) *</label>
+                <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
+                  (ngModelChange)="onPriceRangeChange()" placeholder="e.g. 1500000" required />
               </div>
-            </div>
+
+              <!-- Admin Mode: Price To * -->
+              <div class="input-group">
+                <label class="input-label">Max Price / Price To (₹) *</label>
+                <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
+                  (ngModelChange)="onPriceRangeChange()" placeholder="e.g. 7200000" required />
+              </div>
+
+              <!-- Admin Mode: Price Range Preview -->
+              <div class="input-group">
+                <label class="input-label">
+                  Price Range
+                  <span class="auto-calc-tag">Range Preview</span>
+                </label>
+                <div class="calc-box-wrapper">
+                  <input type="text" class="form-input auto-calc-field font-bold"
+                    [value]="getFormattedPriceRange()" readonly />
+                  <span class="calc-unit-pill highlight">{{ getFormattedPriceRange() }}</span>
+                </div>
+              </div>
+
+              <!-- Admin Mode: Price per sq.ft (Optional) -->
+              <div class="input-group">
+                <label class="input-label">
+                  Price per sq.ft (₹)
+                  <span class="auto-calc-tag" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
+                </label>
+                <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
+                  (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200 (Optional)" />
+              </div>
+            } @else {
+              <!-- Standard User Mode: Price per sq.ft * -->
+              <div class="input-group">
+                <label class="input-label">Price per sq.ft (₹) *</label>
+                <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
+                  (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200" required />
+              </div>
+
+              <!-- Standard User Mode: Total Price -->
+              <div class="input-group">
+                <label class="input-label">
+                  Total Price (₹)
+                  <span class="auto-calc-tag">Auto: sq.ft × rate</span>
+                </label>
+                <div class="calc-box-wrapper">
+                  <input type="number" class="form-input auto-calc-field font-bold" [ngModel]="master.totalPrice"
+                    name="totalPrice" readonly />
+                  <span class="calc-unit-pill highlight">{{ getFormattedTotalPrice() }}</span>
+                </div>
+              </div>
+            }
 
             <div class="input-group">
               <label class="input-label">Availability *</label>
@@ -508,35 +597,37 @@
                 placeholder="e.g. 42 Plots Sold" />
             </div>
 
-            <div class="input-group">
-              <label class="input-label">Min Plot Size (sq.ft)</label>
-              <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
-                placeholder="e.g. 600" />
-            </div>
+            @if (!isAdminPrivilege()) {
+              <div class="input-group">
+                <label class="input-label">Min Plot Size (sq.ft)</label>
+                <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
+                  placeholder="e.g. 600" />
+              </div>
 
-            <div class="input-group">
-              <label class="input-label">Max Plot Size (sq.ft)</label>
-              <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
-                placeholder="e.g. 2400" />
-            </div>
+              <div class="input-group">
+                <label class="input-label">Max Plot Size (sq.ft)</label>
+                <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
+                  placeholder="e.g. 2400" />
+              </div>
 
-            <div class="input-group">
-              <label class="input-label">Available Plot Sizes Range</label>
-              <input type="text" class="form-input" [(ngModel)]="master.availablePlotSizes" name="availablePlotSizes"
-                placeholder="e.g. 600 - 2,400 sq.ft" />
-            </div>
+              <div class="input-group">
+                <label class="input-label">Available Plot Sizes Range</label>
+                <input type="text" class="form-input" [(ngModel)]="master.availablePlotSizes" name="availablePlotSizes"
+                  placeholder="e.g. 600 - 2,400 sq.ft" />
+              </div>
 
-            <div class="input-group">
-              <label class="input-label">Price From (₹)</label>
-              <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
-                placeholder="e.g. 2800000" />
-            </div>
+              <div class="input-group">
+                <label class="input-label">Price From (₹)</label>
+                <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
+                  placeholder="e.g. 2800000" />
+              </div>
 
-            <div class="input-group">
-              <label class="input-label">Price To (₹)</label>
-              <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
-                placeholder="e.g. 7600000" />
-            </div>
+              <div class="input-group">
+                <label class="input-label">Price To (₹)</label>
+                <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
+                  placeholder="e.g. 7600000" />
+              </div>
+            }
           </div>
         </div>
 

@@ -100,8 +100,12 @@ function formatSingleAmount(float $num): string {
  */
 function formatStartingPrice(?float $from, ?float $to = null, ?float $sqftRate = null, ?int $minPlotSize = null): string {
     $f = (float)($from ?? 0);
+    $t = (float)($to ?? 0);
     if ($f < 100000 && $sqftRate !== null && $sqftRate > 0) {
         $f = $sqftRate * ($minPlotSize ?: 800);
+    }
+    if ($f > 0 && $t > $f) {
+        return formatSingleAmount($f) . ' - ' . formatSingleAmount($t);
     }
     if ($f > 0) {
         return 'Starting ' . formatSingleAmount($f);

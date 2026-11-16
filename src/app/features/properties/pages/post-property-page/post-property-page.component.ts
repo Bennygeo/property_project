@@ -27,6 +27,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PropertyService, DeveloperSummary } from '../../../../core/services/property.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AdminService } from '../../../../core/services/admin.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReraValidationService, ReraValidationResult } from '../../../../core/services/rera-validation.service';
 import { HeaderComponent } from '../../../home/components/header/header.component';
@@ -68,9 +69,12 @@ export interface UploadedImageItem {
 export class PostPropertyPageComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);
+  readonly adminService = inject(AdminService);
   readonly notificationService = inject(NotificationService);
   readonly reraValidator = inject(ReraValidationService);
   readonly router = inject(Router);
+
+  readonly isAdminPrivilege = computed<boolean>(() => this.authService.isAdmin() || this.adminService.verifyAdminAccess());
 
   // Existing Developers from Database for Auto-population
   readonly developersList = signal<DeveloperSummary[]>([]);
@@ -186,6 +190,94 @@ export class PostPropertyPageComponent implements OnInit {
   readonly projectStageOptions = MASTER_PROJECT_STAGE_OPTIONS;
   readonly projectStatusOptions = MASTER_PROJECT_STATUS_OPTIONS;
   readonly approvalAuthorityOptions = MASTER_APPROVAL_AUTHORITY_OPTIONS;
+
+  formatCurrencyAmount(val: number | null | undefined): string {
+    const num = Number(val) || 0;
+    if (num <= 0) return '₹ 0';
+    if (num >= 10000000) {
+      const cr = num / 10000000;
+      return `₹ ${cr % 1 === 0 ? cr.toFixed(0) : cr.toFixed(2)} Cr`;
+    }
+    if (num >= 100000) {
+      const l = num / 100000;
+      return `₹ ${l % 1 === 0 ? l.toFixed(0) : l.toFixed(2)} L`;
+    }
+    return `₹ ${num.toLocaleString('en-IN')}`;
+  }
+
+  getFormattedPriceRange(): string {
+    const from = this.master.priceFrom;
+    const to = this.master.priceTo;
+    if (!from && !to) {
+      return this.master.totalPrice > 0 ? this.getFormattedTotalPrice() : '₹ 0';
+    }
+    if (from && to && to > from) {
+      return `${this.formatCurrencyAmount(from)} – ${this.formatCurrencyAmount(to)}`;
+    }
+    if (from) {
+      return `Starting ${this.formatCurrencyAmount(from)}`;
+    }
+    if (to) {
+      return `Up to ${this.formatCurrencyAmount(to)}`;
+    }
+    return '₹ 0';
+  }
+
+  getFormattedPlotRange(): string {
+    const min = this.master.minPlotSize;
+    const max = this.master.maxPlotSize;
+    if (min && max && min !== max) {
+      return `${min} – ${max} sq.ft`;
+    }
+    if (min) return `${min} sq.ft`;
+    if (max) return `${max} sq.ft`;
+    if (this.master.plotSizeSqft) return `${this.master.plotSizeSqft} sq.ft`;
+    return '0 sq.ft';
+  }
+
+  getPlotRangeCents(): string {
+    const min = this.master.minPlotSize || this.master.plotSizeSqft || 0;
+    const max = this.master.maxPlotSize || this.master.plotSizeSqft || 0;
+    const minCents = (min / 435.6).toFixed(2);
+    const maxCents = (max / 435.6).toFixed(2);
+    if (min > 0 && max > 0 && min !== max) {
+      return `${minCents} – ${maxCents} Cents`;
+    }
+    if (min > 0) return `${minCents} Cents`;
+    return '0 Cents';
+  }
+
+  onPlotRangeChange(): void {
+    const min = this.master.minPlotSize;
+    const max = this.master.maxPlotSize;
+    if (min && max && min !== max) {
+      this.master.availablePlotSizes = `${min} - ${max} sq.ft`;
+    } else if (min) {
+      this.master.availablePlotSizes = `${min} sq.ft`;
+    }
+    if (min && !this.master.plotSizeSqft) {
+      this.master.plotSizeSqft = min;
+    }
+    if (this.master.plotSizeSqft) {
+      this.master.plotSizeCents = calculateCents(this.master.plotSizeSqft);
+    }
+    if (this.master.priceFrom && min && (!this.master.pricePerSqft || this.master.pricePerSqft <= 0)) {
+      this.master.pricePerSqft = Math.round(this.master.priceFrom / min);
+    }
+  }
+
+  onPriceRangeChange(): void {
+    const from = this.master.priceFrom;
+    const to = this.master.priceTo;
+    if (from && from > 0) {
+      this.master.totalPrice = from;
+      if (this.master.minPlotSize && (!this.master.pricePerSqft || this.master.pricePerSqft <= 0)) {
+        this.master.pricePerSqft = Math.round(from / this.master.minPlotSize);
+      }
+    } else if (to && to > 0) {
+      this.master.totalPrice = to;
+    }
+  }
 
   onPlotSizeSqftChange(): void {
     this.master.plotSizeCents = calculateCents(this.master.plotSizeSqft);
@@ -567,19 +659,53 @@ export class PostPropertyPageComponent implements OnInit {
   }
 
   onSubmit(): void {
+    const isAdmin = this.isAdminPrivilege();
+
     // Synchronize master sheet fields with top-level listing properties
     if (!this.form.title.trim() && this.master.projectName) {
       this.form.title = this.master.projectName + (this.master.plotNo ? ` - Plot ${this.master.plotNo}` : '');
     }
-    if (!this.form.price.trim() && this.master.totalPrice > 0) {
-      this.form.price = this.getFormattedTotalPrice();
+
+    if (isAdmin) {
+      // Sync ranges
+      if (this.master.minPlotSize && !this.master.plotSizeSqft) {
+        this.master.plotSizeSqft = this.master.minPlotSize;
+        this.master.plotSizeCents = calculateCents(this.master.minPlotSize);
+      }
+      if (this.master.priceFrom && (!this.master.totalPrice || this.master.totalPrice <= 0)) {
+        this.master.totalPrice = this.master.priceFrom;
+      }
+      if (this.master.priceFrom || this.master.priceTo) {
+        this.form.price = this.getFormattedPriceRange();
+      } else if (!this.form.price.trim() && this.master.totalPrice > 0) {
+        this.form.price = this.getFormattedTotalPrice();
+      }
+      if (this.master.minPlotSize && this.master.maxPlotSize && this.master.minPlotSize !== this.master.maxPlotSize) {
+        this.form.sqft = `${this.master.minPlotSize} - ${this.master.maxPlotSize} sq.ft`;
+      } else if (!this.form.sqft.trim() && this.master.plotSizeSqft) {
+        this.form.sqft = `${this.master.plotSizeSqft} sq.ft` + (this.master.plotSizeCents > 0 ? ` (${this.master.plotSizeCents} Cents)` : '');
+      } else if (!this.form.sqft.trim() && this.master.minPlotSize) {
+        this.form.sqft = `${this.master.minPlotSize} sq.ft`;
+      }
+      if (!this.form.pricePerSqft.trim()) {
+        if (this.master.pricePerSqft) {
+          this.form.pricePerSqft = `₹ ${this.master.pricePerSqft.toLocaleString('en-IN')}/sq.ft`;
+        } else if (this.master.priceFrom && this.master.minPlotSize) {
+          this.form.pricePerSqft = `₹ ${Math.round(this.master.priceFrom / this.master.minPlotSize).toLocaleString('en-IN')}/sq.ft`;
+        }
+      }
+    } else {
+      if (!this.form.price.trim() && this.master.totalPrice > 0) {
+        this.form.price = this.getFormattedTotalPrice();
+      }
+      if (!this.form.pricePerSqft.trim() && this.master.pricePerSqft) {
+        this.form.pricePerSqft = `₹ ${this.master.pricePerSqft.toLocaleString('en-IN')}/sq.ft`;
+      }
+      if (!this.form.sqft.trim() && this.master.plotSizeSqft) {
+        this.form.sqft = `${this.master.plotSizeSqft} sq.ft` + (this.master.plotSizeCents > 0 ? ` (${this.master.plotSizeCents} Cents)` : '');
+      }
     }
-    if (!this.form.pricePerSqft.trim() && this.master.pricePerSqft) {
-      this.form.pricePerSqft = `₹ ${this.master.pricePerSqft.toLocaleString('en-IN')}/sq.ft`;
-    }
-    if (!this.form.sqft.trim() && this.master.plotSizeSqft) {
-      this.form.sqft = `${this.master.plotSizeSqft} sq.ft` + (this.master.plotSizeCents > 0 ? ` (${this.master.plotSizeCents} Cents)` : '');
-    }
+
     if (!this.form.localityName.trim()) {
       this.form.localityName = this.master.villageLocality || this.master.areaLocation || '';
     }
@@ -610,12 +736,27 @@ export class PostPropertyPageComponent implements OnInit {
       return;
     }
 
-    const effectivePrice = this.form.price.trim() || (this.master.totalPrice > 0 ? this.getFormattedTotalPrice() : '');
+    const effectivePrice = this.form.price.trim() || 
+      (isAdmin && (this.master.priceFrom || this.master.priceTo) ? this.getFormattedPriceRange() : '') ||
+      (this.master.totalPrice > 0 ? this.getFormattedTotalPrice() : '');
+
     if (!effectivePrice) {
       this.notificationService.show({
         type: 'error',
         title: 'Plot Pricing Required',
-        message: 'Please enter Plot Size (sq.ft) and Price Per Sq.Ft in Section 3.',
+        message: isAdmin 
+          ? 'Please enter Price Range (Starting Price / Price From) in Section 3.' 
+          : 'Please enter Plot Size (sq.ft) and Price Per Sq.Ft in Section 3.',
+        icon: 'error'
+      });
+      return;
+    }
+
+    if (isAdmin && !(this.master.minPlotSize || this.master.plotSizeSqft || this.form.sqft.trim())) {
+      this.notificationService.show({
+        type: 'error',
+        title: 'Plot Range Required',
+        message: 'Please enter Min Plot Size in Section 3.',
         icon: 'error'
       });
       return;

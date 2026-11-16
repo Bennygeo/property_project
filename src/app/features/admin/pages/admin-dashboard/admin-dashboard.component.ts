@@ -183,6 +183,94 @@ export class AdminDashboardComponent {
   readonly adminProjectStatusOptions = MASTER_PROJECT_STATUS_OPTIONS;
   readonly adminApprovalAuthorityOptions = MASTER_APPROVAL_AUTHORITY_OPTIONS;
 
+  formatCurrencyAmount(val: number | null | undefined): string {
+    const num = Number(val) || 0;
+    if (num <= 0) return '₹ 0';
+    if (num >= 10000000) {
+      const cr = num / 10000000;
+      return `₹ ${cr % 1 === 0 ? cr.toFixed(0) : cr.toFixed(2)} Cr`;
+    }
+    if (num >= 100000) {
+      const l = num / 100000;
+      return `₹ ${l % 1 === 0 ? l.toFixed(0) : l.toFixed(2)} L`;
+    }
+    return `₹ ${num.toLocaleString('en-IN')}`;
+  }
+
+  getAdminFormattedPriceRange(): string {
+    const from = this.adminMaster.priceFrom;
+    const to = this.adminMaster.priceTo;
+    if (!from && !to) {
+      return this.adminMaster.totalPrice > 0 ? this.getAdminFormattedTotalPrice() : '₹ 0';
+    }
+    if (from && to && to > from) {
+      return `${this.formatCurrencyAmount(from)} – ${this.formatCurrencyAmount(to)}`;
+    }
+    if (from) {
+      return `Starting ${this.formatCurrencyAmount(from)}`;
+    }
+    if (to) {
+      return `Up to ${this.formatCurrencyAmount(to)}`;
+    }
+    return '₹ 0';
+  }
+
+  getAdminFormattedPlotRange(): string {
+    const min = this.adminMaster.minPlotSize;
+    const max = this.adminMaster.maxPlotSize;
+    if (min && max && min !== max) {
+      return `${min} – ${max} sq.ft`;
+    }
+    if (min) return `${min} sq.ft`;
+    if (max) return `${max} sq.ft`;
+    if (this.adminMaster.plotSizeSqft) return `${this.adminMaster.plotSizeSqft} sq.ft`;
+    return '0 sq.ft';
+  }
+
+  getAdminPlotRangeCents(): string {
+    const min = this.adminMaster.minPlotSize || this.adminMaster.plotSizeSqft || 0;
+    const max = this.adminMaster.maxPlotSize || this.adminMaster.plotSizeSqft || 0;
+    const minCents = (min / 435.6).toFixed(2);
+    const maxCents = (max / 435.6).toFixed(2);
+    if (min > 0 && max > 0 && min !== max) {
+      return `${minCents} – ${maxCents} Cents`;
+    }
+    if (min > 0) return `${minCents} Cents`;
+    return '0 Cents';
+  }
+
+  onAdminPlotRangeChange(): void {
+    const min = this.adminMaster.minPlotSize;
+    const max = this.adminMaster.maxPlotSize;
+    if (min && max && min !== max) {
+      this.adminMaster.availablePlotSizes = `${min} - ${max} sq.ft`;
+    } else if (min) {
+      this.adminMaster.availablePlotSizes = `${min} sq.ft`;
+    }
+    if (min && !this.adminMaster.plotSizeSqft) {
+      this.adminMaster.plotSizeSqft = min;
+    }
+    if (this.adminMaster.plotSizeSqft) {
+      this.adminMaster.plotSizeCents = calculateCents(this.adminMaster.plotSizeSqft);
+    }
+    if (this.adminMaster.priceFrom && min && (!this.adminMaster.pricePerSqft || this.adminMaster.pricePerSqft <= 0)) {
+      this.adminMaster.pricePerSqft = Math.round(this.adminMaster.priceFrom / min);
+    }
+  }
+
+  onAdminPriceRangeChange(): void {
+    const from = this.adminMaster.priceFrom;
+    const to = this.adminMaster.priceTo;
+    if (from && from > 0) {
+      this.adminMaster.totalPrice = from;
+      if (this.adminMaster.minPlotSize && (!this.adminMaster.pricePerSqft || this.adminMaster.pricePerSqft <= 0)) {
+        this.adminMaster.pricePerSqft = Math.round(from / this.adminMaster.minPlotSize);
+      }
+    } else if (to && to > 0) {
+      this.adminMaster.totalPrice = to;
+    }
+  }
+
   onAdminPlotSizeSqftChange(): void {
     this.adminMaster.plotSizeCents = calculateCents(this.adminMaster.plotSizeSqft);
     this.adminMaster.totalPrice = calculateTotalPrice(this.adminMaster.plotSizeSqft, this.adminMaster.pricePerSqft);
@@ -3094,6 +3182,29 @@ export class AdminDashboardComponent {
       return;
     }
 
+    // Ensure minPlotSize and plotSizeSqft are in sync
+    if (this.adminMaster.minPlotSize && !this.adminMaster.plotSizeSqft) {
+      this.adminMaster.plotSizeSqft = this.adminMaster.minPlotSize;
+      this.adminMaster.plotSizeCents = calculateCents(this.adminMaster.minPlotSize);
+    }
+    if (this.adminMaster.priceFrom && (!this.adminMaster.totalPrice || this.adminMaster.totalPrice <= 0)) {
+      this.adminMaster.totalPrice = this.adminMaster.priceFrom;
+    }
+
+    const effectivePrice = (this.adminMaster.priceFrom || this.adminMaster.priceTo) 
+      ? this.getAdminFormattedPriceRange() 
+      : (this.adminMaster.totalPrice > 0 ? this.getAdminFormattedTotalPrice() : raw.price);
+
+    const effectiveSqft = (this.adminMaster.minPlotSize && this.adminMaster.maxPlotSize && this.adminMaster.minPlotSize !== this.adminMaster.maxPlotSize)
+      ? `${this.adminMaster.minPlotSize} - ${this.adminMaster.maxPlotSize} sq.ft`
+      : (this.adminMaster.plotSizeSqft ? `${this.adminMaster.plotSizeSqft} sq.ft` : (this.adminMaster.minPlotSize ? `${this.adminMaster.minPlotSize} sq.ft` : raw.sqft));
+
+    const effectivePricePerSqft = this.adminMaster.pricePerSqft 
+      ? `₹ ${this.adminMaster.pricePerSqft.toLocaleString('en-IN')}/sq.ft` 
+      : (this.adminMaster.priceFrom && this.adminMaster.minPlotSize 
+          ? `₹ ${Math.round(this.adminMaster.priceFrom / this.adminMaster.minPlotSize).toLocaleString('en-IN')}/sq.ft` 
+          : (raw.pricePerSqft || ''));
+
     const data = {
       ...raw,
       title: effectiveTitle,
@@ -3101,9 +3212,9 @@ export class AdminDashboardComponent {
       listingMode: this.adminMaster.type || raw.listingMode,
       cityName: (this.adminMaster.city || this.adminMaster.district || raw.cityName || 'Chennai').trim(),
       localityName: (this.adminMaster.villageLocality || this.adminMaster.areaLocation || raw.localityName || 'Anna Nagar').trim(),
-      price: this.adminMaster.totalPrice > 0 ? this.getAdminFormattedTotalPrice() : raw.price,
-      pricePerSqft: this.adminMaster.pricePerSqft ? `₹ ${this.adminMaster.pricePerSqft.toLocaleString('en-IN')}/sq.ft` : raw.pricePerSqft,
-      sqft: this.adminMaster.plotSizeSqft ? `${this.adminMaster.plotSizeSqft} sq.ft` : raw.sqft,
+      price: effectivePrice,
+      pricePerSqft: effectivePricePerSqft,
+      sqft: effectiveSqft,
       facingOrView: this.adminMaster.facing ? `${this.adminMaster.facing} Facing` : raw.facingOrView,
       reraNumber: (this.adminMaster.reraNumber || raw.reraNumber || '').trim(),
       interactiveMapUrl: this.adminMaster.interactiveMap || raw.interactiveMapUrl
