@@ -75,10 +75,12 @@ export class PostPropertyPageComponent implements OnInit {
   // Existing Developers from Database for Auto-population
   readonly developersList = signal<DeveloperSummary[]>([]);
   readonly isDeveloperDropdownOpen = signal<boolean>(false);
+  readonly postDeveloperQuery = signal<string>('');
+  readonly postReraInput = signal<string>('');
 
   readonly matchingDevelopers = computed<DeveloperSummary[]>(() => {
     const list = this.developersList();
-    const query = (this.master.developer || '').trim().toLowerCase();
+    const query = this.postDeveloperQuery().trim().toLowerCase();
     if (!query) {
       return list.slice(0, 8);
     }
@@ -86,6 +88,25 @@ export class PostPropertyPageComponent implements OnInit {
       .filter(d => (d.name && d.name.toLowerCase().includes(query)) || (d.reraNumber && d.reraNumber.toLowerCase().includes(query)))
       .slice(0, 10);
   });
+
+  readonly postPropReraValidation = computed<ReraValidationResult>(() => {
+    const raw = this.postReraInput();
+    return this.reraValidator.validate(raw, this.master.category || this.form.propertyType);
+  });
+
+  onDeveloperInput(val: string): void {
+    const query = val || '';
+    this.master.developer = query;
+    this.postDeveloperQuery.set(query);
+    this.openDeveloperDropdown();
+  }
+
+  onReraInput(val: string): void {
+    const rera = val || '';
+    this.master.reraNumber = rera;
+    this.form.reraNumber = rera;
+    this.postReraInput.set(rera);
+  }
 
   ngOnInit(): void {
     this.loadDevelopers();
@@ -111,12 +132,12 @@ export class PostPropertyPageComponent implements OnInit {
 
   selectDeveloper(d: DeveloperSummary): void {
     this.master.developer = d.name;
+    this.postDeveloperQuery.set(d.name);
     if (d.id) {
       this.master.developerId = d.id;
     }
-    if (d.reraNumber && !this.master.reraNumber) {
-      this.master.reraNumber = d.reraNumber;
-      this.form.reraNumber = d.reraNumber;
+    if (d.reraNumber) {
+      this.onReraInput(d.reraNumber);
     }
     if (d.districts && d.districts.length > 0 && !this.master.district) {
       this.master.district = d.districts[0];
@@ -130,11 +151,6 @@ export class PostPropertyPageComponent implements OnInit {
       icon: 'verified'
     });
   }
-
-  readonly postPropReraValidation = computed<ReraValidationResult>(() => {
-    const raw = this.master.reraNumber || this.form.reraNumber;
-    return this.reraValidator.validate(raw, this.master.category || this.form.propertyType);
-  });
 
   readonly isSubmitting = signal<boolean>(false);
   readonly submittedPropId = signal<string | null>(null);

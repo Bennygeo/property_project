@@ -235,16 +235,26 @@ export class AdminDashboardComponent {
   readonly route = inject(ActivatedRoute);
   readonly personas = ADMIN_PERSONAS;
 
+  // Reactive signals for real-time keystroke validation & filtering
+  readonly adminDeveloperQuery = signal<string>('');
+  readonly adminReraInput = signal<string>('');
+
   readonly newPropReraValidation = computed<ReraValidationResult>(() => {
-    const raw = this.adminMaster.reraNumber || this.newProp().reraNumber;
+    const raw = this.adminReraInput();
     return this.reraValidator.validate(raw, this.newProp().propertyType);
   });
+
+  onAdminReraInput(value: string): void {
+    const val = value || '';
+    this.adminMaster.reraNumber = val;
+    this.newProp.update(p => ({ ...p, reraNumber: val }));
+    this.adminReraInput.set(val);
+  }
 
   applyCanonicalRera(): void {
     const res = this.newPropReraValidation();
     if (res.canonicalRera) {
-      this.newProp.update(p => ({ ...p, reraNumber: res.canonicalRera }));
-      this.adminMaster.reraNumber = res.canonicalRera;
+      this.onAdminReraInput(res.canonicalRera);
       this.notificationService.show({
         type: 'info',
         title: 'RERA Standardized',
@@ -1235,7 +1245,7 @@ export class AdminDashboardComponent {
 
   readonly matchingAdminDevelopers = computed<any[]>(() => {
     const list = this.adminDevelopers();
-    const query = (this.adminMaster.developer || '').trim().toLowerCase();
+    const query = this.adminDeveloperQuery().trim().toLowerCase();
     if (!query) {
       return list.slice(0, 8);
     }
@@ -1243,6 +1253,13 @@ export class AdminDashboardComponent {
       .filter(d => (d.name && d.name.toLowerCase().includes(query)) || (d.reraNumber && d.reraNumber.toLowerCase().includes(query)))
       .slice(0, 10);
   });
+
+  onAdminDeveloperInput(value: string): void {
+    const val = value || '';
+    this.adminMaster.developer = val;
+    this.adminDeveloperQuery.set(val);
+    this.openAdminDeveloperDropdown();
+  }
 
   openAdminDeveloperDropdown(): void {
     if (this.adminDevelopers().length === 0) {
@@ -1259,10 +1276,10 @@ export class AdminDashboardComponent {
 
   selectAdminDeveloper(dev: any): void {
     this.adminMaster.developer = dev.name;
+    this.adminDeveloperQuery.set(dev.name);
     this.adminMaster.developerId = dev.id || null;
-    if (dev.reraNumber && !this.adminMaster.reraNumber) {
-      this.adminMaster.reraNumber = dev.reraNumber;
-      this.newProp.update(p => ({ ...p, reraNumber: dev.reraNumber }));
+    if (dev.reraNumber) {
+      this.onAdminReraInput(dev.reraNumber);
     }
     if (dev.districts && dev.districts.length > 0 && !this.adminMaster.district) {
       this.adminMaster.district = dev.districts[0];

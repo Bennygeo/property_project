@@ -94,8 +94,8 @@
                   </span>
                 }
               </div>
-              <input type="text" class="form-input" [(ngModel)]="master.developer" name="developer"
-                (focus)="openDeveloperDropdown()" (input)="openDeveloperDropdown()"
+              <input type="text" class="form-input" [ngModel]="master.developer" name="developer"
+                (focus)="openDeveloperDropdown()" (input)="onDeveloperInput($any($event.target).value)"
                 (blur)="closeDeveloperDropdown()"
                 placeholder="Type or select existing developer/promoter..." required autocomplete="off" />
 
@@ -139,7 +139,7 @@
             <div class="input-group">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <label class="input-label" style="margin: 0;">RERA Registration Number</label>
-                @if (master.reraNumber || form.reraNumber) {
+                @if (postReraInput()) {
                   @if (postPropReraValidation(); as rVal) {
                     <span style="font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px;"
                       [style.background]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#e0f2fe' : '#f0fdf4') : '#fef2f2'"
@@ -151,10 +151,10 @@
                   }
                 }
               </div>
-              <input type="text" class="form-input" [(ngModel)]="master.reraNumber" name="reraNumber"
-                (input)="form.reraNumber = master.reraNumber"
+              <input type="text" class="form-input" [ngModel]="master.reraNumber" name="reraNumber"
+                (input)="onReraInput($any($event.target).value)"
                 placeholder="e.g. TN/29/Layout/0123/2025 or TN/29/Building/0811/2026" />
-              @if (master.reraNumber || form.reraNumber) {
+              @if (postReraInput()) {
                 <p style="margin: 4px 0 0; font-size: 11px; line-height: 1.3;"
                   [style.color]="postPropReraValidation().isValid ? '#64748b' : '#dc2626'">
                   {{ postPropReraValidation().message }}

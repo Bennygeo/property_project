@@ -798,8 +798,8 @@
                       }
                     </div>
                     <input type="text" class="field-input"
-                      [(ngModel)]="adminMaster.developer" name="admDeveloper"
-                      (focus)="openAdminDeveloperDropdown()" (input)="openAdminDeveloperDropdown()"
+                      [ngModel]="adminMaster.developer" name="admDeveloper"
+                      (focus)="openAdminDeveloperDropdown()" (input)="onAdminDeveloperInput($any($event.target).value)"
                       (blur)="closeAdminDeveloperDropdown()"
                       (change)="onAdminDeveloperChange(adminMaster.developer)"
                       placeholder="Type or select existing developer/promoter..." required autocomplete="off" />
@@ -842,9 +842,41 @@
                   </div>
 
                   <div class="form-field">
-                    <label class="field-label">RERA Registration Number</label>
-                    <input type="text" class="field-input" [(ngModel)]="adminMaster.reraNumber" name="admReraNumber"
-                      placeholder="e.g. TN/29/Layout/0123/2025" />
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                      <label class="field-label" style="margin: 0;">RERA Registration Number</label>
+                      @if (adminReraInput()) {
+                        @if (newPropReraValidation(); as rVal) {
+                          <span class="rera-status-pill" [class.is-valid]="rVal.isValid && !rVal.isExemptOrUnderProcess"
+                            [class.is-invalid]="!rVal.isValid" [class.is-exempt]="rVal.isExemptOrUnderProcess"
+                            style="font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px;"
+                            [style.background]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#e0f2fe' : '#f0fdf4') : '#fef2f2'"
+                            [style.color]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#0369a1' : '#15803d') : '#b91c1c'"
+                            [style.border]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '1px solid #bae6fd' : '1px solid #bbf7d0') : '1px solid #fecaca'">
+                            <span class="material-symbols-outlined" style="font-size: 13px;">{{ rVal.isValid ? 'verified' : 'error' }}</span>
+                            <span>{{ rVal.badgeText }}</span>
+                          </span>
+                        }
+                      }
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <input type="text" class="field-input" style="flex: 1;"
+                        [ngModel]="adminMaster.reraNumber" name="admReraNumber"
+                        (input)="onAdminReraInput($any($event.target).value)"
+                        placeholder="e.g. TN/29/Layout/0123/2025 or TN/29/Building/0811/2026" />
+                      @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera && newPropReraValidation().canonicalRera !== adminReraInput()) {
+                        <button type="button" class="btn-canonical-fix" (click)="applyCanonicalRera()"
+                          style="padding: 0 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"
+                          title="Apply standardized canonical RERA format">
+                          Standardize
+                        </button>
+                      }
+                    </div>
+                    @if (adminReraInput()) {
+                      <p class="rera-validation-msg" style="margin: 4px 0 0; font-size: 11px; line-height: 1.4;"
+                        [style.color]="newPropReraValidation().isValid ? '#64748b' : '#dc2626'">
+                        {{ newPropReraValidation().message }}
+                      </p>
+                    }
                   </div>
 
                   <div class="form-field">
@@ -1963,7 +1995,7 @@
               <div class="form-field">
                 <div class="rera-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <label class="field-label" style="margin: 0;">RERA or Approval / Patta Reference</label>
-                  @if (newProp().reraNumber || adminMaster.reraNumber) {
+                  @if (adminReraInput()) {
                     @if (newPropReraValidation(); as rVal) {
                       <span class="rera-status-pill" [class.is-valid]="rVal.isValid && !rVal.isExemptOrUnderProcess"
                         [class.is-invalid]="!rVal.isValid" [class.is-exempt]="rVal.isExemptOrUnderProcess"
@@ -1978,10 +2010,10 @@
                   }
                 </div>
                 <div class="input-with-format-btn" style="display: flex; gap: 8px;">
-                  <input type="text" class="field-input" style="flex: 1;" [(ngModel)]="newProp().reraNumber" name="reraNumber"
-                    (input)="adminMaster.reraNumber = newProp().reraNumber"
+                  <input type="text" class="field-input" style="flex: 1;" [ngModel]="adminReraInput()" name="reraNumber"
+                    (input)="onAdminReraInput($any($event.target).value)"
                     placeholder="e.g. TN/29/Layout/0123/2025 or TN/29/Building/0811/2026" />
-                  @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera && newPropReraValidation().canonicalRera !== (newProp().reraNumber || adminMaster.reraNumber)) {
+                  @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera && newPropReraValidation().canonicalRera !== adminReraInput()) {
                     <button type="button" class="btn-canonical-fix" (click)="applyCanonicalRera()"
                       style="padding: 0 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"
                       title="Apply standardized canonical RERA format">
@@ -1989,7 +2021,7 @@
                     </button>
                   }
                 </div>
-                @if (newProp().reraNumber || adminMaster.reraNumber) {
+                @if (adminReraInput()) {
                   <p class="rera-validation-msg" style="margin: 4px 0 0; font-size: 11px; line-height: 1.4;"
                     [style.color]="newPropReraValidation().isValid ? '#64748b' : '#dc2626'">
                     {{ newPropReraValidation().message }}
