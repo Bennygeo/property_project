@@ -21,11 +21,11 @@ import {
   MASTER_PROJECT_STATUS_OPTIONS,
   MASTER_APPROVAL_AUTHORITY_OPTIONS
 } from '../../../../core/models/property-master.model';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { PropertyService } from '../../../../core/services/property.service';
+import { PropertyService, DeveloperSummary } from '../../../../core/services/property.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReraValidationService, ReraValidationResult } from '../../../../core/services/rera-validation.service';
@@ -65,12 +65,71 @@ export interface UploadedImageItem {
   templateUrl: './post-property-page.component.html',
   styleUrls: ['./post-property-page.component.css']
 })
-export class PostPropertyPageComponent {
+export class PostPropertyPageComponent implements OnInit {
   readonly propertyService = inject(PropertyService);
   readonly authService = inject(AuthService);
   readonly notificationService = inject(NotificationService);
   readonly reraValidator = inject(ReraValidationService);
   readonly router = inject(Router);
+
+  // Existing Developers from Database for Auto-population
+  readonly developersList = signal<DeveloperSummary[]>([]);
+  readonly isDeveloperDropdownOpen = signal<boolean>(false);
+
+  readonly matchingDevelopers = computed<DeveloperSummary[]>(() => {
+    const list = this.developersList();
+    const query = (this.master.developer || '').trim().toLowerCase();
+    if (!query) {
+      return list.slice(0, 8);
+    }
+    return list
+      .filter(d => (d.name && d.name.toLowerCase().includes(query)) || (d.reraNumber && d.reraNumber.toLowerCase().includes(query)))
+      .slice(0, 10);
+  });
+
+  ngOnInit(): void {
+    this.loadDevelopers();
+  }
+
+  loadDevelopers(): void {
+    this.propertyService.fetchBuilders().subscribe(builders => {
+      if (builders && builders.length > 0) {
+        this.developersList.set(builders);
+      }
+    });
+  }
+
+  openDeveloperDropdown(): void {
+    this.isDeveloperDropdownOpen.set(true);
+  }
+
+  closeDeveloperDropdown(): void {
+    setTimeout(() => {
+      this.isDeveloperDropdownOpen.set(false);
+    }, 250);
+  }
+
+  selectDeveloper(d: DeveloperSummary): void {
+    this.master.developer = d.name;
+    if (d.id) {
+      this.master.developerId = d.id;
+    }
+    if (d.reraNumber && !this.master.reraNumber) {
+      this.master.reraNumber = d.reraNumber;
+      this.form.reraNumber = d.reraNumber;
+    }
+    if (d.districts && d.districts.length > 0 && !this.master.district) {
+      this.master.district = d.districts[0];
+      this.form.cityName = d.districts[0];
+    }
+    this.isDeveloperDropdownOpen.set(false);
+    this.notificationService.show({
+      type: 'info',
+      title: 'Developer Selected',
+      message: `${d.name}${d.reraNumber ? ' • RERA: ' + d.reraNumber : ''}`,
+      icon: 'verified'
+    });
+  }
 
   readonly postPropReraValidation = computed<ReraValidationResult>(() => {
     const raw = this.master.reraNumber || this.form.reraNumber;

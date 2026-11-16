@@ -262,6 +262,7 @@ export class AdminDashboardComponent {
 
     this.loadDashboardMetrics();
     this.loadWhatsappSettings();
+    this.loadAdminDevelopers();
 
     this.route.queryParams.subscribe(params => {
       if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
@@ -313,7 +314,7 @@ export class AdminDashboardComponent {
     if (tab === 'subscription_plans') {
       this.loadSubscriptionPlans();
     }
-    if (tab === 'developers') {
+    if (tab === 'developers' || tab === 'post_property') {
       this.loadAdminDevelopers();
     }
     if (tab === 'financials') {
@@ -1228,6 +1229,51 @@ export class AdminDashboardComponent {
     } else {
       this.adminMaster.developerId = null;
     }
+  }
+
+  readonly isAdminDeveloperDropdownOpen = signal<boolean>(false);
+
+  readonly matchingAdminDevelopers = computed<any[]>(() => {
+    const list = this.adminDevelopers();
+    const query = (this.adminMaster.developer || '').trim().toLowerCase();
+    if (!query) {
+      return list.slice(0, 8);
+    }
+    return list
+      .filter(d => (d.name && d.name.toLowerCase().includes(query)) || (d.reraNumber && d.reraNumber.toLowerCase().includes(query)))
+      .slice(0, 10);
+  });
+
+  openAdminDeveloperDropdown(): void {
+    if (this.adminDevelopers().length === 0) {
+      this.loadAdminDevelopers();
+    }
+    this.isAdminDeveloperDropdownOpen.set(true);
+  }
+
+  closeAdminDeveloperDropdown(): void {
+    setTimeout(() => {
+      this.isAdminDeveloperDropdownOpen.set(false);
+    }, 250);
+  }
+
+  selectAdminDeveloper(dev: any): void {
+    this.adminMaster.developer = dev.name;
+    this.adminMaster.developerId = dev.id || null;
+    if (dev.reraNumber && !this.adminMaster.reraNumber) {
+      this.adminMaster.reraNumber = dev.reraNumber;
+      this.newProp.update(p => ({ ...p, reraNumber: dev.reraNumber }));
+    }
+    if (dev.districts && dev.districts.length > 0 && !this.adminMaster.district) {
+      this.adminMaster.district = dev.districts[0];
+    }
+    this.isAdminDeveloperDropdownOpen.set(false);
+    this.notificationService.show({
+      type: 'info',
+      title: 'Developer Selected',
+      message: `${dev.name}${dev.reraNumber ? ' • RERA: ' + dev.reraNumber : ''}`,
+      icon: 'verified'
+    });
   }
 
   closeEditDeveloperModal(): void {
