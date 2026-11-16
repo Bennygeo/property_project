@@ -49,7 +49,7 @@ import { RouterModule } from '@angular/router';
         <div class="analysis-card">
           <div class="analysis-top">
             <h3 class="analysis-title">Location Analysis</h3>
-            <span class="analysis-pill bg-blue-tint text-blue">Appreciation</span>
+            <span class="analysis-pill pill-theme-teal">Appreciation</span>
           </div>
           <p class="analysis-summary">Neighborhood &amp; connectivity check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
@@ -64,7 +64,7 @@ import { RouterModule } from '@angular/router';
         <div class="analysis-card">
           <div class="analysis-top">
             <h3 class="analysis-title">Legal Verification</h3>
-            <span class="analysis-pill bg-emerald-tint text-emerald">Zero Risk</span>
+            <span class="analysis-pill pill-theme-green">Zero Risk</span>
           </div>
           <p class="analysis-summary">Statutory &amp; title due diligence.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
@@ -79,7 +79,7 @@ import { RouterModule } from '@angular/router';
         <div class="analysis-card">
           <div class="analysis-top">
             <h3 class="analysis-title">Price Comparison</h3>
-            <span class="analysis-pill bg-amber-tint text-amber">Fair Value</span>
+            <span class="analysis-pill pill-theme-booked">Fair Value</span>
           </div>
           <p class="analysis-summary">True market value benchmarking.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
@@ -94,7 +94,7 @@ import { RouterModule } from '@angular/router';
         <div class="analysis-card">
           <div class="analysis-top">
             <h3 class="analysis-title">Site Evaluation</h3>
-            <span class="analysis-pill bg-purple-tint text-purple">Ground Check</span>
+            <span class="analysis-pill pill-theme-sold">Ground Check</span>
           </div>
           <p class="analysis-summary">On-site buildability &amp; risk check.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
@@ -109,7 +109,7 @@ import { RouterModule } from '@angular/router';
         <div class="analysis-card">
           <div class="analysis-top">
             <h3 class="analysis-title">Future Growth</h3>
-            <span class="analysis-pill bg-emerald-tint text-emerald">Capital Gains</span>
+            <span class="analysis-pill pill-theme-green">Capital Gains</span>
           </div>
           <p class="analysis-summary">Macro-development &amp; demand study.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
@@ -124,7 +124,7 @@ import { RouterModule } from '@angular/router';
         <div class="analysis-card">
           <div class="analysis-top">
             <h3 class="analysis-title">Investment Score</h3>
-            <span class="analysis-pill bg-blue-tint text-blue">100-Pt Rating</span>
+            <span class="analysis-pill pill-theme-teal">100-Pt Rating</span>
           </div>
           <p class="analysis-summary">Objective multi-parameter scorecard.</p>
           <div class="card-draft-hatch" aria-hidden="true"></div>
@@ -169,17 +169,27 @@ import { RouterModule } from '@angular/router';
       }
     }
 
-    /* Colors */
-    .text-teal { color: var(--brand-teal, #0f3b4a); }
-    .text-emerald { color: #059669; }
-    .text-blue { color: #0284c7; }
-    .text-amber { color: #d97706; }
-    .text-purple { color: #7c3aed; }
-
-    .bg-blue-tint { background: #e0f2fe; }
-    .bg-emerald-tint { background: #d1fae5; }
-    .bg-amber-tint { background: #fef3c7; }
-    .bg-purple-tint { background: #f3e8ff; }
+    /* Theme-Derived Pill Badges (Architectural Design System Tokens) */
+    .pill-theme-teal {
+      background: #e4eff3;
+      color: var(--brand-teal, #0f3b4a);
+      border: 1px solid rgba(15, 59, 74, 0.18);
+    }
+    .pill-theme-green {
+      background: var(--brand-green-subtle, #e5f7ec);
+      color: var(--brand-green-dark, #2c4938);
+      border: 1px solid rgba(94, 143, 114, 0.25);
+    }
+    .pill-theme-booked {
+      background: #f7f0dc;
+      color: #6e5719;
+      border: 1px solid rgba(213, 179, 87, 0.25);
+    }
+    .pill-theme-sold {
+      background: #fcece8;
+      color: #7b3422;
+      border: 1px solid rgba(199, 111, 86, 0.22);
+    }
 
     /* 1. Header Row */
     .why-header-row {
