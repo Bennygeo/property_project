@@ -91,6 +91,27 @@ export class RolePortalComponent implements OnInit {
   readonly dashboardData = signal<any>(null);
   readonly searchQuery = signal<string>('');
   readonly statusFilter = signal<string>('all');
+  readonly selectedVisitorForModal = signal<any | null>(null);
+  readonly isSaving = signal<boolean>(false);
+
+  // Filtered Visitors for Sales Executive
+  readonly filteredVisitors = computed<any[]>(() => {
+    const data = this.dashboardData();
+    if (!data?.visitors || !Array.isArray(data.visitors)) return [];
+    const query = this.searchQuery().trim().toLowerCase();
+    const filter = this.statusFilter();
+
+    return data.visitors.filter((v: any) => {
+      const matchesQuery = !query ||
+        (v.name && v.name.toLowerCase().includes(query)) ||
+        (v.phone && v.phone.toLowerCase().includes(query)) ||
+        (v.intention && v.intention.toLowerCase().includes(query)) ||
+        (v.notes && v.notes.toLowerCase().includes(query));
+
+      const matchesFilter = filter === 'all' || v.interaction_status === filter;
+      return matchesQuery && matchesFilter;
+    });
+  });
 
   // Super Admin Check
   readonly isSuperAdmin = computed<boolean>(() => {
@@ -159,6 +180,149 @@ export class RolePortalComponent implements OnInit {
 
   onSearchChange(query: string): void {
     this.searchQuery.set(query);
+  }
+
+  // Sales Executive Interactive Handlers
+  openViewedPropertiesModal(visitor: any): void {
+    this.selectedVisitorForModal.set(visitor);
+  }
+
+  closeViewedPropertiesModal(): void {
+    this.selectedVisitorForModal.set(null);
+  }
+
+  openPhone(visitor: any): void {
+    if (!visitor.phone) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'No Phone Number',
+        message: 'This user does not have a registered contact phone.',
+        icon: 'phone_disabled'
+      });
+      return;
+    }
+    window.location.href = `tel:${visitor.phone}`;
+  }
+
+  openWhatsApp(visitor: any): void {
+    if (!visitor.phone) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'No Phone Number',
+        message: 'Cannot launch WhatsApp without a phone number.',
+        icon: 'phone_disabled'
+      });
+      return;
+    }
+
+    let cleanPhone = visitor.phone.replace(/\D/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    }
+
+    const firstProp = visitor.viewed_properties?.[0]?.title || 'our featured verified plots';
+    const totalProps = visitor.viewed_properties_count || visitor.viewed_properties?.length || 0;
+
+    const message = `Hello ${visitor.name || 'Valued Investor'}, this is the FindAPlot team. We noticed you recently explored ${totalProps > 0 ? totalProps + ' plot listing(s) including ' + firstProp : 'plots on our portal'}. Would you like to schedule an assisted site visit or receive the complete legal clearance dossier?`;
+
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+
+    this.notificationService.show({
+      type: 'success',
+      title: 'WhatsApp Concierge Opened',
+      message: `Chat link generated for ${visitor.name}`,
+      icon: 'chat'
+    });
+  }
+
+  updateVisitorStatus(visitor: any, newStatus: string): void {
+    visitor.interaction_status = newStatus;
+    this.saveLeadInteraction(visitor, 'Status updated');
+  }
+
+  updateVisitorIntention(visitor: any, newIntention: string): void {
+    visitor.intention = newIntention;
+    this.saveLeadInteraction(visitor, 'Intention updated');
+  }
+
+  saveVisitorNotes(visitor: any): void {
+    this.saveLeadInteraction(visitor, 'Call feedback & notes saved');
+  }
+
+  transferToAdvisor(visitor: any): void {
+    if (!visitor.notes || visitor.notes.trim().length === 0) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Comments Required',
+        message: 'Please add feedback/comments before moving customer to the Property Advisor team.',
+        icon: 'edit_note'
+      });
+      return;
+    }
+
+    visitor.interaction_status = 'transferred_advisor';
+    if (!visitor.intention || visitor.intention === 'Initial Exploration') {
+      visitor.intention = 'Site Visit Requested';
+    }
+
+    this.isSaving.set(true);
+    this.adminService.updateLeadInteraction({
+      user_id: visitor.id,
+      status: 'transferred_advisor',
+      intention: visitor.intention,
+      notes: visitor.notes
+    }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.notificationService.show({
+          type: 'success',
+          title: 'Transferred to Property Advisor',
+          message: `${visitor.name} has been moved to the Property Advisor queue with complete dossier.`,
+          icon: 'transfer_within_a_station'
+        });
+        // Reload dashboard data so KPIs and lists update
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Handover Failed',
+          message: err?.message || 'Could not transfer customer.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  private saveLeadInteraction(visitor: any, successMsg: string): void {
+    this.isSaving.set(true);
+    this.adminService.updateLeadInteraction({
+      user_id: visitor.id,
+      status: visitor.interaction_status,
+      intention: visitor.intention,
+      notes: visitor.notes
+    }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.notificationService.show({
+          type: 'success',
+          title: 'Lead Updated',
+          message: successMsg,
+          icon: 'check_circle'
+        });
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Update Failed',
+          message: err?.message || 'Could not update lead interaction.',
+          icon: 'error'
+        });
+      }
+    });
   }
 
   // Quick Action Handlers

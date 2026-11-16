@@ -962,4 +962,30 @@ export class AdminService {
       map(res => res.data)
     );
   }
+
+  updateLeadInteraction(payload: {
+    user_id: number;
+    status: string;
+    intention?: string;
+    notes?: string;
+    admin_id?: number;
+  }): Observable<any> {
+    const active = this.activePersona();
+    const body = {
+      action: 'update_lead_interaction',
+      admin_id: payload.admin_id || active?.id || 104,
+      ...payload
+    };
+
+    const tryPost = (url: string) => this.http.post<{ success: boolean; data: any; message: string }>(url, body);
+
+    return tryPost(`${environment.apiUrl}/admin/role-dashboards.php`).pipe(
+      catchError(() => tryPost(`/P_demo_5/backend/api/admin/role-dashboards.php`)),
+      catchError(() => tryPost(`/p_demo_5/backend/api/admin/role-dashboards.php`)),
+      catchError(() => tryPost(`/P_demo_4/backend/api/admin/role-dashboards.php`)),
+      catchError(() => tryPost(`/api/admin/role-dashboards.php`)),
+      catchError(() => tryPost(`http://localhost/the-property-project/backend/api/admin/role-dashboards.php`)),
+      map(res => res.data)
+    );
+  }
 }
