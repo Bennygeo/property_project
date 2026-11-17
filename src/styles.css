@@ -124,12 +124,20 @@ app-root {
   width: 100%;
 }
 
-app-root > :not(router-outlet):not(app-otp-login-modal):not(app-visitor-intent-modal):not(app-district-selector-modal) {
+app-root > :not(router-outlet):not(app-otp-login-modal):not(app-visitor-intent-modal):not(app-district-selector-modal):not(app-property-compare-dock):not(app-property-compare-modal) {
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
   min-height: 100vh;
   width: 100%;
+}
+
+app-property-compare-dock,
+app-property-compare-modal,
+app-otp-login-modal,
+app-visitor-intent-modal,
+app-district-selector-modal {
+  display: contents !important;
 }
 
 /* All outer page wrappers flex-grow to push footer downward */

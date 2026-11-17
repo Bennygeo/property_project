@@ -86,6 +86,24 @@
         @if (!isSidebarCollapsed()) {
         <span class="nav-group-title">CRM &amp; Stakeholders</span>
         }
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'lead_pipeline'"
+          (click)="setTab('lead_pipeline')">
+          <span class="material-symbols-outlined nav-icon text-emerald">timeline</span>
+          @if (!isSidebarCollapsed()) {
+          <span class="nav-label">Master Lead Pipeline</span>
+          <span class="nav-badge" style="background:#059669;color:#ffffff;">10 STAGES</span>
+          }
+        </button>
+
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'leads_assignment'"
+          (click)="setTab('leads_assignment')">
+          <span class="material-symbols-outlined nav-icon text-indigo">assignment_ind</span>
+          @if (!isSidebarCollapsed()) {
+          <span class="nav-label">Leads &amp; Role Assign</span>
+          <span class="nav-badge" style="background:#0f766e;color:#ffffff;">ASSIGN</span>
+          }
+        </button>
+
         <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'buyer_workspaces'"
           (click)="setTab('buyer_workspaces')">
           <span class="material-symbols-outlined nav-icon">groups</span>
@@ -473,7 +491,7 @@
         <!-- Tab Controls -->
         <div class="admin-tab-nav">
           <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'review_queue'"
-            (click)="activeTab.set('review_queue')">
+            (click)="setTab('review_queue')">
             <span class="material-symbols-outlined">fact_check</span>
             <span>Review Queue</span>
             @if (adminService.stats().pendingPeerReviews + adminService.stats().pendingUserReviews > 0) {
@@ -484,7 +502,7 @@
           </button>
 
           <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'post_property'"
-            (click)="activeTab.set('post_property')">
+            (click)="setTab('post_property')">
             <span class="material-symbols-outlined">add_business</span>
             <span>Post New Property</span>
           </button>
@@ -539,6 +557,20 @@
             <span class="material-symbols-outlined text-cyan">upload_file</span>
             <span>Bulk Excel Upload</span>
             <span class="tab-badge-studio" style="background:#0284c7;color:#ffffff;">BULK DB</span>
+          </button>
+
+          <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'lead_pipeline'"
+            (click)="setTab('lead_pipeline')">
+            <span class="material-symbols-outlined text-emerald">timeline</span>
+            <span>Master Lead Pipeline</span>
+            <span class="tab-badge-studio" style="background:#059669;color:#ffffff;">10 STAGES</span>
+          </button>
+
+          <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'leads_assignment'"
+            (click)="setTab('leads_assignment')" title="View all leads and assign to specific Sales, Advisor, and Operations staff">
+            <span class="material-symbols-outlined" style="color:#0f766e;">assignment_ind</span>
+            <span>Leads</span>
+            <span class="tab-badge-studio" style="background:#0f766e;color:#ffffff;">ASSIGN ROLES</span>
           </button>
 
           <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'buyer_workspaces'"
@@ -2804,6 +2836,14 @@
         </section>
         }
 
+
+        @if (activeTab() === 'lead_pipeline') {
+          <app-lead-pipeline-command-center />
+        }
+
+        @if (activeTab() === 'leads_assignment') {
+          <app-admin-leads-assignment />
+        }
 
         <!-- PART 2: DEVELOPERS, FINANCIALS, MINDSET, BULK UPLOAD & BUYER CRM -->
         <app-admin-developers-crm />

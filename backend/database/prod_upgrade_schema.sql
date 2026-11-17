@@ -442,4 +442,25 @@ DELIMITER ;
 CALL `DropViewForeignKeys`();
 DROP PROCEDURE `DropViewForeignKeys`;
 
+-- ----------------------------------------------------------------------------
+-- 10. UNIFIED SUPER ADMIN 11-STAGE LEAD PIPELINE & AUDIT TRAIL
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `lead_stage_history` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `interaction_id` INT NULL,
+  `from_stage` VARCHAR(50) NULL,
+  `to_stage` VARCHAR(50) NOT NULL,
+  `department` VARCHAR(50) DEFAULT 'sales',
+  `action_type` VARCHAR(50) DEFAULT 'stage_transition',
+  `notes` TEXT NULL,
+  `metadata` JSON NULL,
+  `changed_by` INT NULL,
+  `changed_by_name` VARCHAR(100) NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_hist_user` (`user_id`),
+  INDEX `idx_hist_stage` (`to_stage`),
+  INDEX `idx_hist_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

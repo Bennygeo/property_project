@@ -65,7 +65,11 @@
 
         <!-- 2. PROPERTY ADVISOR NAV -->
         @if (activeRole() === 'property_advisor') {
-          <button type="button" class="sidebar-nav-item active">
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="advisorSubView() === 'consultations'"
+            (click)="advisorSubView.set('consultations')">
             <span class="material-symbols-outlined nav-icon">psychology</span>
             @if (!isSidebarCollapsed()) {
               <span class="nav-label">Advisory Consultations</span>
@@ -73,14 +77,23 @@
             }
           </button>
 
-          <button type="button" class="sidebar-nav-item">
-            <span class="material-symbols-outlined nav-icon text-amber">insights</span>
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="advisorSubView() === 'requirements'"
+            (click)="advisorSubView.set('requirements')">
+            <span class="material-symbols-outlined nav-icon text-amber">tune</span>
             @if (!isSidebarCollapsed()) {
-              <span class="nav-label">Buyer Mindset AI</span>
+              <span class="nav-label">Requirement &amp; Budgets</span>
+              <span class="nav-badge subtle">{{ advisorTabCounts().needs_review }}</span>
             }
           </button>
 
-          <button type="button" class="sidebar-nav-item">
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="advisorSubView() === 'patta_legal'"
+            (click)="advisorSubView.set('patta_legal')">
             <span class="material-symbols-outlined nav-icon text-teal">verified</span>
             @if (!isSidebarCollapsed()) {
               <span class="nav-label">Patta &amp; Legal Clearance</span>
@@ -90,7 +103,11 @@
 
         <!-- 3. OPERATIONS EXECUTIVE NAV -->
         @if (activeRole() === 'operations_executive') {
-          <button type="button" class="sidebar-nav-item active">
+          <button 
+            type="button" 
+            class="sidebar-nav-item" 
+            [class.active]="opsSubView() === 'visits'"
+            (click)="opsSubView.set('visits')">
             <span class="material-symbols-outlined nav-icon">commute</span>
             @if (!isSidebarCollapsed()) {
               <span class="nav-label">Site Visits &amp; Logistics</span>
@@ -98,17 +115,27 @@
             }
           </button>
 
-          <button type="button" class="sidebar-nav-item">
+          <button 
+            type="button" 
+            class="sidebar-nav-item"
+            [class.active]="opsSubView() === 'gps_survey'"
+            (click)="opsSubView.set('gps_survey')">
             <span class="material-symbols-outlined nav-icon text-blue">pin_drop</span>
             @if (!isSidebarCollapsed()) {
-              <span class="nav-label">GPS Coordinate Markers</span>
+              <span class="nav-label">GPS &amp; DTCP Surveys</span>
+              <span class="nav-badge subtle">{{ dashboardData()?.kpis?.gpsSurveysCompleted || 0 }}</span>
             }
           </button>
 
-          <button type="button" class="sidebar-nav-item">
-            <span class="material-symbols-outlined nav-icon text-emerald">domain</span>
+          <button 
+            type="button" 
+            class="sidebar-nav-item"
+            [class.active]="opsSubView() === 'bookings'"
+            (click)="opsSubView.set('bookings')">
+            <span class="material-symbols-outlined nav-icon text-emerald">handshake</span>
             @if (!isSidebarCollapsed()) {
-              <span class="nav-label">Promoter Field Contacts</span>
+              <span class="nav-label">Promoter &amp; Booking Desk</span>
+              <span class="nav-badge live">{{ (opsTabCounts().booking + opsTabCounts().won) }}</span>
             }
           </button>
         }
@@ -171,6 +198,14 @@
           @if (!isSidebarCollapsed()) {
             <span class="nav-group-title">Super Admin Master Access</span>
           }
+          <a routerLink="/admin" [queryParams]="{tab: 'lead_pipeline'}" class="sidebar-nav-item">
+            <span class="material-symbols-outlined nav-icon text-emerald">timeline</span>
+            @if (!isSidebarCollapsed()) {
+              <span class="nav-label">Master Lead Pipeline</span>
+              <span class="nav-badge" style="background:#059669;color:#ffffff;">10 STAGES</span>
+            }
+          </a>
+
           <a routerLink="/admin" class="sidebar-nav-item">
             <span class="material-symbols-outlined nav-icon">dashboard</span>
             @if (!isSidebarCollapsed()) {
@@ -371,41 +406,41 @@
               </div>
               <div class="kpi-info">
                 <span class="kpi-label">Transferred Clients</span>
-                <span class="kpi-val text-emerald">{{ dashboardData()?.consultations?.length || 0 }}</span>
-                <span class="kpi-meta">Escalated from Sales</span>
-              </div>
-            </div>
-
-            <div class="role-kpi-card">
-              <div class="kpi-icon-wrap" style="background:#f0fdf4;color:#16a34a;">
-                <span class="material-symbols-outlined">verified</span>
-              </div>
-              <div class="kpi-info">
-                <span class="kpi-label">Ready for Site Visit</span>
-                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.legalPattaClearances || 0 }}</span>
-                <span class="kpi-meta">Confirmed Prospects</span>
-              </div>
-            </div>
-
-            <div class="role-kpi-card">
-              <div class="kpi-icon-wrap" style="background:#eff6ff;color:#2563eb;">
-                <span class="material-symbols-outlined">match_word</span>
-              </div>
-              <div class="kpi-info">
-                <span class="kpi-label">Consultations Done</span>
-                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.activeDossierMatches || 0 }}</span>
-                <span class="kpi-meta">Advisory Completed</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.advisorySessions ?? (dashboardData()?.consultations?.length || 0) }}</span>
+                <span class="kpi-meta">Escalated from Sales Desk</span>
               </div>
             </div>
 
             <div class="role-kpi-card">
               <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
-                <span class="material-symbols-outlined">hotel_class</span>
+                <span class="material-symbols-outlined">pending_actions</span>
               </div>
               <div class="kpi-info">
-                <span class="kpi-label">Client Satisfaction</span>
-                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.clientSatisfaction || '0%' }}</span>
-                <span class="kpi-meta">High Investor Trust</span>
+                <span class="kpi-label">Awaiting Consultation</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.pendingRequirementReview || 0 }}</span>
+                <span class="kpi-meta">Step 3: Requirement Review</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ede9fe;color:#6d28d9;">
+                <span class="material-symbols-outlined">bookmarks</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Projects Shortlisted</span>
+                <span class="kpi-val" style="color:#6d28d9;">{{ dashboardData()?.kpis?.activeDossierMatches || 0 }}</span>
+                <span class="kpi-meta">Steps 4–5: Curated Dossiers</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#ffedd5;color:#c2410c;">
+                <span class="material-symbols-outlined">commute</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Handed to Operations</span>
+                <span class="kpi-val" style="color:#c2410c;">{{ dashboardData()?.kpis?.legalPattaClearances || 0 }}</span>
+                <span class="kpi-meta">Steps 6–9: Site Visits &amp; Bookings</span>
               </div>
             </div>
           }
@@ -418,19 +453,8 @@
               </div>
               <div class="kpi-info">
                 <span class="kpi-label">Site Visits Scheduled</span>
-                <span class="kpi-val text-amber">{{ dashboardData()?.siteVisits?.length || 0 }}</span>
-                <span class="kpi-meta">Total Field Visits</span>
-              </div>
-            </div>
-
-            <div class="role-kpi-card">
-              <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
-                <span class="material-symbols-outlined">event_upcoming</span>
-              </div>
-              <div class="kpi-info">
-                <span class="kpi-label">Upcoming This Week</span>
-                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.upcomingThisWeek || 0 }}</span>
-                <span class="kpi-meta">Field Officer Dispatches</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.scheduledVisits || 0 }}</span>
+                <span class="kpi-meta">Step 6: Field Logistics ({{ dashboardData()?.kpis?.promoterConfirmations || '0%' }} Confirmed)</span>
               </div>
             </div>
 
@@ -439,20 +463,31 @@
                 <span class="material-symbols-outlined">pin_drop</span>
               </div>
               <div class="kpi-info">
-                <span class="kpi-label">GPS Boundary Surveys</span>
-                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.gpsSurveysCompleted || 0 }}</span>
-                <span class="kpi-meta">DTCP Stones Verified</span>
+                <span class="kpi-label">Visits &amp; Surveys Done</span>
+                <span class="kpi-val text-blue">{{ dashboardData()?.kpis?.completedSurveys || 0 }}</span>
+                <span class="kpi-meta">Step 7: {{ dashboardData()?.kpis?.gpsSurveysCompleted || 0 }} DTCP/GPS Verified</span>
+              </div>
+            </div>
+
+            <div class="role-kpi-card">
+              <div class="kpi-icon-wrap" style="background:#fef3c7;color:#b45309;">
+                <span class="material-symbols-outlined">contract</span>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-label">Bookings in Progress</span>
+                <span class="kpi-val text-amber">{{ dashboardData()?.kpis?.bookingsInProgress || 0 }}</span>
+                <span class="kpi-meta">Step 8: Token &amp; Agreement</span>
               </div>
             </div>
 
             <div class="role-kpi-card">
               <div class="kpi-icon-wrap" style="background:#ecfdf5;color:#047857;">
-                <span class="material-symbols-outlined">handshake</span>
+                <span class="material-symbols-outlined">verified</span>
               </div>
               <div class="kpi-info">
-                <span class="kpi-label">Promoter Confirmation</span>
-                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.promoterConfirmations || '0%' }}</span>
-                <span class="kpi-meta">Gate Keys Authorized</span>
+                <span class="kpi-label">Deals Closed (Won)</span>
+                <span class="kpi-val text-emerald">{{ dashboardData()?.kpis?.dealsClosed || 0 }}</span>
+                <span class="kpi-meta">Step 9: Plot Registered</span>
               </div>
             </div>
           }
@@ -638,6 +673,15 @@
                 }
 
                 <div class="header-actions">
+                  @if (dashboardData()?.roleStaff?.length) {
+                    <select class="staff-filter-select" [ngModel]="selectedStaffFilter()" (ngModelChange)="selectedStaffFilter.set($event)">
+                      <option value="all">All Assigned Staff</option>
+                      <option value="unassigned">Unassigned Only</option>
+                      @for (rs of dashboardData()?.roleStaff; track rs.id) {
+                        <option [value]="'' + rs.id">{{ rs.name }}</option>
+                      }
+                    </select>
+                  }
                   <span class="record-count">{{ filteredVisitors().length }} in {{ salesActiveTab() === 'unattempted' ? 'Unattempted' : 'Attempted' }}</span>
                 </div>
               </div>
@@ -673,6 +717,9 @@
                                 @if (v.email) {
                                   &bull; {{ v.email }}
                                 }
+                              </span>
+                              <span class="assigned-owner-pill" [class.unassigned]="!v.assigned_sales_name">
+                                {{ v.assigned_sales_name ? ('Assigned: ' + v.assigned_sales_name) : 'Unassigned' }}
                               </span>
                             </div>
                           </div>
@@ -765,13 +812,17 @@
                               class="lead-status-dropdown" 
                               [ngModel]="v.interaction_status" 
                               (ngModelChange)="updateVisitorStatus(v, $event)">
-                              <option value="new">New</option>
+                              <option value="new">New Enquiry</option>
                               <option value="contacted">Contacted</option>
                               <option value="interested_site_visit">Interested in Visit</option>
                               <option value="transferred_advisor">Transferred to Advisor</option>
+                              <option value="requirement_understood">With Advisor (Understood)</option>
+                              <option value="site_visit_scheduled">Site Visit Scheduled</option>
+                              <option value="booking_in_progress">Booking in Progress</option>
+                              <option value="booked_converted">Booked / Converted</option>
                             </select>
 
-                            @if (v.interaction_status !== 'transferred_advisor') {
+                            @if (!isTransferredToAdvisor(v)) {
                               <button 
                                 type="button" 
                                 class="btn-handover-advisor" 
@@ -817,35 +868,132 @@
             </div>
           }
 
-          <!-- 2. PROPERTY ADVISOR TABLE: TRANSFERRED SITE VISIT CLIENTS -->
+          <!-- 2. PROPERTY ADVISOR TABLE: TRANSFERRED SITE VISIT CLIENTS & CONSULTATION DESK -->
           @if (activeRole() === 'property_advisor') {
             <div class="table-card">
-              <div class="card-header">
+              <!-- WORKSPACE HEADER & PIPELINE STAGE TABS -->
+              <div class="card-header sales-card-header advisor-card-header">
                 <div class="header-text">
-                  <h3>Investor Advisory Consultations &amp; Site Visit Handover Queue</h3>
-                  <p>Prospective buyers qualified and transferred by the Sales Executive team for field consultations and legal due diligence.</p>
+                  <h3>Investor Advisory Consultations &amp; Cadastral Shortlisting</h3>
+                  <p>Capture buyer location &amp; budget requirements, enter advisory comments, recommend verified layouts, and hand over qualified prospects to Operations for physical site visits.</p>
                 </div>
+
+                <!-- STAGE FILTER TABS -->
+                <div class="pipeline-tab-switcher advisor-tabs-wrap">
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill advisor-tab" 
+                    [class.active]="advisorActiveTab() === 'all'"
+                    (click)="advisorActiveTab.set('all')">
+                    <span class="material-symbols-outlined tab-icon">groups</span>
+                    <span class="tab-label">All Clients</span>
+                    <span class="tab-badge-pill">{{ advisorTabCounts().all }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill advisor-tab" 
+                    [class.active]="advisorActiveTab() === 'needs_review'"
+                    (click)="advisorActiveTab.set('needs_review')">
+                    <span class="material-symbols-outlined tab-icon">pending_actions</span>
+                    <span class="tab-label">Requirement Review</span>
+                    <span class="tab-badge-pill" [class.highlight]="advisorTabCounts().needs_review > 0">{{ advisorTabCounts().needs_review }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill advisor-tab" 
+                    [class.active]="advisorActiveTab() === 'recommended'"
+                    (click)="advisorActiveTab.set('recommended')">
+                    <span class="material-symbols-outlined tab-icon">bookmarks</span>
+                    <span class="tab-label">Shortlisted</span>
+                    <span class="tab-badge-pill">{{ advisorTabCounts().recommended }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill advisor-tab" 
+                    [class.active]="advisorActiveTab() === 'site_visit'"
+                    (click)="advisorActiveTab.set('site_visit')">
+                    <span class="material-symbols-outlined tab-icon">commute</span>
+                    <span class="tab-label">Ops / Visits</span>
+                    <span class="tab-badge-pill">{{ advisorTabCounts().site_visit }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- SUB-VIEW CONTEXT BANNER (WHEN SIDEBAR FOCUS SELECTED) -->
+              @if (advisorSubView() === 'requirements') {
+                <div class="advisor-subview-banner requirements">
+                  <span class="material-symbols-outlined">tune</span>
+                  <span><strong>Requirement &amp; Budget Focus:</strong> Update each client's preferred corridor and budget range (₹ Lakhs) inline, then click <strong>Save</strong> in their Advisor Comments box to sync to the Master Pipeline.</span>
+                </div>
+              } @else if (advisorSubView() === 'patta_legal') {
+                <div class="advisor-subview-banner patta">
+                  <span class="material-symbols-outlined">verified_user</span>
+                  <span><strong>Patta &amp; Legal Clearance Desk:</strong> Verify DTCP/RERA title readiness in the Advisor Comments box using the <code>+ Patta Verified</code> quick tag before scheduling field visits.</span>
+                </div>
+              }
+
+              <!-- DATE FILTER & SEARCH COUNT BAR -->
+              <div class="sales-filter-toolbar">
+                <div class="date-filter-presets">
+                  <span class="filter-toolbar-label">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span>Transferred:</span>
+                  </span>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'all'" (click)="setDatePreset('all')">All Time</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'today'" (click)="setDatePreset('today')">Today</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'yesterday'" (click)="setDatePreset('yesterday')">Yesterday</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === '7days'" (click)="setDatePreset('7days')">Last 7 Days</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === '30days'" (click)="setDatePreset('30days')">Last 30 Days</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'custom'" (click)="setDatePreset('custom')">Custom Range</button>
+                </div>
+
+                @if (dateFilterPreset() === 'custom') {
+                  <div class="custom-date-picker-wrap">
+                    <label class="date-input-group">
+                      <span>From:</span>
+                      <input type="date" [ngModel]="customFromDate()" (ngModelChange)="customFromDate.set($event)" />
+                    </label>
+                    <label class="date-input-group">
+                      <span>To:</span>
+                      <input type="date" [ngModel]="customToDate()" (ngModelChange)="customToDate.set($event)" />
+                    </label>
+                    <button type="button" class="btn-clear-date-filter" (click)="clearCustomDates()">Reset</button>
+                  </div>
+                }
+
                 <div class="header-actions">
-                  <span class="record-count">{{ dashboardData()?.consultations?.length || 0 }} Clients</span>
+                  @if (dashboardData()?.roleStaff?.length) {
+                    <select class="staff-filter-select" [ngModel]="selectedStaffFilter()" (ngModelChange)="selectedStaffFilter.set($event)">
+                      <option value="all">All Assigned Advisors</option>
+                      <option value="unassigned">Unassigned Only</option>
+                      @for (rs of dashboardData()?.roleStaff; track rs.id) {
+                        <option [value]="'' + rs.id">{{ rs.name }}</option>
+                      }
+                    </select>
+                  }
+                  <span class="record-count">{{ filteredConsultations().length }} of {{ dashboardData()?.consultations?.length || 0 }} Clients</span>
                 </div>
               </div>
 
               <div class="table-responsive-box">
-                <table class="role-table">
+                <table class="role-table advisor-consultations-table">
                   <thead>
                     <tr>
-                      <th style="min-width: 170px;">Client &amp; Contact</th>
-                      <th style="min-width: 130px;">Transferred Date</th>
-                      <th style="min-width: 150px;">Visit Intention</th>
-                      <th style="min-width: 130px;">Properties Explored</th>
-                      <th style="min-width: 220px;">Sales Executive Transcript / Feedback</th>
-                      <th style="min-width: 140px; text-align: right;">Advisor Actions</th>
+                      <th style="min-width: 175px;">Client &amp; Contact</th>
+                      <th style="min-width: 195px;">Requirements &amp; Budget</th>
+                      <th style="min-width: 170px;">Explored &amp; Shortlisted</th>
+                      <th style="min-width: 175px;">Sales Handover Notes</th>
+                      <th style="min-width: 245px;">Advisor Comments &amp; Notes</th>
+                      <th style="min-width: 170px; text-align: right;">Stage &amp; Ops Handover</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (c of dashboardData()?.consultations; track (c.interaction_id || c.user_id)) {
+                    @for (c of filteredConsultations(); track (c.interaction_id || c.user_id)) {
                       <tr>
-                        <!-- Client & Contact -->
+                        <!-- 1. Client, Contact & Outreach -->
                         <td>
                           <div class="cell-user">
                             <span class="avatar-circle emerald">{{ (c.client_name || 'CL').substring(0, 2).toUpperCase() }}</span>
@@ -859,59 +1007,212 @@
                                   &bull; {{ c.email }}
                                 }
                               </span>
+                              <span class="advisor-transfer-meta">
+                                Handed: {{ (c.transferred_at || c.updated_at) | date:'mediumDate' }}
+                              </span>
+                              <span class="assigned-owner-pill" [class.unassigned]="!c.assigned_advisor_name">
+                                {{ c.assigned_advisor_name ? ('Advisor: ' + c.assigned_advisor_name) : 'Unassigned' }}
+                              </span>
+                              <div class="action-buttons-wrap advisor-outreach-row">
+                                <button type="button" class="btn-action-icon call mini" (click)="openPhone(c)" [disabled]="!c.phone" title="Call Client">
+                                  <span class="material-symbols-outlined">call</span>
+                                </button>
+                                <button type="button" class="btn-action-icon whatsapp mini" (click)="openWhatsApp(c)" [disabled]="!c.phone" title="Send WhatsApp Dossier">
+                                  <span class="material-symbols-outlined">chat</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </td>
 
-                        <!-- Transferred Date -->
+                        <!-- 2. Client Requirements, Intention, Preferred Location & Budget -->
                         <td>
-                          <div class="activity-time-cell">
-                            <span class="activity-date">{{ (c.transferred_at || c.updated_at) | date:'mediumDate' }}</span>
-                            <span class="activity-time">{{ (c.transferred_at || c.updated_at) | date:'shortTime' }}</span>
+                          <div class="advisor-req-cell">
+                            <select 
+                              class="intent-dropdown advisor-intent-select"
+                              [ngModel]="c.intention" 
+                              (ngModelChange)="updateAdvisorIntention(c, $event)">
+                              <option value="Site Visit Requested">Site Visit Requested</option>
+                              <option value="High Buying Intent (3+ views)">High Buying Intent</option>
+                              <option value="Active Research">Active Research</option>
+                              <option value="Initial Exploration">Initial Exploration</option>
+                            </select>
+
+                            <div class="req-input-row">
+                              <span class="material-symbols-outlined req-icon">location_on</span>
+                              <input 
+                                type="text" 
+                                class="req-text-input"
+                                [(ngModel)]="c.preferred_location"
+                                placeholder="Preferred corridor / locality" />
+                            </div>
+
+                            <div class="budget-range-inputs">
+                              <span class="budget-prefix">₹</span>
+                              <input 
+                                type="number" 
+                                min="0"
+                                step="1"
+                                class="req-num-input"
+                                [(ngModel)]="c.budget_min"
+                                placeholder="Min L" />
+                              <span class="budget-sep">–</span>
+                              <input 
+                                type="number" 
+                                min="0"
+                                step="1"
+                                class="req-num-input"
+                                [(ngModel)]="c.budget_max"
+                                placeholder="Max L" />
+                              <span class="budget-unit">Lakhs</span>
+                            </div>
                           </div>
                         </td>
 
-                        <!-- Visit Intention -->
+                        <!-- 3. Viewed & Shortlisted Properties -->
                         <td>
-                          <span class="intent-pill-advisor">
-                            <span class="material-symbols-outlined">directions_car</span>
-                            <span>{{ c.intention || 'Site Visit Requested' }}</span>
-                          </span>
+                          <div class="advisor-props-cell">
+                            <div class="props-btn-pair">
+                              <button 
+                                type="button" 
+                                class="viewed-projects-badge-btn" 
+                                (click)="openViewedPropertiesModal(c)"
+                                title="Inspect properties viewed by client">
+                                <span class="material-symbols-outlined icon-eye">visibility</span>
+                                <span class="count-num">{{ c.viewed_properties_count || (c.viewed_properties?.length || 0) }}</span>
+                                <span class="count-label">Viewed</span>
+                              </button>
+
+                              <button 
+                                type="button" 
+                                class="shortlist-badge-btn"
+                                (click)="openAdvisorShortlistModal(c)"
+                                title="Recommend or shortlist verified plots for client">
+                                <span class="material-symbols-outlined">bookmark_add</span>
+                                <span class="count-num">{{ c.shortlisted_count || (c.shortlisted_properties?.length || 0) }}</span>
+                                <span class="count-label">Shortlist</span>
+                              </button>
+                            </div>
+
+                            @if (c.shortlisted_properties && c.shortlisted_properties.length > 0) {
+                              <div class="shortlist-preview-chips">
+                                @for (sp of c.shortlisted_properties.slice(0, 2); track sp.id) {
+                                  <span class="shortlist-chip" [title]="sp.title + ' (' + sp.locality + ')'">
+                                    {{ sp.title }}
+                                  </span>
+                                }
+                              </div>
+                            } @else {
+                              <span class="no-shortlist-hint">Click Shortlist to recommend plots</span>
+                            }
+                          </div>
                         </td>
 
-                        <!-- Properties Explored -->
-                        <td>
-                          <button 
-                            type="button" 
-                            class="viewed-projects-badge-btn" 
-                            (click)="openViewedPropertiesModal(c)"
-                            title="Inspect viewed properties">
-                            <span class="material-symbols-outlined icon-eye">visibility</span>
-                            <span class="count-num">{{ c.viewed_properties_count || (c.viewed_properties?.length || 0) }}</span>
-                            <span class="count-label">Plots</span>
-                          </button>
-                        </td>
-
-                        <!-- Sales Notes & Feedback -->
+                        <!-- 4. Sales Handover Context (Read-Only) -->
                         <td>
                           <div class="advisor-notes-display">
+                            <span class="sales-context-tag">Sales Executive Note</span>
                             <p class="notes-quote">“{{ c.sales_notes || 'Client expressed interest in scheduling a physical site inspection.' }}”</p>
                           </div>
                         </td>
 
-                        <!-- Advisor Actions -->
+                        <!-- 5. Advisor Comments & Consultation Notes (EDITABLE) -->
+                        <td>
+                          <div class="advisor-comments-box">
+                            <textarea 
+                              class="advisor-notes-input" 
+                              rows="3"
+                              [(ngModel)]="c.advisor_notes" 
+                              placeholder="Enter consultation comments, budget clarification, Patta/DTCP status, or shortlist remarks...">
+                            </textarea>
+
+                            <div class="quick-note-chips">
+                              <button type="button" class="chip-quick-note" (click)="appendQuickAdvisorNote(c, 'Patta & DTCP Verified')">+ Patta Verified</button>
+                              <button type="button" class="chip-quick-note" (click)="appendQuickAdvisorNote(c, 'Budget & Location Confirmed')">+ Req Confirmed</button>
+                              <button type="button" class="chip-quick-note" (click)="appendQuickAdvisorNote(c, 'Shortlist Finalized for Visit')">+ Visit Ready</button>
+                            </div>
+
+                            <div class="advisor-notes-footer">
+                              <button 
+                                type="button" 
+                                class="btn-history-pill" 
+                                (click)="openHistoryModal(c)"
+                                title="View full consultation & comment history">
+                                <span class="material-symbols-outlined">history</span>
+                                <span>History ({{ c.history?.length || 0 }})</span>
+                              </button>
+
+                              <button 
+                                type="button" 
+                                class="btn-save-advisor-note" 
+                                (click)="saveAdvisorConsultation(c)"
+                                [disabled]="isSaving()"
+                                title="Save advisor comments and client requirements">
+                                <span class="material-symbols-outlined">save</span>
+                                <span>Save Comments</span>
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+
+                        <!-- 6. Stage Progression & Handover to Operations -->
                         <td style="text-align: right;">
-                          <div class="action-buttons-wrap justify-end">
-                            <button type="button" class="btn-action-icon call" (click)="openPhone(c)" title="Call Client">
-                              <span class="material-symbols-outlined">call</span>
-                            </button>
-                            <button type="button" class="btn-action-icon whatsapp" (click)="openWhatsApp(c)" title="WhatsApp Dossier">
-                              <span class="material-symbols-outlined">chat</span>
-                            </button>
-                            <button type="button" class="btn-primary-action emerald" (click)="triggerQuickAction('verify_patta', c)" title="Coordinate Field Visit">
-                              <span class="material-symbols-outlined">event_available</span>
-                              <span>Plan Visit</span>
-                            </button>
+                          <div class="status-handover-cell advisor-stage-cell">
+                            <select 
+                              class="lead-status-dropdown" 
+                              [class]="getAdvisorStageBadgeClass(c.interaction_status)"
+                              [ngModel]="c.interaction_status" 
+                              (ngModelChange)="updateAdvisorStage(c, $event)">
+                              <option value="requirement_understood">3. Requirement Understood</option>
+                              <option value="projects_recommended">4. Projects Recommended</option>
+                              <option value="shortlist_completed">5. Shortlist Completed</option>
+                              <option value="site_visit_scheduled">6. Site Visit Scheduled (Ops)</option>
+                              <option value="site_visit_completed">7. Site Visit Completed</option>
+                              <option value="booking_in_progress">8. Booking in Progress</option>
+                              <option value="booked_converted">9. Booked / Converted</option>
+                              <option value="lost_on_hold">10. Lost / On Hold</option>
+                            </select>
+
+                            @if (c.interaction_status === 'lost_on_hold') {
+                              <span class="advisor-hold-pill" [title]="c.exit_notes || c.exit_reason_category">
+                                <span class="material-symbols-outlined">pause_circle</span>
+                                <span>{{ c.exit_reason_category || 'On Hold' }}</span>
+                              </span>
+                            } @else if (isOperationsHandoverComplete(c)) {
+                              <div class="ops-handed-box">
+                                <span class="transferred-pill ops-pill">
+                                  <span class="material-symbols-outlined">commute</span>
+                                  <span>With Operations</span>
+                                </span>
+                                @if (c.site_visits && c.site_visits.length > 0) {
+                                  <span class="visit-date-sub">
+                                    {{ c.site_visits[0].visit_date | date:'mediumDate' }} &bull; {{ c.site_visits[0].visit_slot }}
+                                  </span>
+                                }
+                                <button type="button" class="btn-reschedule-link" (click)="openScheduleVisitModal(c)">
+                                  Reschedule / Add Visit
+                                </button>
+                              </div>
+                            } @else {
+                              <div class="advisor-cta-row">
+                                <button 
+                                  type="button" 
+                                  class="btn-primary-action emerald" 
+                                  (click)="openScheduleVisitModal(c)" 
+                                  [disabled]="isSaving()"
+                                  title="Schedule physical site visit and hand over to Operations Executive">
+                                  <span class="material-symbols-outlined">event_available</span>
+                                  <span>Schedule Visit</span>
+                                </button>
+                                <button 
+                                  type="button" 
+                                  class="btn-hold-icon" 
+                                  (click)="openDiscontinueModal(c)"
+                                  title="Mark client On Hold / Discontinued">
+                                  <span class="material-symbols-outlined">pause_circle</span>
+                                </button>
+                              </div>
+                            }
                           </div>
                         </td>
                       </tr>
@@ -920,8 +1221,8 @@
                         <td colspan="6" class="empty-table-cell">
                           <div class="empty-state-box">
                             <span class="material-symbols-outlined">assignment_ind</span>
-                            <h4>No transferred leads yet</h4>
-                            <p>When Sales Executives qualify visitors and move them to the Advisor team, their complete interaction dossier and viewed properties will appear here.</p>
+                            <h4>No consultations match this filter</h4>
+                            <p>Switch pipeline tabs or date filters above, or transfer qualified leads from the Sales Executive desk to begin advisory consultations.</p>
                           </div>
                         </td>
                       </tr>
@@ -932,74 +1233,386 @@
             </div>
           }
 
-          <!-- 3. OPERATIONS EXECUTIVE TABLE: SITE VISITS & LOGISTICS -->
+          <!-- 3. OPERATIONS EXECUTIVE TABLE: SITE VISITS, LOGISTICS, SURVEYS & CLOSINGS -->
           @if (activeRole() === 'operations_executive') {
             <div class="table-card">
-              <div class="card-header">
+              <!-- WORKSPACE HEADER & PIPELINE STAGE TABS -->
+              <div class="card-header sales-card-header advisor-card-header">
                 <div class="header-text">
-                  <h3>Physical Site Visits &amp; DTCP Boundary Coordination</h3>
-                  <p>Field visit scheduling, GPS survey markers, road access checks, and gate approvals.</p>
+                  <h3>Physical Site Visits, DTCP/GPS Field Surveys &amp; Deal Closure Desk</h3>
+                  <p>Coordinate site visit slots and field executives, record DTCP boundary checks and GPS coordinates, log field observations, and process plot bookings through registration.</p>
+                </div>
+
+                <!-- 6 PIPELINE STAGE FILTER TABS -->
+                <div class="pipeline-tab-switcher advisor-tabs-wrap">
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill ops-tab" 
+                    [class.active]="opsActiveTab() === 'all'"
+                    (click)="opsActiveTab.set('all')">
+                    <span class="material-symbols-outlined tab-icon">commute</span>
+                    <span class="tab-label">All Operations</span>
+                    <span class="tab-badge-pill">{{ opsTabCounts().all }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill ops-tab" 
+                    [class.active]="opsActiveTab() === 'scheduled'"
+                    (click)="opsActiveTab.set('scheduled')">
+                    <span class="material-symbols-outlined tab-icon">event_available</span>
+                    <span class="tab-label">Visit Scheduled</span>
+                    <span class="tab-badge-pill" [class.highlight]="opsTabCounts().scheduled > 0">{{ opsTabCounts().scheduled }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill ops-tab" 
+                    [class.active]="opsActiveTab() === 'completed'"
+                    (click)="opsActiveTab.set('completed')">
+                    <span class="material-symbols-outlined tab-icon">pin_drop</span>
+                    <span class="tab-label">Visit Completed</span>
+                    <span class="tab-badge-pill">{{ opsTabCounts().completed }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill ops-tab" 
+                    [class.active]="opsActiveTab() === 'booking'"
+                    (click)="opsActiveTab.set('booking')">
+                    <span class="material-symbols-outlined tab-icon">contract</span>
+                    <span class="tab-label">Booking in Progress</span>
+                    <span class="tab-badge-pill">{{ opsTabCounts().booking }}</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill ops-tab" 
+                    [class.active]="opsActiveTab() === 'won'"
+                    (click)="opsActiveTab.set('won')">
+                    <span class="material-symbols-outlined tab-icon">verified</span>
+                    <span class="tab-label">Booked / Won</span>
+                    <span class="tab-badge-pill">{{ opsTabCounts().won }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- SUB-VIEW CONTEXT BANNER -->
+              @if (opsSubView() === 'gps_survey') {
+                <div class="ops-subview-banner gps">
+                  <span class="material-symbols-outlined">pin_drop</span>
+                  <span><strong>GPS &amp; DTCP Boundary Survey Focus:</strong> Verify boundary stones on site, click <strong>Pin GPS</strong> to attach coordinates, and click <strong>Save Ops Notes</strong> to sync field verification.</span>
+                </div>
+              } @else if (opsSubView() === 'bookings') {
+                <div class="ops-subview-banner bookings">
+                  <span class="material-symbols-outlined">handshake</span>
+                  <span><strong>Promoter &amp; Booking Closure Desk:</strong> Showing completed visits and active deals. Click <strong>Book Plot / Close Deal</strong> to record plot allocation, token amount, and registration date.</span>
+                </div>
+              }
+
+              <!-- DATE FILTER & SEARCH COUNT BAR -->
+              <div class="sales-filter-toolbar">
+                <div class="date-filter-presets">
+                  <span class="filter-toolbar-label">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span>Visit Date:</span>
+                  </span>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'all'" (click)="setDatePreset('all')">All Dates</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'today'" (click)="setDatePreset('today')">Today</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'yesterday'" (click)="setDatePreset('yesterday')">Yesterday</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === '7days'" (click)="setDatePreset('7days')">Last 7 Days</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === '30days'" (click)="setDatePreset('30days')">Last 30 Days</button>
+                  <button type="button" class="date-chip-btn" [class.active]="dateFilterPreset() === 'custom'" (click)="setDatePreset('custom')">Custom Range</button>
+                </div>
+
+                @if (dateFilterPreset() === 'custom') {
+                  <div class="custom-date-picker-wrap">
+                    <label class="date-input-group">
+                      <span>From:</span>
+                      <input type="date" [ngModel]="customFromDate()" (ngModelChange)="customFromDate.set($event)" />
+                    </label>
+                    <label class="date-input-group">
+                      <span>To:</span>
+                      <input type="date" [ngModel]="customToDate()" (ngModelChange)="customToDate.set($event)" />
+                    </label>
+                    <button type="button" class="btn-clear-date-filter" (click)="clearCustomDates()">Reset</button>
+                  </div>
+                }
+
+                <div class="header-actions">
+                  @if (dashboardData()?.roleStaff?.length) {
+                    <select class="staff-filter-select" [ngModel]="selectedStaffFilter()" (ngModelChange)="selectedStaffFilter.set($event)">
+                      <option value="all">All Assigned Operations</option>
+                      <option value="unassigned">Unassigned Only</option>
+                      @for (rs of dashboardData()?.roleStaff; track rs.id) {
+                        <option [value]="'' + rs.id">{{ rs.name }}</option>
+                      }
+                    </select>
+                  }
+                  <span class="record-count">{{ filteredSiteVisits().length }} of {{ dashboardData()?.siteVisits?.length || 0 }} Operations Leads</span>
                 </div>
               </div>
 
               <div class="table-responsive-box">
-                <table class="role-table">
+                <table class="role-table ops-visits-table">
                   <thead>
                     <tr>
-                      <th>Visit ID &amp; Property</th>
-                      <th>Visitor &amp; Phone</th>
-                      <th>Date &amp; Time Slot</th>
-                      <th>Assigned Field Rep</th>
-                      <th>DTCP Boundary Check</th>
-                      <th>GPS Coordinates</th>
-                      <th style="text-align: right;">Status &amp; Coordination</th>
+                      <th style="min-width: 195px;">Visitor, Contact &amp; Property</th>
+                      <th style="min-width: 210px;">Schedule &amp; Field Logistics</th>
+                      <th style="min-width: 195px;">DTCP Boundary &amp; GPS Survey</th>
+                      <th style="min-width: 185px;">Sales &amp; Advisor Brief</th>
+                      <th style="min-width: 245px;">Operations Comments &amp; Feedback</th>
+                      <th style="min-width: 180px; text-align: right;">Stage, Booking &amp; Closure</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (v of dashboardData()?.siteVisits; track v.id) {
+                    @for (v of filteredSiteVisits(); track (v.id || v.user_id)) {
                       <tr>
+                        <!-- 1. Visitor, Contact & Target Property -->
                         <td>
-                          <div class="visit-prop-cell">
-                            <span class="visit-id">{{ v.id }}</span>
-                            <span class="visit-prop-title">{{ v.propertyTitle }}</span>
+                          <div class="cell-user">
+                            <span class="avatar-circle amber">{{ (v.visitorName || 'VI').substring(0, 2).toUpperCase() }}</span>
+                            <div class="user-details">
+                              <span class="user-main-name">{{ v.visitorName }}</span>
+                              <span class="user-sub-email">
+                                @if (v.visitorPhone) {
+                                  <a [href]="'tel:' + v.visitorPhone" class="phone-link">{{ v.visitorPhone }}</a>
+                                } @else {
+                                  <span class="text-muted">No phone</span>
+                                }
+                              </span>
+                              <span class="ops-prop-pill" [title]="v.propertyTitle">
+                                <span class="material-symbols-outlined">domain</span>
+                                <span>{{ v.propertyTitle }}</span>
+                              </span>
+                              <span class="ops-loc-sub">{{ v.locality || 'Tamil Nadu' }}</span>
+                              <span class="assigned-owner-pill" [class.unassigned]="!v.assigned_ops_name">
+                                {{ v.assigned_ops_name ? ('Ops: ' + v.assigned_ops_name) : 'Unassigned' }}
+                              </span>
+
+                              <div class="action-buttons-wrap ops-quick-row">
+                                <button type="button" class="btn-action-icon call mini" (click)="openPhone(v)" [disabled]="!v.visitorPhone" title="Call Client">
+                                  <span class="material-symbols-outlined">call</span>
+                                </button>
+                                <button type="button" class="btn-action-icon whatsapp mini" (click)="openWhatsApp(v)" [disabled]="!v.visitorPhone" title="WhatsApp Client">
+                                  <span class="material-symbols-outlined">chat</span>
+                                </button>
+                                <button type="button" class="ops-inspect-btn" (click)="openViewedPropertiesModal(v)" title="Inspect viewed plots">
+                                  <span class="material-symbols-outlined">visibility</span>
+                                  <span>{{ v.viewed_properties_count || 0 }}</span>
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </td>
+
+                        <!-- 2. Schedule & Field Logistics -->
                         <td>
-                          <div class="user-details">
-                            <span class="user-main-name">{{ v.visitorName }}</span>
-                            <span class="user-sub-email">{{ v.visitorPhone }}</span>
+                          <div class="ops-logistics-cell">
+                            <div class="ops-schedule-row">
+                              <input type="date" class="ops-input-date" [(ngModel)]="v.scheduledDate" />
+                              <span class="ops-visit-badge" [class]="v.visitStatus">
+                                {{ (v.visitStatus || 'requested') | uppercase }}
+                              </span>
+                            </div>
+
+                            <select class="ops-select-sm" [(ngModel)]="v.timeSlot">
+                              <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
+                              <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
+                              <option value="12:00 PM - 02:00 PM">12:00 PM - 02:00 PM</option>
+                              <option value="03:00 PM - 05:00 PM">03:00 PM - 05:00 PM</option>
+                              <option value="04:30 PM - 06:30 PM">04:30 PM - 06:30 PM</option>
+                            </select>
+
+                            <select class="ops-select-sm" [(ngModel)]="v.fieldExecutive">
+                              <option value="Karthik (Field Operations Mgr)">Karthik (Field Operations Mgr)</option>
+                              <option value="Arjun S (Senior Site Coordinator)">Arjun S (Senior Site Coordinator)</option>
+                              <option value="Pradeep R (GPS &amp; Boundary Exec)">Pradeep R (GPS &amp; Boundary Exec)</option>
+                            </select>
+
+                            <input 
+                              type="text" 
+                              class="ops-input-text"
+                              [(ngModel)]="v.pickupLocation"
+                              placeholder="Pickup / site meeting point" />
                           </div>
                         </td>
+
+                        <!-- 3. DTCP Boundary & GPS Survey -->
                         <td>
-                          <span class="date-time-pill">{{ v.scheduledDate }} &bull; {{ v.timeSlot }}</span>
+                          <div class="ops-survey-cell">
+                            <select class="ops-select-sm" [(ngModel)]="v.dtcpMarkerCheck">
+                              <option value="Pending Survey">Pending Survey</option>
+                              <option value="DTCP Stones Verified">DTCP Stones Verified</option>
+                              <option value="Road Access Confirmed">Road Access Confirmed</option>
+                              <option value="Patta &amp; FMB Matched">Patta &amp; FMB Matched</option>
+                              <option value="Boundary Discrepancy">Boundary Discrepancy</option>
+                            </select>
+
+                            <div class="gps-input-row">
+                              <input 
+                                type="text" 
+                                class="ops-input-text gps-mono"
+                                [(ngModel)]="v.gpsCoords"
+                                placeholder="e.g., 12.8342° N, 79.7036° E" />
+                              <button type="button" class="btn-pin-gps" (click)="autoFillGpsCoords(v)" title="Auto-fill site GPS coordinate stamp">
+                                <span class="material-symbols-outlined">my_location</span>
+                              </button>
+                            </div>
+
+                            @if (v.shortlisted_properties && v.shortlisted_properties.length > 0) {
+                              <span class="ops-shortlist-info">
+                                Advisor Shortlist: <strong>{{ v.shortlisted_properties[0].title }}</strong>
+                              </span>
+                            }
+                          </div>
                         </td>
+
+                        <!-- 4. Sales & Advisor Handover Brief -->
                         <td>
-                          <span class="field-rep-text">{{ v.fieldExecutive }}</span>
+                          <div class="ops-brief-stack">
+                            @if (v.advisor_notes) {
+                              <div class="brief-box advisor">
+                                <span class="brief-label">Advisor Brief</span>
+                                <p>“{{ v.advisor_notes }}”</p>
+                              </div>
+                            }
+                            @if (v.sales_notes) {
+                              <div class="brief-box sales">
+                                <span class="brief-label">Sales Note</span>
+                                <p>“{{ v.sales_notes }}”</p>
+                              </div>
+                            }
+                            @if (!v.advisor_notes && !v.sales_notes) {
+                              <span class="no-shortlist-hint">No prior sales/advisor notes recorded.</span>
+                            }
+                            @if (v.preferred_location || v.budget_min || v.budget_max) {
+                              <span class="ops-req-meta">
+                                {{ v.preferred_location || 'Any area' }}
+                                @if (v.budget_min || v.budget_max) {
+                                  &bull; ₹{{ v.budget_min || '?' }}–{{ v.budget_max || '?' }}L
+                                }
+                              </span>
+                            }
+                          </div>
                         </td>
+
+                        <!-- 5. Operations Comments & Field Feedback (EDITABLE) -->
                         <td>
-                          <span class="marker-check-tag">{{ v.dtcpMarkerCheck }}</span>
+                          <div class="advisor-comments-box">
+                            <textarea 
+                              class="advisor-notes-input ops-notes-input" 
+                              rows="3"
+                              [(ngModel)]="v.ops_notes" 
+                              placeholder="Enter site visit observations, promoter access notes, selected plot #, or negotiation feedback...">
+                            </textarea>
+
+                            <div class="quick-note-chips">
+                              <button type="button" class="chip-quick-note ops" (click)="appendQuickOpsNote(v, 'Gate Access Confirmed')">+ Gate Confirmed</button>
+                              <button type="button" class="chip-quick-note ops" (click)="appendQuickOpsNote(v, 'DTCP Boundary Stones Verified')">+ DTCP Verified</button>
+                              <button type="button" class="chip-quick-note ops" (click)="appendQuickOpsNote(v, 'Plot Selected & Token Discussion Started')">+ Plot Selected</button>
+                            </div>
+
+                            <div class="advisor-notes-footer">
+                              <button 
+                                type="button" 
+                                class="btn-history-pill" 
+                                (click)="openHistoryModal(v)"
+                                title="View full cross-desk comment & stage audit trail">
+                                <span class="material-symbols-outlined">history</span>
+                                <span>History ({{ v.history?.length || 0 }})</span>
+                              </button>
+
+                              <button 
+                                type="button" 
+                                class="btn-save-ops-note" 
+                                (click)="saveOperationsVisit(v)"
+                                [disabled]="isSaving()"
+                                title="Save operations notes, schedule, and DTCP/GPS survey">
+                                <span class="material-symbols-outlined">save</span>
+                                <span>Save Ops</span>
+                              </button>
+                            </div>
+                          </div>
                         </td>
-                        <td>
-                          <code class="gps-code">{{ v.gpsCoords }}</code>
-                        </td>
+
+                        <!-- 6. Stage, Booking & Closure -->
                         <td style="text-align: right;">
-                          @if (v.status !== 'Confirmed') {
-                            <button type="button" class="btn-primary-action amber" (click)="triggerQuickAction('confirm_visit', v)">
-                              <span class="material-symbols-outlined">check_circle</span>
-                              <span>Confirm Visit</span>
-                            </button>
-                          } @else {
-                            <span class="confirmed-tag">CONFIRMED</span>
-                          }
+                          <div class="status-handover-cell advisor-stage-cell">
+                            <select 
+                              class="lead-status-dropdown" 
+                              [class]="getOpsStageBadgeClass(v.interaction_status)"
+                              [ngModel]="v.interaction_status" 
+                              (ngModelChange)="updateOpsStage(v, $event)">
+                              <option value="site_visit_scheduled">6. Site Visit Scheduled</option>
+                              <option value="site_visit_completed">7. Site Visit Completed</option>
+                              <option value="booking_in_progress">8. Booking in Progress</option>
+                              <option value="booked_converted">9. Booked / Converted</option>
+                              <option value="lost_on_hold">10. Lost / On Hold</option>
+                            </select>
+
+                            @if (v.interaction_status === 'booked_converted') {
+                              <div class="deal-won-summary">
+                                <span class="transferred-pill ops-won-pill">
+                                  <span class="material-symbols-outlined">verified</span>
+                                  <span>Deal Won {{ v.plot_no ? '(' + v.plot_no + ')' : '' }}</span>
+                                </span>
+                                @if (v.final_price) {
+                                  <span class="visit-date-sub">₹{{ v.final_price | number:'1.0-0' }}</span>
+                                }
+                                <button type="button" class="btn-reschedule-link" (click)="openBookingModal(v, 'booked_converted')">
+                                  Edit Deal Record
+                                </button>
+                              </div>
+                            } @else if (v.interaction_status === 'lost_on_hold') {
+                              <span class="advisor-hold-pill" [title]="v.exit_notes || v.exit_reason_category">
+                                <span class="material-symbols-outlined">pause_circle</span>
+                                <span>{{ v.exit_reason_category || 'On Hold' }}</span>
+                              </span>
+                            } @else {
+                              <div class="ops-action-stack">
+                                @if (v.visitStatus === 'requested') {
+                                  <button type="button" class="btn-primary-action amber" (click)="confirmSiteVisit(v)" [disabled]="isSaving()">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                    <span>Confirm Visit</span>
+                                  </button>
+                                }
+                                @if (v.interaction_status === 'site_visit_scheduled') {
+                                  <button type="button" class="btn-ops-complete" (click)="completeSiteVisit(v)" [disabled]="isSaving()">
+                                    <span class="material-symbols-outlined">task_alt</span>
+                                    <span>Complete Visit</span>
+                                  </button>
+                                }
+                                <div class="advisor-cta-row">
+                                  <button 
+                                    type="button" 
+                                    class="btn-primary-action emerald" 
+                                    (click)="openBookingModal(v, v.interaction_status === 'booking_in_progress' ? 'booked_converted' : 'booking_in_progress')"
+                                    [disabled]="isSaving()"
+                                    title="Update booking token, plot allocation, or close deal">
+                                    <span class="material-symbols-outlined">handshake</span>
+                                    <span>{{ v.interaction_status === 'booking_in_progress' ? 'Close Deal' : 'Book Plot' }}</span>
+                                  </button>
+                                  <button 
+                                    type="button" 
+                                    class="btn-hold-icon" 
+                                    (click)="openOpsDiscontinueModal(v)"
+                                    title="Cancel Visit / Put Client On Hold">
+                                    <span class="material-symbols-outlined">pause_circle</span>
+                                  </button>
+                                </div>
+                              </div>
+                            }
+                          </div>
                         </td>
                       </tr>
                     } @empty {
                       <tr>
-                        <td colspan="7" class="empty-table-cell">
+                        <td colspan="6" class="empty-table-cell">
                           <div class="empty-state-box">
                             <span class="material-symbols-outlined">event_busy</span>
-                            <h4>No site visits scheduled</h4>
-                            <p>All upcoming site inspections will be coordinated here.</p>
+                            <h4>No operations records match this filter</h4>
+                            <p>Scheduled site visits from the Property Advisor or Sales teams will appear here for dispatch, survey verification, and booking closure.</p>
                           </div>
                         </td>
                       </tr>
@@ -1253,6 +1866,570 @@
               <span>WhatsApp Portfolio Dossier</span>
             </button>
           }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ADVISOR MODAL 1: RECOMMEND & SHORTLIST PROJECTS -->
+  @if (selectedConsultationForShortlist(); as client) {
+    <div class="modal-backdrop" (click)="closeAdvisorShortlistModal()">
+      <div class="modal-container modal-advisor-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge emerald">
+              <span class="material-symbols-outlined">bookmark_added</span>
+            </div>
+            <div>
+              <h3 class="modal-title">Recommend &amp; Shortlist Plots — {{ client.client_name }}</h3>
+              <p class="modal-subhead">
+                Current Shortlist: {{ client.shortlisted_properties?.length || 0 }} plot(s) &bull;
+                {{ client.preferred_location || 'Any Locality' }}
+              </p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeAdvisorShortlistModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body advisor-modal-body">
+          <!-- Currently Shortlisted -->
+          <div class="advisor-modal-section">
+            <h4 class="modal-section-heading">Shortlisted &amp; Recommended Plots ({{ client.shortlisted_properties?.length || 0 }})</h4>
+            @if (client.shortlisted_properties && client.shortlisted_properties.length > 0) {
+              <div class="shortlist-cards-row">
+                @for (sp of client.shortlisted_properties; track sp.id) {
+                  <div class="shortlist-item-card">
+                    <div class="shortlist-item-info">
+                      <strong>{{ sp.title }}</strong>
+                      <span>{{ sp.locality }} &bull; {{ sp.price }}</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn-remove-shortlist" 
+                      (click)="removeShortlistedProperty(client, sp.id)"
+                      [disabled]="isSaving()"
+                      title="Remove from shortlist">
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="modal-muted-empty">No plots shortlisted yet. Add plots from client's viewed history or verified listings below.</p>
+            }
+          </div>
+
+          <!-- Quick Recommend from Client's Viewed Plots -->
+          @if (client.viewed_properties && client.viewed_properties.length > 0) {
+            <div class="advisor-modal-section">
+              <h4 class="modal-section-heading">Previously Explored by Client</h4>
+              <div class="quick-viewed-chips">
+                @for (vp of client.viewed_properties; track vp.id) {
+                  <div class="viewed-rec-row">
+                    <div>
+                      <strong>{{ vp.title }}</strong>
+                      <span class="rec-sub">{{ vp.locality }} &bull; {{ vp.price }}</span>
+                    </div>
+                    @if (isPropertyShortlisted(client, vp.id)) {
+                      <span class="already-shortlisted-tag">Shortlisted</span>
+                    } @else {
+                      <button type="button" class="btn-add-rec" (click)="recommendPropertyForClient(client, vp.id)" [disabled]="isSaving()">
+                        <span class="material-symbols-outlined">add</span>
+                        <span>Recommend</span>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Search & Add From Verified Inventory -->
+          <div class="advisor-modal-section">
+            <div class="section-head-with-search">
+              <h4 class="modal-section-heading">Recommend from Verified Platform Inventory</h4>
+              <input 
+                type="text" 
+                class="modal-search-input"
+                [ngModel]="shortlistModalSearch()" 
+                (ngModelChange)="shortlistModalSearch.set($event)"
+                placeholder="Filter verified layouts or localities..." />
+            </div>
+
+            <div class="verified-catalog-list">
+              @for (prop of availableProperties(); track prop.id) {
+                <div class="catalog-pick-row">
+                  <div class="catalog-pick-info">
+                    <strong>{{ prop.title }}</strong>
+                    <span>{{ prop.locality }}, {{ prop.city }} &bull; {{ prop.price }} &bull; {{ prop.property_type }}</span>
+                  </div>
+                  @if (isPropertyShortlisted(client, prop.id)) {
+                    <span class="already-shortlisted-tag">Shortlisted</span>
+                  } @else {
+                    <button type="button" class="btn-add-rec" (click)="recommendPropertyForClient(client, prop.id)" [disabled]="isSaving()">
+                      <span class="material-symbols-outlined">bookmark_add</span>
+                      <span>Shortlist</span>
+                    </button>
+                  }
+                </div>
+              } @empty {
+                <p class="modal-muted-empty">No published listings match your search filter.</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeAdvisorShortlistModal()">Done</button>
+          <button 
+            type="button" 
+            class="btn-primary-action emerald" 
+            (click)="closeAdvisorShortlistModal(); openScheduleVisitModal(client)">
+            <span class="material-symbols-outlined">event_available</span>
+            <span>Proceed to Schedule Site Visit</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ADVISOR MODAL 2: SCHEDULE SITE VISIT & HANDOVER TO OPERATIONS -->
+  @if (selectedConsultationForVisit(); as client) {
+    <div class="modal-backdrop" (click)="closeScheduleVisitModal()">
+      <div class="modal-container modal-advisor-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge emerald">
+              <span class="material-symbols-outlined">commute</span>
+            </div>
+            <div>
+              <h3 class="modal-title">Schedule Site Visit &amp; Handover to Operations</h3>
+              <p class="modal-subhead">{{ client.client_name }} &bull; {{ client.phone || 'No phone' }}</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeScheduleVisitModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body advisor-form-body">
+          <div class="form-field">
+            <label>Select Shortlisted / Verified Property *</label>
+            <select 
+              class="modal-form-control" 
+              [ngModel]="visitForm().property_id" 
+              (ngModelChange)="onVisitPropertySelect($event)">
+              @for (opt of visitPropertyOptions(); track opt.id) {
+                <option [value]="opt.id">[{{ opt.sourceTag }}] {{ opt.title }} — {{ opt.locality }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Visit Date *</label>
+              <input 
+                type="date" 
+                class="modal-form-control"
+                [ngModel]="visitForm().visit_date"
+                (ngModelChange)="updateVisitFormField('visit_date', $event)" />
+            </div>
+
+            <div class="form-field">
+              <label>Preferred Time Slot *</label>
+              <select 
+                class="modal-form-control"
+                [ngModel]="visitForm().visit_slot"
+                (ngModelChange)="updateVisitFormField('visit_slot', $event)">
+                <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
+                <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
+                <option value="12:00 PM - 02:00 PM">12:00 PM - 02:00 PM</option>
+                <option value="03:00 PM - 05:00 PM">03:00 PM - 05:00 PM</option>
+                <option value="04:30 PM - 06:30 PM">04:30 PM - 06:30 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Assign Field Operations Rep</label>
+              <select 
+                class="modal-form-control"
+                [ngModel]="visitForm().field_executive"
+                (ngModelChange)="updateVisitFormField('field_executive', $event)">
+                <option value="Karthik (Field Operations Mgr)">Karthik (Field Operations Mgr)</option>
+                <option value="Arjun S (Senior Site Coordinator)">Arjun S (Senior Site Coordinator)</option>
+                <option value="Pradeep R (GPS &amp; Boundary Exec)">Pradeep R (GPS &amp; Boundary Exec)</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Pickup / Meeting Point</label>
+              <input 
+                type="text" 
+                class="modal-form-control"
+                [ngModel]="visitForm().pickup_location"
+                (ngModelChange)="updateVisitFormField('pickup_location', $event)"
+                placeholder="e.g., Koyambedu Gate 2 or Direct at Site" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Advisor Consultation Comments &amp; Field Briefing *</label>
+            <textarea 
+              rows="3" 
+              class="modal-form-control"
+              [ngModel]="visitForm().advisor_notes"
+              (ngModelChange)="updateVisitFormField('advisor_notes', $event)"
+              placeholder="Summarize client plot preferences, facing, budget readiness, and Patta documents requested during visit..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeScheduleVisitModal()">Cancel</button>
+          <button 
+            type="button" 
+            class="btn-primary-action emerald" 
+            (click)="submitScheduleSiteVisit()" 
+            [disabled]="isSaving()">
+            <span class="material-symbols-outlined">send</span>
+            <span>Confirm &amp; Handover to Operations</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ADVISOR MODAL 3: DISCONTINUE / PUT LEAD ON HOLD -->
+  @if (selectedConsultationForDiscontinue(); as client) {
+    <div class="modal-backdrop" (click)="closeDiscontinueModal()">
+      <div class="modal-container modal-advisor-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge danger">
+              <span class="material-symbols-outlined">pause_circle</span>
+            </div>
+            <div>
+              <h3 class="modal-title">Put Client On Hold / Mark Lost</h3>
+              <p class="modal-subhead">{{ client.client_name }} &bull; Step: {{ client.status_label }}</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeDiscontinueModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body advisor-form-body">
+          <div class="form-field">
+            <label>Exit / Hold Reason Category *</label>
+            <select 
+              class="modal-form-control"
+              [ngModel]="discontinueForm().exit_reason_category"
+              (ngModelChange)="updateDiscontinueField('exit_reason_category', $event)">
+              <option value="Budget mismatch">Budget mismatch</option>
+              <option value="Location mismatch">Location / Corridor mismatch</option>
+              <option value="Postponed decision">Postponed buying timeline</option>
+              <option value="Loan / Financing pending">Loan / Financing pending</option>
+              <option value="Legal / Patta concerns">Legal / Patta document concerns</option>
+              <option value="Unresponsive after consultation">Unresponsive after consultation</option>
+              <option value="Purchased elsewhere">Purchased elsewhere</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Planned Re-engagement Date (Optional)</label>
+            <input 
+              type="date" 
+              class="modal-form-control"
+              [ngModel]="discontinueForm().reengage_date"
+              (ngModelChange)="updateDiscontinueField('reengage_date', $event)" />
+          </div>
+
+          <div class="form-field">
+            <label>Advisor Comments &amp; Exit Remarks *</label>
+            <textarea 
+              rows="3" 
+              class="modal-form-control"
+              [ngModel]="discontinueForm().exit_notes"
+              (ngModelChange)="updateDiscontinueField('exit_notes', $event)"
+              placeholder="Explain exact client feedback or what conditions would bring them back..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeDiscontinueModal()">Cancel</button>
+          <button 
+            type="button" 
+            class="btn-danger-solid" 
+            (click)="submitDiscontinueLead()" 
+            [disabled]="isSaving()">
+            <span class="material-symbols-outlined">pause_circle</span>
+            <span>Confirm On Hold</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ADVISOR MODAL 4: CONSULTATION & COMMENT HISTORY TIMELINE -->
+  @if (selectedConsultationForHistory(); as client) {
+    <div class="modal-backdrop" (click)="closeHistoryModal()">
+      <div class="modal-container modal-advisor-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge emerald">
+              <span class="material-symbols-outlined">history</span>
+            </div>
+            <div>
+              <h3 class="modal-title">Consultation &amp; Comment Audit Trail — {{ client.client_name }}</h3>
+              <p class="modal-subhead">{{ client.history?.length || 0 }} logged interaction(s) across Sales, Advisor &amp; Operations</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeHistoryModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body advisor-modal-body">
+          <div class="history-summary-strip">
+            <div>
+              <span class="hs-label">Sales Executive Note</span>
+              <p class="hs-text">{{ client.sales_notes || 'None recorded' }}</p>
+            </div>
+            <div>
+              <span class="hs-label">Latest Advisor Comment</span>
+              <p class="hs-text">{{ client.advisor_notes || 'None recorded' }}</p>
+            </div>
+            @if (client.ops_notes !== undefined) {
+              <div>
+                <span class="hs-label">Latest Operations Comment</span>
+                <p class="hs-text">{{ client.ops_notes || 'No operations note saved yet' }}</p>
+              </div>
+            }
+          </div>
+
+          @if (client.history && client.history.length > 0) {
+            <div class="history-timeline-list">
+              @for (h of client.history; track h.id) {
+                <div class="timeline-entry">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-top">
+                      <span class="timeline-dept">{{ (h.department || 'pipeline') | uppercase }}</span>
+                      <span class="timeline-stage">{{ h.from_stage }} &rarr; {{ h.to_stage }}</span>
+                      <span class="timeline-time">{{ h.created_at | date:'medium' }}</span>
+                    </div>
+                    <p class="timeline-note">{{ h.notes }}</p>
+                    <span class="timeline-actor">By {{ h.changed_by_name || 'Desk Staff' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="modal-muted-empty">No timeline events recorded yet. Saving comments will automatically create a timestamped audit entry.</p>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeHistoryModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- OPERATIONS MODAL 1: BOOKING IN PROGRESS & DEAL CLOSURE (STEPS 8 & 9) -->
+  @if (selectedVisitForBooking(); as visit) {
+    <div class="modal-backdrop" (click)="closeBookingModal()">
+      <div class="modal-container modal-advisor-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge emerald">
+              <span class="material-symbols-outlined">handshake</span>
+            </div>
+            <div>
+              <h3 class="modal-title">Plot Booking &amp; Deal Closure — {{ visit.visitorName }}</h3>
+              <p class="modal-subhead">{{ visit.visitorPhone || 'No phone' }} &bull; Current: {{ visit.status_label }}</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeBookingModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body advisor-form-body">
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Target Pipeline Stage *</label>
+              <select 
+                class="modal-form-control"
+                [ngModel]="bookingForm().target_stage"
+                (ngModelChange)="updateBookingField('target_stage', $event)">
+                <option value="booking_in_progress">Step 8: Booking in Progress (Token)</option>
+                <option value="booked_converted">Step 9: Booked / Converted (Deal Won)</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Selected Property / Project *</label>
+              <select 
+                class="modal-form-control"
+                [ngModel]="bookingForm().booked_property_id"
+                (ngModelChange)="updateBookingField('booked_property_id', $event)">
+                @for (opt of bookingPropertyOptions(); track opt.id) {
+                  <option [value]="opt.id">[{{ opt.sourceTag }}] {{ opt.title }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Plot No. / Unit *</label>
+              <input 
+                type="text" 
+                class="modal-form-control"
+                [ngModel]="bookingForm().plot_no"
+                (ngModelChange)="updateBookingField('plot_no', $event)"
+                placeholder="e.g., Plot 14 (Corner)" />
+            </div>
+
+            <div class="form-field">
+              <label>Registration / Target Date</label>
+              <input 
+                type="date" 
+                class="modal-form-control"
+                [ngModel]="bookingForm().registration_date"
+                (ngModelChange)="updateBookingField('registration_date', $event)" />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Booking Token Amount (₹)</label>
+              <input 
+                type="number" 
+                min="0"
+                class="modal-form-control"
+                [ngModel]="bookingForm().booking_amount"
+                (ngModelChange)="updateBookingField('booking_amount', $event)"
+                placeholder="e.g., 100000" />
+            </div>
+
+            <div class="form-field">
+              <label>Final Agreed Deal Price (₹)</label>
+              <input 
+                type="number" 
+                min="0"
+                class="modal-form-control"
+                [ngModel]="bookingForm().final_price"
+                (ngModelChange)="updateBookingField('final_price', $event)"
+                placeholder="e.g., 3600000" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Deal &amp; Registration Remarks</label>
+            <textarea 
+              rows="2" 
+              class="modal-form-control"
+              [ngModel]="bookingForm().deal_notes"
+              (ngModelChange)="updateBookingField('deal_notes', $event)"
+              placeholder="Document cheque/UPI reference, draft sale agreement status, or promoter confirmations..."></textarea>
+          </div>
+
+          <div class="form-field">
+            <label>Operations Comments Update (Optional)</label>
+            <input 
+              type="text" 
+              class="modal-form-control"
+              [ngModel]="bookingForm().ops_notes"
+              (ngModelChange)="updateBookingField('ops_notes', $event)"
+              placeholder="Summary comment for Super Admin pipeline..." />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeBookingModal()">Cancel</button>
+          <button 
+            type="button" 
+            class="btn-primary-action emerald" 
+            (click)="submitOperationsBooking()" 
+            [disabled]="isSaving()">
+            <span class="material-symbols-outlined">verified</span>
+            <span>{{ bookingForm().target_stage === 'booked_converted' ? 'Confirm Deal Won' : 'Save Booking Progress' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- OPERATIONS MODAL 2: CANCEL VISIT / PUT CLIENT ON HOLD -->
+  @if (selectedVisitForDiscontinue(); as visit) {
+    <div class="modal-backdrop" (click)="closeOpsDiscontinueModal()">
+      <div class="modal-container modal-advisor-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <div class="modal-icon-badge danger">
+              <span class="material-symbols-outlined">pause_circle</span>
+            </div>
+            <div>
+              <h3 class="modal-title">Cancel Visit / Put Client On Hold</h3>
+              <p class="modal-subhead">{{ visit.visitorName }} &bull; Stage: {{ visit.status_label }}</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeOpsDiscontinueModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body advisor-form-body">
+          <div class="form-field">
+            <label>Hold / Drop-off Reason Category *</label>
+            <select 
+              class="modal-form-control"
+              [ngModel]="discontinueForm().exit_reason_category"
+              (ngModelChange)="updateDiscontinueField('exit_reason_category', $event)">
+              <option value="Plot criteria mismatch">Plot dimensions / facing mismatch</option>
+              <option value="Site access / location concern">Site access / surrounding concern</option>
+              <option value="Price negotiation stalled">Price negotiation stalled</option>
+              <option value="Bank loan rejected">Bank loan / funding issue</option>
+              <option value="No show at scheduled visit">Client no-show / rescheduled repeatedly</option>
+              <option value="Purchased elsewhere">Purchased elsewhere</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Follow-up / Re-engage Date (Optional)</label>
+            <input 
+              type="date" 
+              class="modal-form-control"
+              [ngModel]="discontinueForm().reengage_date"
+              (ngModelChange)="updateDiscontinueField('reengage_date', $event)" />
+          </div>
+
+          <div class="form-field">
+            <label>Operations Field Remarks *</label>
+            <textarea 
+              rows="3" 
+              class="modal-form-control"
+              [ngModel]="discontinueForm().exit_notes"
+              (ngModelChange)="updateDiscontinueField('exit_notes', $event)"
+              placeholder="Explain exact field visit outcome or client objection..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeOpsDiscontinueModal()">Cancel</button>
+          <button 
+            type="button" 
+            class="btn-danger-solid" 
+            (click)="submitOpsDiscontinue()" 
+            [disabled]="isSaving()">
+            <span class="material-symbols-outlined">pause_circle</span>
+            <span>Confirm On Hold</span>
+          </button>
         </div>
       </div>
     </div>

@@ -963,17 +963,10 @@ export class AdminService {
     );
   }
 
-  updateLeadInteraction(payload: {
-    user_id: number;
-    status: string;
-    intention?: string;
-    notes?: string;
-    admin_id?: number;
-  }): Observable<any> {
+  postRoleDashboardAction(payload: Record<string, any>): Observable<any> {
     const active = this.activePersona();
     const body = {
-      action: 'update_lead_interaction',
-      admin_id: payload.admin_id || active?.id || 104,
+      admin_id: payload['admin_id'] || active?.id || 104,
       ...payload
     };
 
@@ -987,5 +980,18 @@ export class AdminService {
       catchError(() => tryPost(`http://localhost/the-property-project/backend/api/admin/role-dashboards.php`)),
       map(res => res.data)
     );
+  }
+
+  updateLeadInteraction(payload: {
+    user_id: number;
+    status: string;
+    intention?: string;
+    notes?: string;
+    admin_id?: number;
+  }): Observable<any> {
+    return this.postRoleDashboardAction({
+      action: 'update_lead_interaction',
+      ...payload
+    });
   }
 }

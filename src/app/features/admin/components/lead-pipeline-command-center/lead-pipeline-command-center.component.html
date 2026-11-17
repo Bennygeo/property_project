@@ -1,0 +1,1254 @@
+<div class="pipeline-command-root">
+  <!-- TOP CRM HEADER, ISOLATED VIEW SWITCHER & DATE PRESET SELECTOR -->
+  <header class="crm-pipeline-header">
+    <div class="crm-header-left">
+      <div class="crm-icon-circle">
+        <span class="material-symbols-outlined ic-filter-head">filter_alt</span>
+      </div>
+      <div class="crm-header-titles">
+        <div class="crm-super-row">
+          <h2 class="crm-title">CRM Pipeline</h2>
+          <span class="super-admin-pill">
+            <span class="material-symbols-outlined ic-shield">verified_user</span>
+            Super Admin
+          </span>
+        </div>
+        <p class="crm-subtitle">Lead journey from enquiry to closure across Sales, Advisory &amp; Operations</p>
+      </div>
+    </div>
+
+    <div class="crm-header-right">
+      <!-- PROMINENT 2-MODE TOP-LEVEL SWITCHER -->
+      <div class="top-view-switcher" role="tablist" aria-label="Pipeline workspace view">
+        <button
+          type="button"
+          class="top-view-btn"
+          [class.active]="viewMode === 'flow'"
+          (click)="setViewMode('flow')">
+          <span class="material-symbols-outlined">account_tree</span>
+          <span>Pipeline Flow (10 Stages)</span>
+        </button>
+        <button
+          type="button"
+          class="top-view-btn"
+          [class.active]="viewMode === 'matrix'"
+          (click)="setViewMode('matrix')">
+          <span class="material-symbols-outlined">fact_check</span>
+          <span>10-Step Progress Matrix</span>
+          <span class="top-view-count">{{ totalLeadsCount }}</span>
+        </button>
+      </div>
+
+      <div class="date-dropdown-container">
+        <button type="button" class="date-dropdown-trigger" (click)="toggleDateDropdown()">
+          <span class="material-symbols-outlined ic-cal">calendar_today</span>
+          <span class="date-trigger-label">{{ getDatePresetLabel() }}</span>
+          <span class="material-symbols-outlined ic-arrow">expand_more</span>
+        </button>
+
+        @if (isDateDropdownOpen) {
+          <div class="date-dropdown-menu">
+            <button type="button" class="dropdown-item" [class.selected]="activeDatePreset === 'all'" (click)="selectDatePresetFromDropdown('all')">All Time</button>
+            <button type="button" class="dropdown-item" [class.selected]="activeDatePreset === 'today'" (click)="selectDatePresetFromDropdown('today')">Today</button>
+            <button type="button" class="dropdown-item" [class.selected]="activeDatePreset === 'yesterday'" (click)="selectDatePresetFromDropdown('yesterday')">Yesterday</button>
+            <button type="button" class="dropdown-item" [class.selected]="activeDatePreset === 'last7'" (click)="selectDatePresetFromDropdown('last7')">Last 7 days</button>
+            <button type="button" class="dropdown-item" [class.selected]="activeDatePreset === 'last30'" (click)="selectDatePresetFromDropdown('last30')">Last 30 days</button>
+            <button type="button" class="dropdown-item" [class.selected]="activeDatePreset === 'this_month'" (click)="selectDatePresetFromDropdown('this_month')">This Month</button>
+          </div>
+        }
+      </div>
+
+      <!-- EXPORT PIPELINE PROCESS TO EXCEL ACTION -->
+      <button
+        type="button"
+        class="crm-export-btn"
+        (click)="exportPipelineToExcel()"
+        [disabled]="isExporting"
+        title="Export complete pipeline process to Excel spreadsheet (.xlsx)">
+        <span class="material-symbols-outlined ic-export">{{ isExporting ? 'hourglass_top' : 'download' }}</span>
+        <span>{{ isExporting ? 'Exporting...' : 'Export Excel' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PIPELINE FLOW SECTION (HIDDEN WHEN MATRIX VIEW IS ISOLATED) -->
+  @if (viewMode === 'flow') {
+    <!-- 5 TOP KPI METRICS CARDS (NO PERCENTAGES) -->
+    <section class="kpi-metric-strip">
+      <!-- Card 1: Total Leads -->
+      <div class="kpi-metric-card">
+        <div class="kpi-card-inner">
+          <div class="kpi-avatar-circle bg-blue">
+            <span class="material-symbols-outlined ic-kpi-blue">group</span>
+          </div>
+          <div class="kpi-metric-body">
+            <span class="kpi-metric-label">Total Leads</span>
+            <div class="kpi-metric-stat-row">
+              <span class="kpi-metric-hero">{{ (pipelineService.kpis()?.totalLeads ?? 0) | number }}</span>
+              <span class="kpi-metric-badge badge-green">Live</span>
+              <span class="kpi-metric-subtext">pipeline enquiries</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: In Progress -->
+      <div class="kpi-metric-card">
+        <div class="kpi-card-inner">
+          <div class="kpi-avatar-circle bg-cyan">
+            <span class="material-symbols-outlined ic-kpi-cyan">play_arrow</span>
+          </div>
+          <div class="kpi-metric-body">
+            <span class="kpi-metric-label">In Progress</span>
+            <div class="kpi-metric-stat-row">
+              <span class="kpi-metric-hero">{{ (pipelineService.kpis()?.activeInFunnel ?? 0) | number }}</span>
+              <span class="kpi-metric-badge badge-green">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Won (Converted) -->
+      <div class="kpi-metric-card">
+        <div class="kpi-card-inner">
+          <div class="kpi-avatar-circle bg-emerald">
+            <span class="material-symbols-outlined ic-kpi-emerald">check_circle</span>
+          </div>
+          <div class="kpi-metric-body">
+            <span class="kpi-metric-label">Won (Converted)</span>
+            <div class="kpi-metric-stat-row">
+              <span class="kpi-metric-hero">{{ (pipelineService.kpis()?.bookedConverted ?? 0) | number }}</span>
+              <span class="kpi-metric-badge badge-green">Deal Won</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Lost -->
+      <div class="kpi-metric-card">
+        <div class="kpi-card-inner">
+          <div class="kpi-avatar-circle bg-rose">
+            <span class="material-symbols-outlined ic-kpi-rose">highlight_off</span>
+          </div>
+          <div class="kpi-metric-body">
+            <span class="kpi-metric-label">Lost / On Hold</span>
+            <div class="kpi-metric-stat-row">
+              <span class="kpi-metric-hero">{{ (pipelineService.kpis()?.lostOnHold ?? 0) | number }}</span>
+              <span class="kpi-metric-badge badge-rose">Discontinued</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Pipeline Stages Count -->
+      <div class="kpi-metric-card">
+        <div class="kpi-card-inner">
+          <div class="kpi-avatar-circle bg-purple">
+            <span class="material-symbols-outlined ic-kpi-purple">timeline</span>
+          </div>
+          <div class="kpi-metric-body">
+            <span class="kpi-metric-label">Pipeline Stages</span>
+            <div class="kpi-metric-stat-row">
+              <span class="kpi-metric-hero">{{ pipelineService.stages().length || 10 }}</span>
+              <span class="kpi-metric-badge badge-blue">Sales • Advisor • Ops</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIPELINE STAGES HEADER & CONNECTED FLOW GRID (NO PERCENTAGES) -->
+    <section class="stages-flow-section">
+      <div class="stages-section-header">
+        <div class="stages-header-left">
+          <span class="material-symbols-outlined ic-branch">account_tree</span>
+          <h3 class="stages-section-title">
+            Pipeline Stages <span class="stages-count-muted">({{ pipelineService.stages().length || 10 }})</span>
+          </h3>
+        </div>
+
+        @if (pipelineService.selectedStageId(); as activeFilterId) {
+          <button type="button" class="btn-clear-stage-filter" (click)="pipelineService.setStageFilter(null); currentPage = 1;">
+            <span class="material-symbols-outlined">filter_alt_off</span>
+            <span>Clear Filter: {{ getStageTitle(activeFilterId) }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- 10-STAGE CONNECTED FLOW GRID (2 ROWS OF 5, GENEROUS SPACING, NO SCROLL, NO PERCENTAGES) -->
+      <div class="stages-flow-track-wrapper">
+        <div class="stages-flow-track">
+          @for (stage of pipelineService.stages(); track stage.id; let i = $index; let isLast = $last) {
+            <div class="flow-step-item" [class.has-connector]="!isLast && stage.step < 9">
+              <!-- Stage Card -->
+              <div 
+                class="stage-card dept-{{ stage.department }}" 
+                [class.is-current]="activeStageHighlightId === stage.id"
+                (click)="onStageClick(stage)">
+                
+                <!-- Pinned Current Stage Badge -->
+                @if (activeStageHighlightId === stage.id) {
+                  <div class="current-stage-pin">
+                    <span class="pin-dot"></span>
+                    <span>Current Stage</span>
+                  </div>
+                }
+
+                <!-- Card Top: Department-tinted Step Pill & Stage Outline Icon -->
+                <div class="stage-card-top">
+                  <span class="stage-step-pill pill-{{ stage.department }}">{{ stage.step < 10 ? '0' + stage.step : stage.step }}</span>
+                  <span class="material-symbols-outlined stage-type-icon icon-{{ stage.department }}">{{ getStageIcon(stage.id) }}</span>
+                </div>
+
+                <!-- Card Title & Centered Soft Tinted Department Pill -->
+                <h4 class="stage-name" [title]="stage.title">{{ stage.title }}</h4>
+                <div class="stage-dept-row">
+                  <span class="stage-dept-tag dept-pill-{{ stage.department }}">{{ stage.dept_label }}</span>
+                </div>
+
+                <!-- Metric Count Stacked Vertically Above 'Active' -->
+                <div class="stage-metric-footer">
+                  <div class="stage-count-stack">
+                    <span class="stage-hero-num">{{ stage.active_count }}</span>
+                    <span class="stage-hero-sub">Active</span>
+                  </div>
+                </div>
+
+                <!-- Drop-offs pill if any -->
+                @if (stage.drop_count > 0 && stage.id !== 'lost_on_hold') {
+                  <div class="stage-drop-pill" title="{{ stage.drop_count }} leads discontinued">
+                    <span class="material-symbols-outlined ic-drop-warn">warning</span>
+                    <span>{{ stage.drop_count }} Drop-off{{ stage.drop_count > 1 ? 's' : '' }}</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Clean Connector Arrow Between Steps (No Percentages) -->
+              @if (!isLast && stage.step < 9) {
+                <div class="flow-step-connector" aria-hidden="true">
+                  <span class="material-symbols-outlined connector-arrow">arrow_forward</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- DETAILED STAGE INSPECTION BANNER (NO PERCENTAGES) -->
+      @if (selectedStage; as stg) {
+        <div class="stage-inspector-banner">
+          <!-- 1. Stage Identity -->
+          <div class="inspector-identity-col">
+            <div class="inspector-step-avatar avatar-{{ stg.department }}">{{ stg.step < 10 ? '0' + stg.step : stg.step }}</div>
+            <div class="inspector-identity-text">
+              <div class="inspector-title-row">
+                <h3 class="inspector-title">{{ stg.title }}</h3>
+                <span class="inspector-dept-pill dept-pill-{{ stg.department }}">{{ stg.dept_label }}</span>
+              </div>
+              <p class="inspector-desc">{{ stg.description }}</p>
+            </div>
+          </div>
+
+          <div class="inspector-divider"></div>
+
+          <!-- 2. 4 Metrics Block (Clean Counts & Stage Step) -->
+          <div class="inspector-metrics-col">
+            <div class="inspector-stat-item">
+              <span class="stat-big-val text-blue">{{ stg.active_count }}</span>
+              <span class="stat-lbl-bold">Active Leads</span>
+            </div>
+
+            <div class="inspector-stat-item">
+              <span class="stat-big-val text-slate">Step {{ stg.step }}</span>
+              <span class="stat-lbl-sub">of 10 Stages</span>
+              <span class="stat-dept-chip dept-pill-{{ stg.department }}">{{ stg.dept_label }}</span>
+            </div>
+
+            <div class="inspector-stat-item">
+              <span class="stat-big-val text-orange">{{ stg.drop_count }}</span>
+              <span class="stat-lbl-sub">Drop-offs</span>
+              <span class="stat-drop-percent">at this stage</span>
+            </div>
+
+            <div class="inspector-stat-item">
+              <span class="stat-big-val text-slate">2.3 days</span>
+              <span class="stat-lbl-sub">Avg. stage time</span>
+            </div>
+          </div>
+
+          <div class="inspector-divider"></div>
+
+          <!-- 3. Active Leads Trend Chart -->
+          <div class="inspector-trend-col">
+            <h5 class="trend-col-title">Active Leads Trend</h5>
+            <div class="trend-plot-wrap">
+              <div class="trend-y-axis">
+                <span>120</span>
+                <span>110</span>
+                <span>100</span>
+                <span>90</span>
+              </div>
+              <div class="trend-chart-main">
+                <div class="trend-chart-container">
+                  <svg class="trend-sparkline-svg" viewBox="0 0 200 56" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#2563eb" stop-opacity="0.20" />
+                        <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <line x1="0" y1="14" x2="200" y2="14" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="0" y1="28" x2="200" y2="28" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="0" y1="42" x2="200" y2="42" stroke="#f1f5f9" stroke-width="1" />
+                    <path d="M 8,44 L 50,36 L 95,28 L 140,32 L 185,18 L 185,55 L 8,55 Z" fill="url(#trendGradient)" />
+                    <path d="M 8,44 L 50,36 L 95,28 L 140,32 L 185,18" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="8" cy="44" r="3" fill="#2563eb" />
+                    <circle cx="50" cy="36" r="3" fill="#2563eb" />
+                    <circle cx="95" cy="28" r="3" fill="#2563eb" />
+                    <circle cx="140" cy="32" r="3" fill="#2563eb" />
+                    <circle cx="185" cy="18" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+                  </svg>
+                  <span class="trend-peak-pill">{{ stg.active_count }}</span>
+                </div>
+                <div class="trend-axis-labels">
+                  <span>Jan 1</span>
+                  <span>Jan 7</span>
+                  <span>Jan 14</span>
+                  <span>Jan 21</span>
+                  <span>Jan 28</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="inspector-divider"></div>
+
+          <!-- 4. Drop-off Reasons List -->
+          <div class="inspector-reasons-col">
+            <div class="reasons-head">
+              <span class="material-symbols-outlined ic-warn-amber">warning</span>
+              <span class="reasons-head-title">Drop-off Reasons ({{ stg.drop_count }})</span>
+            </div>
+            <div class="reasons-list">
+              @for (r of getSelectedStageDropReasons(); track r.reason) {
+                <div class="reason-row">
+                  <span class="reason-bullet">●</span>
+                  <span class="reason-text" [title]="r.reason">{{ r.reason }}</span>
+                  <span class="reason-count">{{ r.count }}</span>
+                </div>
+              }
+              @if (stg.drop_count === 0) {
+                <span class="no-drops-msg">No drop-offs recorded at this step.</span>
+              }
+            </div>
+          </div>
+
+          <div class="inspector-divider"></div>
+
+          <!-- 5. Quick Actions -->
+          <div class="inspector-actions-col">
+            <h5 class="actions-col-title">
+              <span class="material-symbols-outlined ic-flash">bolt</span>
+              <span>Quick Actions</span>
+            </h5>
+            <button type="button" class="btn-primary-leads" (click)="scrollToLeadsTable()">
+              <span>View {{ stg.active_count }} Leads</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+            <button type="button" class="btn-secondary-action" (click)="setViewMode('matrix')">
+              <span class="material-symbols-outlined">fact_check</span>
+              <span>Open 10-Step Matrix</span>
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- SEARCH & FILTER TOOLBAR (INCLUDES STAGE FILTER DROPDOWN FOR ISOLATED MATRIX) -->
+  <section class="filter-toolbar" id="pipeline-leads-section">
+    <div class="filter-primary-row">
+      <div class="search-box">
+        <span class="material-symbols-outlined search-ic">search</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchInput" 
+          (keyup.enter)="applySearch()"
+          placeholder="Search investor by name, phone, email, notes..." 
+          class="search-input" />
+        @if (searchInput) {
+          <button type="button" class="btn-clear-input" (click)="searchInput = ''; applySearch()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        }
+      </div>
+
+      <!-- Stage Filter Select (Always accessible in isolated Matrix & Flow) -->
+      <div class="stage-select-field">
+        <label for="pipelineStageFilterSelect">Stage:</label>
+        <select
+          id="pipelineStageFilterSelect"
+          [ngModel]="pipelineService.selectedStageId() || ''"
+          (ngModelChange)="onStageFilterDropdownChange($event)"
+          class="stage-filter-select">
+          <option value="">All 10 Stages ({{ pipelineService.kpis()?.totalLeads ?? totalLeadsCount }})</option>
+          @for (stg of orderedStages; track stg.id) {
+            <option [value]="stg.id">{{ stg.shortTitle }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="date-filter-group">
+        <div class="date-field">
+          <label>From Date:</label>
+          <input type="date" [(ngModel)]="dateFrom" (change)="onCustomDateChange()" class="date-input" />
+        </div>
+        <div class="date-field">
+          <label>To Date:</label>
+          <input type="date" [(ngModel)]="dateTo" (change)="onCustomDateChange()" class="date-input" />
+        </div>
+      </div>
+
+      <button type="button" class="btn-apply-filter" (click)="applySearch()">
+        <span class="material-symbols-outlined">filter_list</span>
+        <span>Apply</span>
+      </button>
+
+      @if (pipelineService.selectedStageId() || searchInput || dateFrom || dateTo || activeDatePreset !== 'all') {
+        <button type="button" class="btn-reset-filter" (click)="resetAllFilters()">
+          <span class="material-symbols-outlined">refresh</span>
+          <span>Reset</span>
+        </button>
+      }
+
+      <!-- EXPORT FILTERED LEADS TO EXCEL -->
+      <button 
+        type="button" 
+        class="btn-export-secondary" 
+        (click)="exportPipelineToExcel()" 
+        [disabled]="isExporting"
+        title="Export currently filtered pipeline leads and stages to Excel spreadsheet">
+        <span class="material-symbols-outlined">table_view</span>
+        <span>Export Excel ({{ totalLeadsCount }})</span>
+      </button>
+    </div>
+
+    <!-- QUICK DATE PRESETS STRIP + ACTIVE STAGE INDICATOR -->
+    <div class="date-presets-strip">
+      <span class="presets-label">
+        <span class="material-symbols-outlined ic-mini">calendar_today</span> Quick Filter:
+      </span>
+      <button type="button" class="preset-pill" [class.active]="activeDatePreset === 'all'" (click)="selectDatePreset('all')">All Time</button>
+      <button type="button" class="preset-pill" [class.active]="activeDatePreset === 'today'" (click)="selectDatePreset('today')">Today</button>
+      <button type="button" class="preset-pill" [class.active]="activeDatePreset === 'yesterday'" (click)="selectDatePreset('yesterday')">Yesterday</button>
+      <button type="button" class="preset-pill" [class.active]="activeDatePreset === 'last7'" (click)="selectDatePreset('last7')">Last 7 Days</button>
+      <button type="button" class="preset-pill" [class.active]="activeDatePreset === 'last30'" (click)="selectDatePreset('last30')">Last 30 Days</button>
+      <button type="button" class="preset-pill" [class.active]="activeDatePreset === 'this_month'" (click)="selectDatePreset('this_month')">This Month</button>
+      @if (activeDatePreset === 'custom') {
+        <span class="custom-active-tag">Custom Range</span>
+      }
+
+      @if (pipelineService.selectedStageId(); as filterId) {
+        <div class="active-filter-badge ml-auto">
+          <span class="material-symbols-outlined">filter_alt</span>
+          <span>Stage: <strong>{{ getStageTitle(filterId) }}</strong></span>
+          <button type="button" class="btn-clear-chip" (click)="pipelineService.setStageFilter(null); currentPage = 1;" title="Show all stages">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- MAIN LEADS SECTION -->
+  <section class="leads-list-section">
+    @if (pipelineService.isLoading()) {
+      <div class="pipeline-loading-box">
+        <div class="spinner"></div>
+        <p>Synchronizing lead pipeline across Sales, Advisor, and Operations...</p>
+      </div>
+    } @else if (pipelineService.leads().length === 0) {
+      <div class="pipeline-empty-box">
+        <span class="material-symbols-outlined empty-ic">filter_drama</span>
+        <h3>No Leads Found</h3>
+        <p>No enquiries match the current stage or search parameters. Reset filters to view all leads.</p>
+        <button type="button" class="btn-reset-action" (click)="resetAllFilters()">
+          <span class="material-symbols-outlined">refresh</span>
+          <span>View All Pipeline Leads</span>
+        </button>
+      </div>
+    } @else {
+      <!-- ISOLATED 10-STEP PROGRESS MATRIX TABLE VIEW -->
+      @if (viewMode === 'matrix') {
+        <!-- MATRIX SUMMARY & TOP PAGE SIZE BAR -->
+        <div class="matrix-toolbar-strip">
+          <div class="matrix-summary-left">
+            <span class="material-symbols-outlined text-blue">fact_check</span>
+            <h3 class="matrix-section-heading">10-Step Progress Matrix</h3>
+            <span class="matrix-showing-pill">Showing {{ paginationStart }}–{{ paginationEnd }} of {{ totalLeadsCount }} leads</span>
+          </div>
+          <div class="pagination-size-control">
+            <label for="matrixPageSizeSelect">Rows per page:</label>
+            <select
+              id="matrixPageSizeSelect"
+              [ngModel]="pageSize"
+              (ngModelChange)="onPageSizeChange($event)"
+              class="page-size-select">
+              @for (opt of pageSizeOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="matrix-table-card">
+          <div class="matrix-table-wrapper">
+            <table class="pipeline-matrix-table">
+              <thead>
+                <tr>
+                  <th class="th-user sticky-col">Investor / Lead Profile</th>
+                  <th class="th-details">Lead Details &amp; Requirements</th>
+                  <th class="th-stage">Current Stage</th>
+                  @for (stg of orderedStages; track stg.id) {
+                    <th class="th-step dept-th-{{ stg.department }}" [style.--dept-color]="getDeptColor(stg.department)">
+                      <div class="th-step-content">
+                        <span class="step-badge-no">{{ stg.step }}</span>
+                        <span class="step-head-title">{{ stg.shortTitle }}</span>
+                      </div>
+                    </th>
+                  }
+                  <th class="th-actions sticky-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (lead of paginatedLeads; track lead.user_id) {
+                  <tr class="matrix-row" [class.row-won]="lead.status === 'booked_converted'" [class.row-lost]="lead.status === 'lost_on_hold'">
+                    <!-- INVESTOR PROFILE (STICKY) -->
+                    <td class="td-user sticky-col">
+                      <div class="user-cell-wrap" (click)="openLeadDetails(lead)">
+                        <div class="user-avatar" [style.background-color]="getStageColor(lead.status)">
+                          {{ lead.name.charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="user-details">
+                          <div class="user-primary-row">
+                            <span class="lead-name" title="{{ lead.name }}">{{ lead.name }}</span>
+                            @if (lead.subscription_plan) {
+                              <span class="matrix-plan-tag {{ lead.subscription_plan }}">
+                                {{ lead.subscription_plan.replace('_', ' ') | titlecase }}
+                              </span>
+                            }
+                          </div>
+                          <div class="user-secondary-row">
+                            <span class="lead-phone">
+                              <span class="material-symbols-outlined ic-xs">call</span>
+                              {{ lead.phone || 'Phone not set' }}
+                            </span>
+                            <span class="lead-id-tag">ID #{{ lead.user_id }}</span>
+                          </div>
+                          @if (lead.email) {
+                            <div class="user-email-row" title="{{ lead.email }}">
+                              <span class="material-symbols-outlined ic-xs">mail</span>
+                              <span>{{ lead.email }}</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- INSTANT LEAD DETAILS & REQUIREMENTS -->
+                    <td class="td-lead-details">
+                      <div class="instant-details-stack">
+                        <div class="instant-meta-pills">
+                          @if (lead.preferred_location) {
+                            <span class="detail-chip chip-loc" title="Preferred Location">
+                              <span class="material-symbols-outlined ic-xs">location_on</span>
+                              {{ lead.preferred_location }}
+                            </span>
+                          }
+                          @if (formatBudgetRange(lead); as budgetStr) {
+                            <span class="detail-chip chip-budget" title="Budget Range">{{ budgetStr }}</span>
+                          }
+                          @if (lead.intention && !lead.preferred_location) {
+                            <span class="detail-chip chip-intent">{{ lead.intention }}</span>
+                          }
+                        </div>
+
+                        @if (lead.status === 'lost_on_hold' && lead.exit_reason_category) {
+                          <div class="detail-exit-line" title="{{ lead.exit_notes || lead.exit_reason_category }}">
+                            <span class="material-symbols-outlined ic-xs">warning</span>
+                            <span>{{ lead.exit_reason_category }}</span>
+                          </div>
+                        } @else if (lead.status === 'booked_converted' && lead.plot_no) {
+                          <div class="detail-won-line">
+                            <span class="material-symbols-outlined ic-xs">verified</span>
+                            <span>{{ lead.plot_no }} @if (lead.final_price) { • ₹{{ lead.final_price | number }} }</span>
+                          </div>
+                        } @else if (lead.notes) {
+                          <div class="detail-notes-line" title="{{ lead.notes }}">{{ lead.notes }}</div>
+                        }
+
+                        <div class="instant-telemetry-row">
+                          <span class="mini-tel" title="Properties viewed"><strong>{{ lead.viewed_properties_count }}</strong> Viewed</span>
+                          <span class="tel-sep">•</span>
+                          <span class="mini-tel" title="Properties shortlisted"><strong>{{ lead.shortlisted_count }}</strong> Shortlisted</span>
+                          <span class="tel-sep">•</span>
+                          <span class="mini-tel" title="Scheduled site visits"><strong>{{ lead.site_visits_count }}</strong> Visits</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- CURRENT STAGE -->
+                    <td class="td-stage">
+                      <div class="matrix-stage-pill" [style.borderColor]="getStageColor(lead.status)">
+                        <span class="matrix-dot" [style.backgroundColor]="getStageColor(lead.status)"></span>
+                        <span class="matrix-stage-text" [style.color]="getStageColor(lead.status)">{{ getStageTitle(lead.status) }}</span>
+                      </div>
+                      <span class="matrix-dept-sub">{{ getDeptLabel(lead.status) }}</span>
+                    </td>
+
+                    <!-- 10 STEPS INDICATOR COLUMNS -->
+                    @for (stg of orderedStages; track stg.id) {
+                      <td class="td-step-indicator" [class.col-won]="stg.id === 'booked_converted'" [class.col-lost]="stg.id === 'lost_on_hold'">
+                        <!-- STEPS 1 TO 9 (SEQUENTIAL FUNNEL) -->
+                        @if (stg.step <= 9) {
+                          @switch (getStepStatus(lead, stg.step)) {
+                            @case ('completed') {
+                              <div class="step-chip-status completed" title="Step {{ stg.step }} ({{ stg.title }}): Completed ✓">
+                                <span class="material-symbols-outlined check-ic">check_circle</span>
+                                <span class="sr-only">Completed</span>
+                              </div>
+                            }
+                            @case ('current') {
+                              <div class="step-chip-status active-current" title="Step {{ stg.step }} ({{ stg.title }}): Current Active Stage">
+                                <span class="pulse-ring"></span>
+                                <span class="current-label">Active</span>
+                              </div>
+                            }
+                            @case ('dropped') {
+                              <div class="step-chip-status dropped-halt" title="Discontinued at this step: {{ lead.exit_reason_category }}">
+                                <span class="material-symbols-outlined drop-ic">cancel</span>
+                                <span class="halt-label">Halted</span>
+                              </div>
+                            }
+                            @default {
+                              <div class="step-chip-status pending" title="Step {{ stg.step }} ({{ stg.title }}): Pending">
+                                <span class="pending-circle"></span>
+                              </div>
+                            }
+                          }
+                        }
+
+                        <!-- STEP 10 (DISCONTINUED / LOST ON HOLD) -->
+                        @if (stg.step === 10) {
+                          @if (lead.status === 'lost_on_hold') {
+                            <div class="lost-chip" [title]="lead.exit_notes || lead.exit_reason_category || 'Discontinued'">
+                              <span class="material-symbols-outlined lost-ic">warning</span>
+                              <span class="lost-reason-txt">{{ lead.exit_reason_category || 'On Hold' }}</span>
+                            </div>
+                          } @else {
+                            <span class="matrix-dash">—</span>
+                          }
+                        }
+                      </td>
+                    }
+
+                    <!-- ACTIONS (STICKY) -->
+                    <td class="td-actions sticky-actions">
+                      <div class="actions-group">
+                        <button type="button" class="btn-matrix-action details-btn" (click)="openLeadDetails(lead)" title="View Full Details">
+                          <span class="material-symbols-outlined">visibility</span>
+                          <span>Full Details</span>
+                        </button>
+                        @if (lead.status !== 'booked_converted' && lead.status !== 'lost_on_hold') {
+                          <button type="button" class="btn-matrix-action move-btn" (click)="openTransitionModal(lead)" title="Advance to Next Stage">
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                            <span>Move</span>
+                          </button>
+                        } @else if (lead.status === 'lost_on_hold') {
+                          <button type="button" class="btn-matrix-action revive-btn" (click)="reviveLead(lead)" title="Revive Lead">
+                            <span class="material-symbols-outlined">replay</span>
+                            <span>Revive</span>
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- CARDS FUNNEL GRID VIEW (IN PIPELINE FLOW MODE) -->
+      @else {
+        <div class="leads-cards-grid">
+          @for (lead of paginatedLeads; track lead.user_id) {
+            <div 
+              class="lead-card" 
+              [style.border-top]="'3px solid ' + getStageColor(lead.status)"
+              [class.lead-card-won]="lead.status === 'booked_converted'"
+              [class.lead-card-lost]="lead.status === 'lost_on_hold'">
+              
+              <!-- CARD HEADER -->
+              <div class="card-top-row">
+                <div class="buyer-profile-info">
+                  <div class="avatar-circle" [style.backgroundColor]="getStageColor(lead.status)">
+                  {{ lead.name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="profile-texts">
+                  <h4 class="buyer-name">{{ lead.name }}</h4>
+                  <div class="contact-subline">
+                    <span class="phone-num">
+                      <span class="material-symbols-outlined ic-sm">call</span>
+                      {{ lead.phone || 'Phone not registered' }}
+                    </span>
+                    @if (lead.subscription_plan) {
+                      <span class="plan-tag {{ lead.subscription_plan }}">
+                        {{ lead.subscription_plan.replace('_', ' ') | titlecase }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- CURRENT STAGE BADGE -->
+              <div class="stage-badge-stack">
+                <div class="current-stage-chip" [style.borderColor]="getStageColor(lead.status)">
+                  <span class="stage-dot" [style.backgroundColor]="getStageColor(lead.status)"></span>
+                  <span class="stage-text">{{ getStageTitle(lead.status) }}</span>
+                </div>
+                <span class="card-dept-sub" [style.color]="getStageColor(lead.status)">{{ getDeptLabel(lead.status) }}</span>
+              </div>
+            </div>
+
+            <!-- DISCONTINUED SUMMARY BANNER (IF LOST / ON HOLD) -->
+            @if (lead.status === 'lost_on_hold') {
+              <div class="discontinued-alert-box">
+                <div class="exit-stage-header">
+                  <span class="material-symbols-outlined exit-ic">info</span>
+                  <span>Discontinued at: <strong>{{ getStageTitle(lead.exit_stage || 'requirement_understood') }}</strong></span>
+                </div>
+                <div class="exit-reason-tag">
+                  Reason: <strong>{{ lead.exit_reason_category || 'Budget mismatch' }}</strong>
+                </div>
+                @if (lead.competitor_name) {
+                  <div class="competitor-text">
+                    Competitor: <strong>{{ lead.competitor_name }}</strong>
+                  </div>
+                }
+                @if (lead.exit_notes) {
+                  <p class="exit-notes-desc">"{{ lead.exit_notes }}"</p>
+                }
+                @if (lead.reengage_date) {
+                  <div class="reengage-pill">
+                    <span class="material-symbols-outlined ic-sm">calendar_month</span>
+                    <span>Follow up on: {{ lead.reengage_date | date:'mediumDate' }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- WON DEAL SUMMARY BANNER -->
+            @if (lead.status === 'booked_converted') {
+              <div class="won-deal-alert-box">
+                <div class="won-header">
+                  <span class="material-symbols-outlined won-ic">verified</span>
+                  <span>Deal Closed: <strong>{{ lead.plot_no || 'Plot Confirmed' }}</strong></span>
+                </div>
+                <div class="won-meta-row">
+                  @if (lead.final_price) {
+                    <span>Final Outlay: <strong>₹ {{ lead.final_price | number }}</strong></span>
+                  }
+                  @if (lead.booking_amount) {
+                    <span>Token: <strong>₹ {{ lead.booking_amount | number }}</strong></span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- BUYER SPECIFICATIONS & INTENT -->
+            <div class="lead-spec-details">
+              @if (lead.preferred_location) {
+                <div class="spec-row">
+                  <span class="spec-lbl">Preferred Locality:</span>
+                  <span class="spec-val">{{ lead.preferred_location }}</span>
+                </div>
+              }
+              @if (lead.budget_min || lead.budget_max) {
+                <div class="spec-row">
+                  <span class="spec-lbl">Budget Range:</span>
+                  <span class="spec-val">
+                    ₹ {{ (lead.budget_min ? (lead.budget_min/100000 | number:'1.0-1') : '0') }}L - 
+                    {{ (lead.budget_max ? (lead.budget_max/100000 | number:'1.0-1') : 'Max') }}L
+                  </span>
+                </div>
+              }
+              @if (lead.notes) {
+                <div class="spec-row notes-row">
+                  <span class="spec-lbl">Last Log:</span>
+                  <span class="spec-val truncate">{{ lead.notes }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- CROSS-DEPARTMENT ACTIVITY TELEMETRY -->
+            <div class="telemetry-bar">
+              <span class="tel-badge" title="Verified plots explored">
+                <span class="material-symbols-outlined ic-sm">visibility</span>
+                <span>{{ lead.viewed_properties_count }} Viewed</span>
+              </span>
+              <span class="tel-badge" title="Shortlisted plots">
+                <span class="material-symbols-outlined ic-sm">favorite</span>
+                <span>{{ lead.shortlisted_count }} Shortlisted</span>
+              </span>
+              <span class="tel-badge" title="Scheduled ground site visits">
+                <span class="material-symbols-outlined ic-sm">directions_car</span>
+                <span>{{ lead.site_visits_count }} Visits</span>
+              </span>
+            </div>
+
+            <!-- CARD ACTIONS -->
+            <div class="card-actions-row">
+              <button type="button" class="btn-inspect-lead" (click)="openLeadDetails(lead)">
+                <span class="material-symbols-outlined">quick_reference</span>
+                <span>Full Details</span>
+              </button>
+
+              @if (lead.status !== 'booked_converted' && lead.status !== 'lost_on_hold') {
+                <button type="button" class="btn-advance-stage" (click)="openTransitionModal(lead)">
+                  <span class="material-symbols-outlined">forward</span>
+                  <span>Advance Stage</span>
+                </button>
+
+                <button type="button" class="btn-action-drop" (click)="openDiscontinueModal(lead)" title="Mark as Discontinued / On Hold">
+                  <span class="material-symbols-outlined">block</span>
+                </button>
+
+                @if (lead.status === 'booking_in_progress' || lead.status === 'site_visit_completed') {
+                  <button type="button" class="btn-action-convert" (click)="openConvertModal(lead)" title="Close Deal (Won)">
+                    <span class="material-symbols-outlined">check_circle</span>
+                  </button>
+                }
+              }
+
+              @if (lead.status === 'lost_on_hold') {
+                <button type="button" class="btn-revive-lead" (click)="reviveLead(lead)">
+                  <span class="material-symbols-outlined">replay</span>
+                  <span>Revive Lead</span>
+                </button>
+              }
+            </div>
+          </div>
+          }
+        </div>
+      }
+
+      <!-- PAGINATION CONTROLS BAR (MATRIX & CARDS) -->
+      <div class="pipeline-pagination-bar">
+        <div class="pagination-info-group">
+          <span>Showing <strong>{{ paginationStart }}–{{ paginationEnd }}</strong> of <strong>{{ totalLeadsCount }}</strong> leads</span>
+          <span class="pagination-sep">•</span>
+          <label for="bottomPageSizeSelect">Per page:</label>
+          <select
+            id="bottomPageSizeSelect"
+            [ngModel]="pageSize"
+            (ngModelChange)="onPageSizeChange($event)"
+            class="page-size-select">
+            @for (opt of pageSizeOptions; track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="pagination-nav-buttons">
+          <button type="button" class="page-nav-btn" [disabled]="safeCurrentPage <= 1" (click)="goToPage(1)" title="First Page">
+            <span class="material-symbols-outlined">first_page</span>
+          </button>
+          <button type="button" class="page-nav-btn" [disabled]="safeCurrentPage <= 1" (click)="goToPage(safeCurrentPage - 1)" title="Previous Page">
+            <span class="material-symbols-outlined">chevron_left</span>
+            <span>Prev</span>
+          </button>
+
+          @for (p of pageNumbers; track p) {
+            <button
+              type="button"
+              class="page-num-btn"
+              [class.active]="p === safeCurrentPage"
+              (click)="goToPage(p)">
+              {{ p }}
+            </button>
+          }
+
+          <button type="button" class="page-nav-btn" [disabled]="safeCurrentPage >= totalPages" (click)="goToPage(safeCurrentPage + 1)" title="Next Page">
+            <span>Next</span>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+          <button type="button" class="page-nav-btn" [disabled]="safeCurrentPage >= totalPages" (click)="goToPage(totalPages)" title="Last Page">
+            <span class="material-symbols-outlined">last_page</span>
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- FULL LEAD DETAILS SLIDE-OVER DRAWER                                       -->
+  <!-- ========================================================================= -->
+  @if (isDetailDrawerOpen && activeLeadForDetail; as lead) {
+    <div class="drawer-backdrop" (click)="closeLeadDetails()">
+      <div class="drawer-container" (click)="$event.stopPropagation()">
+        <!-- DRAWER HEADER -->
+        <div class="drawer-header">
+          <div class="drawer-title-group">
+            <span class="material-symbols-outlined drawer-header-ic">person_search</span>
+            <div>
+              <h3>{{ lead.name }} (ID #{{ lead.user_id }})</h3>
+              <p class="drawer-sub">
+                Current Stage: <span class="stage-tag" [style.backgroundColor]="getStageColor(lead.status)">{{ getStageTitle(lead.status) }}</span> &bull; 
+                {{ getDeptLabel(lead.status) }}
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-drawer" (click)="closeLeadDetails()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="drawer-body">
+          <!-- QUICK ACTION BAR INSIDE DRAWER -->
+          <div class="drawer-action-strip">
+            @if (lead.status !== 'booked_converted' && lead.status !== 'lost_on_hold') {
+              <button type="button" class="btn-drawer-action primary" (click)="openTransitionModal(lead)">
+                <span class="material-symbols-outlined">arrow_forward</span>
+                <span>Move to Next Stage</span>
+              </button>
+              <button type="button" class="btn-drawer-action success" (click)="openConvertModal(lead)">
+                <span class="material-symbols-outlined">verified</span>
+                <span>Close Deal as Won</span>
+              </button>
+              <button type="button" class="btn-drawer-action danger" (click)="openDiscontinueModal(lead)">
+                <span class="material-symbols-outlined">cancel</span>
+                <span>Mark Discontinued / On Hold</span>
+              </button>
+            } @else if (lead.status === 'lost_on_hold') {
+              <button type="button" class="btn-drawer-action primary" (click)="reviveLead(lead)">
+                <span class="material-symbols-outlined">replay</span>
+                <span>Re-activate / Revive into Pipeline</span>
+              </button>
+            }
+          </div>
+
+          <!-- CHRONOLOGICAL CROSS-ROLE AUDIT TRAIL -->
+          <div class="drawer-section">
+            <div class="section-title-row">
+              <span class="material-symbols-outlined sec-ic">history_edu</span>
+              <h4>Cross-Department Audit Timeline</h4>
+            </div>
+
+            @if (lead.history && lead.history.length > 0) {
+              <div class="history-timeline">
+                @for (hist of lead.history; track hist.id) {
+                  <div class="history-node">
+                    <div class="node-marker" [class.won-marker]="hist.action_type === 'deal_converted'" [class.drop-marker]="hist.action_type === 'lead_discontinued'">
+                      <span class="material-symbols-outlined ic-xs">
+                        {{ hist.action_type === 'deal_converted' ? 'star' : (hist.action_type === 'lead_discontinued' ? 'close' : 'check') }}
+                      </span>
+                    </div>
+                    <div class="node-content">
+                      <div class="node-time-row">
+                        <span class="node-dept">{{ hist.department | uppercase }}</span>
+                        <span class="node-author">by {{ hist.changed_by_name || 'System' }}</span>
+                        <span class="node-date">{{ hist.created_at | date:'short' }}</span>
+                      </div>
+                      <p class="node-notes">{{ hist.notes }}</p>
+                      @if (hist.to_stage) {
+                        <div class="node-stage-badge">
+                          Stage: <strong>{{ getStageTitle(hist.to_stage) }}</strong>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">No historical transitions recorded yet for this lead.</p>
+            }
+          </div>
+
+          <!-- VIEWED PROPERTIES PREVIEWS -->
+          <div class="drawer-section">
+            <div class="section-title-row">
+              <span class="material-symbols-outlined sec-ic">travel_explore</span>
+              <h4>Properties Explored by Buyer ({{ lead.viewed_properties_count }})</h4>
+            </div>
+            @if (lead.viewed_properties && lead.viewed_properties.length > 0) {
+              <div class="drawer-props-grid">
+                @for (p of lead.viewed_properties; track p.id) {
+                  <div class="drawer-prop-card">
+                    <img [src]="p.image" [alt]="p.title" class="prop-thumb" />
+                    <div class="prop-info">
+                      <h5 class="prop-title">{{ p.title }}</h5>
+                      <span class="prop-price">{{ p.price }}</span>
+                      <span class="prop-loc">{{ p.locality }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">Buyer has not viewed dedicated property pages yet.</p>
+            }
+          </div>
+
+          <!-- SHORTLISTED PROPERTIES -->
+          <div class="drawer-section">
+            <div class="section-title-row">
+              <span class="material-symbols-outlined sec-ic">bookmark</span>
+              <h4>Shortlisted Plots ({{ lead.shortlisted_count }})</h4>
+            </div>
+            @if (lead.shortlisted_properties && lead.shortlisted_properties.length > 0) {
+              <div class="drawer-shortlist-list">
+                @for (sp of lead.shortlisted_properties; track sp.property_id) {
+                  <div class="drawer-shortlist-card">
+                    <span class="material-symbols-outlined star-ic">star</span>
+                    <div class="shortlist-meta">
+                      <strong class="shortlist-title">{{ sp.title }}</strong>
+                      <span class="shortlist-date">Shortlisted on {{ sp.shortlisted_at | date:'mediumDate' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">Buyer has not shortlisted any properties yet.</p>
+            }
+          </div>
+
+          <!-- SITE VISITS -->
+          <div class="drawer-section">
+            <div class="section-title-row">
+              <span class="material-symbols-outlined sec-ic">directions_car</span>
+              <h4>Ground Site Visits ({{ lead.site_visits_count }})</h4>
+            </div>
+            @if (lead.site_visits && lead.site_visits.length > 0) {
+              <div class="site-visits-list">
+                @for (sv of lead.site_visits; track sv.id) {
+                  <div class="site-visit-card">
+                    <div class="sv-header">
+                      <strong>{{ sv.property_title }}</strong>
+                      <span class="sv-status-pill">{{ sv.status }}</span>
+                    </div>
+                    <div class="sv-meta">
+                      <span>Date: {{ sv.visit_date }} (Slot: {{ sv.visit_slot }})</span>
+                      <span>Assigned Executive: {{ sv.assigned_executive_name || 'Unassigned' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">No site visits booked yet.</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DISCONTINUE LEAD (ANY STAGE)                                       -->
+  <!-- ========================================================================= -->
+  @if (isDiscontinueModalOpen && targetLeadForDiscontinue; as lead) {
+    <div class="modal-backdrop" (click)="closeDiscontinueModal()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header header-danger">
+          <div class="header-texts">
+            <span class="material-symbols-outlined modal-ic">cancel</span>
+            <div>
+              <h3>Discontinue / Pause Lead</h3>
+              <p class="sub">Exit Stage: <strong>{{ getStageTitle(lead.status) }}</strong></p>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closeDiscontinueModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-instruction">
+            Please log why <strong>{{ lead.name }}</strong> discontinued at this step. This ensures accurate leak analysis and follow-up tracking.
+          </p>
+
+          <!-- CATEGORY CHIPS -->
+          <div class="form-group">
+            <label class="form-label">Primary Discontinuation Reason *</label>
+            <div class="chips-selector-grid">
+              @for (cat of exitCategories; track cat) {
+                <button 
+                  type="button" 
+                  class="chip-btn" 
+                  [class.selected]="selectedExitCategory === cat"
+                  (click)="selectedExitCategory = cat">
+                  {{ cat }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- COMPETITOR NAME (IF CHOSEN) -->
+          @if (selectedExitCategory.includes('Competitor')) {
+            <div class="form-group">
+              <label class="form-label">Competitor Developer / Layout Name *</label>
+              <input type="text" [(ngModel)]="competitorName" placeholder="e.g. Casagrand South Phase 2" class="form-input" />
+            </div>
+          }
+
+          <!-- RE-ENGAGE DATE (FOR ON HOLD) -->
+          @if (selectedExitCategory.includes('Postponed') || selectedExitCategory.includes('Budget')) {
+            <div class="form-group">
+              <label class="form-label">Follow-up / Re-engagement Date (Optional)</label>
+              <input type="date" [(ngModel)]="reengageDate" class="form-input" />
+            </div>
+          }
+
+          <!-- OBSERVATION NOTES -->
+          <div class="form-group">
+            <label class="form-label">Post-Mortem Remarks &amp; Feedback</label>
+            <textarea 
+              [(ngModel)]="exitNotes" 
+              rows="3" 
+              placeholder="e.g. Buyer felt road width was insufficient; loan sanctioned for only 70% of cost." 
+              class="form-textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeDiscontinueModal()">Cancel</button>
+          <button type="button" class="btn-submit-danger" (click)="submitDiscontinue()">
+            <span class="material-symbols-outlined">block</span>
+            <span>Record Discontinuation</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CONVERT DEAL (WON)                                                 -->
+  <!-- ========================================================================= -->
+  @if (isConvertModalOpen && targetLeadForConvert; as lead) {
+    <div class="modal-backdrop" (click)="closeConvertModal()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header header-success">
+          <div class="header-texts">
+            <span class="material-symbols-outlined modal-ic">verified</span>
+            <div>
+              <h3>Close Deal: Booked &amp; Converted (Won)</h3>
+              <p class="sub">Investor: <strong>{{ lead.name }}</strong> ({{ lead.phone }})</p>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closeConvertModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Project / Property ID *</label>
+              <input type="text" [(ngModel)]="convertPropertyId" placeholder="e.g. PRJ-6873" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmed Plot Number *</label>
+              <input type="text" [(ngModel)]="convertPlotNo" placeholder="e.g. Plot #662 (North-East Facing)" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Final Outlay Price (₹) *</label>
+              <input type="number" [(ngModel)]="convertFinalPrice" placeholder="e.g. 3500000" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Advance Token Paid (₹) *</label>
+              <input type="number" [(ngModel)]="convertBookingAmount" placeholder="e.g. 50000" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Target Registration / Deed Transfer Date</label>
+            <input type="date" [(ngModel)]="convertRegDate" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Deal Closure Remarks</label>
+            <textarea [(ngModel)]="convertDealNotes" rows="2" placeholder="e.g. Cheque received; Patta transfer file initiated." class="form-textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeConvertModal()">Cancel</button>
+          <button type="button" class="btn-submit-success" (click)="submitConvert()">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Confirm Booked / Converted</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADVANCE STAGE                                                      -->
+  <!-- ========================================================================= -->
+  @if (isTransitionModalOpen && targetLeadForTransition; as lead) {
+    <div class="modal-backdrop" (click)="closeTransitionModal()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="header-texts">
+            <span class="material-symbols-outlined modal-ic">trending_flat</span>
+            <div>
+              <h3>Advance Pipeline Stage</h3>
+              <p class="sub">Buyer: <strong>{{ lead.name }}</strong></p>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closeTransitionModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Target Pipeline Stage *</label>
+            <select [(ngModel)]="transitionTargetStage" class="form-select">
+              @for (stg of pipelineService.stages(); track stg.id) {
+                <option [value]="stg.id">{{ stg.step }}. {{ stg.title }} ({{ stg.dept_label }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Preferred Locality / Corridor</label>
+              <input type="text" [(ngModel)]="transitionLocation" placeholder="e.g. OMR Siruseri" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Budget Max (₹)</label>
+              <input type="number" [(ngModel)]="transitionBudgetMax" placeholder="e.g. 5000000" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Handover / Action Notes</label>
+            <textarea [(ngModel)]="transitionNotes" rows="2" placeholder="e.g. Advised on DTCP cleared layouts; buyer wants visit." class="form-textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeTransitionModal()">Cancel</button>
+          <button type="button" class="btn-submit-primary" (click)="submitTransition()">
+            <span class="material-symbols-outlined">forward</span>
+            <span>Update Stage</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

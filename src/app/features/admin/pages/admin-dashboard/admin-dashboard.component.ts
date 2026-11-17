@@ -115,9 +115,13 @@ import {
   PlotBookingItem
 } from '../../../../core/models/workspace.model';
 import { ReraValidationService, ReraValidationResult } from '../../../../core/services/rera-validation.service';
+import { LeadPipelineCommandCenterComponent } from '../../components/lead-pipeline-command-center/lead-pipeline-command-center.component';
+import { AdminLeadsAssignmentComponent } from '../../components/admin-leads-assignment/admin-leads-assignment.component';
 
 export type AdminActiveTab =
   | 'review_queue'
+  | 'lead_pipeline'
+  | 'leads_assignment'
   | 'post_property'
   | 'plot_studio'
   | 'all_directory'
@@ -153,7 +157,9 @@ export interface UploadedImageItem {
     PlotexViewerComponent,
     InteractivePlotLayoutComponent,
     AdminDevelopersCrmComponent,
-    AdminOperationsModalsComponent
+    AdminOperationsModalsComponent,
+    LeadPipelineCommandCenterComponent,
+    AdminLeadsAssignmentComponent
   ],
   providers: [
     { provide: ADMIN_DASHBOARD_HOST, useExisting: forwardRef(() => AdminDashboardComponent) }
@@ -352,6 +358,35 @@ export class AdminDashboardComponent {
     }
   }
 
+  private readonly VALID_ADMIN_TABS: readonly AdminActiveTab[] = [
+    'review_queue',
+    'lead_pipeline',
+    'leads_assignment',
+    'post_property',
+    'plot_studio',
+    'all_directory',
+    'developers',
+    'financials',
+    'user_mindset',
+    'bulk_upload',
+    'buyer_workspaces',
+    'subscription_buyers',
+    'subscription_plans',
+    'whatsapp_messages'
+  ];
+
+  private getInitialAdminTab(): AdminActiveTab {
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('findaplot_admin_active_tab') : null;
+      if (saved && this.VALID_ADMIN_TABS.includes(saved as AdminActiveTab)) {
+        return saved as AdminActiveTab;
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    return 'review_queue';
+  }
+
   ngOnInit(): void {
     if (!this.adminService.verifyAdminAccess()) {
       this.router.navigate(['/admin/login']);
@@ -363,8 +398,14 @@ export class AdminDashboardComponent {
     this.loadAdminDevelopers();
 
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['review_queue', 'post_property', 'plot_studio', 'all_directory', 'developers', 'financials', 'user_mindset', 'bulk_upload', 'buyer_workspaces', 'subscription_buyers', 'subscription_plans', 'whatsapp_messages'].includes(params['tab'])) {
-        this.setTab(params['tab'] as AdminActiveTab);
+      const queryTab = params['tab'] as string | undefined;
+      if (queryTab && this.VALID_ADMIN_TABS.includes(queryTab as AdminActiveTab)) {
+        this.setTab(queryTab as AdminActiveTab, false);
+        return;
+      }
+      const savedTab = this.getInitialAdminTab();
+      if (savedTab !== 'review_queue') {
+        this.setTab(savedTab, true);
       }
     });
   }
@@ -375,7 +416,7 @@ export class AdminDashboardComponent {
   }
 
   // Active Tab View & Modern Enterprise Sidebar State
-  readonly activeTab = signal<AdminActiveTab>('review_queue');
+  readonly activeTab = signal<AdminActiveTab>(this.getInitialAdminTab());
   readonly isSidebarCollapsed = signal<boolean>(false);
   readonly globalAdminSearch = signal<string>('');
 
@@ -386,6 +427,8 @@ export class AdminDashboardComponent {
   readonly activeTabTitle = computed<string>(() => {
     const map: Record<AdminActiveTab, string> = {
       review_queue: 'Project Review Queue',
+      lead_pipeline: 'Master Lead Pipeline (10 Stages)',
+      leads_assignment: 'All Leads & Role Assignment',
       post_property: 'Post New Property',
       plot_studio: 'Plot Partition Studio 3D',
       all_directory: 'All Properties & Audit Trail',
@@ -401,8 +444,23 @@ export class AdminDashboardComponent {
     return map[this.activeTab()] || 'Admin Dashboard';
   });
 
-  setTab(tab: AdminActiveTab): void {
+  setTab(tab: AdminActiveTab, syncUrl = true): void {
     this.activeTab.set(tab);
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('findaplot_admin_active_tab', tab);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    if (syncUrl) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
     if (tab === 'subscription_buyers' || tab === 'whatsapp_messages') {
       this.loadDashboardMetrics();
       if (tab === 'whatsapp_messages') {

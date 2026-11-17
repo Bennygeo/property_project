@@ -1,0 +1,603 @@
+<div class="leads-assign-shell">
+
+  <!-- TOP HEADER & ACTION BAR -->
+  <div class="la-header-bar">
+    <div class="la-header-title">
+      <div class="la-icon-badge">
+        <span class="material-symbols-outlined">assignment_ind</span>
+      </div>
+      <div>
+        <h2>All Leads &amp; Multi-Role Assignment Center</h2>
+        <p>Inspect every platform buyer lead and manually or auto-assign ownership across multiple Sales Executives, Property Advisors, and Operations Executives.</p>
+      </div>
+    </div>
+
+    <div class="la-header-actions">
+      <button type="button" class="btn-la-secondary" (click)="exportLeadsToExcel()" title="Export leads and multi-role assignments to Excel spreadsheet (.xlsx)">
+        <span class="material-symbols-outlined">download</span>
+        <span>Export Excel</span>
+      </button>
+
+      <button type="button" class="btn-la-primary" (click)="openAddStaffModal()">
+        <span class="material-symbols-outlined">person_add</span>
+        <span>+ Add Role Staff</span>
+      </button>
+
+      <a routerLink="/admin/roles" class="btn-la-outline">
+        <span class="material-symbols-outlined">manage_accounts</span>
+        <span>Manage Roles (RBAC)</span>
+      </a>
+
+      <button type="button" class="btn-la-icon" (click)="refreshLeads()" [disabled]="pipelineService.isLoading()" title="Refresh leads & staff workload">
+        <span class="material-symbols-outlined" [class.spin]="pipelineService.isLoading()">refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- WORKLOAD & ROLE STAFF ROSTER STRIP -->
+  <div class="la-workload-grid">
+    <!-- Summary KPI -->
+    <div class="wl-card summary">
+      <div class="wl-head">
+        <span class="wl-badge neutral">TOTAL LEADS</span>
+        <span class="wl-big-num">{{ tabCounts().all }}</span>
+      </div>
+      <div class="wl-sub-stats">
+        <span class="sub-stat warn">
+          <strong>{{ tabCounts().unassigned }}</strong> Unassigned Sales
+        </span>
+        <span class="sub-stat hold">
+          <strong>{{ tabCounts().discontinued }}</strong> Halted / On Hold
+        </span>
+      </div>
+    </div>
+
+    <!-- Sales Executives Roster -->
+    <div class="wl-card sales">
+      <div class="wl-head">
+        <span class="wl-badge sales">SALES EXECUTIVES ({{ salesStaff().length }})</span>
+        <span class="wl-hint">Click to filter</span>
+      </div>
+      <div class="staff-chips-list">
+        @for (s of salesStaff(); track s.id) {
+          <button 
+            type="button" 
+            class="staff-chip-btn"
+            [class.active]="selectedStaffFilter() === '' + s.id"
+            (click)="filterByStaffChip(s.id)"
+            [title]="s.email + ' (' + s.assigned_count + ' active leads)'">
+            <span class="chip-name">{{ s.name }}</span>
+            <span class="chip-count">{{ s.assigned_count }}</span>
+          </button>
+        } @empty {
+          <span class="wl-empty">No Sales Executives provisioned</span>
+        }
+      </div>
+    </div>
+
+    <!-- Property Advisors Roster -->
+    <div class="wl-card advisor">
+      <div class="wl-head">
+        <span class="wl-badge advisor">PROPERTY ADVISORS ({{ advisorStaff().length }})</span>
+        <span class="wl-hint">Click to filter</span>
+      </div>
+      <div class="staff-chips-list">
+        @for (s of advisorStaff(); track s.id) {
+          <button 
+            type="button" 
+            class="staff-chip-btn"
+            [class.active]="selectedStaffFilter() === '' + s.id"
+            (click)="filterByStaffChip(s.id)"
+            [title]="s.email + ' (' + s.assigned_count + ' active leads)'">
+            <span class="chip-name">{{ s.name }}</span>
+            <span class="chip-count">{{ s.assigned_count }}</span>
+          </button>
+        } @empty {
+          <span class="wl-empty">No Property Advisors provisioned</span>
+        }
+      </div>
+    </div>
+
+    <!-- Operations Executives Roster -->
+    <div class="wl-card ops">
+      <div class="wl-head">
+        <span class="wl-badge ops">OPERATIONS EXECUTIVES ({{ opsStaff().length }})</span>
+        <span class="wl-hint">Click to filter</span>
+      </div>
+      <div class="staff-chips-list">
+        @for (s of opsStaff(); track s.id) {
+          <button 
+            type="button" 
+            class="staff-chip-btn"
+            [class.active]="selectedStaffFilter() === '' + s.id"
+            (click)="filterByStaffChip(s.id)"
+            [title]="s.email + ' (' + s.assigned_count + ' active leads)'">
+            <span class="chip-name">{{ s.name }}</span>
+            <span class="chip-count">{{ s.assigned_count }}</span>
+          </button>
+        } @empty {
+          <span class="wl-empty">No Operations Executives provisioned</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN ASSIGNMENT CARD -->
+  <div class="la-table-card">
+
+    <!-- Filter Tabs & Search Controls -->
+    <div class="la-toolbar-top">
+      <div class="la-filter-tabs">
+        <button type="button" class="la-tab-pill" [class.active]="activeAssignmentTab() === 'all'" (click)="setAssignmentTab('all')">
+          <span>All Leads</span>
+          <span class="tab-cnt">{{ tabCounts().all }}</span>
+        </button>
+        <button type="button" class="la-tab-pill" [class.active]="activeAssignmentTab() === 'unassigned'" (click)="setAssignmentTab('unassigned')">
+          <span>Unassigned</span>
+          <span class="tab-cnt warn">{{ tabCounts().unassigned }}</span>
+        </button>
+        <button type="button" class="la-tab-pill" [class.active]="activeAssignmentTab() === 'sales_assigned'" (click)="setAssignmentTab('sales_assigned')">
+          <span>Sales Assigned</span>
+          <span class="tab-cnt">{{ tabCounts().sales_assigned }}</span>
+        </button>
+        <button type="button" class="la-tab-pill" [class.active]="activeAssignmentTab() === 'advisor_assigned'" (click)="setAssignmentTab('advisor_assigned')">
+          <span>Advisor Assigned</span>
+          <span class="tab-cnt">{{ tabCounts().advisor_assigned }}</span>
+        </button>
+        <button type="button" class="la-tab-pill" [class.active]="activeAssignmentTab() === 'ops_assigned'" (click)="setAssignmentTab('ops_assigned')">
+          <span>Ops Assigned</span>
+          <span class="tab-cnt">{{ tabCounts().ops_assigned }}</span>
+        </button>
+        <button type="button" class="la-tab-pill" [class.active]="activeAssignmentTab() === 'discontinued'" (click)="setAssignmentTab('discontinued')">
+          <span>Halted / On Hold</span>
+          <span class="tab-cnt hold">{{ tabCounts().discontinued }}</span>
+        </button>
+      </div>
+
+      <div class="la-search-filters">
+        <div class="la-search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input 
+            type="text" 
+            [ngModel]="searchText()" 
+            (ngModelChange)="searchText.set($event); currentPage.set(1)"
+            placeholder="Search buyer, phone, locality, assignee, notes..." />
+        </div>
+
+        <select class="la-filter-select" [ngModel]="selectedStaffFilter()" (ngModelChange)="selectedStaffFilter.set($event); currentPage.set(1)">
+          <option value="all">All Role Staff</option>
+          @if (salesStaff().length > 0) {
+            <optgroup label="Sales Executives">
+              @for (s of salesStaff(); track s.id) {
+                <option [value]="'' + s.id">{{ s.name }} ({{ s.assigned_count }})</option>
+              }
+            </optgroup>
+          }
+          @if (advisorStaff().length > 0) {
+            <optgroup label="Property Advisors">
+              @for (s of advisorStaff(); track s.id) {
+                <option [value]="'' + s.id">{{ s.name }} ({{ s.assigned_count }})</option>
+              }
+            </optgroup>
+          }
+          @if (opsStaff().length > 0) {
+            <optgroup label="Operations Executives">
+              @for (s of opsStaff(); track s.id) {
+                <option [value]="'' + s.id">{{ s.name }} ({{ s.assigned_count }})</option>
+              }
+            </optgroup>
+          }
+        </select>
+
+        <select class="la-filter-select" [ngModel]="selectedStageFilter()" (ngModelChange)="selectedStageFilter.set($event); currentPage.set(1)">
+          <option value="all">All 10 Stages</option>
+          @for (st of pipelineService.stages(); track st.id) {
+            <option [value]="st.id">{{ st.step }}. {{ st.title }}</option>
+          }
+        </select>
+
+        @if (activeAssignmentTab() !== 'all' || searchText() || selectedStaffFilter() !== 'all' || selectedStageFilter() !== 'all') {
+          <button type="button" class="btn-clear-filters" (click)="clearFilters()">Reset</button>
+        }
+      </div>
+    </div>
+
+    <!-- BULK ROLE ASSIGNMENT BAR (WHEN CHECKBOXES SELECTED) -->
+    @if (selectedUserIds().length > 0) {
+      <div class="la-bulk-bar">
+        <div class="bulk-left">
+          <span class="bulk-count-pill">{{ selectedUserIds().length }} Lead(s) Selected</span>
+          <span class="bulk-label">Assign Role:</span>
+          <select class="bulk-select" [ngModel]="bulkRoleType()" (ngModelChange)="onBulkRoleChange($event)">
+            <option value="sales">Sales Executive</option>
+            <option value="advisor">Property Advisor</option>
+            <option value="operations">Operations Executive</option>
+          </select>
+
+          <span class="bulk-label">To:</span>
+          <select class="bulk-select staff" [ngModel]="bulkTargetStaff()" (ngModelChange)="bulkTargetStaff.set($event)">
+            <option value="round_robin">⚡ Round-Robin Auto-Distribute ({{ bulkStaffPool().length }} Staff)</option>
+            @for (st of bulkStaffPool(); track st.id) {
+              <option [value]="'' + st.id">{{ st.name }} ({{ st.assigned_count }} active)</option>
+            }
+            <option value="0">-- Clear Assignment (Unassign) --</option>
+          </select>
+
+          <label class="bulk-checkbox">
+            <input type="checkbox" [ngModel]="bulkAdvanceStage()" (ngModelChange)="bulkAdvanceStage.set($event)" />
+            <span>Auto-advance stage for Advisor/Ops</span>
+          </label>
+        </div>
+
+        <div class="bulk-actions">
+          <button type="button" class="btn-bulk-clear" (click)="clearSelection()">Cancel</button>
+          <button type="button" class="btn-bulk-apply" (click)="executeBulkAssign()" [disabled]="isAssigning()">
+            <span class="material-symbols-outlined">assignment_turned_in</span>
+            <span>Apply Assignment</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- LEADS TABLE -->
+    <div class="la-table-wrap">
+      <table class="la-table">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <input type="checkbox" [checked]="areAllOnPageSelected()" (change)="toggleSelectAllOnPage()" title="Select all leads on this page" />
+            </th>
+            <th style="min-width: 210px;">Lead Details &amp; Contact</th>
+            <th style="min-width: 195px;">Pipeline Stage &amp; Requirements</th>
+            <th style="min-width: 195px;">Assigned Sales Executive</th>
+            <th style="min-width: 195px;">Assigned Property Advisor</th>
+            <th style="min-width: 195px;">Assigned Operations Exec</th>
+            <th style="min-width: 175px; text-align: right;">Notes &amp; Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lead of paginatedLeads(); track lead.user_id) {
+            <tr [class.row-halted]="lead.status === 'lost_on_hold'" [class.row-selected]="isSelected(lead.user_id)">
+              <!-- Checkbox -->
+              <td class="col-check">
+                <input type="checkbox" [checked]="isSelected(lead.user_id)" (change)="toggleSelectOne(lead.user_id)" />
+              </td>
+
+              <!-- Lead Details -->
+              <td>
+                <div class="lead-identity-cell">
+                  <span class="lead-avatar">{{ (lead.name || 'IN').substring(0, 2).toUpperCase() }}</span>
+                  <div class="lead-id-meta">
+                    <div class="lead-name-line">
+                      <strong>{{ lead.name }}</strong>
+                      <span class="lead-uid">#{{ lead.user_id }}</span>
+                    </div>
+                    <div class="lead-contact-line">
+                      @if (lead.phone) {
+                        <a [href]="'tel:' + lead.phone" class="contact-tel">{{ lead.phone }}</a>
+                        <button type="button" class="btn-mini-wa" (click)="openWhatsApp(lead)" title="WhatsApp Buyer">
+                          <span class="material-symbols-outlined">chat</span>
+                        </button>
+                      } @else {
+                        <span class="muted">No phone</span>
+                      }
+                    </div>
+                    @if (lead.email) {
+                      <span class="lead-email-sub">{{ lead.email }}</span>
+                    }
+                    <div class="lead-activity-tags">
+                      <span class="mini-tag views">{{ lead.viewed_properties_count || 0 }} Viewed</span>
+                      <span class="mini-tag shortlist">{{ lead.shortlisted_count || 0 }} Shortlisted</span>
+                      @if (lead.site_visits_count > 0) {
+                        <span class="mini-tag visits">{{ lead.site_visits_count }} Visit</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Stage & Requirements -->
+              <td>
+                <div class="lead-stage-cell">
+                  @if (getStageMeta(lead.status); as stMeta) {
+                    <span class="stage-badge" [style.border-left-color]="stMeta.color" [class.halted]="lead.status === 'lost_on_hold'">
+                      <span class="stage-step">Step {{ stMeta.step }}</span>
+                      <span class="stage-name">{{ stMeta.title }}</span>
+                    </span>
+                  } @else {
+                    <span class="stage-badge">{{ lead.status }}</span>
+                  }
+                  <span class="req-line">{{ lead.intention || 'Exploring Plots' }}</span>
+                  @if (lead.preferred_location || formatBudgetRange(lead)) {
+                    <span class="req-budget">
+                      {{ lead.preferred_location || 'Any locality' }}
+                      @if (formatBudgetRange(lead)) {
+                        &bull; {{ formatBudgetRange(lead) }}
+                      }
+                    </span>
+                  }
+                </div>
+              </td>
+
+              <!-- Assign Sales Executive -->
+              <td>
+                <div class="role-assign-cell">
+                  <select 
+                    class="assign-select sales"
+                    [class.unassigned]="!lead.assigned_sales_id"
+                    [ngModel]="lead.assigned_sales_id ?? 0"
+                    (ngModelChange)="onQuickAssign(lead, 'sales', $event)"
+                    [disabled]="isAssigning()">
+                    <option [ngValue]="0">-- Unassigned --</option>
+                    @for (s of salesStaff(); track s.id) {
+                      <option [ngValue]="s.id">{{ s.name }}</option>
+                    }
+                  </select>
+                  @if (lead.assigned_sales_name) {
+                    <span class="assigned-indicator sales">Assigned: {{ lead.assigned_sales_name }}</span>
+                  } @else {
+                    <span class="unassigned-hint">Needs Sales Owner</span>
+                  }
+                </div>
+              </td>
+
+              <!-- Assign Property Advisor -->
+              <td>
+                <div class="role-assign-cell">
+                  <select 
+                    class="assign-select advisor"
+                    [class.unassigned]="!lead.assigned_advisor_id"
+                    [ngModel]="lead.assigned_advisor_id ?? 0"
+                    (ngModelChange)="onQuickAssign(lead, 'advisor', $event)"
+                    [disabled]="isAssigning()">
+                    <option [ngValue]="0">-- Unassigned --</option>
+                    @for (s of advisorStaff(); track s.id) {
+                      <option [ngValue]="s.id">{{ s.name }}</option>
+                    }
+                  </select>
+                  @if (lead.assigned_advisor_name) {
+                    <span class="assigned-indicator advisor">Assigned: {{ lead.assigned_advisor_name }}</span>
+                  } @else {
+                    <span class="unassigned-hint">Not Assigned</span>
+                  }
+                </div>
+              </td>
+
+              <!-- Assign Operations Executive -->
+              <td>
+                <div class="role-assign-cell">
+                  <select 
+                    class="assign-select ops"
+                    [class.unassigned]="!lead.assigned_ops_id"
+                    [ngModel]="lead.assigned_ops_id ?? 0"
+                    (ngModelChange)="onQuickAssign(lead, 'operations', $event)"
+                    [disabled]="isAssigning()">
+                    <option [ngValue]="0">-- Unassigned --</option>
+                    @for (s of opsStaff(); track s.id) {
+                      <option [ngValue]="s.id">{{ s.name }}</option>
+                    }
+                  </select>
+                  @if (lead.assigned_ops_name) {
+                    <span class="assigned-indicator ops">Assigned: {{ lead.assigned_ops_name }}</span>
+                  } @else {
+                    <span class="unassigned-hint">Not Assigned</span>
+                  }
+                </div>
+              </td>
+
+              <!-- Latest Comment & Detailed Assign Modal Trigger -->
+              <td style="text-align: right;">
+                <div class="notes-actions-cell">
+                  @if (getLatestLeadComment(lead); as latest) {
+                    <div class="latest-note-preview" [title]="latest.text">
+                      <span class="note-tag">{{ latest.label }}</span>
+                      <span class="note-snippet">{{ latest.text }}</span>
+                    </div>
+                  }
+                  <button type="button" class="btn-full-assign" (click)="openAssignModal(lead)">
+                    <span class="material-symbols-outlined">tune</span>
+                    <span>Assign &amp; Brief</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="la-empty-cell">
+                <div class="la-empty-state">
+                  <span class="material-symbols-outlined">person_search</span>
+                  <h4>No leads match the selected filters</h4>
+                  <p>Clear your search query or role staff filters above to inspect all platform buyer leads.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION BAR -->
+    <div class="la-pagination-bar">
+      <div class="pag-info">
+        Showing
+        <strong>{{ filteredLeads().length === 0 ? 0 : ((safeCurrentPage() - 1) * pageSize() + 1) }}</strong>
+        –
+        <strong>{{ (safeCurrentPage() * pageSize()) > filteredLeads().length ? filteredLeads().length : (safeCurrentPage() * pageSize()) }}</strong>
+        of <strong>{{ filteredLeads().length }}</strong> lead(s)
+      </div>
+
+      <div class="pag-controls">
+        <label class="pag-size-label">
+          <span>Per page:</span>
+          <select [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
+            @for (sz of pageSizeOptions; track sz) {
+              <option [value]="sz">{{ sz }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="pag-buttons">
+          <button type="button" class="pag-btn" [disabled]="safeCurrentPage() <= 1" (click)="currentPage.set(safeCurrentPage() - 1)">Prev</button>
+          @for (p of pageNumbers(); track p) {
+            <button type="button" class="pag-btn" [class.active]="p === safeCurrentPage()" (click)="currentPage.set(p)">{{ p }}</button>
+          }
+          <button type="button" class="pag-btn" [disabled]="safeCurrentPage() >= totalPages()" (click)="currentPage.set(safeCurrentPage() + 1)">Next</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL 1: FULL MULTI-ROLE ASSIGNMENT & BRIEFING -->
+  @if (modalLead(); as lead) {
+    <div class="la-modal-backdrop" (click)="closeAssignModal()">
+      <div class="la-modal-card lg" (click)="$event.stopPropagation()">
+        <div class="la-modal-header">
+          <div>
+            <h3>Assign Role Owners &amp; Handover Brief — {{ lead.name }}</h3>
+            <p>{{ lead.phone || 'No phone' }} &bull; Current Stage: <strong>{{ getStageMeta(lead.status)?.title || lead.status }}</strong></p>
+          </div>
+          <button type="button" class="la-modal-close" (click)="closeAssignModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="la-modal-body">
+          <div class="modal-role-grid">
+            <div class="m-field">
+              <label>Sales Executive</label>
+              <select class="m-control" [ngModel]="modalForm().assigned_sales_id" (ngModelChange)="updateModalField('assigned_sales_id', +$event)">
+                <option [ngValue]="0">-- Unassigned --</option>
+                @for (s of salesStaff(); track s.id) {
+                  <option [ngValue]="s.id">{{ s.name }} ({{ s.assigned_count }} active)</option>
+                }
+              </select>
+            </div>
+
+            <div class="m-field">
+              <label>Property Advisor</label>
+              <select class="m-control" [ngModel]="modalForm().assigned_advisor_id" (ngModelChange)="updateModalField('assigned_advisor_id', +$event)">
+                <option [ngValue]="0">-- Unassigned --</option>
+                @for (s of advisorStaff(); track s.id) {
+                  <option [ngValue]="s.id">{{ s.name }} ({{ s.assigned_count }} active)</option>
+                }
+              </select>
+            </div>
+
+            <div class="m-field">
+              <label>Operations Executive</label>
+              <select class="m-control" [ngModel]="modalForm().assigned_ops_id" (ngModelChange)="updateModalField('assigned_ops_id', +$event)">
+                <option [ngValue]="0">-- Unassigned --</option>
+                @for (s of opsStaff(); track s.id) {
+                  <option [ngValue]="s.id">{{ s.name }} ({{ s.assigned_count }} active)</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <label class="m-checkbox-row">
+            <input type="checkbox" [ngModel]="modalForm().advance_stage" (ngModelChange)="updateModalField('advance_stage', $event)" [disabled]="lead.status === 'lost_on_hold'" />
+            <span>Automatically route lead stage into Advisor / Operations queue when assigned</span>
+          </label>
+
+          <div class="m-field">
+            <label>Admin Assignment / Briefing Remarks (Logged in Timeline)</label>
+            <textarea 
+              rows="2" 
+              class="m-control"
+              [ngModel]="modalForm().assignment_notes"
+              (ngModelChange)="updateModalField('assignment_notes', $event)"
+              placeholder="e.g., VIP buyer looking in Malayadi — Suresh follow up today and transfer dossier to Dr. Ananya..."></textarea>
+          </div>
+
+          <!-- Latest History Preview -->
+          @if (lead.history && lead.history.length > 0) {
+            <div class="modal-history-preview">
+              <h4>Recent Activity &amp; Comments ({{ lead.history.length }})</h4>
+              <div class="mh-list">
+                @for (h of lead.history.slice(0, 5); track h.id) {
+                  <div class="mh-item">
+                    <span class="mh-dept">{{ (h.department || 'pipeline') | uppercase }}</span>
+                    <span class="mh-note">{{ h.notes }}</span>
+                    <span class="mh-meta">{{ h.changed_by_name }} &bull; {{ h.created_at | date:'short' }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="la-modal-footer">
+          <button type="button" class="btn-la-outline" (click)="closeAssignModal()">Cancel</button>
+          <button type="button" class="btn-la-primary" (click)="submitAssignModal()" [disabled]="isAssigning()">
+            <span class="material-symbols-outlined">save</span>
+            <span>Save Role Assignments</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL 2: QUICK ADD ROLE STAFF MEMBER -->
+  @if (isAddStaffModalOpen()) {
+    <div class="la-modal-backdrop" (click)="closeAddStaffModal()">
+      <div class="la-modal-card sm" (click)="$event.stopPropagation()">
+        <div class="la-modal-header">
+          <div>
+            <h3>Add New Role Staff Member</h3>
+            <p>Create a Sales Executive, Property Advisor, or Operations Executive so you can immediately assign leads to them.</p>
+          </div>
+          <button type="button" class="la-modal-close" (click)="closeAddStaffModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="la-modal-body">
+          <div class="m-field">
+            <label>Role Desk *</label>
+            <select class="m-control" [ngModel]="newStaffForm().role" (ngModelChange)="updateNewStaffField('role', $event)">
+              <option value="sales_executive">Sales Executive (/portal/sales)</option>
+              <option value="property_advisor">Property Advisor (/portal/advisor)</option>
+              <option value="operations_executive">Operations Executive (/portal/operations)</option>
+            </select>
+          </div>
+
+          <div class="m-field">
+            <label>Full Name *</label>
+            <input type="text" class="m-control" [ngModel]="newStaffForm().name" (ngModelChange)="updateNewStaffField('name', $event)" placeholder="e.g., Priya Menon" />
+          </div>
+
+          <div class="modal-2col">
+            <div class="m-field">
+              <label>Email *</label>
+              <input type="email" class="m-control" [ngModel]="newStaffForm().email" (ngModelChange)="updateNewStaffField('email', $event)" placeholder="priya@findaplot.in" />
+            </div>
+            <div class="m-field">
+              <label>Phone</label>
+              <input type="text" class="m-control" [ngModel]="newStaffForm().phone" (ngModelChange)="updateNewStaffField('phone', $event)" placeholder="+91 98400 00000" />
+            </div>
+          </div>
+
+          <div class="modal-2col">
+            <div class="m-field">
+              <label>Designation</label>
+              <input type="text" class="m-control" [ngModel]="newStaffForm().designation" (ngModelChange)="updateNewStaffField('designation', $event)" placeholder="Sales Executive" />
+            </div>
+            <div class="m-field">
+              <label>Initial Password *</label>
+              <input type="password" class="m-control" [ngModel]="newStaffForm().password" (ngModelChange)="updateNewStaffField('password', $event)" placeholder="Min 6 characters" />
+            </div>
+          </div>
+        </div>
+
+        <div class="la-modal-footer">
+          <button type="button" class="btn-la-outline" (click)="closeAddStaffModal()">Cancel</button>
+          <button type="button" class="btn-la-primary" (click)="submitAddStaff()" [disabled]="isAssigning()">
+            <span class="material-symbols-outlined">person_add</span>
+            <span>Create Staff User</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

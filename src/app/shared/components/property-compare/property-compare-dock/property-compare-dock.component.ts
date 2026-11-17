@@ -104,6 +104,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
   `,
   styles: [`
+    :host {
+      display: contents;
+    }
+
     .compare-dock-container {
       position: fixed;
       bottom: 24px;

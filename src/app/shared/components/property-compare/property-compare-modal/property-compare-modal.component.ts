@@ -451,6 +451,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
     }
   `,
   styles: [`
+    :host {
+      display: contents;
+    }
+
     .compare-backdrop {
       position: fixed;
       top: 0;
