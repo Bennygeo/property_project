@@ -372,7 +372,10 @@ export class AuthService {
    * Fetch full user profile, shortlists, scheduled visits, and wallet transactions
    */
   public loadProfile(userId?: number): Observable<UserProfileResponse | null> {
-    const id = userId || this.currentUser()?.id || 1;
+    const id = (userId && userId > 0) ? userId : (this.currentUser()?.id || 0);
+    if (!id || id <= 0) {
+      return of(null);
+    }
     const tryGet = (baseUrl: string) =>
       this.http.get<{ success: boolean; data: UserProfileResponse }>(`${baseUrl}?userId=${id}`);
 
@@ -430,6 +433,8 @@ export class AuthService {
     };
     this.currentUser.set(normalizedUser);
     try {
+      const phonePrefix = this.getSessionPhonePrefix(normalizedUser.phone);
+      localStorage.setItem('fap_active_session_phone', phonePrefix);
       if (previousUserId && previousUserId !== normalizedUser.id) {
         localStorage.removeItem('findaplot_view_history');
         localStorage.removeItem('mannidam_view_history');
@@ -448,22 +453,40 @@ export class AuthService {
     this.clearGuestViews();
   }
 
+  public getSessionPhonePrefix(phone?: string | null): string {
+    const raw = phone !== undefined ? phone : this.currentUser()?.phone;
+    if (!raw) return 'guest';
+    const clean = String(raw).replace(/\D/g, '');
+    if (!clean) return 'guest';
+    return clean.length >= 10 ? clean.slice(-10) : clean;
+  }
+
+  public getViewHistoryStorageKey(phone?: string | null): string {
+    const prefix = this.getSessionPhonePrefix(phone);
+    return `fap_${prefix}_view_history`;
+  }
+
   /**
    * Record a viewed property in MySQL and LocalStorage
    */
   public recordPropertyView(propertyId: string): Observable<boolean> {
     const user = this.currentUser();
-    const userId = user?.id || 1;
+    const userId = user?.id || 0;
     const url = `${environment.apiUrl}/auth/record-view.php`;
 
     // Local storage history cache
     try {
-      const historyRaw = localStorage.getItem('findaplot_view_history') || localStorage.getItem('mannidam_view_history') || '[]';
+      const key = this.getViewHistoryStorageKey();
+      const historyRaw = localStorage.getItem(key) || localStorage.getItem('findaplot_view_history') || '[]';
       const historyList: string[] = JSON.parse(historyRaw);
       const updated = [propertyId, ...historyList.filter(id => id !== propertyId)].slice(0, 50);
-      localStorage.setItem('findaplot_view_history', JSON.stringify(updated));
+      localStorage.setItem(key, JSON.stringify(updated));
     } catch {
       // Ignore
+    }
+
+    if (userId <= 0) {
+      return of(true);
     }
 
     return this.http.post<{ success: boolean }>(url, { userId, propertyId }).pipe(
@@ -477,14 +500,20 @@ export class AuthService {
    */
   public clearViewHistory(): Observable<boolean> {
     const user = this.currentUser();
-    const userId = user?.id || 1;
+    const userId = user?.id || 0;
     const url = `${environment.apiUrl}/auth/clear-views.php`;
 
     try {
+      const key = this.getViewHistoryStorageKey();
+      localStorage.removeItem(key);
       localStorage.removeItem('findaplot_view_history');
       localStorage.removeItem('mannidam_view_history');
     } catch {
       // Ignore
+    }
+
+    if (userId <= 0) {
+      return of(true);
     }
 
     return this.http.post<{ success: boolean; message: string }>(url, { userId }).pipe(
@@ -711,6 +740,7 @@ export class AuthService {
   public logout(): void {
     this.currentUser.set(null);
     try {
+      localStorage.removeItem('fap_active_session_phone');
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem('mannidam_auth_user');
       localStorage.removeItem('findaplot_admin_session');

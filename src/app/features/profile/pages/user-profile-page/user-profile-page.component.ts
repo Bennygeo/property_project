@@ -203,6 +203,11 @@ export class UserProfilePageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/']);
+      this.authService.openOtpModal('general');
+      return;
+    }
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
       if (tab === 'favourites' || tab === 'shortlists') {
@@ -225,9 +230,15 @@ export class UserProfilePageComponent implements OnInit {
   }
 
   loadFullProfile(): void {
-    this.isLoading.set(true);
     const user = this.authService.currentUser();
-    const userId = user?.id || 1;
+    if (!user || !user.id || user.id <= 0) {
+      this.isLoading.set(false);
+      this.router.navigate(['/']);
+      this.authService.openOtpModal('general');
+      return;
+    }
+    const userId = user.id;
+    this.isLoading.set(true);
 
     // Load full PRD workspace (Membership, Site Visits, Consultations, Saved Searches, Bookings)
     this.workspaceService.fetchUserWorkspace(userId).subscribe();
@@ -433,22 +444,26 @@ export class UserProfilePageComponent implements OnInit {
 
   // Shortlisted Properties
   getShortlistedProperties(): Property[] {
-    // 1. Direct retrieval from PropertyService persistent dossiers signal
-    const serviceProps = this.propertyService.getShortlistedPropertiesList();
+    const ids = this.propertyService.shortlistedPropertyIds();
+    if (ids.size === 0) {
+      return [];
+    }
+
+    // 1. Direct retrieval from PropertyService persistent dossiers signal (filtered by confirmed active IDs)
+    const serviceProps = this.propertyService.getShortlistedPropertiesList().filter(p => this.propertyService.isShortlisted(p.id));
     if (serviceProps.length > 0) {
       return serviceProps;
     }
 
-    const ids = this.propertyService.shortlistedPropertyIds();
     const map = new Map<string, Property>();
 
-    // 2. Include any shortlist dossiers from MySQL profile response
+    // 2. Include any shortlist dossiers from MySQL profile response strictly if still shortlisted
     const profileShortlists = this.profileData()?.shortlists;
     if (profileShortlists && Array.isArray(profileShortlists)) {
       for (const ps of profileShortlists) {
         const pId = String(ps.propertyId || ps.id || '').trim();
         const upper = pId.toUpperCase();
-        if ((ids.size === 0 || this.propertyService.isShortlisted(pId)) && !map.has(upper)) {
+        if (this.propertyService.isShortlisted(pId) && !map.has(upper)) {
           map.set(upper, {
             id: pId,
             title: ps.title || 'Verified Plotted Development',
@@ -481,12 +496,10 @@ export class UserProfilePageComponent implements OnInit {
     }
 
     // 3. Include matching properties from allProperties
-    if (ids.size > 0) {
-      const all = this.propertyService.allProperties();
-      for (const p of all) {
-        if (this.propertyService.isShortlisted(p.id) && !map.has(p.id.trim().toUpperCase())) {
-          map.set(p.id.trim().toUpperCase(), { ...p, isShortlisted: true });
-        }
+    const all = this.propertyService.allProperties();
+    for (const p of all) {
+      if (this.propertyService.isShortlisted(p.id) && !map.has(p.id.trim().toUpperCase())) {
+        map.set(p.id.trim().toUpperCase(), { ...p, isShortlisted: true });
       }
     }
 
@@ -530,6 +543,13 @@ export class UserProfilePageComponent implements OnInit {
   removeFromShortlist(propertyId: string, event: Event): void {
     event.stopPropagation();
     this.propertyService.toggleShortlist(propertyId);
+    const cur = this.profileData();
+    if (cur && Array.isArray(cur.shortlists)) {
+      this.profileData.set({
+        ...cur,
+        shortlists: cur.shortlists.filter((s: any) => String(s.propertyId || s.id || '').trim().toUpperCase() !== propertyId.trim().toUpperCase())
+      });
+    }
     this.notificationService.show({
       type: 'info',
       title: 'Removed from Shortlist',
@@ -540,6 +560,7 @@ export class UserProfilePageComponent implements OnInit {
 
   onSignOut(): void {
     this.authService.logout();
+    this.propertyService.clearShortlistsOnLogout();
     this.router.navigate(['/']);
   }
 }

@@ -18,7 +18,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     Response::error('Method not allowed', 405);
 }
 
-$userId = max(1, (int)($_GET['userId'] ?? 1));
+$userId = (int)($_GET['userId'] ?? 0);
+if ($userId <= 0) {
+    Response::success([
+        'userId' => 0,
+        'subscription' => null,
+        'entitlements' => null,
+        'unlockedViews' => [],
+        'invoices' => []
+    ], 'No authenticated user');
+    exit;
+}
 $db = (new Database())->getConnection();
 
 try {

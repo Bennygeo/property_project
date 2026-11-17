@@ -103,11 +103,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
           <button 
             type="button"
             class="btn-shortlist" 
-            [class.shortlisted]="property.isShortlisted || propertyService.isShortlisted(property.id)"
-            [attr.aria-label]="(property.isShortlisted || propertyService.isShortlisted(property.id)) ? 'Remove from shortlist' : 'Add to shortlist'"
-            (click)="$event.stopPropagation(); propertyService.toggleShortlist(property.id)">
+            [class.shortlisted]="propertyService.isShortlisted(property.id)"
+            [attr.aria-label]="propertyService.isShortlisted(property.id) ? 'Remove from shortlist' : 'Add to shortlist'"
+            (click)="$event.stopPropagation(); toggleShortlist()">
             <span class="material-symbols-outlined">
-              {{ (property.isShortlisted || propertyService.isShortlisted(property.id)) ? 'favorite' : 'favorite_border' }}
+              {{ propertyService.isShortlisted(property.id) ? 'favorite' : 'favorite_border' }}
             </span>
           </button>
         </div>
@@ -652,6 +652,12 @@ export class PropertyCardComponent {
     if (this.property) {
       this.userBehaviorService.trackPropertyView(this.property, 'view');
     }
+  }
+
+  toggleShortlist(): void {
+    if (!this.property) return;
+    this.propertyService.toggleShortlist(this.property.id);
+    this.property.isShortlisted = this.propertyService.isShortlisted(this.property.id);
   }
 
   getCardHighlights(): string[] {

@@ -19,11 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input = Response::getJsonInput();
-$userId = (int)($input['userId'] ?? $_POST['userId'] ?? $_GET['userId'] ?? 1);
+$userId = (int)($input['userId'] ?? $_POST['userId'] ?? $_GET['userId'] ?? 0);
 $propertyId = trim((string)($input['propertyId'] ?? $_POST['propertyId'] ?? $_GET['propertyId'] ?? ''));
 
 if ($userId <= 0 || empty($propertyId)) {
-    Response::error('Invalid user or property ID', 422);
+    Response::success(['recorded' => false], 'Unauthenticated view ignored');
+    exit;
 }
 
 $db = (new Database())->getConnection();

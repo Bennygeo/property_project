@@ -19,7 +19,18 @@ use Mannidam\Helpers\Response;
 
 Response::initCors();
 
-$userId = max(1, (int)($_GET['userId'] ?? $_GET['user_id'] ?? 1));
+$userId = (int)($_GET['userId'] ?? $_GET['user_id'] ?? 0);
+if ($userId <= 0) {
+    Response::success([
+        'userId' => 0,
+        'membership' => null,
+        'siteVisits' => [],
+        'consultations' => [],
+        'savedSearches' => [],
+        'bookings' => []
+    ], 'No authenticated user');
+    exit;
+}
 $db = (new Database())->getConnection();
 
 try {

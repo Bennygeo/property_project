@@ -17,14 +17,7 @@ Response::initCors();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $db = (new Database())->getConnection();
 
-// Ensure system default user exists
-try {
-    $db->exec("
-        INSERT IGNORE INTO users (id, name, email, phone, role, points_balance)
-        VALUES (1, 'Guest / Verified Investor', 'guest@findaplot.in', '+91 94440 00001', 'buyer', 100)
-    ");
-} catch (\Throwable $e) {}
-
+// User ID resolution: 0 if unauthenticated / guest (no default guest user)
 function resolveUserId(PDO $db, array $body = []): int {
     $cand = 0;
     if (!empty($body['userId'])) {
@@ -41,97 +34,46 @@ function resolveUserId(PDO $db, array $body = []): int {
         }
     }
 
-    return 1;
+    return 0;
 }
 
 if ($method === 'GET') {
     $userId = resolveUserId($db);
-    $localIdsParam = trim((string)($_GET['localIds'] ?? ''));
-    $localIds = array_values(array_filter(array_map('trim', explode(',', $localIdsParam))));
 
-    $purgedPropertyIds = [];
-    $validLocalIds = [];
-
-    if (!empty($localIds)) {
-        // Separate database IDs (PRJ-*) from client mock IDs (p-*)
-        $dbCandidateIds = [];
-        foreach ($localIds as $lid) {
-            if (stripos($lid, 'PRJ-') === 0 || stripos($lid, 'prop-') === 0) {
-                $dbCandidateIds[] = $lid;
-            } else {
-                // Client mock property (e.g. p-1, p-2) is always valid locally
-                $validLocalIds[] = $lid;
-            }
-        }
-
-        if (!empty($dbCandidateIds)) {
-            $placeholders = implode(',', array_fill(0, count($dbCandidateIds), '?'));
-            $checkStmt = $db->prepare("
-                SELECT id, status 
-                FROM properties 
-                WHERE UPPER(TRIM(id)) IN ($placeholders)
-            ");
-            $upperCandidates = array_map(function($id) { return strtoupper(trim($id)); }, $dbCandidateIds);
-            $checkStmt->execute($upperCandidates);
-            $found = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $existingMap = [];
-            foreach ($found as $row) {
-                if (($row['status'] ?? '') !== 'archived') {
-                    $existingMap[strtoupper(trim($row['id']))] = (string)$row['id'];
-                    $validLocalIds[] = (string)$row['id'];
-                }
-            }
-
-            foreach ($dbCandidateIds as $cid) {
-                $upper = strtoupper(trim($cid));
-                if (!isset($existingMap[$upper])) {
-                    // Property starts with PRJ- but doesn't exist in properties table -> deleted by admin!
-                    $purgedPropertyIds[] = $cid;
-                    try {
-                        $delStmt = $db->prepare("DELETE FROM user_shortlists WHERE UPPER(TRIM(property_id)) = ?");
-                        $delStmt->execute([$upper]);
-                    } catch (\Throwable $e) {}
-                }
-            }
-        }
-
-        // Auto-save valid local IDs into user_shortlists in database
-        if (!empty($validLocalIds) && $userId > 0) {
-            $syncIns = $db->prepare("
-                INSERT IGNORE INTO user_shortlists (user_id, property_id, created_at)
-                VALUES (?, ?, NOW())
-            ");
-            foreach ($validLocalIds as $vlId) {
-                try {
-                    $syncIns->execute([$userId, $vlId]);
-                } catch (\Throwable $e) {}
-            }
-        }
+    // If unauthenticated / logged out, return completely empty shortlists
+    if ($userId <= 0) {
+        Response::success([
+            'userId'             => 0,
+            'propertyIds'        => [],
+            'purgedPropertyIds'  => [],
+            'shortlists'         => [],
+            'count'              => 0
+        ], 'No active authenticated user');
+        exit;
     }
 
-    // Fetch all shortlisted properties joined with projects table
+    // Fetch all shortlisted properties joined with both properties and projects tables
     $stmt = $db->prepare("
         SELECT 
             s.id AS shortlistId,
             s.property_id AS propertyId,
             s.created_at AS shortlistedAt,
-            p.project_id AS id,
-            p.project_name AS title,
-            p.locality AS locality,
-            p.city AS city,
-            p.price_from AS price,
-            p.sqft_rate AS pricePerSqFt,
-            CONCAT(p.min_plot_size, ' sq.ft') AS sqft,
+            COALESCE(p.id, prj.project_id, s.property_id) AS id,
+            COALESCE(NULLIF(p.title, ''), NULLIF(prj.project_name, ''), 'Verified Plot') AS title,
+            COALESCE(NULLIF(p.locality_name, ''), NULLIF(prj.locality, ''), 'Tamil Nadu') AS locality,
+            COALESCE(NULLIF(p.city_name, ''), NULLIF(prj.city, ''), 'Tamil Nadu') AS city,
+            COALESCE(NULLIF(p.price, ''), CASE WHEN prj.price_from > 0 THEN CONCAT('₹ ', FORMAT(prj.price_from/100000, 2), ' L') ELSE 'Price on Request' END) AS price,
+            COALESCE(NULLIF(p.price_per_sqft, ''), CONCAT('₹ ', FORMAT(prj.sqft_rate, 0), '/sq.ft'), '₹ 4,500/sq.ft') AS pricePerSqFt,
+            COALESCE(NULLIF(p.sqft, ''), CONCAT(prj.min_plot_size, ' sq.ft'), '1,200 sq.ft') AS sqft,
             'Approved Plot' AS bhkBadge,
             'Direct SRO Deed' AS facingOrView,
-            p.cover_image AS imageUrl,
-            p.category AS propertyType,
-            p.status
+            COALESCE(NULLIF(p.main_image_url, ''), NULLIF(prj.cover_image, ''), 'assets/images/placeholder.jpg') AS imageUrl,
+            COALESCE(NULLIF(p.property_type, ''), NULLIF(prj.category, ''), 'Gated CMDA Plots') AS propertyType,
+            COALESCE(p.status, prj.status, 'published') AS status
         FROM user_shortlists s
-        JOIN projects p ON UPPER(TRIM(s.property_id)) = UPPER(TRIM(p.project_id))
+        LEFT JOIN properties p ON CAST(p.id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = CAST(s.property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci
+        LEFT JOIN projects prj ON CAST(prj.project_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci = CAST(s.property_id AS CHAR(50)) COLLATE utf8mb4_unicode_ci
         WHERE s.user_id = ?
-          AND (p.status IS NULL OR p.status != 'rejected')
         ORDER BY s.created_at DESC
     ");
     $stmt->execute([$userId]);
@@ -141,14 +83,15 @@ if ($method === 'GET') {
         return (string)$row['propertyId'];
     }, $shortlists)));
 
-    $allActiveIds = array_values(array_unique(array_merge($dbPropertyIds, $validLocalIds)));
+    // Return the actual MySQL shortlist IDs
+    $activeIds = $dbPropertyIds;
 
     Response::success([
         'userId'             => $userId,
-        'propertyIds'        => $allActiveIds,
-        'purgedPropertyIds'  => array_values(array_unique($purgedPropertyIds)),
+        'propertyIds'        => $activeIds,
+        'purgedPropertyIds'  => [],
         'shortlists'         => $shortlists,
-        'count'              => count($allActiveIds)
+        'count'              => count($activeIds)
     ], 'User shortlists retrieved successfully');
     exit;
 }
@@ -161,6 +104,11 @@ if ($method === 'POST' || $method === 'DELETE') {
         $propertyId = trim((string)($body['propertyId'] ?? $_GET['propertyId'] ?? ''));
         $action = strtolower(trim((string)($body['action'] ?? ($method === 'DELETE' ? 'remove' : 'toggle'))));
         $userId = resolveUserId($db, $body);
+
+        if ($userId <= 0) {
+            Response::error('Please sign in to manage your shortlisted properties.', 401);
+            exit;
+        }
 
         if (empty($propertyId)) {
             Response::error('Property ID is required', 400);
@@ -190,8 +138,8 @@ if ($method === 'POST' || $method === 'DELETE') {
         $shouldRemove = ($action === 'remove') || ($action === 'toggle' && $existing);
 
         if ($shouldRemove) {
-            $delStmt = $db->prepare("DELETE FROM user_shortlists WHERE user_id = ? AND UPPER(TRIM(property_id)) = UPPER(TRIM(?))");
-            $delStmt->execute([$userId, $canonicalId]);
+            $delStmt = $db->prepare("DELETE FROM user_shortlists WHERE user_id = ? AND (UPPER(TRIM(property_id)) = UPPER(TRIM(?)) OR UPPER(TRIM(property_id)) = UPPER(TRIM(?)))");
+            $delStmt->execute([$userId, $canonicalId, $propertyId]);
 
             Response::success([
                 'propertyId'    => $canonicalId,

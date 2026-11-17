@@ -113,11 +113,11 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
                 <button 
                   type="button" 
                   class="btn-action-icon btn-action-fav" 
-                  [class.is-shortlisted]="prop.isShortlisted || propertyService.isShortlisted(prop.id)"
-                  (click)="$event.stopPropagation(); propertyService.toggleShortlist(prop.id)"
-                  [title]="(prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'Remove from shortlist' : 'Save site to shortlist'">
+                  [class.is-shortlisted]="propertyService.isShortlisted(prop.id)"
+                  (click)="$event.stopPropagation(); toggleShortlist(prop)"
+                  [title]="propertyService.isShortlisted(prop.id) ? 'Remove from shortlist' : 'Save site to shortlist'">
                   <span class="material-symbols-outlined">
-                    {{ (prop.isShortlisted || propertyService.isShortlisted(prop.id)) ? 'favorite' : 'favorite_border' }}
+                    {{ propertyService.isShortlisted(prop.id) ? 'favorite' : 'favorite_border' }}
                   </span>
                 </button>
               </div>
@@ -794,6 +794,12 @@ export class RecentSitesComponent {
     else if (!district) parts.push('Chennai');
 
     return parts.length > 0 ? parts.join(', ') : 'Chennai, Tamil Nadu';
+  }
+
+  toggleShortlist(prop: any): void {
+    if (!prop?.id) return;
+    this.propertyService.toggleShortlist(prop.id);
+    prop.isShortlisted = this.propertyService.isShortlisted(prop.id);
   }
 }
 

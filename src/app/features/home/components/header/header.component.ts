@@ -1415,6 +1415,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   onSignOut(): void {
     this.isUserMenuOpen.set(false);
     this.authService.logout();
+    this.propertyService.clearShortlistsOnLogout();
     this.router.navigate(['/']);
   }
 

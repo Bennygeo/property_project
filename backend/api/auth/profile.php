@@ -18,7 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     Response::error('Method not allowed', 405);
 }
 
-$userId = max(1, (int)($_GET['userId'] ?? 1));
+$userId = (int)($_GET['userId'] ?? 0);
+if ($userId <= 0) {
+    Response::error('User ID is required', 400);
+    exit;
+}
 
 $db = (new Database())->getConnection();
 
@@ -28,18 +32,8 @@ $userStmt->execute([$userId]);
 $user = $userStmt->fetch();
 
 if (!$user) {
-    // Fallback default user
-    $user = [
-        'id'            => $userId,
-        'name'          => 'Verified Investor ' . str_pad((string)$userId, 4, '0', STR_PAD_LEFT),
-        'email'         => null,
-        'phone'         => '+91 94440 00001',
-        'role'          => 'buyer',
-        'developerId'   => 0,
-        'companyName'   => null,
-        'pointsBalance' => 100,
-        'createdAt'     => date('Y-m-d H:i:s')
-    ];
+    Response::error('User not found', 404);
+    exit;
 } else {
     $user['developerId'] = (int)($user['developer_id'] ?? 0);
     $user['companyName'] = !empty($user['developer_id']) ? 'Experion Developers & Infrastructure' : null;

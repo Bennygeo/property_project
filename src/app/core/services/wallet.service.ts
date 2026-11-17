@@ -107,7 +107,8 @@ export class WalletService {
     this.router.navigate(['/wallet']);
   }
 
-  public loadBalanceFromApi(userId = 1): void {
+  public loadBalanceFromApi(userId = 0): void {
+    if (!userId || userId <= 0) return;
     const path = `/wallet/balance.php?userId=${userId}`;
     const tryGet = (url: string) => this.http.get<{ success: boolean; data: { balance: number } }>(url);
 
@@ -153,7 +154,8 @@ export class WalletService {
   /**
    * Fetch complete transactions ledger from MySQL
    */
-  public fetchTransactions(userId = 1, type = ''): Observable<WalletDashboardData | null> {
+  public fetchTransactions(userId = 0, type = ''): Observable<WalletDashboardData | null> {
+    if (!userId || userId <= 0) return of(null);
     const path = `/wallet/transactions.php?userId=${userId}${type ? '&type=' + type : ''}`;
     const tryGet = (url: string) => this.http.get<{ success: boolean; data: WalletDashboardData }>(url);
 

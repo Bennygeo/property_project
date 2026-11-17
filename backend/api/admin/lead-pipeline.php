@@ -531,6 +531,11 @@ if ($method === 'POST') {
             exit;
         }
 
+        if ($currentStage === 'lost_on_hold' && !$isSuperAdmin) {
+            Response::error('This lead is discontinued/on hold and can only be modified or revived by Super Admin.', 403);
+            exit;
+        }
+
         $notes = trim((string)($input['notes'] ?? ''));
         $department = trim((string)($input['department'] ?? 'sales'));
         $preferredLocation = trim((string)($input['preferred_location'] ?? $lead['preferred_location'] ?? ''));

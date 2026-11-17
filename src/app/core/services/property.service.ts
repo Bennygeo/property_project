@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -134,8 +134,14 @@ function enrichInitialGps(props: Property[]): Property[] {
   });
 }
 
-const SHORTLIST_STORAGE_KEY = 'fap_user_shortlists';
-const SHORTLIST_DOSSIERS_KEY = 'fap_user_shortlist_dossiers';
+export const SESSION_TRACKER_KEY = 'fap_active_session_phone';
+
+export function getPhoneStoragePrefix(phone?: string | null): string {
+  if (!phone) return 'guest';
+  const clean = String(phone).replace(/\D/g, '');
+  if (!clean) return 'guest';
+  return clean.length >= 10 ? clean.slice(-10) : clean;
+}
 
 function formatShortlistApiToProperty(raw: any): Property {
   const pId = String(raw.id || raw.propertyId || '').trim();
@@ -198,9 +204,9 @@ export class PropertyService {
     return this._properties().length < this.totalApiProperties();
   });
 
-  // Persistent Shortlists Set (Synchronized with localStorage & MySQL backend)
-  public readonly shortlistedPropertyIds = signal<Set<string>>(this.loadShortlistsFromStorage());
-  public readonly shortlistedProperties = signal<Property[]>(this.loadShortlistDossiersFromStorage());
+  // Persistent Shortlists Set (Synchronized with localStorage & MySQL backend using mobile-prefixed keys)
+  public readonly shortlistedPropertyIds = signal<Set<string>>(new Set());
+  public readonly shortlistedProperties = signal<Property[]>([]);
 
   // Master property list initialized with 50+ mock properties directly from database (10L to 3Cr)
   private readonly _properties = signal<Property[]>(enrichInitialGps(MOCK_50_PROPERTIES));
@@ -327,22 +333,12 @@ export class PropertyService {
     } catch {
       // Fallback
     }
-    return 1;
+    return 0; // Guest login is removed: return 0 when unauthenticated
   }
 
   private getSearchHistoryStorageKey(): string {
-    try {
-      const user = this.authService.currentUser() as any;
-      if (user) {
-        const identifier = user.id && Number(user.id) > 0 ? user.id : (user.phone || user.email || '');
-        if (identifier) {
-          return `fap_search_history_user_${String(identifier).trim()}`;
-        }
-      }
-    } catch {
-      // Ignore auth signal read error
-    }
-    return 'fap_search_history_guest';
+    const prefix = this.getSessionPhonePrefix();
+    return `fap_${prefix}_search_history`;
   }
 
   public getUserSearchHistory(): {
@@ -422,18 +418,8 @@ export class PropertyService {
   }
 
   private getAcquisitionPrefsStorageKey(): string {
-    try {
-      const user = this.authService.currentUser() as any;
-      if (user) {
-        const identifier = user.id && Number(user.id) > 0 ? user.id : (user.phone || user.email || '');
-        if (identifier) {
-          return `fap_acquisition_prefs_user_${String(identifier).trim()}`;
-        }
-      }
-    } catch {
-      // Ignore auth signal read error
-    }
-    return 'fap_acquisition_prefs_guest';
+    const prefix = this.getSessionPhonePrefix();
+    return `fap_${prefix}_acquisition_prefs`;
   }
 
   public getUserAcquisitionPreferences(): UserAcquisitionPreferences {
@@ -489,12 +475,88 @@ export class PropertyService {
     return false;
   }
 
-  private loadShortlistsFromStorage(): Set<string> {
+  // Session tracking: Mobile number prefix for all localStorage operations
+  public getSessionPhonePrefix(phone?: string | null): string {
+    const p = phone !== undefined ? phone : this.authService.currentUser()?.phone;
+    return getPhoneStoragePrefix(p);
+  }
+
+  public getShortlistStorageKey(phone?: string | null): string {
+    const prefix = this.getSessionPhonePrefix(phone);
+    return `fap_${prefix}_shortlists`;
+  }
+
+  public getShortlistDossiersStorageKey(phone?: string | null): string {
+    const prefix = this.getSessionPhonePrefix(phone);
+    return `fap_${prefix}_shortlist_dossiers`;
+  }
+
+  public purgeLegacyStorageKeys(): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      localStorage.removeItem('fap_user_shortlists');
+      localStorage.removeItem('fap_user_shortlist_dossiers');
+      localStorage.removeItem('findaplot_user_shortlists');
+      localStorage.removeItem('mannidam_user_shortlists');
+      localStorage.removeItem('findaplot_shortlisted_properties');
+      localStorage.removeItem('mannidam_shortlisted_properties');
+    } catch {
+      // Ignore
+    }
+  }
+
+  public clearShortlistsOnLogout(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        localStorage.removeItem(SESSION_TRACKER_KEY);
+        localStorage.removeItem('fap_guest_shortlists');
+        localStorage.removeItem('fap_guest_shortlist_dossiers');
+      } catch {}
+    }
+    this.shortlistedPropertyIds.set(new Set());
+    this.shortlistedProperties.set([]);
+    this.syncShortlistedStateInProperties();
+  }
+
+  public handleSessionChange(user: any): void {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    this.purgeLegacyStorageKeys();
+
+    if (!user || !user.id || user.id <= 0) {
+      this.clearShortlistsOnLogout();
+      return;
+    }
+
+    const currentPhone = this.getSessionPhonePrefix(user?.phone);
+    const lastSessionPhone = localStorage.getItem(SESSION_TRACKER_KEY);
+    const isSameSession = !!(lastSessionPhone && lastSessionPhone === currentPhone);
+
+    localStorage.setItem(SESSION_TRACKER_KEY, currentPhone);
+
+    if (!isSameSession) {
+      // Previous session belonged to someone else!
+      // Do NOT inherit any previous session data. Load only what belongs to this phone (or empty)
+      const initialIds = this.loadShortlistsFromStorage(currentPhone);
+      const initialDossiers = this.loadShortlistDossiersFromStorage(currentPhone);
+      this.shortlistedPropertyIds.set(initialIds);
+      this.shortlistedProperties.set(initialDossiers);
+      this.syncShortlistedStateInProperties();
+
+      // Query backend for this user's real database records without sending localIds
+      this.fetchShortlistsFromBackend(user.id, { allowLocalSync: false });
+    } else {
+      // Same session continues
+      this.fetchShortlistsFromBackend(user.id, { allowLocalSync: true });
+    }
+  }
+
+  private loadShortlistsFromStorage(phone?: string | null): Set<string> {
     if (typeof window === 'undefined' || !window.localStorage) {
       return new Set<string>();
     }
     try {
-      const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY) || localStorage.getItem('findaplot_user_shortlists') || localStorage.getItem('mannidam_user_shortlists');
+      const key = this.getShortlistStorageKey(phone);
+      const raw = localStorage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
@@ -507,21 +569,23 @@ export class PropertyService {
     return new Set<string>();
   }
 
-  private saveShortlistsToStorage(ids: Set<string>): void {
+  private saveShortlistsToStorage(ids: Set<string>, phone?: string | null): void {
     if (typeof window === 'undefined' || !window.localStorage) return;
     try {
-      localStorage.setItem(SHORTLIST_STORAGE_KEY, JSON.stringify(Array.from(ids)));
+      const key = this.getShortlistStorageKey(phone);
+      localStorage.setItem(key, JSON.stringify(Array.from(ids)));
     } catch (err) {
       console.warn('[PropertyService] Error saving shortlists to storage:', err);
     }
   }
 
-  private loadShortlistDossiersFromStorage(): Property[] {
+  private loadShortlistDossiersFromStorage(phone?: string | null): Property[] {
     if (typeof window === 'undefined' || !window.localStorage) {
       return [];
     }
     try {
-      const raw = localStorage.getItem(SHORTLIST_DOSSIERS_KEY);
+      const key = this.getShortlistDossiersStorageKey(phone);
+      const raw = localStorage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
@@ -534,10 +598,11 @@ export class PropertyService {
     return [];
   }
 
-  private saveShortlistDossiersToStorage(props: Property[]): void {
+  private saveShortlistDossiersToStorage(props: Property[], phone?: string | null): void {
     if (typeof window === 'undefined' || !window.localStorage) return;
     try {
-      localStorage.setItem(SHORTLIST_DOSSIERS_KEY, JSON.stringify(props));
+      const key = this.getShortlistDossiersStorageKey(phone);
+      localStorage.setItem(key, JSON.stringify(props));
     } catch (err) {
       console.warn('[PropertyService] Error saving shortlist dossiers to storage:', err);
     }
@@ -564,13 +629,20 @@ export class PropertyService {
 
   /**
    * Fetch user shortlists from backend database.
-   * Transmits current local shortlists to backend for cross-validation.
+   * Transmits current local shortlists to backend for cross-validation only when allowLocalSync is true.
    * If an admin deletes a property from the database, it will be returned in purgedPropertyIds
    * and automatically pruned from both shortlistedPropertyIds and localStorage.
    */
-  public fetchShortlistsFromBackend(userId?: number): void {
+  public fetchShortlistsFromBackend(userId?: number, options?: { allowLocalSync?: boolean }): void {
     const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
-    const currentLocalIds = Array.from(this.shortlistedPropertyIds());
+    if (effectiveUserId <= 0) {
+      this.clearShortlistsOnLogout();
+      return;
+    }
+    const allowSync = options?.allowLocalSync ?? true;
+
+    // Only transmit current local shortlists if explicitly allowed and belonging to this session
+    const currentLocalIds = allowSync ? Array.from(this.shortlistedPropertyIds()) : [];
 
     const qParams = new URLSearchParams();
     qParams.set('userId', String(effectiveUserId));
@@ -597,37 +669,21 @@ export class PropertyService {
     ) as Observable<any>).subscribe((res: any) => {
       if (res && res.success && res.data) {
         const validBackendIds: string[] = Array.isArray(res.data.propertyIds) ? res.data.propertyIds : [];
-        const purgedIds: string[] = Array.isArray(res.data.purgedPropertyIds) ? res.data.purgedPropertyIds : [];
         const rawShortlists: any[] = Array.isArray(res.data.shortlists) ? res.data.shortlists : [];
 
-        const updatedSet = new Set<string>(this.shortlistedPropertyIds());
+        // Ground truth: strictly reflect what is saved in MySQL for this user
+        const finalSet = new Set<string>(validBackendIds);
 
-        // 1. Prune any property that was deleted by admin from database
-        for (const pid of purgedIds) {
-          const upperPid = pid.trim().toUpperCase();
-          for (const item of Array.from(updatedSet)) {
-            if (item.trim().toUpperCase() === upperPid) {
-              updatedSet.delete(item);
-            }
-          }
-        }
-
-        // 2. Add all confirmed valid properties
-        for (const vid of validBackendIds) {
-          updatedSet.add(vid);
-        }
-
-        // 3. Save confirmed active set
-        this.shortlistedPropertyIds.set(updatedSet);
-        this.saveShortlistsToStorage(updatedSet);
+        this.shortlistedPropertyIds.set(finalSet);
+        this.saveShortlistsToStorage(finalSet);
         this.syncShortlistedStateInProperties();
 
-        // 4. Update full shortlist dossiers
+        // Update full shortlist dossiers
         if (rawShortlists.length > 0) {
           const formatted = rawShortlists.map((r: any) => formatShortlistApiToProperty(r));
           this.shortlistedProperties.set(formatted);
           this.saveShortlistDossiersToStorage(formatted);
-        } else if (updatedSet.size === 0) {
+        } else {
           this.shortlistedProperties.set([]);
           this.saveShortlistDossiersToStorage([]);
         }
@@ -637,6 +693,17 @@ export class PropertyService {
 
   toggleShortlist(propertyId: string, userId?: number): void {
     if (!propertyId) return;
+
+    if (!this.authService.isLoggedIn()) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Sign In Required',
+        message: 'Please sign in with your mobile number to shortlist properties.',
+        icon: 'lock'
+      });
+      this.authService.openOtpModal('general');
+      return;
+    }
 
     const trimmedId = propertyId.trim();
     const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
@@ -746,9 +813,34 @@ export class PropertyService {
   }
 
   constructor() {
+    this.purgeLegacyStorageKeys();
+    const user = this.authService.currentUser();
+    if (user && user.id > 0) {
+      const currentPhone = this.getSessionPhonePrefix(user.phone);
+      if (typeof window !== 'undefined') {
+        const lastSessionPhone = localStorage.getItem(SESSION_TRACKER_KEY);
+        if (!lastSessionPhone || lastSessionPhone !== currentPhone) {
+          localStorage.setItem(SESSION_TRACKER_KEY, currentPhone);
+        }
+      }
+      this.shortlistedPropertyIds.set(this.loadShortlistsFromStorage(currentPhone));
+      this.shortlistedProperties.set(this.loadShortlistDossiersFromStorage(currentPhone));
+    } else {
+      this.shortlistedPropertyIds.set(new Set());
+      this.shortlistedProperties.set([]);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem(SESSION_TRACKER_KEY);
+      }
+    }
+
     this.syncShortlistedStateInProperties();
     this.loadPropertiesFromApi();
-    this.fetchShortlistsFromBackend();
+
+    // Dynamically check session continuity and load data whenever authenticated user changes
+    effect(() => {
+      const u = this.authService.currentUser();
+      this.handleSessionChange(u);
+    });
   }
 
   /**
