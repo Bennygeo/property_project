@@ -52,6 +52,22 @@ if ($method === 'GET') {
         exit;
     }
 
+    // If user is admin, developer or internal staff, they do not have personal buyer shortlists
+    $roleCheck = $db->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+    $roleCheck->execute([$userId]);
+    $userRole = (string)$roleCheck->fetchColumn();
+    $adminRoles = ['admin', 'super_admin', 'co_admin', 'sales_executive', 'property_advisor', 'operations_executive', 'finance_admin', 'content_gis_admin', 'developer'];
+    if (in_array($userRole, $adminRoles, true)) {
+        Response::success([
+            'userId'             => $userId,
+            'propertyIds'        => [],
+            'purgedPropertyIds'  => [],
+            'shortlists'         => [],
+            'count'              => 0
+        ], 'Staff and administrator accounts do not have buyer shortlists');
+        exit;
+    }
+
     // Fetch all shortlisted properties joined with both properties and projects tables
     $stmt = $db->prepare("
         SELECT 

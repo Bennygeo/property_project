@@ -1,8 +1,8 @@
-import { Injectable, computed, inject, signal, effect } from '@angular/core';
+import { Injectable, computed, inject, signal, effect, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, finalize } from 'rxjs/operators';
 import { ListingMode, Property, PropertyType } from '../models/property.model';
 import { validateGpsData, annotateInterPropertyProximity } from '../utils/gps-helper';
 import { formatPriceIndian, parsePriceToNumber } from '../utils/price-helper';
@@ -10,7 +10,7 @@ import { NotificationService } from './notification.service';
 import { WalletService } from './wallet.service';
 import { enrichPropertyWithMockDetails } from './property-details-mock.helper';
 import { MOCK_50_PROPERTIES } from './mock-properties-data';
-import { AuthService } from './auth.service';
+import { AuthService, ADMIN_PORTAL_ROLES } from './auth.service';
 import { environment } from '../../../environments/environment';
 
 export interface NearbyLocality {
@@ -207,6 +207,8 @@ export class PropertyService {
   // Persistent Shortlists Set (Synchronized with localStorage & MySQL backend using mobile-prefixed keys)
   public readonly shortlistedPropertyIds = signal<Set<string>>(new Set());
   public readonly shortlistedProperties = signal<Property[]>([]);
+  private lastHandledUserId: number | null | undefined = undefined;
+  private isFetchingShortlists = false;
 
   // Master property list initialized with 50+ mock properties directly from database (10L to 3Cr)
   private readonly _properties = signal<Property[]>(enrichInitialGps(MOCK_50_PROPERTIES));
@@ -506,6 +508,7 @@ export class PropertyService {
   }
 
   public clearShortlistsOnLogout(): void {
+    this.lastHandledUserId = 0;
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         localStorage.removeItem(SESSION_TRACKER_KEY);
@@ -520,12 +523,37 @@ export class PropertyService {
 
   public handleSessionChange(user: any): void {
     if (typeof window === 'undefined' || !window.localStorage) return;
-    this.purgeLegacyStorageKeys();
 
-    if (!user || !user.id || user.id <= 0) {
-      this.clearShortlistsOnLogout();
+    const currentUserId = (user && typeof user.id === 'number' && user.id > 0) ? user.id : 0;
+    const userRole = user?.role || '';
+    const isStaffOrAdmin = ADMIN_PORTAL_ROLES.includes(userRole) || userRole === 'developer';
+
+    // If unauthenticated / logged out:
+    if (currentUserId <= 0) {
+      if (this.lastHandledUserId !== 0) {
+        this.clearShortlistsOnLogout();
+      }
       return;
     }
+
+    // Admins and staff manage the platform and do not have buyer shortlists
+    if (isStaffOrAdmin) {
+      if (this.lastHandledUserId !== currentUserId) {
+        this.lastHandledUserId = currentUserId;
+        this.shortlistedPropertyIds.set(new Set());
+        this.shortlistedProperties.set([]);
+        this.syncShortlistedStateInProperties();
+      }
+      return;
+    }
+
+    // If this buyer user identity is already handled, do not re-fetch
+    if (this.lastHandledUserId === currentUserId) {
+      return;
+    }
+    this.lastHandledUserId = currentUserId;
+
+    this.purgeLegacyStorageKeys();
 
     const currentPhone = this.getSessionPhonePrefix(user?.phone);
     const lastSessionPhone = localStorage.getItem(SESSION_TRACKER_KEY);
@@ -639,6 +667,18 @@ export class PropertyService {
       this.clearShortlistsOnLogout();
       return;
     }
+
+    // Admins and internal staff do not have buyer shortlists
+    const userRole = this.authService.currentUser()?.role || '';
+    if (ADMIN_PORTAL_ROLES.includes(userRole) || userRole === 'developer') {
+      return;
+    }
+
+    if (this.isFetchingShortlists) {
+      return;
+    }
+    this.isFetchingShortlists = true;
+
     const allowSync = options?.allowLocalSync ?? true;
 
     // Only transmit current local shortlists if explicitly allowed and belonging to this session
@@ -665,6 +705,9 @@ export class PropertyService {
       catchError(err => {
         console.warn('[Shortlist API] Unable to connect to MySQL shortlist endpoint; retaining local cache.', err);
         return of(null);
+      }),
+      finalize(() => {
+        this.isFetchingShortlists = false;
       })
     ) as Observable<any>).subscribe((res: any) => {
       if (res && res.success && res.data) {
@@ -839,7 +882,9 @@ export class PropertyService {
     // Dynamically check session continuity and load data whenever authenticated user changes
     effect(() => {
       const u = this.authService.currentUser();
-      this.handleSessionChange(u);
+      untracked(() => {
+        this.handleSessionChange(u);
+      });
     });
   }
 
