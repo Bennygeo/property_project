@@ -27,6 +27,9 @@ export interface PropertyTypeOption {
   selector: 'app-hero-search',
   standalone: true,
   imports: [CommonModule, RouterModule, DealsScrollingBannerComponent],
+  host: {
+    '[class.mobile-search-page-active]': 'isMobileQuestionnaireOpen()'
+  },
   template: `
     <section class="hero-section" id="search-section">
       <!-- Creative Architectural Clean Background -->
@@ -56,7 +59,7 @@ export interface PropertyTypeOption {
       <div class="max-w-content hero-content">
         <!-- Title & Subtitle -->
         <div class="hero-text-center">
-          <h1 class="hero-headline">Find Your Perfect Plot Without Visiting Everywhere.</h1>
+          <h1 class="hero-headline"><span style='font-weight:400;'>Find Your Perfect Plot Without</span><br/>Visiting Everywhere.</h1>
           <p class="hero-subline">
             Explore multiple developers, compare projects, discover emerging locations and shortlist your ideal plot with professional guidance.
           </p>
@@ -490,55 +493,10 @@ export interface PropertyTypeOption {
                     }
                   </div>
 
-                  <!-- Custom Budget Range Slider (Identical to Search Component) -->
-                  <div class="custom-slider-section" [class.is-active]="isCustomBudgetActive()">
-                    <div class="slider-header-row">
-                      <span class="slider-label">Custom Range</span>
-                      <span class="slider-range-val">
-                        {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ? formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
-                      </span>
-                    </div>
-
-                    <div class="range-slider-wrapper">
-                      <div class="range-slider-track"></div>
-                      <div class="range-slider-fill" 
-                        [style.left.%]="sliderMinPercent()" 
-                        [style.width.%]="sliderWidthPercent()"></div>
-                      <input 
-                        type="range" 
-                        class="range-slider-input range-input-min" 
-                        [min]="MIN_BUDGET_LIMIT" 
-                        [max]="MAX_BUDGET_LIMIT" 
-                        [step]="BUDGET_STEP"
-                        [value]="customBudgetMin()" 
-                        (input)="onMinSliderChange($event)"
-                        (click)="$event.stopPropagation()"
-                        aria-label="Minimum budget slider" />
-                      <input 
-                        type="range" 
-                        class="range-slider-input range-input-max" 
-                        [min]="MIN_BUDGET_LIMIT" 
-                        [max]="MAX_BUDGET_LIMIT" 
-                        [step]="BUDGET_STEP"
-                        [value]="customBudgetMax()" 
-                        (input)="onMaxSliderChange($event)"
-                        (click)="$event.stopPropagation()"
-                        aria-label="Maximum budget slider" />
-                    </div>
-
-                    <div class="slider-ticks-row">
-                      <span>₹0</span>
-                      <span>₹1 Cr</span>
-                      <span>₹2 Cr</span>
-                      <span>₹5 Cr</span>
-                      <span>₹10 Cr+</span>
-                    </div>
-                  </div>
-
                   <div class="popover-footer">
                     <button type="button" class="btn-text-action" (click)="resetBudget()">Reset</button>
-                    <button type="button" class="btn-apply-popover" (click)="applyCustomBudget()">
-                      Apply
+                    <button type="button" class="btn-apply-popover" (click)="isBudgetDropdownOpen.set(false)">
+                      Done
                     </button>
                   </div>
                 </div>
@@ -555,165 +513,317 @@ export interface PropertyTypeOption {
 
           </div>
 
-          <!-- Mobile Guided Questionnaire Prompt (Opens when User Focuses Search Bar) -->
+          <!-- Dedicated Full-Screen Mobile Search Page (NoBroker-Style Overlay) -->
           @if (isMobileQuestionnaireOpen()) {
-            <div class="mobile-questionnaire-card" (click)="$event.stopPropagation()">
-              <div class="mobile-q-header">
-                <div class="mobile-q-headline">
-                  <span class="material-symbols-outlined q-icon">tune</span>
-                  <span>Quick Preferences</span>
-                </div>
-                <button type="button" class="btn-q-close" (click)="closeMobileQuestionnaire()" aria-label="Close preferences">
-                  <span class="material-symbols-outlined">close</span>
+            <div class="nb-mobile-search-page" (click)="isMobileSuggestDropdownOpen.set(false)">
+              <!-- Top App Bar: Back Button + Brand Logo -->
+              <div class="nb-top-bar" (click)="$event.stopPropagation()">
+                <button type="button" class="nb-back-btn" (click)="closeMobileQuestionnaire()" aria-label="Back to Home">
+                  <span class="material-symbols-outlined">arrow_back</span>
                 </button>
+                <img src="logo.svg" alt="Find a Plot" class="nb-brand-logo" />
               </div>
 
-              <!-- 1. BUY -> PLOTS | COMMERCIAL ? -->
-              <div class="mobile-q-section">
-                <div class="mobile-q-title">
-                  <span>BUY &rarr; PLOTS | COMMERCIAL ?</span>
+              <!-- Mode Tabs Strip: Buy | Sell | Commercial -->
+              <div class="nb-mode-tabs" role="tablist" (click)="$event.stopPropagation()">
+                <button 
+                  type="button" 
+                  class="nb-mode-tab" 
+                  [class.active]="activeHeroTab() === 'buy'"
+                  (click)="setHeroTab('buy'); setMobileCategory('plots')">
+                  Buy
+                </button>
+                <a 
+                  routerLink="/post-property" 
+                  class="nb-mode-tab"
+                  (click)="closeMobileQuestionnaire()">
+                  Sell
+                </a>
+                <button 
+                  type="button" 
+                  class="nb-mode-tab" 
+                  [class.active]="activeHeroTab() === 'commercial'"
+                  (click)="setHeroTab('commercial'); setMobileCategory('commercial')">
+                  Commercial
+                </button>
+                @if (propertyService.hasAgriculturalProperties()) {
+                  <button 
+                    type="button" 
+                    class="nb-mode-tab" 
+                    [class.active]="activeHeroTab() === 'agricultural'"
+                    (click)="setHeroTab('agricultural'); setMobileCategory('agricultural')">
+                    Agriculture
+                  </button>
+                }
+              </div>
+
+              <!-- Scrollable Filters Body -->
+              <div class="nb-scroll-body">
+                <!-- 1. District / City Selector Dropdown -->
+                <div class="nb-district-select-wrap" (click)="$event.stopPropagation()">
+                  <select 
+                    class="nb-district-select" 
+                    [value]="locationService.selectedDistrict()" 
+                    (change)="onMobileDistrictChange($event)"
+                    aria-label="Select District">
+                    @for (dist of locationService.districts; track dist.id) {
+                      <option [value]="dist.name" [selected]="dist.name === locationService.selectedDistrict()">
+                        {{ dist.name }}
+                      </option>
+                    }
+                  </select>
+                  <span class="material-symbols-outlined nb-select-chevron">expand_more</span>
                 </div>
-                <div class="mobile-q-toggle-row">
-                  <button 
-                    type="button" 
-                    class="mobile-q-chip chip-flex" 
-                    [class.active]="selectedMobileCategory() === 'plots'"
-                    (click)="setMobileCategory('plots')">
-                    <span class="material-symbols-outlined chip-icon">terrain</span>
-                    <span>Plots</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    class="mobile-q-chip chip-flex" 
-                    [class.active]="selectedMobileCategory() === 'commercial'"
-                    (click)="setMobileCategory('commercial')">
-                    <span class="material-symbols-outlined chip-icon">domain</span>
-                    <span>Commercial</span>
-                  </button>
-                  @if (propertyService.hasAgriculturalProperties()) {
+
+                <!-- 2. Search Type Toggle -->
+                <div class="nb-section" (click)="$event.stopPropagation()">
+                  <div class="nb-section-label">Search Type</div>
+                  <div class="nb-search-type-bar">
                     <button 
                       type="button" 
-                      class="mobile-q-chip chip-flex" 
-                      [class.active]="selectedMobileCategory() === 'agricultural'"
-                      (click)="setMobileCategory('agricultural')">
-                      <span class="material-symbols-outlined chip-icon">yard</span>
-                      <span>Agriculture</span>
+                      class="nb-search-type-btn" 
+                      [class.active]="mobileSearchType() === 'locality'"
+                      (click)="setMobileSearchType('locality')">
+                      <span class="material-symbols-outlined nb-type-icon">location_on</span>
+                      <span>Locality Search</span>
                     </button>
-                  }
-                </div>
-              </div>
-
-              <!-- 2. PRICE RANGES ? -->
-              <div class="mobile-q-section">
-                <div class="mobile-q-title">
-                  <span>PRICE RANGES ?</span>
-                </div>
-                <div class="mobile-q-budget-grid">
-                  @for (range of budgetRanges; track range.value) {
                     <button 
                       type="button" 
-                      class="mobile-q-chip chip-budget" 
-                      [class.active]="propertyService.selectedBudget() === range.value && !isCustomBudgetActive()"
-                      (click)="selectMobileBudget(range.value)">
-                      {{ range.label }}
+                      class="nb-search-type-btn" 
+                      [class.active]="mobileSearchType() === 'developer'"
+                      (click)="setMobileSearchType('developer')">
+                      <span class="material-symbols-outlined nb-type-icon">apartment</span>
+                      <span>Builder / Project</span>
                     </button>
-                  }
-                </div>
-
-                <!-- Mobile Custom Budget Range Slider -->
-                <div class="mobile-slider-box" [class.is-active]="isCustomBudgetActive()">
-                  <div class="slider-header-row">
-                    <span class="slider-label">Custom Range</span>
-                    <span class="slider-range-val">
-                      {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ? formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
-                    </span>
                   </div>
 
-                  <div class="range-slider-wrapper">
-                    <div class="range-slider-track"></div>
-                    <div class="range-slider-fill" 
-                      [style.left.%]="sliderMinPercent()" 
-                      [style.width.%]="sliderWidthPercent()"></div>
-                    <input 
-                      type="range" 
-                      class="range-slider-input range-input-min" 
-                      [min]="MIN_BUDGET_LIMIT" 
-                      [max]="MAX_BUDGET_LIMIT" 
-                      [step]="BUDGET_STEP"
-                      [value]="customBudgetMin()" 
-                      (input)="onMinSliderChange($event)"
-                      (click)="$event.stopPropagation()"
-                      aria-label="Mobile minimum budget slider" />
-                    <input 
-                      type="range" 
-                      class="range-slider-input range-input-max" 
-                      [min]="MIN_BUDGET_LIMIT" 
-                      [max]="MAX_BUDGET_LIMIT" 
-                      [step]="BUDGET_STEP"
-                      [value]="customBudgetMax()" 
-                      (input)="onMaxSliderChange($event)"
-                      (click)="$event.stopPropagation()"
-                      aria-label="Mobile maximum budget slider" />
-                  </div>
+                  <!-- 3. Search Input + GPS Target + Live Suggestions -->
+                  <div class="nb-input-container">
+                    <div class="nb-input-box">
+                      <span class="material-symbols-outlined nb-input-search-icon">search</span>
+                      <input 
+                        type="text" 
+                        id="nb-mobile-locality-input"
+                        class="nb-text-input" 
+                        [value]="mobileSearchInputText()"
+                        (focus)="onMobileDedicatedInputFocus()"
+                        (input)="onMobileDedicatedSearchInput($event)"
+                        (keydown.enter)="onMobileDedicatedInputEnter($event)"
+                        [placeholder]="mobileSearchType() === 'developer' ? 'Search verified builders or projects...' : 'Search upto 3 localities or landmarks'"
+                        autocomplete="off" />
+                      @if (mobileSearchInputText()) {
+                        <button type="button" class="nb-input-clear-btn" (click)="clearMobileDedicatedInput($event)" aria-label="Clear input">
+                          &times;
+                        </button>
+                      }
+                      <button 
+                        type="button" 
+                        class="nb-gps-btn" 
+                        (click)="detectMobileGpsLocation($event)" 
+                        [title]="'Detect current GPS location'">
+                        <span class="material-symbols-outlined" [class.spin]="locationService.isDetecting()">my_location</span>
+                      </button>
+                    </div>
 
-                  <div class="slider-ticks-row">
-                    <span>₹0</span>
-                    <span>₹1 Cr</span>
-                    <span>₹2 Cr</span>
-                    <span>₹5 Cr</span>
-                    <span>₹10 Cr+</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 3. INVESTMENT | READY TO BUILD ? -->
-              <div class="mobile-q-section">
-                <div class="mobile-q-title">
-                  <span>INVESTMENT | READY TO BUILD ?</span>
-                </div>
-                <div class="mobile-q-toggle-row">
-                  <button 
-                    type="button" 
-                    class="mobile-q-chip chip-flex" 
-                    [class.active]="selectedMobileIntent() === 'investment'"
-                    (click)="setMobileIntent('investment')">
-                    <span class="material-symbols-outlined chip-icon">trending_up</span>
-                    <span>Investment</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    class="mobile-q-chip chip-flex" 
-                    [class.active]="selectedMobileIntent() === 'ready'"
-                    (click)="setMobileIntent('ready')">
-                    <span class="material-symbols-outlined chip-icon">handyman</span>
-                    <span>Ready to Build</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Matching Properties Snippet if Text Entered -->
-              @if (propertyService.searchQuery() && matchedProperties().length > 0) {
-                <div class="mobile-q-matches">
-                  <div class="mobile-q-matches-header">Matching Properties ({{ matchedProperties().length }})</div>
-                  <div class="mobile-q-matches-list">
-                    @for (prop of matchedProperties().slice(0, 2); track prop.id) {
-                      <div class="mobile-q-match-item" (click)="selectProperty(prop)">
-                        <span class="material-symbols-outlined match-icon">location_on</span>
-                        <div class="match-info">
-                          <span class="match-title">{{ prop.title }}</span>
-                          <span class="match-sub">{{ prop.locality }}, {{ prop.city }}</span>
-                        </div>
+                    <!-- Live Suggestions Dropdown -->
+                    @if (isMobileSuggestDropdownOpen()) {
+                      <div class="nb-suggest-dropdown">
+                        @if (mobileSearchType() === 'developer') {
+                          <div class="nb-suggest-group-header">Verified Builders &amp; Developers</div>
+                          @for (dev of getMobileDeveloperSuggestions(); track dev.name) {
+                            <div class="nb-suggest-row" (click)="selectMobileDeveloperItem(dev)">
+                              <span class="material-symbols-outlined nb-s-icon">apartment</span>
+                              <div class="nb-s-texts">
+                                <span class="nb-s-title">{{ dev.name }}</span>
+                                <span class="nb-s-sub">{{ dev.sub }}</span>
+                              </div>
+                              <span class="nb-s-tag">Builder</span>
+                            </div>
+                          }
+                        } @else {
+                          @if (googlePlacesList().length > 0) {
+                            <div class="nb-suggest-group-header">Matching Locations</div>
+                            @for (place of googlePlacesList(); track place.placeId || place.label) {
+                              <div class="nb-suggest-row" (click)="addMobileLocalityChip(place.label || place.query)">
+                                <span class="material-symbols-outlined nb-s-icon">location_on</span>
+                                <div class="nb-s-texts">
+                                  <span class="nb-s-title">{{ place.label }}</span>
+                                  <span class="nb-s-sub">{{ place.sub }}</span>
+                                </div>
+                                <span class="nb-s-tag">Add +</span>
+                              </div>
+                            }
+                          }
+                          @if (mobileSearchInputText().trim().length >= 2 && matchedProperties().length > 0) {
+                            <div class="nb-suggest-group-header">Verified Projects ({{ matchedProperties().length }})</div>
+                            @for (prop of matchedProperties().slice(0, 4); track prop.id) {
+                              <div class="nb-suggest-row" (click)="addMobileLocalityChip(prop.locality || prop.title)">
+                                <span class="material-symbols-outlined nb-s-icon">verified</span>
+                                <div class="nb-s-texts">
+                                  <span class="nb-s-title">{{ prop.title }}</span>
+                                  <span class="nb-s-sub">{{ prop.locality }}, {{ prop.city }} • {{ prop.price }}</span>
+                                </div>
+                                <span class="nb-s-tag">Project</span>
+                              </div>
+                            }
+                          }
+                          @if (districtSuggestions().length > 0) {
+                            <div class="nb-suggest-group-header">Top Localities in {{ locationService.selectedDistrict() }}</div>
+                            @for (item of districtSuggestions().slice(0, 6); track item.query + item.label) {
+                              <div class="nb-suggest-row" (click)="addMobileLocalityChip(item.query || item.label)">
+                                <span class="material-symbols-outlined nb-s-icon">location_on</span>
+                                <div class="nb-s-texts">
+                                  <span class="nb-s-title">{{ item.label }}</span>
+                                  <span class="nb-s-sub">{{ item.sub }}</span>
+                                </div>
+                                <span class="nb-s-tag">Add +</span>
+                              </div>
+                            }
+                          } @else {
+                            <div class="nb-suggest-group-header">Popular Corridors</div>
+                            @for (loc of trendingLocations().slice(0, 5); track loc.name) {
+                              <div class="nb-suggest-row" (click)="addMobileLocalityChip(loc.query || loc.name)">
+                                <span class="material-symbols-outlined nb-s-icon">trending_up</span>
+                                <div class="nb-s-texts">
+                                  <span class="nb-s-title">{{ loc.name }}</span>
+                                  <span class="nb-s-sub">{{ loc.sub }} • {{ loc.city }}</span>
+                                </div>
+                                <span class="nb-s-tag">Add +</span>
+                              </div>
+                            }
+                          }
+                        }
                       </div>
                     }
                   </div>
-                </div>
-              }
 
-              <!-- End Search Button -->
-              <div class="mobile-q-footer">
-                <button type="button" class="btn-mobile-prompt-search" (click)="executeMobileGuidedSearch()">
-                  <span class="material-symbols-outlined search-icon">search</span>
-                  <span>Search Plots</span>
+                  <!-- Selected Locality Chips (Up to 3, NoBroker Green Pill Style) -->
+                  @if (mobileSelectedLocalities().length > 0) {
+                    <div class="nb-chips-row">
+                      @for (loc of mobileSelectedLocalities(); track loc) {
+                        <span class="nb-selected-chip">
+                          <span class="nb-chip-text">{{ loc }}</span>
+                          <button type="button" class="nb-chip-remove" (click)="removeMobileLocalityChip(loc)" [attr.aria-label]="'Remove ' + loc">&times;</button>
+                        </span>
+                      }
+                    </div>
+                  }
+
+                  <!-- Verified Builder Projects Checkbox with Badge -->
+                  <label class="nb-checkbox-row nb-mt-12">
+                    <input 
+                      type="checkbox" 
+                      class="nb-checkbox" 
+                      [checked]="mobileVerifiedProjectsOnly()" 
+                      (change)="toggleMobileVerifiedProjects()" />
+                    <span class="nb-checkbox-text">New Verified Builder Layouts</span>
+                    <span class="nb-offer-badge">Verified</span>
+                  </label>
+                </div>
+
+                <!-- 4. Looking For -->
+                <div class="nb-section">
+                  <div class="nb-section-label">Looking For</div>
+                  <div class="nb-grid-2">
+                    <button 
+                      type="button" 
+                      class="nb-option-btn" 
+                      [class.selected]="selectedMobileCategory() === 'plots'"
+                      (click)="setMobileCategory('plots')">
+                      Residential Plots
+                    </button>
+                    <button 
+                      type="button" 
+                      class="nb-option-btn" 
+                      [class.selected]="selectedMobileCategory() === 'commercial'"
+                      (click)="setMobileCategory('commercial')">
+                      Commercial Land
+                    </button>
+                  </div>
+                  <label class="nb-checkbox-row nb-mt-10">
+                    <input 
+                      type="checkbox" 
+                      class="nb-checkbox" 
+                      [checked]="mobileIncludeNearby()" 
+                      (change)="toggleMobileIncludeNearby()" />
+                    <span class="nb-checkbox-text">Include Nearby Properties</span>
+                  </label>
+                </div>
+
+                <!-- 5. Approval Authority (3-Column Grid) -->
+                <div class="nb-section">
+                  <div class="nb-section-label">Approval Authority</div>
+                  <div class="nb-grid-3">
+                    @for (auth of mobileApprovalOptions; track auth.value) {
+                      <button 
+                        type="button" 
+                        class="nb-option-btn" 
+                        [class.selected]="isMobileApprovalSelected(auth.value)"
+                        (click)="toggleMobileApproval(auth.value)">
+                        {{ auth.label }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- 6. Property Type (2-Column Grid) -->
+                <div class="nb-section">
+                  <div class="nb-section-label">Property Type</div>
+                  <div class="nb-grid-2">
+                    @for (ptype of mobilePlotTypeOptions; track ptype.value) {
+                      <button 
+                        type="button" 
+                        class="nb-option-btn" 
+                        [class.selected]="isMobilePlotSubtypeSelected(ptype.value)"
+                        (click)="toggleMobilePlotSubtype(ptype.value)">
+                        {{ ptype.label }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- 7. Price Range / Budget Bracket (3-Column Grid, No Custom Slider) -->
+                <div class="nb-section">
+                  <div class="nb-section-label">Price Range</div>
+                  <div class="nb-grid-3">
+                    @for (range of budgetRanges; track range.value) {
+                      <button 
+                        type="button" 
+                        class="nb-option-btn nb-budget-btn" 
+                        [class.selected]="propertyService.selectedBudget() === range.value"
+                        (click)="selectMobileBudget(range.value)">
+                        {{ range.label }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- 8. Property Status (2-Column Grid) -->
+                <div class="nb-section">
+                  <div class="nb-section-label">Property Status</div>
+                  <div class="nb-grid-2">
+                    <button 
+                      type="button" 
+                      class="nb-option-btn" 
+                      [class.selected]="selectedMobileIntent() === 'ready'"
+                      (click)="setMobileIntent('ready')">
+                      Ready to Build
+                    </button>
+                    <button 
+                      type="button" 
+                      class="nb-option-btn" 
+                      [class.selected]="selectedMobileIntent() === 'investment'"
+                      (click)="setMobileIntent('investment')">
+                      Investment Growth
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sticky Bottom Search CTA Bar -->
+              <div class="nb-bottom-bar" (click)="$event.stopPropagation()">
+                <button type="button" class="nb-submit-search-btn" id="nb-mobile-search-submit-btn" (click)="executeMobileGuidedSearch()">
+                  SEARCH
                 </button>
               </div>
             </div>
@@ -728,6 +838,17 @@ export interface PropertyTypeOption {
       display: block;
       position: relative;
       z-index: 10;
+    }
+    :host.mobile-search-page-active {
+      z-index: 100000 !important;
+    }
+    :host.mobile-search-page-active .hero-section,
+    :host.mobile-search-page-active .hero-content,
+    :host.mobile-search-page-active .search-pill-wrapper {
+      z-index: 100000 !important;
+    }
+    :host.mobile-search-page-active app-deals-scrolling-banner {
+      display: none !important;
     }
     .hero-section {
       position: relative;
@@ -1354,6 +1475,7 @@ export interface PropertyTypeOption {
         box-sizing: border-box;
         padding: 0;
         background: transparent;
+        scroll-margin-top: 70px;
       }
       .buy-sell-tab-btn {
         flex: 1 1 0;
@@ -1420,42 +1542,64 @@ export interface PropertyTypeOption {
         display: none !important;
       }
 
-      /* Mobile Search Bar: Clean single row with Search Button at the end of text area */
+      /* Mobile Search Bar: Clean single pill with curved border radius and integrated Search Button */
       .search-pill-bar {
-        flex-direction: column;
-        border-radius: 6px;
-        padding: 0.35rem;
+        display: block;
+        width: 100%;
+        border-radius: 0;
+        padding: 0;
         gap: 0;
         box-sizing: border-box;
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.03);
-        border: 1px solid #e2e8f0;
-        background: #ffffff;
+        box-shadow: none;
+        border: none;
+        background: transparent;
       }
+
       .pill-segment.segment-locality {
         display: flex;
-        align-items: center;
+        align-items: stretch;
         justify-content: space-between;
         gap: 8px;
         width: 100%;
-        border-radius: 12px;
-        background: #f8fafc;
-        border: 1px solid #f1f5f9;
-        padding: 0.45rem 0.6rem 0.45rem 0.85rem;
+        height: 56px;
+        border-radius: 50px !important; /* Curved border radius like the above buttons */
+        background: #ffffff !important;
+        border: 1.5px solid #e2e8f0 !important; /* Single border - no double border */
+        padding: 0 !important;
         box-sizing: border-box;
-        transition: background 0.15s ease, border-color 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        position: relative;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
       }
       .pill-segment.segment-locality:active,
       .pill-segment.segment-locality:focus-within {
-        background: #ffffff;
-        border-color: var(--brand-green, #5e8f72);
+        background: #ffffff !important;
+        border-color: var(--brand-green, #5e8f72) !important;
+        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.15);
       }
       .pill-segment.segment-locality .segment-input-wrap {
         flex: 1 1 0;
         min-width: 0;
+        padding: 0.35rem 0 0.35rem 1.35rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .pill-segment.segment-locality .segment-label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+        line-height: 1;
       }
       .pill-segment.segment-locality .pill-input-text {
-        font-size: 13.5px;
-        height: 24px;
+        font-size: 14.5px;
+        height: 25px;
+        color: #0f172a;
+        font-weight: 500;
+        line-height: 25px;
       }
 
       /* Search Button at the end of the search text area */
@@ -1464,228 +1608,496 @@ export interface PropertyTypeOption {
         align-items: center;
         justify-content: center;
         gap: 5px;
-        height: 44px;
-        padding: 0 14px;
+        height: 100%;
+        margin: 0;
+        padding: 0 22px;
         background: var(--brand-green, #5e8f72);
         color: #ffffff;
-        border: none;
-        border-radius: 10px;
+        border: none !important;
+        border-radius: 0px 999px 999px 0 !important;
         font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
         cursor: pointer;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.35);
+        box-shadow: none;
+        box-sizing: border-box;
         transition: all 0.15s ease;
-        margin-left: 4px;
-       border-radius:9999px;
       }
       .btn-mobile-input-search:active {
-        transform: scale(0.97);
+        transform: none;
         background: var(--brand-green-hover, #497259);
       }
       .btn-mobile-input-search .search-icon {
-        font-size: 18px;
+        font-size: 22px;
       }
 
-      /* Mobile Guided Questionnaire Card */
-      .mobile-questionnaire-card {
-        display: block;
-        margin-top: 10px;
+      /* Dedicated Full-Screen Mobile Search Page (NoBroker-Style) */
+      .nb-mobile-search-page {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
         background: #ffffff;
-        border-radius: 6px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.14), 0 6px 14px rgba(15, 23, 42, 0.05);
-        padding: 0.8rem;
-        box-sizing: border-box;
-        animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 120;
-        position: relative;
+        z-index: 100000;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         text-align: left;
-      }
-      .mobile-q-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-        padding-bottom: 0.65rem;
-        border-bottom: 1px solid #f1f5f9;
-      }
-      .mobile-q-headline {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #0f172a;
-      }
-      .mobile-q-headline .q-icon {
-        font-size: 18px;
-        color: var(--brand-green, #5e8f72);
-      }
-      .btn-q-close {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: none;
-        background: #f1f5f9;
-        color: #64748b;
-        cursor: pointer;
-      }
-      .btn-q-close .material-symbols-outlined {
-        font-size: 18px;
-      }
-      .mobile-q-section {
-        margin-bottom: 1rem;
-      }
-      .mobile-q-title {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        font-weight: 500;
-        color: #1e293b;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        margin-bottom: 0.55rem;
-      }
-      .q-step-num {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 18px;
-        height: 18px;
-        border-radius: 6px;
-        background: var(--brand-green-subtle, #e5f7ec);
-        color: var(--brand-green, #5e8f72);
-        font-size: 10px;
-        font-weight: 500;
-      }
-      .mobile-q-toggle-row {
-        display: flex;
-        gap: 8px;
-        width: 100%;
-      }
-      .mobile-q-chip {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        height: 42px;
-        border-radius: 6px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
-        font-weight: 500;
+        animation: nbSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes nbSlideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Top App Bar */
+      .nb-top-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 54px;
+        padding: 0 14px;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+        flex-shrink: 0;
+      }
+      .nb-back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
         border: none;
-        background: #f7f6f6ff;
+        background: transparent;
         color: #334155;
         cursor: pointer;
-        transition: all 0.15s ease;
-        box-sizing: border-box;
-        padding: 0 10px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        padding: 0;
+        border-radius: 50%;
       }
-      .mobile-q-chip.chip-flex {
-        flex: 1 1 0;
+      .nb-back-btn:active {
+        background: #f1f5f9;
       }
-      .mobile-q-chip .chip-icon {
-        font-size: 18px;
-        color: #64748b;
+      .nb-back-btn .material-symbols-outlined {
+        font-size: 23px;
       }
-      .mobile-q-chip.active {
-        background: var(--brand-green, #5e8f72);
-        border-color: var(--brand-green, #5e8f72);
-        color: #ffffff;
-        font-weight: 500;
-        box-shadow: 0 2px 8px rgba(94, 143, 114, 0.3);
+      .nb-brand-logo {
+        height: 28px;
+        width: auto;
+        object-fit: contain;
       }
-      .mobile-q-chip.active .chip-icon {
-        color: #ffffff;
-      }
-      .mobile-q-budget-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-      }
-      .mobile-q-chip.chip-budget {
-        height: 38px;
-        font-size: 11.5px;
-        padding: 0 4px;
-        text-align: center;
-        white-space: nowrap;
-      }
-      .mobile-q-footer {
-        margin-top: 1.25rem;
-      }
-      .btn-mobile-prompt-search {
-        width: 100%;
-        height: 48px;
+
+      /* Mode Tabs Strip */
+      .nb-mode-tabs {
         display: flex;
+        align-items: center;
+        width: 100%;
+        height: 46px;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 12px;
+        box-sizing: border-box;
+        flex-shrink: 0;
+      }
+      .nb-mode-tab {
+        flex: 1 1 0;
+        height: 100%;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        background: var(--brand-green, #5e8f72);
-        color: #ffffff;
         border: none;
-        border-radius: 6px;
+        background: transparent;
         font-family: 'Montserrat', sans-serif;
-        font-size: 14.5px;
+        font-size: 14px;
         font-weight: 500;
+        color: #94a3b8;
+        text-decoration: none;
+        position: relative;
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(94, 143, 114, 0.4);
+        border-bottom: 3px solid transparent;
+        transition: color 0.15s ease, border-color 0.15s ease;
+        box-sizing: border-box;
+      }
+      .nb-mode-tab.active {
+        color: var(--brand-green, #5e8f72);
+        font-weight: 700;
+        border-bottom-color: var(--brand-green, #5e8f72);
+      }
+
+      /* Scrollable Content Area */
+      .nb-scroll-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 16px 16px 28px;
+        box-sizing: border-box;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* 1. District Select Dropdown */
+      .nb-district-select-wrap {
+        position: relative;
+        width: 100%;
+        margin-bottom: 16px;
+      }
+      .nb-district-select {
+        width: 100%;
+        height: 46px;
+        padding: 0 38px 0 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        background: #ffffff;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #334155;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        box-sizing: border-box;
+      }
+      .nb-district-select:focus {
+        border-color: var(--brand-green, #5e8f72);
+      }
+      .nb-select-chevron {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        color: #64748b;
+        pointer-events: none;
+      }
+
+      /* Section Blocks */
+      .nb-section {
+        margin-bottom: 18px;
+      }
+      .nb-section-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 10px;
+      }
+
+      /* 2. Search Type Segmented Bar */
+      .nb-search-type-bar {
+        display: flex;
+        width: 100%;
+        background: #f1f5f9;
+        border-radius: 4px;
+        padding: 3px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+      .nb-search-type-btn {
+        flex: 1 1 0;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1.5px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
         transition: all 0.15s ease;
       }
-      .btn-mobile-prompt-search:active {
-        transform: scale(0.98);
-        background: var(--brand-green-hover, #497259);
+      .nb-search-type-btn .nb-type-icon {
+        font-size: 18px;
       }
-      .btn-mobile-prompt-search .search-icon {
-        font-size: 20px;
-      }
-      .mobile-q-matches {
-        margin-top: 0.75rem;
-        background: #f8fafc;
-        border-radius: 6px;
-        padding: 0.6rem 0.75rem;
-        border: 1px solid #e2e8f0;
-      }
-      .mobile-q-matches-header {
-        font-size: 10.5px;
-        font-weight: 500;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 0.4rem;
-      }
-      .mobile-q-match-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 0.35rem 0;
-        cursor: pointer;
-        border-bottom: 1px solid #f1f5f9;
-      }
-      .mobile-q-match-item:last-child {
-        border-bottom: none;
-      }
-      .mobile-q-match-item .match-icon {
-        font-size: 16px;
+      .nb-search-type-btn.active {
+        background: #ffffff;
+        border-color: var(--brand-green, #5e8f72);
         color: var(--brand-green, #5e8f72);
       }
-      .mobile-q-match-item .match-info {
+
+      /* 3. Locality Search Input Box & Suggestions */
+      .nb-input-container {
+        position: relative;
+        width: 100%;
+      }
+      .nb-input-box {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 44px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        background: #ffffff;
+        padding: 0 4px 0 10px;
+        box-sizing: border-box;
+      }
+      .nb-input-box:focus-within {
+        border-color: var(--brand-green, #5e8f72);
+      }
+      .nb-input-search-icon {
+        font-size: 20px;
+        color: #94a3b8;
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+      .nb-text-input {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1e293b;
+      }
+      .nb-text-input::placeholder {
+        color: #94a3b8;
+        font-weight: 400;
+      }
+      .nb-input-clear-btn {
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        font-size: 18px;
+        padding: 0 6px;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .nb-gps-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 28px;
+        border: none;
+        border-left: 1px solid #cbd5e1;
+        background: transparent;
+        color: #475569;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .nb-gps-btn .material-symbols-outlined {
+        font-size: 19px;
+      }
+      .nb-gps-btn .spin {
+        animation: nbSpin 1s linear infinite;
+        color: var(--brand-green, #5e8f72);
+      }
+      @keyframes nbSpin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      /* Live Suggestions Dropdown */
+      .nb-suggest-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        max-height: 250px;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14);
+        z-index: 50;
+      }
+      .nb-suggest-group-header {
+        padding: 6px 12px;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+      }
+      .nb-suggest-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #f8fafc;
+        cursor: pointer;
+      }
+      .nb-suggest-row:active {
+        background: #f1f5f9;
+      }
+      .nb-s-icon {
+        font-size: 18px;
+        color: var(--brand-green, #5e8f72);
+        flex-shrink: 0;
+      }
+      .nb-s-texts {
+        flex: 1 1 0;
+        min-width: 0;
         display: flex;
         flex-direction: column;
       }
-      .mobile-q-match-item .match-title {
-        font-size: 12px;
-        font-weight: 500;
-        color: #0f172a;
+      .nb-s-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
-      .mobile-q-match-item .match-sub {
-        font-size: 10.5px;
+      .nb-s-sub {
+        font-size: 11px;
         color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .nb-s-tag {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--brand-green, #5e8f72);
+        background: #eef6f1;
+        padding: 2px 7px;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+
+      /* Selected Locality Chips (Green Capsules) */
+      .nb-chips-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .nb-selected-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        padding: 0 10px 0 12px;
+        background: var(--brand-green, #5e8f72);
+        color: #ffffff;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .nb-chip-remove {
+        border: none;
+        background: transparent;
+        color: #ffffff;
+        font-size: 16px;
+        line-height: 1;
+        padding: 0 2px;
+        cursor: pointer;
+        opacity: 0.9;
+      }
+
+      /* Checkboxes */
+      .nb-checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .nb-mt-12 {
+        margin-top: 14px;
+      }
+      .nb-mt-10 {
+        margin-top: 10px;
+      }
+      .nb-checkbox {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--brand-green, #5e8f72);
+        margin: 0;
+        cursor: pointer;
+      }
+      .nb-checkbox-text {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #475569;
+      }
+      .nb-offer-badge {
+        background: #e11d48;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 999px;
+        line-height: 1.2;
+      }
+
+      /* 2-Col and 3-Col Selection Grids */
+      .nb-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .nb-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .nb-option-btn {
+        height: 40px;
+        padding: 0 8px;
+        border: 1px solid #f1f5f9;
+        border-radius: 4px;
+        background: #f8fafc;
+        color: #475569;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12.5px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .nb-option-btn.nb-budget-btn {
+        font-size: 11.5px;
+        padding: 0 4px;
+      }
+      .nb-option-btn.selected {
+        background: var(--brand-green, #5e8f72);
+        border-color: var(--brand-green, #5e8f72);
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      /* Sticky Bottom CTA Bar */
+      .nb-bottom-bar {
+        flex-shrink: 0;
+        width: 100%;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+      }
+      .nb-submit-search-btn {
+        width: 100%;
+        height: 52px;
+        border: none;
+        border-radius: 0;
+        background: var(--brand-green, #5e8f72);
+        color: #ffffff;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .nb-submit-search-btn:active {
+        background: var(--brand-green-hover, #497259);
       }
     }
 
@@ -1699,13 +2111,13 @@ export interface PropertyTypeOption {
         font-size: 16px;
       }
       .btn-mobile-input-search {
-        padding: 0 10px;
+        padding: 0 14px;
         font-size: 12px;
       }
-      .btn-mobile-input-search .search-text-mobile {
-        display: none;
+      .nb-option-btn {
+        font-size: 11.5px;
       }
-      .mobile-q-chip.chip-budget {
+      .nb-option-btn.nb-budget-btn {
         font-size: 10.5px;
       }
     }
@@ -2389,10 +2801,31 @@ export class HeroSearchComponent implements OnInit {
   // Hero Top Mode Tabs (Buy | Post | Commercial | Agriculture)
   readonly activeHeroTab = signal<'buy' | 'commercial' | 'agricultural'>('buy');
 
-  // Mobile Guided Questionnaire State (BUY -> PLOTS | COMMERCIAL | AGRICULTURE, PRICE RANGES, INVESTMENT | READY TO BUILD)
+  // Dedicated Mobile Search Page State (NoBroker-Style Full-Screen View)
   readonly isMobileQuestionnaireOpen = signal<boolean>(false);
   readonly selectedMobileCategory = signal<'plots' | 'commercial' | 'agricultural'>('plots');
   readonly selectedMobileIntent = signal<'investment' | 'ready' | 'all'>('all');
+  readonly mobileSearchType = signal<'locality' | 'developer'>('locality');
+  readonly mobileSelectedLocalities = signal<string[]>([]);
+  readonly mobileSearchInputText = signal<string>('');
+  readonly isMobileSuggestDropdownOpen = signal<boolean>(false);
+  readonly mobileVerifiedProjectsOnly = signal<boolean>(false);
+  readonly mobileIncludeNearby = signal<boolean>(true);
+  readonly mobileSelectedApprovals = signal<string[]>(['CMDA', 'DTCP']);
+  readonly mobileSelectedPlotSubtypes = signal<string[]>(['Gated Community Plot']);
+
+  readonly mobileApprovalOptions = [
+    { value: 'CMDA', label: 'CMDA Approved' },
+    { value: 'DTCP', label: 'DTCP Approved' },
+    { value: 'RERA', label: 'TNRERA Verified' }
+  ];
+
+  readonly mobilePlotTypeOptions = [
+    { value: 'Gated Community Plot', label: 'Gated Community Plot' },
+    { value: 'Villa Plot', label: 'Residential Villa Plot' },
+    { value: 'Commercial Plot', label: 'Commercial / SCO Plot' },
+    { value: 'Direct Owner Land', label: 'Direct Owner Land' }
+  ];
 
   setHeroTab(mode: 'buy' | 'commercial' | 'agricultural'): void {
     this.activeHeroTab.set(mode);
@@ -2713,8 +3146,7 @@ export class HeroSearchComponent implements OnInit {
   // Location Autocomplete & Search Focus Routing Actions
   onSearchInputFocus(): void {
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      this.isMobileQuestionnaireOpen.set(true);
-      this.isLocationSuggestOpen.set(false);
+      this.openDedicatedMobileSearch();
     } else {
       this.openLocationSuggest();
     }
@@ -2723,15 +3155,210 @@ export class HeroSearchComponent implements OnInit {
   onSearchInputClick(event: MouseEvent): void {
     event.stopPropagation();
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      this.isMobileQuestionnaireOpen.set(true);
-      this.isLocationSuggestOpen.set(false);
+      this.openDedicatedMobileSearch();
     } else {
       this.openLocationSuggest();
     }
   }
 
+    openDedicatedMobileSearch(): void {
+      this.isMobileQuestionnaireOpen.set(true);
+      this.isLocationSuggestOpen.set(false);
+      if(typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+      const heroInput = document.getElementById('hero-locality-input') as HTMLInputElement | null;
+      heroInput?.blur();
+    }
+    const dist = this.locationService.selectedDistrict();
+    const currentQ = this.propertyService.searchQuery().trim();
+    if (
+      currentQ &&
+      currentQ.toLowerCase() !== dist.toLowerCase() &&
+      this.mobileSelectedLocalities().length === 0
+    ) {
+      this.mobileSelectedLocalities.set([currentQ]);
+    }
+    if (dist && this.districtSuggestions().length === 0) {
+      this.propertyService.fetchSuggestions('', dist).subscribe(res => {
+        this.districtSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+      });
+    }
+  }
+
   closeMobileQuestionnaire(): void {
     this.isMobileQuestionnaireOpen.set(false);
+    this.isMobileSuggestDropdownOpen.set(false);
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  }
+
+  onMobileDistrictChange(event: Event): void {
+    const newDist = (event.target as HTMLSelectElement).value;
+    if (!newDist) return;
+    this.locationService.setDistrict(newDist, 'manual');
+    this.mobileSelectedLocalities.set([]);
+    this.mobileSearchInputText.set('');
+    this.propertyService.fetchSuggestions('', newDist).subscribe(res => {
+      this.districtSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+    });
+  }
+
+  setMobileSearchType(type: 'locality' | 'developer'): void {
+    this.mobileSearchType.set(type);
+    this.mobileSearchInputText.set('');
+    this.isMobileSuggestDropdownOpen.set(false);
+  }
+
+  onMobileDedicatedInputFocus(): void {
+    this.isMobileSuggestDropdownOpen.set(true);
+    const dist = this.locationService.selectedDistrict();
+    if (dist && this.districtSuggestions().length === 0) {
+      this.propertyService.fetchSuggestions('', dist).subscribe(res => {
+        this.districtSuggestions.set((res || []).filter((r: any) => r.type !== 'developer'));
+      });
+    }
+  }
+
+  onMobileDedicatedSearchInput(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.mobileSearchInputText.set(val);
+    this.isHeroInputManuallyAdjusted.set(true);
+    this.propertyService.searchQuery.set(val);
+    this.isMobileSuggestDropdownOpen.set(true);
+
+    if (this.heroDebounceTimer) {
+      clearTimeout(this.heroDebounceTimer);
+    }
+    this.heroDebounceTimer = setTimeout(() => {
+      const trimmed = val.trim();
+      if (trimmed.length >= 2) {
+        this.propertyService.fetchGooglePlaces(trimmed).subscribe(places => {
+          this.googlePlacesList.set(places || []);
+        });
+        this.propertyService.loadPropertiesFromApi({
+          q: trimmed,
+          limit: 10,
+          append: false
+        });
+      } else {
+        this.googlePlacesList.set([]);
+      }
+    }, 260);
+  }
+
+  onMobileDedicatedInputEnter(event: Event): void {
+    event.preventDefault();
+    const val = this.mobileSearchInputText().trim();
+    if (!val) return;
+    if (this.mobileSearchType() === 'locality') {
+      this.addMobileLocalityChip(val);
+    } else {
+      this.executeMobileGuidedSearch();
+    }
+  }
+
+  clearMobileDedicatedInput(event: Event): void {
+    event.stopPropagation();
+    this.mobileSearchInputText.set('');
+    this.googlePlacesList.set([]);
+  }
+
+  detectMobileGpsLocation(event: Event): void {
+    event.stopPropagation();
+    this.locationService.detectLocation({ autoPromptOnBlock: true, silentOnSuccess: false });
+  }
+
+  addMobileLocalityChip(loc: string): void {
+    const cleaned = (loc || '').trim();
+    if (!cleaned) return;
+    this.mobileSelectedLocalities.update(curr => {
+      if (curr.some(c => c.toLowerCase() === cleaned.toLowerCase())) {
+        return curr;
+      }
+      if (curr.length >= 3) {
+        this.notificationService.show({
+          type: 'info',
+          title: 'Maximum 3 Localities',
+          message: 'You can select up to 3 localities at a time.',
+          icon: 'location_on'
+        }, 3000);
+        return curr;
+      }
+      return [...curr, cleaned];
+    });
+    this.mobileSearchInputText.set('');
+    this.isMobileSuggestDropdownOpen.set(false);
+    this.isHeroInputManuallyAdjusted.set(true);
+    this.propertyService.searchQuery.set(this.mobileSelectedLocalities().join(', '));
+  }
+
+  removeMobileLocalityChip(loc: string): void {
+    this.mobileSelectedLocalities.update(curr => curr.filter(c => c !== loc));
+    const remaining = this.mobileSelectedLocalities();
+    if (remaining.length > 0) {
+      this.propertyService.searchQuery.set(remaining.join(', '));
+    } else {
+      this.propertyService.searchQuery.set(this.locationService.selectedDistrict());
+    }
+  }
+
+  getMobileDeveloperSuggestions(): { name: string; sub: string }[] {
+    const q = this.mobileSearchInputText().trim().toLowerCase();
+    const builders = this.buildersList() || [];
+    if (q) {
+      return builders
+        .filter((b: any) => b.name && b.name.toLowerCase().includes(q))
+        .slice(0, 6)
+        .map((b: any) => {
+          const count = b.projectCount ?? b.propertyCount ?? 0;
+          return {
+            name: b.name,
+            sub: count > 0 ? `Verified Developer • ${count} Projects` : 'Verified Developer • View Profile'
+          };
+        });
+    }
+    return this.autoListedDevelopers();
+  }
+
+  selectMobileDeveloperItem(dev: { name: string; sub: string }): void {
+    if (!dev?.name) return;
+    this.closeMobileQuestionnaire();
+    this.selectDeveloper(dev.name, dev.sub);
+  }
+
+  toggleMobileVerifiedProjects(): void {
+    this.mobileVerifiedProjectsOnly.update(v => !v);
+  }
+
+  toggleMobileIncludeNearby(): void {
+    this.mobileIncludeNearby.update(v => !v);
+  }
+
+  isMobileApprovalSelected(val: string): boolean {
+    return this.mobileSelectedApprovals().includes(val);
+  }
+
+  toggleMobileApproval(val: string): void {
+    this.mobileSelectedApprovals.update(curr =>
+      curr.includes(val) ? curr.filter(item => item !== val) : [...curr, val]
+    );
+  }
+
+  isMobilePlotSubtypeSelected(val: string): boolean {
+    return this.mobileSelectedPlotSubtypes().includes(val);
+  }
+
+  toggleMobilePlotSubtype(val: string): void {
+    this.mobileSelectedPlotSubtypes.update(curr => {
+      if (curr.includes(val)) {
+        return curr.length > 1 ? curr.filter(item => item !== val) : curr;
+      }
+      return [...curr, val];
+    });
+    if (val === 'Commercial Plot') {
+      this.setMobileCategory('commercial');
+    }
   }
 
   setMobileCategory(cat: 'plots' | 'commercial' | 'agricultural'): void {
@@ -2771,7 +3398,16 @@ export class HeroSearchComponent implements OnInit {
   }
 
   executeMobileGuidedSearch(): void {
-    this.isMobileQuestionnaireOpen.set(false);
+    const typed = this.mobileSearchInputText().trim();
+    if (typed && this.mobileSelectedLocalities().length < 3) {
+      this.addMobileLocalityChip(typed);
+    }
+    const chips = this.mobileSelectedLocalities();
+    if (chips.length > 0) {
+      this.isHeroInputManuallyAdjusted.set(true);
+      this.propertyService.searchQuery.set(chips[0]);
+    }
+    this.closeMobileQuestionnaire();
     this.executeSearch();
   }
 
@@ -3065,31 +3701,32 @@ export class HeroSearchComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event?: MouseEvent): void {
     const target = event?.target as HTMLElement;
-    if (target?.closest('.mobile-questionnaire-card') || target?.closest('.segment-locality')) {
-      return;
+      if (target?.closest('.nb-mobile-search-page') || target?.closest('.segment-locality')) {
+        return;
+      }
+      this.closeMobileQuestionnaire();
+      this.isLocationSuggestOpen.set(false);
+      this.isTypeDropdownOpen.set(false);
+      this.isBudgetDropdownOpen.set(false);
     }
-    this.isMobileQuestionnaireOpen.set(false);
-    this.isLocationSuggestOpen.set(false);
-    this.isTypeDropdownOpen.set(false);
-    this.isBudgetDropdownOpen.set(false);
-  }
 
-  @HostListener('document:keydown.escape')
-  onEscape(): void {
-    this.isMobileQuestionnaireOpen.set(false);
-    this.isLocationSuggestOpen.set(false);
-    this.isTypeDropdownOpen.set(false);
-    this.isBudgetDropdownOpen.set(false);
-  }
+    @HostListener('document:keydown.escape')
+    onEscape(): void {
+      this.closeMobileQuestionnaire();
+      this.isLocationSuggestOpen.set(false);
+      this.isTypeDropdownOpen.set(false);
+      this.isBudgetDropdownOpen.set(false);
+    }
 
-  // Execute Search -> Navigates to /search with rich query parameters
-  executeSearch(): void {
-    this.isMobileQuestionnaireOpen.set(false);
-    const activeQ = this.propertyService.searchQuery().trim();
-    const headerDist = this.locationService.selectedDistrict();
-    const isSyncedDistrictOnly = !this.isHeroInputManuallyAdjusted() && !!activeQ && activeQ.toLowerCase() === headerDist.toLowerCase();
+    // Execute Search -> Navigates to /search with rich query parameters
+    executeSearch(): void {
+      this.closeMobileQuestionnaire();
+      const activeQ = this.propertyService.searchQuery().trim();
+      const headerDist = this.locationService.selectedDistrict();
+      const mobileChips = this.mobileSelectedLocalities();
+      const isSyncedDistrictOnly = mobileChips.length === 0 && !this.isHeroInputManuallyAdjusted() && !!activeQ && activeQ.toLowerCase() === headerDist.toLowerCase();
 
-    if (activeQ && !isSyncedDistrictOnly) {
+      if(activeQ && !isSyncedDistrictOnly) {
       this.propertyService.recordUserSearchHistory({
         label: activeQ,
         sub: 'Home Search Keyword',
@@ -3116,14 +3753,16 @@ export class HeroSearchComponent implements OnInit {
 
     const typesParam = this.selectedTypes().length > 0 ? this.selectedTypes().join(',') : null;
 
-    const hubValue = isSyncedDistrictOnly
-      ? headerDist
-      : (activeQ || (this.isHeroInputManuallyAdjusted() ? '' : headerDist));
+    const hubValue = mobileChips.length > 0
+      ? mobileChips.join(', ')
+      : (isSyncedDistrictOnly
+        ? headerDist
+        : (activeQ || (this.isHeroInputManuallyAdjusted() ? '' : headerDist)));
     const budgetLabel = (rawBudget && rawBudget !== 'Select Budget' && rawBudget !== 'Any Budget')
       ? rawBudget
       : (this.isCustomBudgetActive()
-          ? `${this.formatBudgetInr(this.customBudgetMin())} – ${this.formatBudgetInr(this.customBudgetMax())}`
-          : '');
+        ? `${this.formatBudgetInr(this.customBudgetMin())} – ${this.formatBudgetInr(this.customBudgetMax())}`
+        : '');
     const assetLabel = this.selectedTypes().length > 0 ? this.selectedTypes().join(', ') : '';
     const titleLabel = this.selectedStatus() === 'ready'
       ? 'Ready to Register / Clear Patta'
@@ -3137,11 +3776,15 @@ export class HeroSearchComponent implements OnInit {
       reraVerification: 'TNRERA & DTCP Approved'
     });
 
+    const localitiesParam = mobileChips.length > 0
+      ? mobileChips.join(',')
+      : (isSyncedDistrictOnly ? headerDist : null);
+
     this.router.navigate(['/search'], {
       queryParams: {
-        q: isSyncedDistrictOnly ? null : (activeQ || null),
-        district: isSyncedDistrictOnly ? headerDist : null,
-        localities: isSyncedDistrictOnly ? headerDist : null,
+        q: mobileChips.length > 0 ? mobileChips[0] : (isSyncedDistrictOnly ? null : (activeQ || null)),
+        district: headerDist || null,
+        localities: localitiesParam,
         type: typesParam,
         budget: budgetParam,
         minBudget: minBudgetParam,

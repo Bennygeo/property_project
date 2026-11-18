@@ -25,31 +25,52 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
         </div>
       </div>
 
-      <!-- Shimmer Skeleton Loading State: 8 Cards (Zero Layout Shift / Anti-Jerk) -->
-      <div *ngIf="isLoading()" class="developers-row-grid skeleton-grid" aria-busy="true" aria-label="Loading verified developers">
-        <div *ngFor="let i of skeletonCards" class="developer-card skeleton-card">
-          <div class="developer-logo-frame skeleton-logo-box shimmer-effect"></div>
-          <div class="skeleton-line skeleton-name shimmer-effect"></div>
-          <div class="skeleton-line skeleton-metric shimmer-effect"></div>
+      <!-- Shimmer Skeleton Loading State: 10 Cards -->
+      <div *ngIf="isLoading()" class="marquee-wrapper" aria-busy="true" aria-label="Loading verified developers">
+        <div class="marquee-skeleton-track">
+          <div *ngFor="let i of skeletonCards" class="developer-card skeleton-card">
+            <div class="developer-logo-frame skeleton-logo-box shimmer-effect"></div>
+            <div class="skeleton-line skeleton-name shimmer-effect"></div>
+            <div class="skeleton-line skeleton-metric shimmer-effect"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Real Loaded Data: Single Row of 8 Developer Cards -->
-      <div *ngIf="!isLoading()" class="developers-row-grid developers-loaded-grid">
-        <article *ngFor="let dev of topDevelopers()" class="developer-card">
-          <a [routerLink]="['/builder', dev.name]" class="card-main-link"
-            [title]="'View projects developed by ' + dev.name">
-            <div class="developer-logo-frame">
-              <img [src]="getDeveloperLogo(dev)" [alt]="dev.name + ' Logo'" class="logo-image" loading="lazy"
-                (error)="onLogoError($event, dev)">
-            </div>
-            <h3 class="developer-name" [title]="dev.name">{{ dev.name }}</h3>
-            <div class="project-metric-row">
-              <span class="material-symbols-outlined metric-icon">apartment</span>
-              <span class="project-count-num">{{ dev.projectCount }}</span>
-            </div>
-          </a>
-        </article>
+      <!-- Real Loaded Data: Continuous Marquee Scrolling Effect (First 10 Developers) -->
+      <div *ngIf="!isLoading()" class="marquee-wrapper" aria-label="Top 10 verified developers marquee">
+        <div class="marquee-group">
+          <article *ngFor="let dev of topDevelopers(); trackBy: trackByName" class="developer-card marquee-card">
+            <a [routerLink]="['/builder', dev.name]" class="card-main-link"
+              [title]="'View projects developed by ' + dev.name">
+              <div class="developer-logo-frame">
+                <img [src]="getDeveloperLogo(dev)" [alt]="dev.name + ' Logo'" class="logo-image" loading="lazy"
+                  (error)="onLogoError($event, dev)">
+              </div>
+              <h3 class="developer-name" [title]="dev.name">{{ dev.name }}</h3>
+              <div class="project-metric-row">
+                <span class="material-symbols-outlined metric-icon">apartment</span>
+                <span class="project-count-num">{{ dev.projectCount }}</span>
+              </div>
+            </a>
+          </article>
+        </div>
+
+        <div class="marquee-group" aria-hidden="true">
+          <article *ngFor="let dev of topDevelopers(); trackBy: trackByName" class="developer-card marquee-card">
+            <a [routerLink]="['/builder', dev.name]" class="card-main-link"
+              [title]="'View projects developed by ' + dev.name" tabindex="-1">
+              <div class="developer-logo-frame">
+                <img [src]="getDeveloperLogo(dev)" [alt]="dev.name + ' Logo'" class="logo-image" loading="lazy"
+                  (error)="onLogoError($event, dev)">
+              </div>
+              <h3 class="developer-name" [title]="dev.name">{{ dev.name }}</h3>
+              <div class="project-metric-row">
+                <span class="material-symbols-outlined metric-icon">apartment</span>
+                <span class="project-count-num">{{ dev.projectCount }}</span>
+              </div>
+            </a>
+          </article>
+        </div>
       </div>
     </section>
   `,
@@ -149,11 +170,54 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
       font-size: 17px;
     }
 
-    /* Single Row of 8 Developer Cards */
-    .developers-row-grid {
-      display: grid;
-      grid-template-columns: repeat(8, minmax(0, 1fr));
-      gap: 14px;
+    /* Continuous Marquee Scrolling Effect */
+    .marquee-wrapper {
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+      display: flex;
+      gap: 16px;
+      padding: 6px 0 10px 0;
+      user-select: none;
+      mask-image: linear-gradient(to right, transparent 0%, black 2.5%, black 97.5%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2.5%, black 97.5%, transparent 100%);
+    }
+
+    .marquee-group {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: max-content;
+      animation: scrollMarquee 35s linear infinite;
+      will-change: transform;
+    }
+
+    .marquee-wrapper:hover .marquee-group,
+    .marquee-wrapper:focus-within .marquee-group {
+      animation-play-state: paused;
+    }
+
+    @keyframes scrollMarquee {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(calc(-100% - 16px));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-group {
+        animation-play-state: paused;
+      }
+    }
+
+    .marquee-skeleton-track {
+      display: flex;
+      gap: 16px;
+      overflow: hidden;
+      width: 100%;
     }
 
     .developer-card {
@@ -162,12 +226,16 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
       border-radius: 8px;
       position: relative;
       overflow: hidden;
-      transition: border-color 0.15s ease, background-color 0.15s ease;
+      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
       box-shadow: none !important;
+      flex: 0 0 160px;
+      width: 160px;
+      height: 152px;
+      box-sizing: border-box;
     }
 
     .developer-card:hover {
-      border-color: #0066ff;
+      border-color: rgba(var(--brand-teal), 0.1);
       background-color: #fafcff;
       box-shadow: none !important;
     }
@@ -179,21 +247,21 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 14px 10px 12px;
+      padding: 12px 10px 10px;
       height: 100%;
       box-sizing: border-box;
     }
 
     .developer-logo-frame {
       width: 100%;
-      height: 80px;
+      height: 74px;
       border-radius: 6px;
       background: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 10px;
-      padding: 6px;
+      margin-bottom: 8px;
+      padding: 4px;
       overflow: hidden;
       box-shadow: none !important;
     }
@@ -241,24 +309,11 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
       color: #64748b;
     }
 
-    @media (max-width: 1023px) {
-      .developers-row-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 639px) {
-      .developers-row-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-    }
-
     /* Shimmer Skeleton Styles */
     .skeleton-card {
       pointer-events: none;
       user-select: none;
-      padding: 14px 10px 12px;
+      padding: 12px 10px 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -266,14 +321,16 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       box-sizing: border-box;
-      height: 148px;
+      flex: 0 0 160px;
+      width: 160px;
+      height: 152px;
     }
 
     .skeleton-logo-box {
       width: 100%;
-      height: 80px;
+      height: 74px;
       border-radius: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       padding: 0;
     }
 
@@ -293,7 +350,7 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
       border-radius: 3px;
     }
 
-    .developers-loaded-grid {
+    .marquee-wrapper {
       animation: fadeInContent 0.35s ease-out;
     }
 
@@ -310,10 +367,14 @@ import { PropertyService, DeveloperSummary } from '../../../../core/services/pro
 export class HomeDevelopersComponent implements OnInit {
   private readonly propertyService = inject(PropertyService);
 
-  readonly skeletonCards: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
+  readonly skeletonCards: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   readonly allDevelopers = signal<DeveloperSummary[]>([]);
   readonly isLoading = signal<boolean>(true);
-  readonly topDevelopers = computed<DeveloperSummary[]>(() => this.allDevelopers().slice(0, 8));
+  readonly topDevelopers = computed<DeveloperSummary[]>(() => this.allDevelopers().slice(0, 10));
+
+  trackByName(index: number, dev: DeveloperSummary): string {
+    return dev?.name ? `${dev.name}-${index}` : index.toString();
+  }
 
   private readonly failedLogos = new Set<string>();
 

@@ -83,8 +83,6 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       flex: 1;
       width: 100%;
       background-color: #ffffff;
-      position: relative;
-      z-index: 1;
     }
     app-hero-search {
       display: block;

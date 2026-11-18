@@ -27,7 +27,7 @@ if ($userId <= 0) {
 $db = (new Database())->getConnection();
 
 // 1. Fetch User Record
-$userStmt = $db->prepare("SELECT id, name, email, phone, role, developer_id, points_balance AS pointsBalance, created_at AS createdAt FROM users WHERE id = ?");
+$userStmt = $db->prepare("SELECT id, name, email, phone, role, primary_goal AS primaryGoal, developer_id, points_balance AS pointsBalance, created_at AS createdAt FROM users WHERE id = ?");
 $userStmt->execute([$userId]);
 $user = $userStmt->fetch();
 

@@ -1,53 +1,97 @@
 
 export const CANONICAL_BULK_HEADERS = [
-  'Property ID',
-  'Developer',
+  // 1. Core Project Identification (projects table)
+  'Project ID',
   'Project Name',
+  'Plot No.',
+  'Developer Name',
+  'Developer ID',
+  'District',
+  'City',
+  'Locality',
+  'Pincode',
+  'Category',
+  'Property Type',
+  'Land Type',
+
+  // 2. Pricing & Plot Sizing (projects table)
+  'Price From (₹)',
+  'Price To (₹)',
+  'Price per sq.ft (₹)',
+  'Min Plot Size (sq.ft)',
+  'Max Plot Size (sq.ft)',
+  'Total Price (₹)',
+  'Plot Size (sq.ft)',
+
+  // 3. Project Status, Stage & Timeline (projects table)
+  'Project Stage',
+  'Project Status',
+  'Listing Status',
+  'Launch Date',
+  'Possession Date',
   'RERA Number',
-  'DTCP Approved',
-  'DTCP / LP Approval No.',
+  'Brokerage',
+  'No Brokerage (Yes/No)',
+  'Featured (Yes/No)',
+  'Free Access (Yes/No)',
+  'WhatsApp Number',
+  'Submitted By',
+  'Reviewed By',
+  'Review Notes',
+  'Rejection Reason',
+  'Reviewed At',
+
+  // 4. Layout Specifications & Parcels (project_details table)
+  'Total Layout Area',
+  'Total Plots',
+  'Total Units',
+  'Units Sold',
+  'Available Plot Sizes',
+  'Dimensions',
+  'Facing',
+  'Corner Plot (Yes/No)',
   'Patta Type',
   'Clear Title / EC Available',
   'Bank Loan Approved',
-  'Area / Location',
-  'Village / Locality',
-  'Taluk',
-  'District',
-  'Pincode',
-  'Google Maps Link',
-  'Plot No.',
-  'Plot Size (sq.ft)',
-  'Facing',
-  'Corner Plot',
-  'Land Use',
-  'Price per sq.ft (₹)',
-  'Total Price (₹)',
-  'Availability',
-  'Petrol Bunk Distance (km)',
-  'Schools (Name & km)',
-  'Colleges (Name & km)',
-  'Hospital (Name & km)',
-  'Corridor',
-  'Bus Stop Distance (km)',
-  'Railway Station (Name & km)',
-  'Highway Name',
-  'Highway Access Distance (km)',
-  'Airport Distance (km)',
   'Suited For',
-  'Possession Timeline',
-  'Electricity',
-  'Water Connection',
-  'Drainage Facility',
-  'Road Width (ft)',
+
+  // 5. Approvals & Sanctions (project_details table)
+  'Approval Authority',
+  'Approval Reference / LP No.',
+  'Approval Date',
+  'RERA Details',
+
+  // 6. Infrastructure & Living Amenities (project_details table)
+  'Road Width',
   'Road Type',
+  'Internal Roads',
   'Street Lights',
-  'Compound Wall / Gated',
-  'Park',
-  'Other Amenities',
-  'Developer Maintenance after Handover (yrs)',
-  'Flood Zone',
-  'Waterlogging History',
-  'Contact Person / Phone',
+  'Drainage Facility',
+  'Water Connection',
+  'Electricity',
+  'Parks & Play Area',
+  'Compound Wall / Gated Security',
+  'Other Facilities & Amenities',
+
+  // 7. Location Coordinates & Growth Corridors (project_details table)
+  'GPS Coordinates / Map Link',
+  'Corridor',
+  'Nearby Roads / Highway Name',
+  'Railway Station (Name & km)',
+  'Schools (Name & km)',
+  'Hospitals (Name & km)',
+  'Employment Hubs',
+  'Residential Development Surrounding',
+  'Infrastructure Projects',
+
+  // 8. Media, Digital Masterplan & Document Dossiers (projects & project_details tables)
+  'Cover Image URL',
+  'Interactive Map URL',
+  'Gallery Image URLs',
+  'Video URLs',
+  'Drone Video URLs',
+  'Layout PDF URL',
+  'Brochure PDF URL',
   'Remarks'
 ] as const;
 
@@ -3753,201 +3797,170 @@ export class AdminDashboardComponent {
             return null;
           };
 
-          // 49 Canonical Headers Extraction (0-48):
-          // 0: Property ID (Ensure unique ID for every single row)
-          let rawPId = String(getCol(0, 'propertyid', 'propid', 'refid', 'pid') || '').trim();
+          // =======================================================================
+          // CANONICAL EXTRACTION (Directly aligned with projects & project_details)
+          // =======================================================================
+
+          // --- 1. Project Identification (projects table) ---
+          let rawPId = String(getCol(0, 'projectid', 'propertyid', 'propid', 'refid', 'pid') || '').trim();
           if (isInvalidIdValue(rawPId) || seenIds.has(rawPId)) {
             rawPId = `PRJ-${String(1001 + idx).padStart(4, '0')}`;
           }
           seenIds.add(rawPId);
           const pId = rawPId;
 
-          // 1: Developer
-          const developer = String(getCol(1, 'developer', 'builder', 'promoter', 'company') || 'Find a Plot Verified Developer').trim();
-          // Check for Title column first (Priority: Project Name & Plot fetched from Title column)
+          // Check for Title column first
           const titleCol = String(getCol(-1, 'title', 'propertytitle', 'listingtitle', 'titlename', 'plottitle', 'propertyname') || '').trim();
 
-          // 2: Project Name
-          let projectName = String(getCol(2, 'projectname', 'layoutname', 'communityname', 'project') || '').trim();
-          // 15: Plot No.
-          let rawPlotNo = String(getCol(15, 'plotno', 'plotnumber', 'siteno', 'surveyno') || '').trim();
+          let projectName = String(getCol(1, 'projectname', 'layoutname', 'communityname', 'project') || '').trim();
+          let rawPlotNo = String(getCol(2, 'plotno', 'plotnumber', 'siteno', 'surveyno') || '').trim();
 
-          // Extract Project Name & Plot from Title column or from projectName if it contains "Plot"
           const sourceForTitle = titleCol || (projectName.toLowerCase().includes('plot') ? projectName : '');
           if (sourceForTitle) {
             const extracted = extractProjectAndPlotFromTitle(sourceForTitle);
             if (extracted) {
-              if (extracted.projectName) {
-                projectName = extracted.projectName;
-              }
-              if (extracted.plotNo) {
-                rawPlotNo = extracted.plotNo;
-              }
+              if (extracted.projectName) projectName = extracted.projectName;
+              if (extracted.plotNo) rawPlotNo = extracted.plotNo;
             }
           }
-
           if (!rawPlotNo || rawPlotNo.toLowerCase().includes('.com') || rawPlotNo.toLowerCase().includes('http')) {
             rawPlotNo = String(idx + 1);
           }
           const plotNo = rawPlotNo;
-
           if (!projectName) {
             projectName = 'Verified Cadastral Layout';
           }
-          // 3: RERA Number
-          const reraNo = String(getCol(3, 'reranumber', 'rerano', 'rera', 'reraregno') || 'CMDA / DTCP Sanctioned').trim();
-          // 4: DTCP Approved
-          const dtcpApproved = String(getCol(4, 'dtcpapproved', 'cmdaapproved', 'approved') || 'Yes').trim();
-          // 5: DTCP / LP Approval No.
-          const dtcpApprovalNo = String(getCol(5, 'dtcplpapprovalno', 'dtcpapprovalno', 'lpapprovalno', 'dtcpno', 'approvalno', 'sanctionno') || '').trim();
-          // 6: Patta Type
-          const pattaType = String(getCol(6, 'pattatype', 'patta') || 'Individual Patta').trim();
-          // 7: Clear Title / EC Available
-          const clearTitleAvailable = String(getCol(7, 'cleartitleecavailable', 'cleartitleavailable', 'cleartitle') || 'Yes').trim();
-          // 8: Bank Loan Approved
-          const bankLoanApproved = String(getCol(8, 'bankloanapproved', 'bankloan', 'bankapproval') || 'Yes').trim();
+
+          const developer = String(getCol(3, 'developername', 'developer', 'builder', 'promoter', 'company') || 'Find a Plot Verified Developer').trim();
+          const developerId = getNumCol(4, 'developerid', 'devid');
+
           // Helper to reject placeholder / dummy numeric strings
           const isInvalidName = (val: any): boolean => {
             if (val === undefined || val === null) return true;
             const s = String(val).trim();
             if (!s || s === '1' || s === '0' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return true;
-            if (/^\d+$/.test(s)) return true; // Single digits or numbers
+            if (/^\d+$/.test(s)) return true;
             if (s.includes('₹') || s.toLowerCase().includes('sq.ft') || s.toLowerCase().includes('cents')) return true;
             if (s.toLowerCase().includes('facing')) return true;
             return false;
           };
 
-          // 9 & 10: Locality Name (Priority: explicit column header search)
-          const extractedLocality = String(getCol(-1,
-            'localityname', 'locality_name', 'localitynamename', 'locality_name_name',
-            'locality', 'villagelocality', 'village_locality', 'village',
-            'arealocation', 'area_location', 'area', 'location'
-          ) || '').trim();
-
-          let resolvedLocality = !isInvalidName(extractedLocality) ? extractedLocality : '';
-          if (!resolvedLocality) {
-            const col10 = r[10] !== undefined && r[10] !== null ? String(r[10]).trim() : '';
-            if (!isInvalidName(col10)) {
-              resolvedLocality = col10;
-            }
-          }
-          if (!resolvedLocality) {
-            const col9 = r[9] !== undefined && r[9] !== null ? String(r[9]).trim() : '';
-            if (!isInvalidName(col9)) {
-              resolvedLocality = col9;
-            }
-          }
-          if (!resolvedLocality) {
-            resolvedLocality = 'Guduvanchery';
-          }
-
-          // 11 & 12: City Name & District (Priority: explicit column header search)
-          const extractedCity = String(getCol(-1,
-            'cityname', 'city_name', 'citynamename', 'city_name_name',
-            'city', 'district', 'districtname', 'district_name', 'taluk', 'town'
-          ) || '').trim();
+          const extractedDistrict = String(getCol(5, 'district', 'districtname', 'district_name') || '').trim();
+          const extractedCity = String(getCol(6, 'city', 'cityname', 'city_name', 'town') || '').trim();
+          const extractedLocality = String(getCol(7, 'locality', 'localityname', 'locality_name', 'villagelocality', 'village_locality', 'arealocation', 'area_location') || '').trim();
 
           let resolvedCity = !isInvalidName(extractedCity) ? extractedCity : '';
           if (!resolvedCity) {
-            const col12 = r[12] !== undefined && r[12] !== null ? String(r[12]).trim() : '';
-            if (!isInvalidName(col12)) {
-              resolvedCity = col12;
-            }
+            resolvedCity = !isInvalidName(extractedDistrict) ? extractedDistrict : 'Chennai';
           }
-          if (!resolvedCity) {
-            resolvedCity = 'Chennai';
+          let resolvedLocality = !isInvalidName(extractedLocality) ? extractedLocality : '';
+          if (!resolvedLocality) {
+            resolvedLocality = 'Guduvanchery';
           }
+          const district = !isInvalidName(extractedDistrict) ? extractedDistrict : resolvedCity;
+          const city = resolvedCity;
+          const locality = resolvedLocality;
+          const pincode = String(getCol(8, 'pincode', 'pin', 'postalcode') || '603202').trim();
 
-          const areaLocation = resolvedLocality;
-          const villageLocality = resolvedLocality;
-          const talukRaw = String(getCol(-1, 'taluk', 'tehsil') || '').trim();
-          const taluk = !isInvalidName(talukRaw) ? talukRaw : resolvedCity;
-          const district = resolvedCity;
-          // 13: Pincode
-          const pincode = String(getCol(13, 'pincode', 'pin', 'postalcode') || '603202').trim();
-          // 14: Google Maps Link
-          const googleMapsLink = String(getCol(14, 'googlemapslink', 'mapslink', 'gpslink', 'gps', 'locationlink', 'maplink', 'coordinates', 'latlong') || '').trim();
-          // (Plot No already extracted and resolved)
+          const category = String(getCol(9, 'category', 'projectcategory', 'propertycategory') || 'Gated CMDA Plots').trim();
+          const propertyType = String(getCol(10, 'propertytype', 'type', 'proptype') || 'Residential').trim();
+          const landType = String(getCol(11, 'landtype', 'landuse', 'land_type', 'land_use') || 'Residential').trim();
 
-          // 16: Plot Size (sq.ft)
-          let sqft = getNumCol(16, 'plotsizesqft', 'sqft', 'plotsize', 'areainsqft', 'extent');
-          let cents = sqft && sqft > 0 ? Math.round((sqft / 435.6) * 100) / 100 : 2.75;
-          const dimension = sqft ? `${Math.round(Math.sqrt(sqft))} x ${Math.round(Math.sqrt(sqft))}` : '30 x 40';
+          // --- 2. Pricing & Plot Sizing (projects table) ---
+          let priceFrom = getNumCol(12, 'pricefrom', 'price_from', 'minprice', 'startingprice');
+          let priceTo = getNumCol(13, 'priceto', 'price_to', 'maxprice');
+          let sqftRate = getNumCol(14, 'pricepersqft', 'sqftrate', 'ratepersqft', 'rate', 'ratesqft', 'pricesqft');
+          let minPlotSize = getNumCol(15, 'minplotsize', 'minplotsizesqft', 'min_plot_size') || 1200;
+          let maxPlotSize = getNumCol(16, 'maxplotsize', 'maxplotsizesqft', 'max_plot_size') || (minPlotSize ? Math.round(minPlotSize * 1.5) : 2400);
+          let totalPrice = getNumCol(17, 'totalprice', 'total_price', 'price', 'totalcost', 'cost');
+          let plotSizeSqft = getNumCol(18, 'plotsizesqft', 'plotsize', 'sqft', 'extent') || minPlotSize;
 
-          // 17: Facing
-          const facing = String(getCol(17, 'facing', 'direction', 'plotfacing') || 'East').trim();
-          // 18: Corner Plot
-          const cornerPlot = String(getCol(18, 'cornerplot', 'corner') || 'No').trim();
-          // 19: Land Use
-          const landUse = String(getCol(19, 'landuse', 'landtype', 'land_use', 'land_type', 'purpose', 'zoning') || 'Residential').trim();
-
-          // 20: Price per sq.ft (₹)
-          let rateSqft = getNumCol(20, 'pricepersqft', 'ratepersqft', 'rate', 'ratesqft', 'pricesqft', 'sqftrate');
-          // 21: Total Price (₹)
-          let totalPrice = getNumCol(21, 'totalprice', 'price', 'totalcost', 'totalamount', 'cost', 'amount', 'value');
-          if ((!totalPrice || totalPrice <= 0) && sqft && rateSqft) {
-            totalPrice = Math.round(sqft * rateSqft);
+          if ((!totalPrice || totalPrice <= 0) && plotSizeSqft && sqftRate) {
+            totalPrice = Math.round(plotSizeSqft * sqftRate);
           }
-          if ((!rateSqft || rateSqft <= 0) && sqft && totalPrice) {
-            rateSqft = Math.round(totalPrice / sqft);
+          if ((!sqftRate || sqftRate <= 0) && plotSizeSqft && totalPrice) {
+            sqftRate = Math.round(totalPrice / plotSizeSqft);
           }
+          if (!priceFrom || priceFrom <= 0) {
+            priceFrom = totalPrice || (sqftRate && minPlotSize ? Math.round(sqftRate * minPlotSize) : 2880000);
+          }
+          if (!priceTo || priceTo <= 0) {
+            priceTo = Math.round(priceFrom * 1.45);
+          }
+          const cents = plotSizeSqft && plotSizeSqft > 0 ? Math.round((plotSizeSqft / 435.6) * 100) / 100 : 2.75;
 
-          // 22: Availability
-          const availability = String(getCol(22, 'availability', 'status', 'plotstatus') || 'Available').trim();
-          // 23: Petrol Bunk Distance (km)
-          const petrolBunkDistance = getNumCol(23, 'petrolbunkdistancekm', 'petrolbunkdistance', 'petrolbunk');
-          // 24: Schools (Name & km)
-          const schoolsNearby = String(getCol(24, 'schoolsnamekm', 'schoolsnearby', 'schools') || '').trim();
-          // 25: Colleges (Name & km)
-          const collegesNearby = String(getCol(25, 'collegesnamekm', 'collegesnearby', 'colleges') || '').trim();
-          // 26: Hospital (Name & km)
-          const hospitalNearby = String(getCol(26, 'hospitalnamekm', 'hospitalnearby', 'hospital', 'hospitals') || '').trim();
-          // 27: Corridor
-          const corridor = String(getCol(27, 'corridor', 'growthcorridor') || 'GST Road').trim();
-          // 28: Bus Stop Distance (km)
-          const busStopDistance = getNumCol(28, 'busstopdistancekm', 'busstopdistance', 'busstop');
-          // 29: Railway Station (Name & km)
-          const railwayStationNearby = String(getCol(29, 'railwaystationnamekm', 'railwaystationnearby', 'railwaystation') || '').trim();
-          // 30: Highway Name
-          const highwayName = String(getCol(30, 'highwayname', 'highway', 'mainroad') || '').trim();
-          // 31: Highway Access Distance (km)
-          const highwayDistance = getNumCol(31, 'highwayaccessdistancekm', 'highwaydistancekm', 'highwaydistance', 'highwayaccessdistance');
-          // 32: Airport Distance (km)
-          const airportDistance = getNumCol(32, 'airportdistancekm', 'airportdistance', 'airport');
-          // 33: Suited For
-          const suitedFor = String(getCol(33, 'suitedfor', 'suitability') || 'Both').trim();
-          // 34: Possession Timeline
-          const possessionTimeline = String(getCol(34, 'possessiontimeline', 'possession') || 'Immediate').trim();
-          // 35: Electricity
-          const electricity = String(getCol(35, 'electricity', 'power', 'eb') || 'Available').trim();
-          // 36: Water Connection
-          const waterConnection = String(getCol(36, 'waterconnection', 'water') || 'Available').trim();
-          // 37: Drainage Facility
-          const drainageFacility = String(getCol(37, 'drainagefacility', 'drainage') || 'Underground').trim();
-          // 38: Road Width (ft)
-          const roadWidthFt = getNumCol(38, 'roadwidthft', 'roadwidth', 'roadsize') || 30;
-          // 39: Road Type
-          const roadType = String(getCol(39, 'roadtype', 'road', 'roadsurface') || 'Tar Road').trim();
-          // 40: Street Lights
-          const streetLights = String(getCol(40, 'streetlights', 'streetlight') || 'Yes').trim();
-          // 41: Compound Wall / Gated
-          const compoundWallGated = String(getCol(41, 'compoundwallgated', 'compoundwall', 'gated') || 'Yes').trim();
-          // 42: Park
-          const park = String(getCol(42, 'park', 'garden') || 'Yes').trim();
-          // 43: Other Amenities
-          const otherAmenities = String(getCol(43, 'otheramenities', 'amenities', 'facilities') || '').trim();
-          // 44: Developer Maintenance after Handover (yrs)
-          const developerMaintenanceYears = getNumCol(44, 'developermaintenanceafterhandoveryrs', 'developermaintenanceyears', 'developermaintenance') || 2;
-          // 45: Flood Zone
-          const floodZone = String(getCol(45, 'floodzone', 'floodrisk') || 'No').trim();
-          // 46: Waterlogging History
-          const waterloggingHistory = String(getCol(46, 'waterlogginghistory', 'waterlogging') || 'No').trim();
-          // 47: Contact Person / Phone
-          const contactPersonPhone = String(getCol(47, 'contactpersonphone', 'contactperson', 'phone', 'contact', 'mobile') || '+91 94441 00000').trim();
-          // 48: Remarks
-          const remarks = String(getCol(48, 'remarks', 'notes', 'comments', 'description') || '').trim();
+          // --- 3. Project Stage & Legal Timelines (projects table) ---
+          const projectStage = String(getCol(19, 'projectstage', 'stage', 'constructionstage') || 'Ready to Register').trim();
+          const projectStatus = String(getCol(20, 'projectstatus', 'projstatus', 'status') || 'Active').trim();
+          const listingStatus = String(getCol(21, 'listingstatus', 'approvalstatus', 'publishstatus') || 'published').trim();
+          const launchDate = String(getCol(22, 'launchdate', 'launchedon') || '').trim();
+          const possessionDate = String(getCol(23, 'possessiondate', 'possessiontimeline', 'possession') || 'Immediate').trim();
+          const reraNo = String(getCol(24, 'reranumber', 'rerano', 'rera', 'reraregno') || 'CMDA / DTCP Sanctioned').trim();
+          const brokerage = String(getCol(25, 'brokerage', 'brokeragedeed', 'srodeed') || '0% Direct SRO Deed').trim();
+          const noBrokerage = String(getCol(26, 'nobrokerage', 'zerobrokerage') || 'Yes').trim();
+          const featured = String(getCol(27, 'featured', 'isfeatured', 'highlighted') || 'No').trim();
+          const freeAccess = String(getCol(28, 'freeaccess', 'freeview') || 'Yes').trim();
+          const whatsappNumber = String(getCol(29, 'whatsappnumber', 'whatsapp', 'phone', 'contactpersonphone', 'mobile') || '919486140936').trim();
+          const submittedBy = String(getCol(30, 'submittedby', 'submittedbyname') || developer).trim();
+          const reviewedBy = String(getCol(31, 'reviewedby', 'reviewedbyname') || 'Chief Registry Auditor').trim();
+          const reviewNotes = String(getCol(32, 'reviewnotes', 'auditnotes') || 'Verified against master plan').trim();
+          const rejectionReason = String(getCol(33, 'rejectionreason') || '').trim();
+          const reviewedAt = String(getCol(34, 'reviewedat') || '').trim();
 
-          // Validate GPS for red highlighting
+          // --- 4. Layout Specifications & Parcels (project_details table) ---
+          const totalLayoutArea = String(getCol(35, 'totallayoutarea', 'layoutarea', 'totalarea', 'landextent', 'extent') || 'Approved Layout').trim();
+          const totalPlots = getNumCol(36, 'totalplots', 'plotsavailable') || 24;
+          const totalUnits = String(getCol(37, 'totalunits', 'units', 'numberofunits') || `${totalPlots} Plots`).trim();
+          const unitsSold = String(getCol(38, 'unitssold', 'soldunits') || 'Available').trim();
+          const availablePlotSizes = String(getCol(39, 'availableplotsizes', 'plotsizes', 'plotsizerange') || `${minPlotSize} - ${maxPlotSize} sq.ft`).trim();
+          const dimension = String(getCol(40, 'dimensions', 'dimension') || (plotSizeSqft ? `${Math.round(Math.sqrt(plotSizeSqft))} x ${Math.round(Math.sqrt(plotSizeSqft))}` : '30 x 40')).trim();
+          const facing = String(getCol(41, 'facing', 'direction', 'plotfacing') || 'East').trim();
+          const cornerPlot = String(getCol(42, 'cornerplot', 'corner') || 'No').trim();
+          const pattaType = String(getCol(43, 'pattatype', 'patta') || 'Individual Patta').trim();
+          const clearTitleAvailable = String(getCol(44, 'cleartitleecavailable', 'cleartitleavailable', 'cleartitle') || 'Yes').trim();
+          const bankLoanApproved = String(getCol(45, 'bankloanapproved', 'bankloan', 'bankapproval') || 'Yes').trim();
+          const suitedFor = String(getCol(46, 'suitedfor', 'suitability') || 'Immediate Construction / Investment').trim();
+
+          // --- 5. Approvals & Sanctions (project_details table) ---
+          const approvalAuthority = String(getCol(47, 'approvalauthority', 'dtcpapproved', 'cmdaapproved') || 'DTCP / CMDA').trim();
+          const approvalReference = String(getCol(48, 'approvalreference', 'approvalref', 'lpno', 'dtcplpapprovalno', 'dtcpapprovalno') || '').trim();
+          const approvalDate = String(getCol(49, 'approvaldate', 'sanctiondate') || '').trim();
+          const reraDetails = String(getCol(50, 'reradetails', 'reranotes') || '').trim();
+
+          // --- 6. Infrastructure & Utilities (project_details table) ---
+          const roadWidth = String(getCol(51, 'roadwidth', 'roadwidthft', 'roadsize') || '30ft & 40ft').trim();
+          const roadType = String(getCol(52, 'roadtype', 'roadsurface') || 'Tar Road').trim();
+          const internalRoads = String(getCol(53, 'internalroads', 'roadtype') || `${roadWidth} ${roadType}`).trim();
+          const streetLights = String(getCol(54, 'streetlights', 'lighting') || 'LED Avenue Lighting').trim();
+          const drainageFacility = String(getCol(55, 'drainagefacility', 'drainage') || 'Underground Stormwater Drainage').trim();
+          const waterConnection = String(getCol(56, 'waterconnection', 'watersupply', 'water') || 'Individual OHT Water Supply').trim();
+          const electricity = String(getCol(57, 'electricity', 'power', 'eb') || 'EB 3-Phase Underground Cabling').trim();
+          const parks = String(getCol(58, 'parksplayarea', 'parks', 'park', 'playarea') || 'Landscaped Children Park').trim();
+          const security = String(getCol(59, 'compoundwallgatedsecurity', 'security', 'gated', 'compoundwallgated') || '24x7 Boom Barrier Security & CCTV').trim();
+          const otherFacilities = String(getCol(60, 'otherfacilitiesamenities', 'otherfacilities', 'otheramenities', 'amenities') || '').trim();
+
+          // --- 7. Location Coordinates & Growth Corridors (project_details table) ---
+          const googleMapsLink = String(getCol(61, 'gpscoordinatesmaplink', 'gps', 'googlemapslink', 'coordinates', 'latlong') || '').trim();
+          const corridor = String(getCol(62, 'corridor', 'growthcorridor') || 'GST Road').trim();
+          const nearbyRoads = String(getCol(63, 'nearbyroadshighwayname', 'nearbyroads', 'highwayname', 'highway') || 'GST Road (NH 45)').trim();
+          const railwayStationNearby = String(getCol(64, 'railwaystationnamekm', 'railwaystation', 'railwaystationnearby') || '').trim();
+          const schoolsNearby = String(getCol(65, 'schoolsnamekm', 'schools', 'schoolsnearby') || '').trim();
+          const hospitalNearby = String(getCol(66, 'hospitalsnamekm', 'hospitals', 'hospitalnearby') || '').trim();
+          const employmentHubs = String(getCol(67, 'employmenthubs', 'itparks', 'sez') || '').trim();
+          const residentialDevelopment = String(getCol(68, 'residentialdevelopmentsurrounding', 'residentialdevelopment') || '').trim();
+          const infrastructureProjects = String(getCol(69, 'infrastructureprojects', 'metroextension') || '').trim();
+
+          // --- 8. Media, Digital Masterplan & Documents (projects & project_details tables) ---
+          const coverImage = String(getCol(70, 'coverimageurl', 'coverimage', 'image', 'photo') || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80').trim();
+          const interactiveMap = String(getCol(71, 'interactivemapurl', 'interactivemap', '3dmap') || 'assets/secura-masterplan-3d.html').trim();
+          const gallery = String(getCol(72, 'galleryimageurls', 'gallery', 'galleryurls') || '').trim();
+          const videos = String(getCol(73, 'videourls', 'videos') || '').trim();
+          const droneVideos = String(getCol(74, 'dronevideourls', 'dronevideos') || '').trim();
+          const layoutPdf = String(getCol(75, 'layoutpdfurl', 'layoutpdf', 'layoutplan') || `https://onenewstory.in/p_demo_5/backend/uploads/layout_${pId}.pdf`).trim();
+          const brochure = String(getCol(76, 'brochurepdfurl', 'brochure') || `https://onenewstory.in/p_demo_5/backend/uploads/brochure_${pId}.pdf`).trim();
+          const remarks = String(getCol(77, 'remarks', 'notes', 'comments', 'description') || '').trim();
+
+          // Validate GPS for visual auditing
           const gpsAudit = validateGpsData(googleMapsLink);
           if (gpsAudit.isValid) {
             validGpsCount++;
@@ -3957,61 +3970,153 @@ export class AdminDashboardComponent {
 
           return {
             propertyId: pId,
+            projectId: pId,
+            project_id: pId,
             projectName,
+            project_name: projectName,
             plotNo,
             developer,
-            reraNumber: reraNo,
-            dtcpApproved: dtcpApproved === 'No' ? 'No' : 'Yes',
-            dtcpApprovalNo,
-            pattaType,
-            clearTitleAvailable: clearTitleAvailable === 'No' ? 'No' : 'Yes',
-            bankLoanApproved: bankLoanApproved === 'No' ? 'No' : 'Yes',
-            locality_name: resolvedLocality,
-            city_name: resolvedCity,
-            localityName: resolvedLocality,
-            cityName: resolvedCity,
-            areaLocation,
-            villageLocality,
-            taluk,
+            developerName: developer,
+            developer_name: developer,
+            developerId,
+            developer_id: developerId,
             district,
+            city,
+            cityName: city,
+            city_name: city,
+            locality,
+            localityName: locality,
+            locality_name: locality,
+            villageLocality: locality,
+            areaLocation: locality,
             pincode,
-            googleMapsLink,
-            plotSizeSqft: sqft || 1200,
-            plotSizeCents: cents || 2.75,
+            category,
+            type: propertyType,
+            propertyType,
+            landType,
+            land_type: landType,
+            landUse: landType,
+            priceFrom,
+            price_from: priceFrom,
+            priceTo,
+            price_to: priceTo,
+            pricePerSqft: sqftRate,
+            sqftRate,
+            sqft_rate: sqftRate,
+            minPlotSize,
+            min_plot_size: minPlotSize,
+            maxPlotSize,
+            max_plot_size: maxPlotSize,
+            totalPrice,
+            total_price: totalPrice,
+            plotSizeSqft,
+            plotSizeCents: cents,
+            projectStage,
+            project_stage: projectStage,
+            projectStatus,
+            project_status: projectStatus,
+            listingStatus,
+            status: listingStatus,
+            launchDate,
+            launch_date: launchDate,
+            possessionDate,
+            possession_date: possessionDate,
+            possessionTimeline: possessionDate,
+            reraNumber: reraNo,
+            rera_no: reraNo,
+            brokerage,
+            noBrokerage,
+            no_brokerage: noBrokerage,
+            featured,
+            freeAccess,
+            free_access: freeAccess,
+            whatsappNumber,
+            whatsapp_number: whatsappNumber,
+            contactPersonPhone: whatsappNumber,
+            submittedBy,
+            submitted_by: submittedBy,
+            reviewedBy,
+            reviewed_by: reviewedBy,
+            reviewNotes,
+            review_notes: reviewNotes,
+            rejectionReason,
+            rejection_reason: rejectionReason,
+            reviewedAt,
+            reviewed_at: reviewedAt,
+            totalLayoutArea,
+            total_layout_area: totalLayoutArea,
+            totalPlots,
+            total_plots: totalPlots,
+            totalUnits,
+            total_units: totalUnits,
+            unitsSold,
+            units_sold: unitsSold,
+            availablePlotSizes,
+            available_plot_sizes: availablePlotSizes,
             dimension,
+            dimensions: dimension,
             facing,
-            cornerPlot: cornerPlot === 'Yes' ? 'Yes' : 'No',
-            landUse,
-            landType: landUse,
-            land_type: landUse,
-            pricePerSqft: rateSqft || 3200,
-            totalPrice: totalPrice || 3840000,
-            availability,
-            petrolBunkDistance,
-            schoolsNearby,
-            collegesNearby,
-            hospitalNearby,
-            corridor,
-            busStopDistance,
-            railwayStationNearby,
-            highwayName,
-            highwayDistance,
-            airportDistance,
+            cornerPlot,
+            corner_plot: cornerPlot,
+            pattaType,
+            clearTitleAvailable,
+            bankLoanApproved,
             suitedFor,
-            possessionTimeline,
-            electricity,
-            waterConnection,
-            drainageFacility,
-            roadWidthFt,
+            approvalAuthority,
+            approval_authority: approvalAuthority,
+            approvalReference,
+            approval_reference: approvalReference,
+            approvalDate,
+            approval_date: approvalDate,
+            reraDetails,
+            rera_details: reraDetails,
+            dtcpApproved: approvalAuthority.toLowerCase().includes('dtcp') ? 'Yes' : 'No',
+            dtcpApprovalNo: approvalReference,
+            roadWidth,
+            road_width: roadWidth,
             roadType,
+            internalRoads,
+            internal_roads: internalRoads,
             streetLights,
-            compoundWallGated,
-            park,
-            otherAmenities,
-            developerMaintenanceYears,
-            floodZone,
-            waterloggingHistory,
-            contactPersonPhone,
+            street_lights: streetLights,
+            drainage: drainageFacility,
+            drainageFacility,
+            water: waterConnection,
+            waterConnection,
+            electricity,
+            parks,
+            security,
+            otherFacilities,
+            otherAmenities: otherFacilities,
+            gps: googleMapsLink,
+            googleMapsLink,
+            corridor,
+            nearbyRoads,
+            nearby_roads: nearbyRoads,
+            highwayName: nearbyRoads,
+            railwayStation: railwayStationNearby,
+            railwayStationNearby,
+            schools: schoolsNearby,
+            schoolsNearby,
+            hospitals: hospitalNearby,
+            hospitalNearby,
+            employmentHubs,
+            employment_hubs: employmentHubs,
+            residentialDevelopment,
+            residential_development: residentialDevelopment,
+            infrastructureProjects,
+            infrastructure_projects: infrastructureProjects,
+            coverImage,
+            cover_image: coverImage,
+            interactiveMap,
+            interactive_map: interactiveMap,
+            gallery,
+            videos,
+            droneVideos,
+            drone_videos: droneVideos,
+            layoutPdf,
+            layout_pdf: layoutPdf,
+            brochure,
             remarks,
             _gpsAudit: gpsAudit
           };
@@ -4112,124 +4217,263 @@ export class AdminDashboardComponent {
     const templateHeaders = [...CANONICAL_BULK_HEADERS];
 
     const sampleRow1 = [
-      'PRJ-1001',                                       // Property ID
-      'Greenfield Housing Ltd',                         // Developer
+      'PRJ-1001',                                       // Project ID
       'Greenfield Royal Palms',                         // Project Name
-      'TN/01/Layout/1234/2026',                         // RERA Number
-      'Yes',                                            // DTCP Approved
-      'DTCP/LP/89/2026',                                // DTCP / LP Approval No.
+      'Plot 1 - 24',                                    // Plot No.
+      'Greenfield Housing Ltd',                         // Developer Name
+      '1',                                              // Developer ID
+      'Chengalpattu',                                   // District
+      'Chennai',                                        // City
+      'Guduvanchery',                                   // Locality
+      '603202',                                         // Pincode
+      'Gated CMDA Plots',                               // Category
+      'Residential',                                    // Property Type
+      'Residential',                                    // Land Type
+      2880000,                                          // Price From (₹)
+      4800000,                                          // Price To (₹)
+      2400,                                             // Price per sq.ft (₹)
+      1200,                                             // Min Plot Size (sq.ft)
+      2000,                                             // Max Plot Size (sq.ft)
+      2880000,                                          // Total Price (₹)
+      1200,                                             // Plot Size (sq.ft)
+      'Ready to Register',                              // Project Stage
+      'Active',                                         // Project Status
+      'published',                                      // Listing Status
+      '2025-01-10',                                     // Launch Date
+      'Immediate',                                      // Possession Date
+      'TN/01/Layout/1234/2025',                         // RERA Number
+      '0% Direct SRO Deed',                             // Brokerage
+      'Yes',                                            // No Brokerage (Yes/No)
+      'Yes',                                            // Featured (Yes/No)
+      'Yes',                                            // Free Access (Yes/No)
+      '919486140936',                                   // WhatsApp Number
+      'Greenfield Housing Ltd',                         // Submitted By
+      'Chief Registry Auditor',                         // Reviewed By
+      'DTCP sanction & cadastral boundary stones physically verified', // Review Notes
+      '',                                               // Rejection Reason
+      '2025-01-15 10:30:00',                            // Reviewed At
+      '10.5 Acres',                                     // Total Layout Area
+      48,                                               // Total Plots
+      '48 Plots',                                       // Total Units
+      '18 Sold',                                        // Units Sold
+      '1200, 1500, 1800, 2000 sq.ft',                   // Available Plot Sizes
+      '30 x 40, 30 x 50, 40 x 50',                      // Dimensions
+      'East',                                           // Facing
+      'No',                                             // Corner Plot (Yes/No)
       'Individual Patta',                               // Patta Type
       'Yes',                                            // Clear Title / EC Available
-      'Yes',                                            // Bank Loan Approved
-      'Guduvanchery',                                   // Area / Location
-      'Nandivaram',                                     // Village / Locality
-      'Vandalur',                                       // Taluk
-      'Chengalpattu',                                   // District
-      '603202',                                         // Pincode
-      'https://www.google.com/maps?q=12.8436,80.0601',   // Google Maps Link
-      '12',                                             // Plot No.
-      1200,                                             // Plot Size (sq.ft)
-      'East',                                           // Facing
-      'No',                                             // Corner Plot
-      'Residential',                                    // Land Use
-      3200,                                             // Price per sq.ft (₹)
-      3840000,                                          // Total Price (₹)
-      'Available',                                      // Availability
-      1.2,                                              // Petrol Bunk Distance (km)
-      'SSM School (1.5 km)',                            // Schools (Name & km)
-      'SRM University (6 km)',                          // Colleges (Name & km)
-      'SRM Global Hospital (6 km)',                     // Hospital (Name & km)
-      'GST Road',                                       // Corridor
-      0.8,                                              // Bus Stop Distance (km)
-      'Guduvanchery Railway Station (2.5 km)',          // Railway Station (Name & km)
-      'GST Road (NH 45)',                               // Highway Name
-      2.0,                                              // Highway Access Distance (km)
-      28.0,                                             // Airport Distance (km)
-      'Both',                                           // Suited For
-      'Immediate',                                      // Possession Timeline
-      'Available',                                      // Electricity
-      'Available',                                      // Water Connection
-      'Underground',                                    // Drainage Facility
-      30,                                               // Road Width (ft)
+      'Yes (SBI, HDFC, ICICI 80%)',                     // Bank Loan Approved
+      'Immediate Construction / High ROI',              // Suited For
+      'DTCP / CMDA',                                    // Approval Authority
+      'DTCP/LP/89/2025',                                // Approval Reference / LP No.
+      '2024-11-20',                                     // Approval Date
+      'TNRERA Approved Layout with dedicated OSR reservation', // RERA Details
+      '30ft & 40ft',                                    // Road Width
       'Tar Road',                                       // Road Type
-      'Yes',                                            // Street Lights
-      'Yes',                                            // Compound Wall / Gated
-      'Yes',                                            // Park
-      'Clubhouse, Solar Street Lights, Avenue Trees',   // Other Amenities
-      2,                                                // Developer Maintenance after Handover (yrs)
-      'No',                                             // Flood Zone
-      'No',                                             // Waterlogging History
-      '+91 94441 00000',                                // Contact Person / Phone
-      'Clear patta freehold land ready for immediate registration' // Remarks
+      '40ft & 30ft Blacktop Tar',                       // Internal Roads
+      'LED Avenue Lighting',                            // Street Lights
+      'Underground Stormwater Drainage',                // Drainage Facility
+      'Individual OHT Water Supply & Ground Potable Water', // Water Connection
+      'EB 3-Phase Underground Cabling',                 // Electricity
+      'Landscaped Children Park & Senior Walkway',      // Parks & Play Area
+      '24x7 Boom Barrier Security & CCTV',              // Compound Wall / Gated Security
+      'Grand Arch Entrance, Avenue Trees, Underground Drainage, Borewell Water', // Other Facilities & Amenities
+      '12.8423, 80.0612',                               // GPS Coordinates / Map Link
+      'GST Road',                                       // Corridor
+      'GST Road (NH 45) - 800m',                        // Nearby Roads / Highway Name
+      'Guduvanchery Station - 1.8 km',                  // Railway Station (Name & km)
+      'SRM Public School - 1.2 km, Velammal Vidhyashram - 2.5 km', // Schools (Name & km)
+      'Apollo Clinic - 1.5 km, SRM Global Hospital - 3.2 km', // Hospitals (Name & km)
+      'MEPZ SEZ - 10 km, Mahindra World City - 14 km',  // Employment Hubs
+      'Surrounded by 1,200+ occupied independent villas', // Residential Development Surrounding
+      'Kilambakkam KCBT Bus Terminus - 4.5 km, Metro Extension', // Infrastructure Projects
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80', // Cover Image URL
+      'assets/secura-masterplan-3d.html',                // Interactive Map URL
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef, https://images.unsplash.com/photo-1513694203232-719a280e022f', // Gallery Image URLs
+      'https://www.youtube.com/watch?v=sample1',        // Video URLs
+      'https://www.youtube.com/watch?v=drone1',         // Drone Video URLs
+      'https://onenewstory.in/p_demo_5/backend/uploads/layout_PRJ-1001.pdf', // Layout PDF URL
+      'https://onenewstory.in/p_demo_5/backend/uploads/brochure_PRJ-1001.pdf', // Brochure PDF URL
+      'Prime investment avenue with 100% legal title clearance' // Remarks
     ];
 
     const sampleRow2 = [
-      'PRJ-1002',                                       // Property ID
-      'Prestige Developers',                            // Developer
-      'Serene Emerald Enclave',                         // Project Name
-      'TN/01/Layout/1235/2026',                         // RERA Number
-      'Yes',                                            // DTCP Approved
-      'DTCP/LP/90/2026',                                // DTCP / LP Approval No.
+      'PRJ-1002',                                       // Project ID
+      'Prestige Emerald Enclave',                       // Project Name
+      'Plot 1 - 36',                                    // Plot No.
+      'Prestige Estates Projects',                      // Developer Name
+      '2',                                              // Developer ID
+      'Kanchipuram',                                    // District
+      'Chennai',                                        // City
+      'OMR - Kelambakkam',                              // Locality
+      '603103',                                         // Pincode
+      'DTCP Sanctioned Plots',                          // Category
+      'Residential',                                    // Property Type
+      'Residential',                                    // Land Type
+      4500000,                                          // Price From (₹)
+      7200000,                                          // Price To (₹)
+      3000,                                             // Price per sq.ft (₹)
+      1500,                                             // Min Plot Size (sq.ft)
+      2400,                                             // Max Plot Size (sq.ft)
+      4500000,                                          // Total Price (₹)
+      1500,                                             // Plot Size (sq.ft)
+      'Ready for Construction',                         // Project Stage
+      'Selling Fast',                                   // Project Status
+      'published',                                      // Listing Status
+      '2025-02-01',                                     // Launch Date
+      'Immediate',                                      // Possession Date
+      'TN/01/Layout/5678/2025',                         // RERA Number
+      '0% Direct SRO Deed',                             // Brokerage
+      'Yes',                                            // No Brokerage (Yes/No)
+      'Yes',                                            // Featured (Yes/No)
+      'No',                                             // Free Access (Yes/No)
+      '919486140936',                                   // WhatsApp Number
+      'Prestige Estates Projects',                      // Submitted By
+      'Senior Urban Planner',                           // Reviewed By
+      'Verified CMDA/DTCP order & RERA project certificate', // Review Notes
+      '',                                               // Rejection Reason
+      '2025-02-05 14:00:00',                            // Reviewed At
+      '8.2 Acres',                                      // Total Layout Area
+      36,                                               // Total Plots
+      '36 Plots',                                       // Total Units
+      '22 Sold',                                        // Units Sold
+      '1500, 1800, 2400 sq.ft',                         // Available Plot Sizes
+      '30 x 50, 40 x 60',                               // Dimensions
+      'North',                                          // Facing
+      'Yes',                                            // Corner Plot (Yes/No)
       'Individual Patta',                               // Patta Type
       'Yes',                                            // Clear Title / EC Available
-      'Yes',                                            // Bank Loan Approved
-      'Kelambakkam',                                    // Area / Location
-      'Kelambakkam Town',                               // Village / Locality
-      'Thiruporur',                                     // Taluk
-      'Chengalpattu',                                   // District
-      '603103',                                         // Pincode
-      '12.7845, 80.2223',                               // Google Maps Link
-      '24',                                             // Plot No.
-      1500,                                             // Plot Size (sq.ft)
-      'North',                                          // Facing
-      'Yes',                                            // Corner Plot
-      'Residential',                                    // Land Use
-      3500,                                             // Price per sq.ft (₹)
-      5250000,                                          // Total Price (₹)
-      'Available',                                      // Availability
-      0.8,                                              // Petrol Bunk Distance (km)
-      'Hiranandani Upscale School (4 km)',              // Schools (Name & km)
-      'Chettinad Medical College (2 km)',               // Colleges (Name & km)
-      'Chettinad Super Speciality (2 km)',              // Hospital (Name & km)
+      'Yes (Axis, SBI, Canara 80%)',                    // Bank Loan Approved
+      'Immediate Construction',                         // Suited For
+      'DTCP Approved',                                  // Approval Authority
+      'DTCP/LP/45/2025',                                // Approval Reference / LP No.
+      '2024-12-15',                                     // Approval Date
+      'Fully registered with TNRERA layout sanction',   // RERA Details
+      '30ft & 40ft',                                    // Road Width
+      'Concrete Road',                                  // Road Type
+      'Concrete Avenue Roads with Storm Drains',        // Internal Roads
+      'Solar & LED Street Lighting',                    // Street Lights
+      'Underground Stormwater Drainage',                // Drainage Facility
+      'Individual OHT Water Supply & Metro Water Connection', // Water Connection
+      'EB 3-Phase Underground Cabling',                 // Electricity
+      'Themed Park, Jogging Track & Badminton Court',   // Parks & Play Area
+      '24x7 Boom Barrier Security & CCTV',              // Compound Wall / Gated Security
+      'Clubhouse, Open Gymnasium, Yoga Deck, Gazebo',   // Other Facilities & Amenities
+      '12.7891, 80.2195',                               // GPS Coordinates / Map Link
       'OMR',                                            // Corridor
-      0.4,                                              // Bus Stop Distance (km)
-      'Vandalur Railway Station (14 km)',               // Railway Station (Name & km)
-      'Old Mahabalipuram Road (SH 49A)',                // Highway Name
-      0.5,                                              // Highway Access Distance (km)
-      32.0,                                             // Airport Distance (km)
-      'Both',                                           // Suited For
-      'Immediate',                                      // Possession Timeline
-      'Available',                                      // Electricity
-      'Available',                                      // Water Connection
-      'Underground',                                    // Drainage Facility
-      40,                                               // Road Width (ft)
-      'Tar Road',                                       // Road Type
-      'Yes',                                            // Street Lights
-      'Yes',                                            // Compound Wall / Gated
-      'Yes',                                            // Park
-      '24x7 Security, Blacktop Roads, Compound Wall',   // Other Amenities
-      3,                                                // Developer Maintenance after Handover (yrs)
-      'No',                                             // Flood Zone
-      'No',                                             // Waterlogging History
-      '+91 94441 11111',                                // Contact Person / Phone
-      'Corner plot with dual road access and DTCP sanction.' // Remarks
+      'OMR IT Expressway - 300m, ECR Link - 3 km',      // Nearby Roads / Highway Name
+      'Vandalur Railway Station - 12 km',               // Railway Station (Name & km)
+      'Sushil Hari School - 1.0 km, PSBB Millennium - 4 km', // Schools (Name & km)
+      'Chettinad Health City - 1.5 km',                 // Hospitals (Name & km)
+      'SIPCOT IT Park Siruseri - 5 km',                 // Employment Hubs
+      'Surrounded by high-density IT professional communities', // Residential Development Surrounding
+      'OMR Metro Line Phase 2 Extension',               // Infrastructure Projects
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80', // Cover Image URL
+      'assets/secura-masterplan-3d.html',                // Interactive Map URL
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f, https://images.unsplash.com/photo-1500382017468-9049fed747ef', // Gallery Image URLs
+      'https://www.youtube.com/watch?v=sample2',        // Video URLs
+      'https://www.youtube.com/watch?v=drone2',         // Drone Video URLs
+      'https://onenewstory.in/p_demo_5/backend/uploads/layout_PRJ-1002.pdf', // Layout PDF URL
+      'https://onenewstory.in/p_demo_5/backend/uploads/brochure_PRJ-1002.pdf', // Brochure PDF URL
+      'High appreciation corridor in close proximity to Siruseri IT corridor' // Remarks
     ];
 
-    const wsData = [templateHeaders, sampleRow1, sampleRow2];
+    const sampleRow3 = [
+      'PRJ-1003',                                       // Project ID
+      'Sri Krishna Industrial & Farm Estate',           // Project Name
+      'Plot 1 - 12',                                    // Plot No.
+      'Sri Krishna Properties',                         // Developer Name
+      '3',                                              // Developer ID
+      'Coimbatore',                                     // District
+      'Coimbatore',                                     // City
+      'Pollachi Road',                                  // Locality
+      '641021',                                         // Pincode
+      'Farm Land & Estates',                            // Category
+      'Agricultural',                                   // Property Type
+      'Agricultural',                                   // Land Type
+      1800000,                                          // Price From (₹)
+      5400000,                                          // Price To (₹)
+      750,                                              // Price per sq.ft (₹)
+      2400,                                             // Min Plot Size (sq.ft)
+      7200,                                             // Max Plot Size (sq.ft)
+      1800000,                                          // Total Price (₹)
+      2400,                                             // Plot Size (sq.ft)
+      'Ready to Register',                              // Project Stage
+      'New Launch',                                     // Project Status
+      'published',                                      // Listing Status
+      '2025-03-01',                                     // Launch Date
+      'Immediate',                                      // Possession Date
+      'Exempted / Agricultural Freehold',               // RERA Number
+      '0% Direct SRO Deed',                             // Brokerage
+      'Yes',                                            // No Brokerage (Yes/No)
+      'No',                                             // Featured (Yes/No)
+      'Yes',                                            // Free Access (Yes/No)
+      '919486140936',                                   // WhatsApp Number
+      'Sri Krishna Properties',                         // Submitted By
+      'Agricultural Land Officer',                      // Reviewed By
+      'Freehold title with sweet groundwater source',   // Review Notes
+      '',                                               // Rejection Reason
+      '2025-03-05 11:15:00',                            // Reviewed At
+      '25 Acres',                                       // Total Layout Area
+      18,                                               // Total Plots
+      '18 Farm Plots',                                  // Total Units
+      '6 Sold',                                         // Units Sold
+      '2400, 4800, 7200 sq.ft / 5 - 15 Cents',          // Available Plot Sizes
+      '40 x 60, 60 x 80',                               // Dimensions
+      'North-East',                                     // Facing
+      'Yes',                                            // Corner Plot (Yes/No)
+      'Individual Patta',                               // Patta Type
+      'Yes',                                            // Clear Title / EC Available
+      'Yes (Agricultural Land Loan)',                   // Bank Loan Approved
+      'Farmhouse / Organic Farming / Long-Term Investment', // Suited For
+      'Freehold Patta',                                 // Approval Authority
+      'Patta No. 4521/2025',                            // Approval Reference / LP No.
+      '2025-01-18',                                     // Approval Date
+      'Agricultural Land - Free from encumbrance',       // RERA Details
+      '40ft & 50ft',                                    // Road Width
+      'Gravel / Metal',                                 // Road Type
+      '40ft Wide WBM Metal Road',                       // Internal Roads
+      'Solar Street Lights',                            // Street Lights
+      'Open Natural Swale',                             // Drainage Facility
+      'Individual Drip Irrigation & Common 6-inch Borewell', // Water Connection
+      'Free Agri EB Power Connection',                  // Electricity
+      'Fruit Orchards, Coconut Trees & Natural Pond',   // Parks & Play Area
+      'Barbed Wire Fencing with Teak Wood Gate',        // Compound Wall / Gated Security
+      'Caretaker Quarter, Drip Irrigation Network, Water Storage Tank', // Other Facilities & Amenities
+      '10.8291, 76.9945',                               // GPS Coordinates / Map Link
+      'Industrial Corridor',                            // Corridor
+      'Coimbatore - Pollachi 4-Lane Highway (NH 83) - 1.2 km', // Nearby Roads / Highway Name
+      'Kinathukadavu Station - 3.5 km',                 // Railway Station (Name & km)
+      'Amrita Vidyalayam - 4 km',                       // Schools (Name & km)
+      'Kovai Medical Center Clinic - 6 km',             // Hospitals (Name & km)
+      'Coimbatore CODISSIA & SIDCO Industrial Estate - 18 km', // Employment Hubs
+      'Surrounded by luxury weekend cottages and farm houses', // Residential Development Surrounding
+      'Pollachi Highway Widening',                      // Infrastructure Projects
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80', // Cover Image URL
+      'assets/secura-masterplan-3d.html',                // Interactive Map URL
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef', // Gallery Image URLs
+      'https://www.youtube.com/watch?v=sample3',        // Video URLs
+      'https://www.youtube.com/watch?v=drone3',         // Drone Video URLs
+      'https://onenewstory.in/p_demo_5/backend/uploads/layout_PRJ-1003.pdf', // Layout PDF URL
+      'https://onenewstory.in/p_demo_5/backend/uploads/brochure_PRJ-1003.pdf', // Brochure PDF URL
+      'Fertile red soil, copious groundwater, clear single-owner title' // Remarks
+    ];
+
+    const wsData = [templateHeaders, sampleRow1, sampleRow2, sampleRow3];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
 
     // Auto-fit column widths
-    ws['!cols'] = templateHeaders.map(h => ({ wch: Math.max(h.length + 3, 14) }));
+    ws['!cols'] = templateHeaders.map(h => ({ wch: Math.max(h.length + 3, 15) }));
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Property Master Template');
+    XLSX.utils.book_append_sheet(wb, ws, 'Projects & Details Master');
 
     XLSX.writeFile(wb, 'Property_Master_Data_Bulk_Template.xlsx');
 
     this.notificationService.show({
       type: 'info',
       title: 'Template Downloaded',
-      message: 'Property Master Bulk Upload template downloaded with the 49 canonical fields.',
+      message: 'Comprehensive Bulk Upload template downloaded with all 78 fields matching projects and project_details database schema.',
       icon: 'download'
     });
   }

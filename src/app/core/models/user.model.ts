@@ -19,6 +19,7 @@ export interface User {
   phone: string;
   gender?: 'male' | 'female' | 'other';
   role: UserRole;
+  primaryGoal?: string | null;
   permissions?: string[];
   developerId?: number;
   companyName?: string;

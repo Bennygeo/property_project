@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { User, UserRole, UserProfileResponse } from '../models/user.model';
 import { NotificationService } from './notification.service';
+import { VisitorPurposeService } from './visitor-purpose.service';
 import { environment } from '../../../environments/environment';
 
 const STORAGE_KEY = 'findaplot_auth_user';
@@ -35,6 +36,7 @@ export const DEFAULT_USER_PERMISSIONS: readonly string[] = [
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly notificationService = inject(NotificationService);
+  private readonly visitorPurposeService = inject(VisitorPurposeService);
 
   // Active user state
   public readonly currentUser = signal<User | null>(this.getInitialUser());
@@ -113,6 +115,11 @@ export class AuthService {
   constructor() {
     if (!this.isLoggedIn()) {
       this.syncGuestViews().subscribe();
+    } else {
+      const u = this.currentUser();
+      if (u) {
+        this.visitorPurposeService.checkOnLogin(u, false);
+      }
     }
   }
 
@@ -274,6 +281,7 @@ export class AuthService {
     };
     this.setCurrentUser(demoUser);
     this.closeOtpModal();
+    this.visitorPurposeService.checkOnLogin(demoUser, false);
     this.notificationService.show({
       type: 'success',
       title: 'Verified Access Granted',
@@ -335,6 +343,8 @@ export class AuthService {
             message: `Welcome, ${user.name}! Your account is now verified.`,
             icon: 'verified_user'
           });
+          const isFirstLogin = !!(res as any)?.data?.isFirstLogin || !user.primaryGoal;
+          this.visitorPurposeService.checkOnLogin(user, isFirstLogin);
           return { success: true, user, message: res.message };
         }
         return { success: false, message: res.message || 'OTP verification failed' };
@@ -361,6 +371,7 @@ export class AuthService {
             message: `Welcome, ${fallbackUser.name}! Logged in successfully.`,
             icon: 'verified_user'
           });
+          this.visitorPurposeService.checkOnLogin(fallbackUser, true);
           return of({ success: true, user: fallbackUser, message: 'Logged in successfully' });
         }
         return of({ success: false, message: 'Invalid verification code. Please enter 1111.' });

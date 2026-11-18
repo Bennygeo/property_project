@@ -224,6 +224,10 @@ export class SearchPageComponent implements OnInit {
     if (event) {
       event.stopPropagation();
     }
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.openDedicatedMobileSearch();
+      return;
+    }
     const nextState = !this.isDistrictDropdownOpen();
     this.isDistrictDropdownOpen.set(nextState);
     if (nextState) {
@@ -261,6 +265,7 @@ export class SearchPageComponent implements OnInit {
   onEscape(): void {
     this.isDistrictDropdownOpen.set(false);
     this.isSuggestionsOpen.set(false);
+    this.closeDedicatedMobileSearch();
   }
 
   @ViewChild('omniboxInput') omniboxInputRef?: ElementRef<HTMLInputElement>;
@@ -453,6 +458,22 @@ export class SearchPageComponent implements OnInit {
   readonly droneOnly = signal<boolean>(false);
   readonly readyToMoveOnly = signal<boolean>(false);
   readonly isMobileFilterOpen = signal<boolean>(false);
+  readonly mobileSearchType = signal<'locality' | 'developer'>('locality');
+  readonly isMobileSuggestDropdownOpen = signal<boolean>(false);
+  readonly mobileIncludeNearby = signal<boolean>(true);
+  readonly mobileSelectedApprovals = signal<string[]>(['CMDA', 'DTCP']);
+  readonly mobileSelectedPlotSubtypes = signal<string[]>(['Gated Community Plot']);
+  readonly mobileApprovalOptions = [
+    { value: 'CMDA', label: 'CMDA Approved' },
+    { value: 'DTCP', label: 'DTCP Approved' },
+    { value: 'RERA', label: 'TNRERA Verified' }
+  ];
+  readonly mobilePlotTypeOptions = [
+    { value: 'Gated Community Plot', label: 'Gated Community Plot' },
+    { value: 'Villa Plot', label: 'Residential Villa Plot' },
+    { value: 'Commercial Plot', label: 'Commercial / SCO Plot' },
+    { value: 'Direct Owner Land', label: 'Direct Owner Land' }
+  ];
   readonly isAdVisible = signal<boolean>(false);
   readonly adPosition = signal<'left' | 'right'>('right');
 
@@ -550,12 +571,12 @@ export class SearchPageComponent implements OnInit {
     const live = this.liveDbSuggestions();
     const devSuggestions = this.getDeveloperSuggestions(input, dist);
 
-      // A. User is actively typing (>= 2 chars): show verified database + developers + Google Places matches
-      if (input.length >= 2) {
-        const combined: SearchSuggestion[] = [];
-        const seen = new Set<string>();
-        const primary = dist ? live : googleList;
-        const secondary = dist ? googleList : live;
+    // A. User is actively typing (>= 2 chars): show verified database + developers + Google Places matches
+    if (input.length >= 2) {
+      const combined: SearchSuggestion[] = [];
+      const seen = new Set<string>();
+      const primary = dist ? live : googleList;
+      const secondary = dist ? googleList : live;
 
       for (const item of [...devSuggestions, ...primary, ...secondary]) {
         const key = `${item.type}:${item.label.toLowerCase()}`;
@@ -621,6 +642,7 @@ export class SearchPageComponent implements OnInit {
   // Active filter count computation
   readonly activeFilterCount = computed(() => {
     let count = 0;
+    if (this.selectedDistrict()) count++;
     if (this.selectedCity() !== 'all') count++;
     if (this.selectedType() !== 'all') count++;
     if (this.selectedDeveloper() !== 'all') count++;
@@ -634,6 +656,36 @@ export class SearchPageComponent implements OnInit {
     if (this.readyToMoveOnly()) count++;
     if (this.searchQuery().trim()) count++;
     return count;
+  });
+
+  // Compact mobile results summary bar title & subtitle
+  readonly mobileSummaryLocation = computed<string>(() => {
+    const locs = this.selectedLocalities();
+    const dist = this.selectedDistrict();
+    const q = this.searchQuery().trim();
+    const dev = this.selectedDeveloper();
+
+    if (locs.length > 0) {
+      return dist ? `${locs.join(', ')} • ${dist}` : locs.join(', ');
+    }
+    if (q) {
+      return dist ? `${q} • ${dist}` : q;
+    }
+    if (dev && dev !== 'all') {
+      return `Builder: ${dev}`;
+    }
+    if (dist) {
+      return `${dist} District`;
+    }
+    return 'All Districts & Localities';
+  });
+
+  readonly mobileSummarySubtitle = computed<string>(() => {
+    const count = this.propertyService.totalApiProperties() || this.filteredProperties().length;
+    const type = this.selectedType() !== 'all' ? this.selectedType() : 'All Properties';
+    const budgetObj = this.budgetOptions.find(b => b.value === this.selectedBudget());
+    const budgetLabel = (this.selectedBudget() !== 'all' && budgetObj) ? ` • ${budgetObj.label}` : '';
+    return `${count} Results • ${type}${budgetLabel}`;
   });
 
   // Filtered & Sorted Properties List (100% MySQL Database Driven - No Local String Search)
@@ -859,702 +911,883 @@ export class SearchPageComponent implements OnInit {
 
   private isScrollThrottled = false;
 
-loadMore(): void {
-  if(this.propertyService.hasMoreApiProperties() && !this.propertyService.isFetchingApi()) {
-  const locs = this.selectedLocalities();
-  const q = this.searchQuery().trim();
-  const city = (q && this.selectedCity() === 'all') ? undefined : (this.selectedCity() !== 'all' ? this.selectedCity() : undefined);
+  loadMore(): void {
+    if (this.propertyService.hasMoreApiProperties() && !this.propertyService.isFetchingApi()) {
+      const locs = this.selectedLocalities();
+      const q = this.searchQuery().trim();
+      const city = (q && this.selectedCity() === 'all') ? undefined : (this.selectedCity() !== 'all' ? this.selectedCity() : undefined);
 
-  this.propertyService.loadNextBatch(20, {
-    q: q || undefined,
-    localities: locs.length > 0 ? locs : undefined,
-    cityKey: city,
-    propertyType: this.selectedType() !== 'all' ? this.selectedType() : undefined,
-    developer: this.selectedDeveloper() !== 'all' ? this.selectedDeveloper() : undefined,
-    sort: this.sortBy()
-  });
-}
+      this.propertyService.loadNextBatch(20, {
+        q: q || undefined,
+        localities: locs.length > 0 ? locs : undefined,
+        cityKey: city,
+        propertyType: this.selectedType() !== 'all' ? this.selectedType() : undefined,
+        developer: this.selectedDeveloper() !== 'all' ? this.selectedDeveloper() : undefined,
+        sort: this.sortBy()
+      });
+    }
   }
 
-// Smooth Window Scroll Listener for Infinite Scroll Expansion (Loads next 10 properties on scroll)
-@HostListener('window:scroll')
-onWindowScroll(): void {
-  if(!this.propertyService.hasMoreApiProperties() || this.propertyService.isFetchingApi() || this.isScrollThrottled) return;
-  const scrollPosition = window.innerHeight + window.scrollY;
-  const threshold = document.documentElement.scrollHeight - 700;
-  if(scrollPosition >= threshold) {
-  this.isScrollThrottled = true;
-  this.loadMore();
-  setTimeout(() => {
-    this.isScrollThrottled = false;
-  }, 400);
-}
+  // Smooth Window Scroll Listener for Infinite Scroll Expansion (Loads next 10 properties on scroll)
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    if (!this.propertyService.hasMoreApiProperties() || this.propertyService.isFetchingApi() || this.isScrollThrottled) return;
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const threshold = document.documentElement.scrollHeight - 700;
+    if (scrollPosition >= threshold) {
+      this.isScrollThrottled = true;
+      this.loadMore();
+      setTimeout(() => {
+        this.isScrollThrottled = false;
+      }, 400);
+    }
   };
 
-ngOnInit(): void {
-  // Record current URL for seamless back-navigation from property details
-  this.propertyService.setLastSearchUrl(this.router.url);
+  ngOnInit(): void {
+    // Record current URL for seamless back-navigation from property details
+    this.propertyService.setLastSearchUrl(this.router.url);
 
-  // Load available districts from MySQL database
-  this.propertyService.fetchDistricts().subscribe(res => {
-    this.districtsList.set(res.allDistricts || []);
-    this.mainHubs.set(res.mainHubs || []);
-    this.regionalGroups.set(res.regionalGroups || []);
-  });
+    // Load available districts from MySQL database
+    this.propertyService.fetchDistricts().subscribe(res => {
+      this.districtsList.set(res.allDistricts || []);
+      this.mainHubs.set(res.mainHubs || []);
+      this.regionalGroups.set(res.regionalGroups || []);
+    });
 
-  // Load master builders list from MySQL database
-  this.propertyService.fetchBuilders().subscribe(builders => {
-    this.buildersList.set(builders);
-  });
+    // Load master builders list from MySQL database
+    this.propertyService.fetchBuilders().subscribe(builders => {
+      this.buildersList.set(builders);
+    });
 
-  // Load user-specific search history
-  this.refreshUserSearchHistory();
+    // Load user-specific search history
+    this.refreshUserSearchHistory();
 
-  // Sync query parameters into component signals and trigger API query
-  this.route.queryParams.subscribe(params => {
-    if (params['district']) {
-      this.selectedDistrict.set(params['district']);
-    }
-    if (params['localities']) {
-      const arr = (params['localities'] as string).split(',').map(s => s.trim()).filter(Boolean);
-      this.selectedLocalities.set(arr);
-      arr.forEach(loc => {
-        this.propertyService.recordUserSearchHistory({
-          label: loc,
-          sub: params['district'] ? `Locality in ${params['district']}` : 'Recent Locality Search',
-          type: 'locality',
-          query: loc
-        });
-      });
-      this.refreshUserSearchHistory();
-    } else {
-      this.selectedLocalities.set([]);
-    }
-    if (params['q'] !== undefined) {
-      this.searchQuery.set(params['q'] || '');
-      this.rawSearchInput.set(params['q'] || '');
-      if (params['q'] && String(params['q']).trim()) {
-        const qStr = String(params['q']).trim();
-        this.propertyService.recordUserSearchHistory({
-          label: qStr,
-          sub: 'Recent Location / Keyword Search',
-          type: 'locality',
-          query: qStr
+    // Sync query parameters into component signals and trigger API query
+    this.route.queryParams.subscribe(params => {
+      if (params['district']) {
+        this.selectedDistrict.set(params['district']);
+      }
+      if (params['localities']) {
+        const arr = (params['localities'] as string).split(',').map(s => s.trim()).filter(Boolean);
+        this.selectedLocalities.set(arr);
+        arr.forEach(loc => {
+          this.propertyService.recordUserSearchHistory({
+            label: loc,
+            sub: params['district'] ? `Locality in ${params['district']}` : 'Recent Locality Search',
+            type: 'locality',
+            query: loc
+          });
         });
         this.refreshUserSearchHistory();
+      } else {
+        this.selectedLocalities.set([]);
+      }
+      if (params['q'] !== undefined) {
+        this.searchQuery.set(params['q'] || '');
+        this.rawSearchInput.set(params['q'] || '');
+        if (params['q'] && String(params['q']).trim()) {
+          const qStr = String(params['q']).trim();
+          this.propertyService.recordUserSearchHistory({
+            label: qStr,
+            sub: 'Recent Location / Keyword Search',
+            type: 'locality',
+            query: qStr
+          });
+          this.refreshUserSearchHistory();
+        }
+      }
+      if (params['city']) {
+        this.selectedCity.set(params['city']);
+      }
+      if (params['type']) {
+        this.selectedType.set(params['type']);
+      }
+      if (params['developer']) {
+        this.selectedDeveloper.set(params['developer']);
+      }
+      if (params['minBudget'] || params['maxBudget']) {
+        const minVal = Number(params['minBudget']) || 0;
+        const maxVal = Number(params['maxBudget']) || this.MAX_BUDGET_LIMIT;
+        this.customBudgetMin.set(minVal);
+        this.customBudgetMax.set(maxVal);
+        this.isCustomBudgetActive.set(true);
+        this.selectedBudget.set('custom');
+      } else if (params['budget']) {
+        this.setBudget(params['budget']);
+      }
+      if (params['bhk']) {
+        this.selectedBhk.set(params['bhk']);
+      }
+      if (params['sort']) {
+        this.sortBy.set(params['sort']);
+      }
+      if (params['video'] === 'true') {
+        this.videoOnly.set(true);
+      }
+      if (params['drone'] === 'true') {
+        this.droneOnly.set(true);
+      }
+      if (params['cmda'] === 'true') {
+        this.cmdaOnly.set(true);
+      }
+      if (params['direct'] === 'true' || params['owner'] === 'true') {
+        this.directOwnerOnly.set(true);
+      }
+      if (params['ready'] === 'true' || params['status'] === 'ready') {
+        this.readyToMoveOnly.set(true);
+      }
+      if (params['focus'] === 'true') {
+        setTimeout(() => {
+          this.omniboxInputRef?.nativeElement?.focus();
+        }, 150);
+      }
+
+      // Fetch live properties from MySQL backend with synchronized parameters
+      this.fetchFilteredFromApi();
+
+      const hasExplicitSearch = !!(
+        params['q'] ||
+        params['localities'] ||
+        params['district'] ||
+        params['type'] ||
+        params['budget'] ||
+        params['minBudget'] ||
+        params['maxBudget'] ||
+        params['developer']
+      );
+      if (hasExplicitSearch) {
+        this.recordSearchPreferencesFromActiveState();
+      }
+    });
+  }
+
+  private formatBudgetBracketLabel(budget: string): string {
+    switch (budget) {
+      case 'under-50l': return 'Under ₹50 Lakhs';
+      case '50l-1cr':
+      case '50l-1.5cr': return '₹50 Lakhs – ₹1.5 Cr';
+      case '1cr-2cr': return '₹1 Cr – ₹2 Cr';
+      case '1.5cr-3cr': return '₹1.5 Cr – ₹3 Cr';
+      case '2cr-5cr':
+      case '3cr-5cr': return '₹2 Cr – ₹5 Cr';
+      case 'above-5cr': return '₹5 Cr+';
+      default: return '';
+    }
+  }
+
+  recordSearchPreferencesFromActiveState(): void {
+    const dist = this.selectedDistrict().trim();
+    const locs = this.selectedLocalities().filter(l => !dist || l.toLowerCase() !== dist.toLowerCase());
+    const q = this.searchQuery().trim();
+    const dev = this.selectedDeveloper() !== 'all' ? this.selectedDeveloper().trim() : '';
+
+    let hubCorridor = '';
+    if (dist && locs.length > 0) {
+      hubCorridor = `${dist} (${locs.join(', ')})`;
+    } else if (locs.length > 0) {
+      hubCorridor = locs.join(', ');
+    } else if (dist && q) {
+      hubCorridor = `${dist} (${q})`;
+    } else if (dist) {
+      hubCorridor = dist;
+    } else if (q) {
+      hubCorridor = q;
+    } else if (dev) {
+      hubCorridor = dev;
+    }
+
+    let budgetText = '';
+    if (this.isCustomBudgetActive() || this.selectedBudget() === 'custom') {
+      const minStr = this.formatBudgetInr(this.customBudgetMin());
+      const maxVal = this.customBudgetMax();
+      const maxStr = maxVal >= this.MAX_BUDGET_LIMIT ? `${this.formatBudgetInr(maxVal)}+` : this.formatBudgetInr(maxVal);
+      budgetText = `${minStr} – ${maxStr}`;
+    } else if (this.selectedBudget() !== 'all') {
+      budgetText = this.formatBudgetBracketLabel(this.selectedBudget());
+    } else {
+      const matches = this.filteredProperties();
+      const nums = matches.map(p => parsePriceToNumber(p.price)).filter(n => n > 0);
+      if (nums.length > 0) {
+        const minN = Math.min(...nums);
+        const maxN = Math.max(...nums);
+        budgetText = minN === maxN
+          ? this.formatBudgetInr(minN)
+          : `${this.formatBudgetInr(minN)} – ${this.formatBudgetInr(maxN)}`;
       }
     }
-    if (params['city']) {
-      this.selectedCity.set(params['city']);
-    }
-    if (params['type']) {
-      this.selectedType.set(params['type']);
-    }
-    if (params['developer']) {
-      this.selectedDeveloper.set(params['developer']);
-    }
-    if (params['minBudget'] || params['maxBudget']) {
-      const minVal = Number(params['minBudget']) || 0;
-      const maxVal = Number(params['maxBudget']) || this.MAX_BUDGET_LIMIT;
-      this.customBudgetMin.set(minVal);
-      this.customBudgetMax.set(maxVal);
-      this.isCustomBudgetActive.set(true);
-      this.selectedBudget.set('custom');
-    } else if (params['budget']) {
-      this.setBudget(params['budget']);
-    }
-    if (params['bhk']) {
-      this.selectedBhk.set(params['bhk']);
-    }
-    if (params['sort']) {
-      this.sortBy.set(params['sort']);
-    }
-    if (params['video'] === 'true') {
-      this.videoOnly.set(true);
-    }
-    if (params['drone'] === 'true') {
-      this.droneOnly.set(true);
-    }
-    if (params['cmda'] === 'true') {
-      this.cmdaOnly.set(true);
-    }
-    if (params['direct'] === 'true' || params['owner'] === 'true') {
-      this.directOwnerOnly.set(true);
-    }
-    if (params['ready'] === 'true' || params['status'] === 'ready') {
-      this.readyToMoveOnly.set(true);
-    }
-    if (params['focus'] === 'true') {
-      setTimeout(() => {
-        this.omniboxInputRef?.nativeElement?.focus();
-      }, 150);
+
+    let assetClass = '';
+    if (this.selectedType() !== 'all') {
+      assetClass = this.selectedType();
+    } else {
+      const matches = this.filteredProperties();
+      if (matches.length > 0) {
+        const types = Array.from(new Set(matches.map(p => p.propertyType).filter(Boolean))).slice(0, 2);
+        assetClass = types.join(', ');
+      }
     }
 
-    // Fetch live properties from MySQL backend with synchronized parameters
-    this.fetchFilteredFromApi();
+    const titleReq = this.directOwnerOnly()
+      ? 'Direct Owner / Zero Brokerage'
+      : (this.readyToMoveOnly() ? 'Immediate Registration / Clear Patta' : 'Clear Title / Patta Verified');
 
-    const hasExplicitSearch = !!(
-      params['q'] ||
-      params['localities'] ||
-      params['district'] ||
-      params['type'] ||
-      params['budget'] ||
-      params['minBudget'] ||
-      params['maxBudget'] ||
-      params['developer']
+    const reraVer = this.cmdaOnly()
+      ? 'CMDA / DTCP Sanctioned Layout'
+      : 'TNRERA & DTCP Approved';
+
+    if (hubCorridor || budgetText || assetClass) {
+      this.propertyService.updateUserAcquisitionPreferences({
+        targetHubCorridor: hubCorridor,
+        targetBudget: budgetText,
+        assetClassification: assetClass,
+        titleRequirement: titleReq,
+        reraVerification: reraVer
+      });
+    }
+  }
+
+  fetchFilteredFromApi(): void {
+    const q = this.searchQuery().trim();
+    // When text search is active, query across all cities in DB unless a city chip was explicitly clicked
+    const city = (q && this.selectedCity() === 'all') ? undefined : (this.selectedCity() !== 'all' ? this.selectedCity() : undefined);
+    const district = this.selectedDistrict() || undefined;
+
+    // Filter out the district tag itself from `localities` if `district` filter is already active so backend variant matching handles it cleanly
+    const locs = this.selectedLocalities().filter(
+      l => !district || l.toLowerCase().trim() !== district.toLowerCase().trim()
     );
-    if (hasExplicitSearch) {
-      this.recordSearchPreferencesFromActiveState();
-    }
-  });
-}
-
-private formatBudgetBracketLabel(budget: string): string {
-  switch (budget) {
-    case 'under-50l': return 'Under ₹50 Lakhs';
-    case '50l-1cr':
-    case '50l-1.5cr': return '₹50 Lakhs – ₹1.5 Cr';
-    case '1cr-2cr': return '₹1 Cr – ₹2 Cr';
-    case '1.5cr-3cr': return '₹1.5 Cr – ₹3 Cr';
-    case '2cr-5cr':
-    case '3cr-5cr': return '₹2 Cr – ₹5 Cr';
-    case 'above-5cr': return '₹5 Cr+';
-    default: return '';
-  }
-}
-
-recordSearchPreferencesFromActiveState(): void {
-  const dist = this.selectedDistrict().trim();
-  const locs = this.selectedLocalities().filter(l => !dist || l.toLowerCase() !== dist.toLowerCase());
-  const q = this.searchQuery().trim();
-  const dev = this.selectedDeveloper() !== 'all' ? this.selectedDeveloper().trim() : '';
-
-  let hubCorridor = '';
-  if (dist && locs.length > 0) {
-    hubCorridor = `${dist} (${locs.join(', ')})`;
-  } else if (locs.length > 0) {
-    hubCorridor = locs.join(', ');
-  } else if (dist && q) {
-    hubCorridor = `${dist} (${q})`;
-  } else if (dist) {
-    hubCorridor = dist;
-  } else if (q) {
-    hubCorridor = q;
-  } else if (dev) {
-    hubCorridor = dev;
-  }
-
-  let budgetText = '';
-  if (this.isCustomBudgetActive() || this.selectedBudget() === 'custom') {
-    const minStr = this.formatBudgetInr(this.customBudgetMin());
-    const maxVal = this.customBudgetMax();
-    const maxStr = maxVal >= this.MAX_BUDGET_LIMIT ? `${this.formatBudgetInr(maxVal)}+` : this.formatBudgetInr(maxVal);
-    budgetText = `${minStr} – ${maxStr}`;
-  } else if (this.selectedBudget() !== 'all') {
-    budgetText = this.formatBudgetBracketLabel(this.selectedBudget());
-  } else {
-    const matches = this.filteredProperties();
-    const nums = matches.map(p => parsePriceToNumber(p.price)).filter(n => n > 0);
-    if (nums.length > 0) {
-      const minN = Math.min(...nums);
-      const maxN = Math.max(...nums);
-      budgetText = minN === maxN
-        ? this.formatBudgetInr(minN)
-        : `${this.formatBudgetInr(minN)} – ${this.formatBudgetInr(maxN)}`;
-    }
-  }
-
-  let assetClass = '';
-  if (this.selectedType() !== 'all') {
-    assetClass = this.selectedType();
-  } else {
-    const matches = this.filteredProperties();
-    if (matches.length > 0) {
-      const types = Array.from(new Set(matches.map(p => p.propertyType).filter(Boolean))).slice(0, 2);
-      assetClass = types.join(', ');
-    }
-  }
-
-  const titleReq = this.directOwnerOnly()
-    ? 'Direct Owner / Zero Brokerage'
-    : (this.readyToMoveOnly() ? 'Immediate Registration / Clear Patta' : 'Clear Title / Patta Verified');
-
-  const reraVer = this.cmdaOnly()
-    ? 'CMDA / DTCP Sanctioned Layout'
-    : 'TNRERA & DTCP Approved';
-
-  if (hubCorridor || budgetText || assetClass) {
-    this.propertyService.updateUserAcquisitionPreferences({
-      targetHubCorridor: hubCorridor,
-      targetBudget: budgetText,
-      assetClassification: assetClass,
-      titleRequirement: titleReq,
-      reraVerification: reraVer
+    this.propertyService.loadPropertiesFromApi({
+      offset: 0,
+      limit: 20,
+      append: false,
+      q: q || undefined,
+      localities: locs.length > 0 ? locs : undefined,
+      cityKey: city,
+      district: district,
+      propertyType: this.selectedType() !== 'all' ? this.selectedType() : undefined,
+      developer: this.selectedDeveloper() !== 'all' ? this.selectedDeveloper() : undefined,
+      sort: this.sortBy()
     });
   }
-}
 
-fetchFilteredFromApi(): void {
-  const q = this.searchQuery().trim();
-  // When text search is active, query across all cities in DB unless a city chip was explicitly clicked
-  const city = (q && this.selectedCity() === 'all') ? undefined : (this.selectedCity() !== 'all' ? this.selectedCity() : undefined);
-  const district = this.selectedDistrict() || undefined;
-
-  // Filter out the district tag itself from `localities` if `district` filter is already active so backend variant matching handles it cleanly
-  const locs = this.selectedLocalities().filter(
-    l => !district || l.toLowerCase().trim() !== district.toLowerCase().trim()
-  );
-  this.propertyService.loadPropertiesFromApi({
-    offset: 0,
-    limit: 20,
-    append: false,
-    q: q || undefined,
-    localities: locs.length > 0 ? locs : undefined,
-    cityKey: city,
-    district: district,
-    propertyType: this.selectedType() !== 'all' ? this.selectedType() : undefined,
-    developer: this.selectedDeveloper() !== 'all' ? this.selectedDeveloper() : undefined,
-    sort: this.sortBy()
-  });
-}
-
-syncUrlParams(): void {
-  const locs = this.selectedLocalities();
-  const q = this.searchQuery().trim();
-  const dist = this.selectedDistrict();
-  this.router.navigate([], {
-    relativeTo: this.route,
-    queryParams: {
-      district: dist || null,
-      localities: locs.length > 0 ? locs.join(',') : null,
-      q: q ? q : null
-    },
-    queryParamsHandling: 'merge',
-    replaceUrl: true
-  });
-}
-
-onSearchInput(value: string): void {
-  this.isSearchManuallyAdjusted.set(true);
-  this.rawSearchInput.set(value);
-  this.isSuggestionsOpen.set(true);
-
-  if(this.searchDebounceTimer) {
-  clearTimeout(this.searchDebounceTimer);
-}
-this.searchDebounceTimer = setTimeout(() => {
-  const trimmed = value.trim();
-  const dist = this.selectedDistrict();
-
-  // 1. Google Places API query (triggers at >= 2 characters, biased to selected district)
-  if (trimmed.length >= 2) {
-    this.propertyService.fetchGooglePlaces(trimmed, dist).subscribe(places => {
-      this.googlePlacesSuggestions.set(places);
+  syncUrlParams(): void {
+    const locs = this.selectedLocalities();
+    const q = this.searchQuery().trim();
+    const dist = this.selectedDistrict();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        district: dist || null,
+        localities: locs.length > 0 ? locs.join(',') : null,
+        q: q ? q : null
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
     });
-  } else {
-    this.googlePlacesSuggestions.set([]);
   }
 
-  // 2. Database suggestions (triggers from 1 character if district targeted, else 2 chars)
-  const minChars = dist ? 1 : 2;
-  if (trimmed.length >= minChars || (trimmed.length === 0 && dist)) {
-    this.propertyService.fetchSuggestions(trimmed, dist).subscribe(res => {
-      this.liveDbSuggestions.set(res);
-    });
-  } else {
-    this.liveDbSuggestions.set([]);
+  onSearchInput(value: string): void {
+    this.isSearchManuallyAdjusted.set(true);
+    this.rawSearchInput.set(value);
+    this.isSuggestionsOpen.set(true);
+
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    this.searchDebounceTimer = setTimeout(() => {
+      const trimmed = value.trim();
+      const dist = this.selectedDistrict();
+
+      // 1. Google Places API query (triggers at >= 2 characters, biased to selected district)
+      if (trimmed.length >= 2) {
+        this.propertyService.fetchGooglePlaces(trimmed, dist).subscribe(places => {
+          this.googlePlacesSuggestions.set(places);
+        });
+      } else {
+        this.googlePlacesSuggestions.set([]);
+      }
+
+      // 2. Database suggestions (triggers from 1 character if district targeted, else 2 chars)
+      const minChars = dist ? 1 : 2;
+      if (trimmed.length >= minChars || (trimmed.length === 0 && dist)) {
+        this.propertyService.fetchSuggestions(trimmed, dist).subscribe(res => {
+          this.liveDbSuggestions.set(res);
+        });
+      } else {
+        this.liveDbSuggestions.set([]);
+      }
+
+      if (trimmed.length >= 3) {
+        this.searchQuery.set(trimmed);
+        this.displayedCount.set(20);
+        this.fetchFilteredFromApi();
+        setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
+      } else {
+        if (trimmed.length === 0 && this.searchQuery()) {
+          this.searchQuery.set('');
+          this.displayedCount.set(20);
+          this.fetchFilteredFromApi();
+        }
+      }
+    }, 220);
   }
 
-  if (trimmed.length >= 3) {
-    this.searchQuery.set(trimmed);
-    this.displayedCount.set(20);
-    this.fetchFilteredFromApi();
-    setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
-  } else {
-    if (trimmed.length === 0 && this.searchQuery()) {
-      this.searchQuery.set('');
+  onSearchOmniboxClick(event?: Event): void {
+    const target = event?.target as HTMLElement;
+    if (target && (target.closest('.omnibox-gps-btn') || target.closest('.omnibox-clear-btn') || target.closest('.tag-loc-remove'))) {
+      return;
+    }
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.openDedicatedMobileSearch();
+      return;
+    }
+    this.scrollToTop();
+      this.omniboxInputRef?.nativeElement?.focus();
+    }
+
+  onSearchFocus(): void {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.openDedicatedMobileSearch();
+      return;
+    }
+    this.scrollToTop();
+    this.refreshUserSearchHistory();
+    this.isSuggestionsOpen.set(true);
+    const trimmed = this.rawSearchInput().trim();
+    const dist = this.selectedDistrict();
+
+    if (trimmed.length < 2) {
+      this.googlePlacesSuggestions.set([]);
+    }
+
+    // Tiered fetch: district localities if district selected; otherwise DB matches or popular items if no history
+    if (trimmed.length > 0 || !!dist) {
+      this.propertyService.fetchSuggestions(trimmed, dist).subscribe(res => {
+        this.liveDbSuggestions.set(res);
+      });
+    } else if (this.userSearchHistory().length === 0) {
+      this.propertyService.fetchSuggestions('', '').subscribe(res => {
+        this.liveDbSuggestions.set(res);
+      });
+    } else {
+      this.liveDbSuggestions.set([]);
+    }
+
+    if (trimmed.length >= 2) {
+      this.propertyService.fetchGooglePlaces(trimmed, dist).subscribe(places => {
+        this.googlePlacesSuggestions.set(places);
+      });
+    }
+  }
+
+  onSearchBlur(): void {
+    setTimeout(() => {
+      this.isSuggestionsOpen.set(false);
+    }, 280);
+  }
+
+  onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const val = this.rawSearchInput().trim();
+      if (val) {
+        const matchedDev = this.buildersList().find(
+          b => b.name && b.name.toLowerCase() === val.toLowerCase()
+        );
+        if (matchedDev) {
+          const count = matchedDev.projectCount ?? matchedDev.propertyCount ?? 0;
+          this.selectSuggestion({
+            label: matchedDev.name,
+            sub: count > 0 ? `Verified Developer • ${count} Projects` : 'Verified Developer • View Profile',
+            type: 'developer',
+            icon: 'apartment',
+            query: matchedDev.name
+          });
+          return;
+        }
+        this.addLocalityTag(val);
+      }
+    } else if (event.key === 'Backspace' && !this.rawSearchInput() && this.selectedLocalities().length > 0) {
+      this.isSearchManuallyAdjusted.set(true);
+      // Remove last tag on backspace when input is empty
+      const locs = [...this.selectedLocalities()];
+      const removed = locs.pop();
+      this.selectedLocalities.set(locs);
+      if (removed && this.selectedDistrict().toLowerCase() === removed.toLowerCase()) {
+        this.selectedDistrict.set('');
+      }
       this.displayedCount.set(20);
+      this.syncUrlParams();
       this.fetchFilteredFromApi();
     }
   }
-}, 220);
+
+  addLocalityTag(tag: string, historyMeta?: Partial<SearchSuggestion>): void {
+    const clean = tag.trim();
+    if (!clean) return;
+    this.isSearchManuallyAdjusted.set(true);
+    this.propertyService.recordUserSearchHistory({
+      label: historyMeta?.label || clean,
+      sub: historyMeta?.sub || (this.selectedDistrict() ? `Searched in ${this.selectedDistrict()}` : 'Recent Location Search'),
+      type: historyMeta?.type || 'locality',
+      query: historyMeta?.query || clean
+    });
+    this.refreshUserSearchHistory();
+    const current = this.selectedLocalities();
+    if (!current.some(item => item.toLowerCase() === clean.toLowerCase())) {
+      this.selectedLocalities.set([...current, clean]);
+    }
+    this.rawSearchInput.set('');
+    this.searchQuery.set('');
+    this.googlePlacesSuggestions.set([]);
+    this.isSuggestionsOpen.set(false);
+    this.displayedCount.set(20);
+    this.syncUrlParams();
+    this.fetchFilteredFromApi();
+    setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
   }
 
-onSearchOmniboxClick(event ?: Event): void {
-  this.scrollToTop();
-  const target = event?.target as HTMLElement;
-  if(target && !target.closest('.omnibox-gps-btn') && !target.closest('.omnibox-clear-btn') && !target.closest('.tag-loc-remove')) {
-  this.omniboxInputRef?.nativeElement?.focus();
-}
+  removeLocalityTag(index: number): void {
+    this.isSearchManuallyAdjusted.set(true);
+    const removed = this.selectedLocalities()[index];
+    const updated = this.selectedLocalities().filter((_, i) => i !== index);
+    this.selectedLocalities.set(updated);
+    if (removed && this.selectedDistrict().toLowerCase() === removed.toLowerCase()) {
+      this.selectedDistrict.set('');
+    }
+    this.displayedCount.set(20);
+    this.syncUrlParams();
+    this.fetchFilteredFromApi();
   }
 
-onSearchFocus(): void {
-  this.scrollToTop();
-  this.refreshUserSearchHistory();
-  this.isSuggestionsOpen.set(true);
-  const trimmed = this.rawSearchInput().trim();
-  const dist = this.selectedDistrict();
-
-  if(trimmed.length < 2) {
-  this.googlePlacesSuggestions.set([]);
-}
-
-// Tiered fetch: district localities if district selected; otherwise DB matches or popular items if no history
-if (trimmed.length > 0 || !!dist) {
-  this.propertyService.fetchSuggestions(trimmed, dist).subscribe(res => {
-    this.liveDbSuggestions.set(res);
-  });
-} else if (this.userSearchHistory().length === 0) {
-  this.propertyService.fetchSuggestions('', '').subscribe(res => {
-    this.liveDbSuggestions.set(res);
-  });
-} else {
-  this.liveDbSuggestions.set([]);
-}
-
-if (trimmed.length >= 2) {
-  this.propertyService.fetchGooglePlaces(trimmed, dist).subscribe(places => {
-    this.googlePlacesSuggestions.set(places);
-  });
-}
-  }
-
-onSearchBlur(): void {
-  setTimeout(() => {
-  this.isSuggestionsOpen.set(false);
-}, 280);
-  }
-
-onSearchKeydown(event: KeyboardEvent): void {
-  if(event.key === 'Enter') {
-  event.preventDefault();
-  const val = this.rawSearchInput().trim();
-  if (val) {
-    const matchedDev = this.buildersList().find(
-      b => b.name && b.name.toLowerCase() === val.toLowerCase()
-    );
-    if (matchedDev) {
-      const count = matchedDev.projectCount ?? matchedDev.propertyCount ?? 0;
-      this.selectSuggestion({
-        label: matchedDev.name,
-        sub: count > 0 ? `Verified Developer • ${count} Projects` : 'Verified Developer • View Profile',
+  selectSuggestion(item: SearchSuggestion): void {
+    if (!item.query && !item.label) return;
+    if (item.type === 'developer') {
+      const devName = item.query || item.label;
+      this.propertyService.recordUserSearchHistory({
+        label: item.label || devName,
+        sub: item.sub || 'Verified Developer',
         type: 'developer',
-        icon: 'apartment',
-        query: matchedDev.name
+        query: devName
       });
+      this.refreshUserSearchHistory();
+      this.isSuggestionsOpen.set(false);
+      this.router.navigate(['/builder', devName]);
       return;
     }
-    this.addLocalityTag(val);
+    if (!item.query) return;
+    this.addLocalityTag(item.query, item);
   }
-} else if (event.key === 'Backspace' && !this.rawSearchInput() && this.selectedLocalities().length > 0) {
-  this.isSearchManuallyAdjusted.set(true);
-  // Remove last tag on backspace when input is empty
-  const locs = [...this.selectedLocalities()];
-  const removed = locs.pop();
-  this.selectedLocalities.set(locs);
-  if (removed && this.selectedDistrict().toLowerCase() === removed.toLowerCase()) {
+
+  clearSearchQuery(): void {
+    this.isSearchManuallyAdjusted.set(true);
+    this.rawSearchInput.set('');
+    this.searchQuery.set('');
+    this.selectedLocalities.set([]);
     this.selectedDistrict.set('');
-  }
-  this.displayedCount.set(20);
-  this.syncUrlParams();
-  this.fetchFilteredFromApi();
-}
-  }
-
-addLocalityTag(tag: string, historyMeta ?: Partial<SearchSuggestion>): void {
-  const clean = tag.trim();
-  if(!clean) return;
-  this.isSearchManuallyAdjusted.set(true);
-  this.propertyService.recordUserSearchHistory({
-    label: historyMeta?.label || clean,
-    sub: historyMeta?.sub || (this.selectedDistrict() ? `Searched in ${this.selectedDistrict()}` : 'Recent Location Search'),
-    type: historyMeta?.type || 'locality',
-    query: historyMeta?.query || clean
-  });
-  this.refreshUserSearchHistory();
-  const current = this.selectedLocalities();
-  if(!current.some(item => item.toLowerCase() === clean.toLowerCase())) {
-  this.selectedLocalities.set([...current, clean]);
-}
-this.rawSearchInput.set('');
-this.searchQuery.set('');
-this.googlePlacesSuggestions.set([]);
-this.isSuggestionsOpen.set(false);
-this.displayedCount.set(20);
-this.syncUrlParams();
-this.fetchFilteredFromApi();
-setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
+    this.isSuggestionsOpen.set(false);
+    this.googlePlacesSuggestions.set([]);
+    this.liveDbSuggestions.set([]);
+    this.displayedCount.set(20);
+    this.syncUrlParams();
+    this.fetchFilteredFromApi();
   }
 
-removeLocalityTag(index: number): void {
-  this.isSearchManuallyAdjusted.set(true);
-  const removed = this.selectedLocalities()[index];
-  const updated = this.selectedLocalities().filter((_, i) => i !== index);
-  this.selectedLocalities.set(updated);
-  if(removed && this.selectedDistrict().toLowerCase() === removed.toLowerCase()) {
-  this.selectedDistrict.set('');
-}
-this.displayedCount.set(20);
-this.syncUrlParams();
-this.fetchFilteredFromApi();
+  selectAllAssets(): void {
+    this.selectedType.set('all');
+    this.selectedBudget.set('all');
+    this.videoOnly.set(false);
+    this.droneOnly.set(false);
   }
 
-selectSuggestion(item: SearchSuggestion): void {
-  if(!item.query && !item.label) return;
-  if(item.type === 'developer') {
-  const devName = item.query || item.label;
-  this.propertyService.recordUserSearchHistory({
-    label: item.label || devName,
-    sub: item.sub || 'Verified Developer',
-    type: 'developer',
-    query: devName
-  });
-  this.refreshUserSearchHistory();
-  this.isSuggestionsOpen.set(false);
-  this.router.navigate(['/builder', devName]);
-  return;
-}
-if (!item.query) return;
-this.addLocalityTag(item.query, item);
+  setType(type: string): void {
+    this.selectedType.set(type);
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+    setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
   }
 
-clearSearchQuery(): void {
-  this.isSearchManuallyAdjusted.set(true);
-  this.rawSearchInput.set('');
-  this.searchQuery.set('');
-  this.selectedLocalities.set([]);
-  this.selectedDistrict.set('');
-  this.isSuggestionsOpen.set(false);
-  this.googlePlacesSuggestions.set([]);
-  this.liveDbSuggestions.set([]);
-  this.displayedCount.set(20);
-  this.syncUrlParams();
-  this.fetchFilteredFromApi();
-}
-
-selectAllAssets(): void {
-  this.selectedType.set('all');
-  this.selectedBudget.set('all');
-  this.videoOnly.set(false);
-  this.droneOnly.set(false);
-}
-
-setType(type: string): void {
-  this.selectedType.set(type);
-  this.displayedCount.set(20);
-  this.fetchFilteredFromApi();
-  setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
-}
-
-setBudget(budget: string): void {
-  this.selectedBudget.set(budget);
-  this.isCustomBudgetActive.set(false);
-  if(budget === 'all') {
-  this.customBudgetMin.set(0);
-  this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
-} else if (budget === 'under-50l') {
-  this.customBudgetMin.set(0);
-  this.customBudgetMax.set(5000000);
-} else if (budget === '50l-1cr') {
-  this.customBudgetMin.set(5000000);
-  this.customBudgetMax.set(10000000);
-} else if (budget === '1cr-2cr') {
-  this.customBudgetMin.set(10000000);
-  this.customBudgetMax.set(20000000);
-} else if (budget === '2cr-5cr') {
-  this.customBudgetMin.set(20000000);
-  this.customBudgetMax.set(50000000);
-} else if (budget === 'above-5cr') {
-  this.customBudgetMin.set(50000000);
-  this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
-}
-this.displayedCount.set(20);
-this.fetchFilteredFromApi();
-setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
+  setBudget(budget: string): void {
+    this.selectedBudget.set(budget);
+    this.isCustomBudgetActive.set(false);
+    if (budget === 'all') {
+      this.customBudgetMin.set(0);
+      this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    } else if (budget === 'under-50l') {
+      this.customBudgetMin.set(0);
+      this.customBudgetMax.set(5000000);
+    } else if (budget === '50l-1cr') {
+      this.customBudgetMin.set(5000000);
+      this.customBudgetMax.set(10000000);
+    } else if (budget === '1cr-2cr') {
+      this.customBudgetMin.set(10000000);
+      this.customBudgetMax.set(20000000);
+    } else if (budget === '2cr-5cr') {
+      this.customBudgetMin.set(20000000);
+      this.customBudgetMax.set(50000000);
+    } else if (budget === 'above-5cr') {
+      this.customBudgetMin.set(50000000);
+      this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    }
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+    setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
   }
 
-formatBudgetInr(val: number): string {
-  if (val <= 0) return '₹0';
-  if (val >= 10000000) {
-    const cr = val / 10000000;
-    return Number.isInteger(cr) ? `₹${cr} Cr` : `₹${cr.toFixed(1)} Cr`;
+  formatBudgetInr(val: number): string {
+    if (val <= 0) return '₹0';
+    if (val >= 10000000) {
+      const cr = val / 10000000;
+      return Number.isInteger(cr) ? `₹${cr} Cr` : `₹${cr.toFixed(1)} Cr`;
+    }
+    const lk = val / 100000;
+    return Number.isInteger(lk) ? `₹${lk}L` : `₹${lk.toFixed(1)}L`;
   }
-  const lk = val / 100000;
-  return Number.isInteger(lk) ? `₹${lk}L` : `₹${lk.toFixed(1)}L`;
-}
 
-onMinSliderChange(event: Event): void {
-  const val = Number((event.target as HTMLInputElement).value);
-  const max = this.customBudgetMax();
-  const step = this.BUDGET_STEP;
-  const newMin = Math.min(val, max - step);
-  this.customBudgetMin.set(newMin);
-  this.isCustomBudgetActive.set(true);
-  this.selectedBudget.set('custom');
-  this.displayedCount.set(20);
-  this.recordSearchPreferencesFromActiveState();
-}
-
-onMaxSliderChange(event: Event): void {
-  const val = Number((event.target as HTMLInputElement).value);
-  const min = this.customBudgetMin();
-  const step = this.BUDGET_STEP;
-  const newMax = Math.max(val, min + step);
-  this.customBudgetMax.set(newMax);
-  this.isCustomBudgetActive.set(true);
-  this.selectedBudget.set('custom');
-  this.displayedCount.set(20);
-  this.recordSearchPreferencesFromActiveState();
-}
-
-resetCustomBudget(): void {
-  this.isCustomBudgetActive.set(false);
-  this.selectedBudget.set('all');
-  this.customBudgetMin.set(0);
-  this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
-  this.displayedCount.set(20);
-  this.fetchFilteredFromApi();
-}
-
-setCity(city: string): void {
-  this.selectedCity.set(city);
-  this.displayedCount.set(20);
-  this.fetchFilteredFromApi();
-}
-
-setBhk(bhk: string): void {
-  this.selectedBhk.set(bhk);
-  this.displayedCount.set(20);
-  this.fetchFilteredFromApi();
-}
-
-setSort(sort: string): void {
-  this.sortBy.set(sort);
-  this.displayedCount.set(20);
-  this.fetchFilteredFromApi();
-}
-
-setViewMode(mode: 'grid' | 'list'): void {
-  this.viewMode.set(mode);
-}
-
-toggleVideoOnly(): void {
-  this.videoOnly.update(v => !v);
-}
-
-toggleDroneOnly(): void {
-  this.droneOnly.update(v => !v);
-}
-
-toggleCmda(): void {
-  this.cmdaOnly.update(v => !v);
-  this.recordSearchPreferencesFromActiveState();
-}
-
-toggleDirectOwner(): void {
-  this.directOwnerOnly.update(v => !v);
-  this.recordSearchPreferencesFromActiveState();
-}
-
-toggleReadyToMove(): void {
-  this.readyToMoveOnly.update(v => !v);
-  this.recordSearchPreferencesFromActiveState();
-}
-
-toggleMobileFilter(): void {
-  this.isMobileFilterOpen.update(v => !v);
-}
-
-setDeveloper(dev: string): void {
-  const next = this.selectedDeveloper() === dev ? 'all' : dev;
-  this.selectedDeveloper.set(next);
-  this.displayedCount.set(20);
-
-  // Clear search box inputs before applying developer filter
-  this.rawSearchInput.set('');
-  this.searchQuery.set('');
-  this.selectedLocalities.set([]);
-  this.isSuggestionsOpen.set(false);
-  this.liveDbSuggestions.set([]);
-  this.builderSearchQuery.set('');
-
-  this.router.navigate([], {
-    relativeTo: this.route,
-    queryParams: {
-      developer: next !== 'all' ? next : null,
-      q: null,
-      localities: null
-    },
-    queryParamsHandling: 'merge',
-    replaceUrl: true
-  });
-  this.fetchFilteredFromApi();
-  setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
-}
-
-toggleBuilderExpand(): void {
-  this.isBuilderListExpanded.update(v => !v);
-}
-
-onBuilderSearch(val: string): void {
-  this.builderSearchQuery.set(val);
-}
-
-resetAllFilters(): void {
-  this.isSearchManuallyAdjusted.set(true);
-  this.searchQuery.set('');
-  this.selectedDistrict.set('');
-  this.selectedCity.set('all');
-  this.selectedType.set('all');
-  this.selectedDeveloper.set('all');
-  this.selectedLocalities.set([]);
-  this.rawSearchInput.set('');
-  this.builderSearchQuery.set('');
-  this.selectedBudget.set('all');
-  this.isCustomBudgetActive.set(false);
-  this.customBudgetMin.set(0);
-  this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
-  this.selectedBhk.set('all');
-  this.cmdaOnly.set(false);
-  this.directOwnerOnly.set(false);
-  this.videoOnly.set(false);
-  this.droneOnly.set(false);
-  this.readyToMoveOnly.set(false);
-  this.sortBy.set('featured');
-  this.displayedCount.set(20);
-  this.fetchFilteredFromApi();
-
-  this.notificationService.show({
-    type: 'info',
-    title: 'Filters Reset',
-    message: 'All registry search filters have been restored to default.',
-    icon: 'restart_alt'
-  });
-}
-
-toggleAdPosition(): void {
-  this.adPosition.update(pos => pos === 'right' ? 'left' : 'right');
-  this.notificationService.show({
-    type: 'info',
-    title: 'Ad Position Updated',
-    message: `Sponsored showcase moved to the ${this.adPosition()} side.`,
-    icon: 'swap_horiz'
-  });
-}
-
-dismissAd(): void {
-  this.isAdVisible.set(false);
-}
-
-openSponsoredProject(): void {
-  const plot = this.propertyService.properties().find(p => p.propertyType === 'Gated CMDA Plots') || this.propertyService.properties()[0];
-  if(plot) {
-    this.propertyService.openMediaModal(plot, 'premium');
+  onMinSliderChange(event: Event): void {
+    const val = Number((event.target as HTMLInputElement).value);
+    const max = this.customBudgetMax();
+    const step = this.BUDGET_STEP;
+    const newMin = Math.min(val, max - step);
+    this.customBudgetMin.set(newMin);
+    this.isCustomBudgetActive.set(true);
+    this.selectedBudget.set('custom');
+    this.displayedCount.set(20);
+    this.recordSearchPreferencesFromActiveState();
   }
-}
 
-onImgError(event: Event): void {
-  const img = event.target as HTMLImageElement;
-  img.src = 'property-placeholder.svg';
-}
+  onMaxSliderChange(event: Event): void {
+    const val = Number((event.target as HTMLInputElement).value);
+    const min = this.customBudgetMin();
+    const step = this.BUDGET_STEP;
+    const newMax = Math.max(val, min + step);
+    this.customBudgetMax.set(newMax);
+    this.isCustomBudgetActive.set(true);
+    this.selectedBudget.set('custom');
+    this.displayedCount.set(20);
+    this.recordSearchPreferencesFromActiveState();
+  }
+
+  resetCustomBudget(): void {
+    this.isCustomBudgetActive.set(false);
+    this.selectedBudget.set('all');
+    this.customBudgetMin.set(0);
+    this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+  }
+
+  setCity(city: string): void {
+    this.selectedCity.set(city);
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+  }
+
+  setBhk(bhk: string): void {
+    this.selectedBhk.set(bhk);
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+  }
+
+  setSort(sort: string): void {
+    this.sortBy.set(sort);
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+  }
+
+  setViewMode(mode: 'grid' | 'list'): void {
+    this.viewMode.set(mode);
+  }
+
+  toggleVideoOnly(): void {
+    this.videoOnly.update(v => !v);
+  }
+
+  toggleDroneOnly(): void {
+    this.droneOnly.update(v => !v);
+  }
+
+  toggleCmda(): void {
+    this.cmdaOnly.update(v => !v);
+    this.recordSearchPreferencesFromActiveState();
+  }
+
+  toggleDirectOwner(): void {
+    this.directOwnerOnly.update(v => !v);
+    this.recordSearchPreferencesFromActiveState();
+  }
+
+  toggleReadyToMove(): void {
+    this.readyToMoveOnly.update(v => !v);
+    this.recordSearchPreferencesFromActiveState();
+  }
+
+  toggleMobileFilter(): void {
+    if (this.isMobileFilterOpen()) {
+      this.closeDedicatedMobileSearch();
+    } else {
+      this.openDedicatedMobileSearch();
+    }
+  }
+
+  openDedicatedMobileSearch(): void {
+    this.isMobileFilterOpen.set(true);
+    this.isSuggestionsOpen.set(false);
+    this.isDistrictDropdownOpen.set(false);
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+      this.omniboxInputRef?.nativeElement?.blur();
+    }
+    const dist = this.selectedDistrict();
+    if (dist && this.liveDbSuggestions().length === 0) {
+      this.propertyService.fetchSuggestions('', dist).subscribe(res => {
+        this.liveDbSuggestions.set(res);
+      });
+    }
+  }
+
+  closeDedicatedMobileSearch(): void {
+    this.isMobileFilterOpen.set(false);
+    this.isMobileSuggestDropdownOpen.set(false);
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  }
+
+  applyDedicatedMobileSearch(): void {
+    const typed = this.rawSearchInput().trim();
+    if (typed && this.mobileSearchType() === 'locality' && this.selectedLocalities().length < 3) {
+      this.addLocalityTag(typed);
+    }
+    this.closeDedicatedMobileSearch();
+    this.displayedCount.set(20);
+    this.syncUrlParams();
+    this.fetchFilteredFromApi();
+    setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
+  }
+
+  onMobileDedicatedDistrictChange(event: Event): void {
+    const newDist = (event.target as HTMLSelectElement).value;
+    this.isSearchManuallyAdjusted.set(true);
+    if (newDist) {
+      this.locationService.setDistrict(newDist, 'manual');
+    }
+    this.onDistrictChange(newDist);
+  }
+
+  setMobileSearchType(type: 'locality' | 'developer'): void {
+    this.mobileSearchType.set(type);
+    this.rawSearchInput.set('');
+    this.isMobileSuggestDropdownOpen.set(false);
+  }
+
+  onMobileDedicatedInputFocus(): void {
+    this.isMobileSuggestDropdownOpen.set(true);
+    const dist = this.selectedDistrict();
+    if (dist && this.liveDbSuggestions().length === 0) {
+      this.propertyService.fetchSuggestions('', dist).subscribe(res => {
+        this.liveDbSuggestions.set(res);
+      });
+    }
+  }
+
+  onMobileDedicatedInput(val: string): void {
+    this.onSearchInput(val);
+    this.isMobileSuggestDropdownOpen.set(true);
+  }
+
+  onMobileDedicatedKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const val = this.rawSearchInput().trim();
+      if (!val) return;
+      if (this.mobileSearchType() === 'locality') {
+        if (this.selectedLocalities().length >= 3) {
+          this.notificationService.show({
+            type: 'info',
+            title: 'Maximum 3 Localities',
+            message: 'You can select up to 3 localities at a time.',
+            icon: 'location_on'
+          }, 3000);
+          return;
+        }
+        this.addLocalityTag(val);
+        this.isMobileSuggestDropdownOpen.set(false);
+      } else {
+        this.applyDedicatedMobileSearch();
+      }
+    }
+  }
+
+  detectMobileGpsLocation(event: Event): void {
+    event.stopPropagation();
+    this.locationService.detectLocation({ autoPromptOnBlock: true, silentOnSuccess: false });
+  }
+
+  getMobileDeveloperSuggestions(): any[] {
+    const q = this.rawSearchInput().trim().toLowerCase();
+    const builders = this.buildersList() || [];
+    if (q) {
+      return builders
+        .filter((b: any) => b.name && b.name.toLowerCase().includes(q))
+        .slice(0, 8);
+    }
+    return builders.slice(0, 6);
+  }
+
+  selectMobileBuilderFilter(devName: string): void {
+    if (!devName) return;
+    this.setDeveloper(devName);
+    this.isMobileSuggestDropdownOpen.set(false);
+  }
+
+  selectMobileLocalitySuggestion(item: SearchSuggestion): void {
+    if (item.type === 'developer') {
+      this.selectMobileBuilderFilter(item.query || item.label);
+      return;
+    }
+    if (this.selectedLocalities().length >= 3) {
+      this.notificationService.show({
+        type: 'info',
+        title: 'Maximum 3 Localities',
+        message: 'You can select up to 3 localities at a time.',
+        icon: 'location_on'
+      }, 3000);
+      return;
+    }
+    this.addLocalityTag(item.query || item.label, item);
+    this.isMobileSuggestDropdownOpen.set(false);
+  }
+
+  toggleMobileIncludeNearby(): void {
+    this.mobileIncludeNearby.update(v => !v);
+  }
+
+  isMobileApprovalSelected(val: string): boolean {
+    return this.mobileSelectedApprovals().includes(val);
+  }
+
+  toggleMobileApproval(val: string): void {
+    this.mobileSelectedApprovals.update(curr =>
+      curr.includes(val) ? curr.filter(item => item !== val) : [...curr, val]
+    );
+    if (val === 'CMDA' || val === 'DTCP') {
+      const hasApproval = this.mobileSelectedApprovals().includes('CMDA') || this.mobileSelectedApprovals().includes('DTCP');
+      this.cmdaOnly.set(hasApproval);
+      this.recordSearchPreferencesFromActiveState();
+    }
+  }
+
+  isMobilePlotSubtypeSelected(val: string): boolean {
+    return this.mobileSelectedPlotSubtypes().includes(val);
+  }
+
+  toggleMobilePlotSubtype(val: string): void {
+    this.mobileSelectedPlotSubtypes.update(curr => {
+      if (curr.includes(val)) {
+        return curr.length > 1 ? curr.filter(item => item !== val) : curr;
+      }
+      return [...curr, val];
+    });
+    if (val === 'Commercial Plot') {
+      this.setType('Commercial Spaces');
+    } else if (val === 'Direct Owner Land') {
+      this.toggleDirectOwner();
+    } else {
+      this.setType('Gated CMDA Plots');
+    }
+  }
+
+  setDeveloper(dev: string): void {
+    const next = this.selectedDeveloper() === dev ? 'all' : dev;
+    this.selectedDeveloper.set(next);
+    this.displayedCount.set(20);
+
+    // Clear search box inputs before applying developer filter
+    this.rawSearchInput.set('');
+    this.searchQuery.set('');
+    this.selectedLocalities.set([]);
+    this.isSuggestionsOpen.set(false);
+    this.liveDbSuggestions.set([]);
+    this.builderSearchQuery.set('');
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        developer: next !== 'all' ? next : null,
+        q: null,
+        localities: null
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+    this.fetchFilteredFromApi();
+    setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
+  }
+
+  toggleBuilderExpand(): void {
+    this.isBuilderListExpanded.update(v => !v);
+  }
+
+  onBuilderSearch(val: string): void {
+    this.builderSearchQuery.set(val);
+  }
+
+  resetAllFilters(): void {
+    this.isSearchManuallyAdjusted.set(true);
+    this.searchQuery.set('');
+    this.selectedDistrict.set('');
+    this.selectedCity.set('all');
+    this.selectedType.set('all');
+    this.selectedDeveloper.set('all');
+    this.selectedLocalities.set([]);
+    this.rawSearchInput.set('');
+    this.builderSearchQuery.set('');
+    this.selectedBudget.set('all');
+    this.isCustomBudgetActive.set(false);
+    this.customBudgetMin.set(0);
+    this.customBudgetMax.set(this.MAX_BUDGET_LIMIT);
+    this.selectedBhk.set('all');
+    this.cmdaOnly.set(false);
+    this.directOwnerOnly.set(false);
+    this.videoOnly.set(false);
+    this.droneOnly.set(false);
+    this.readyToMoveOnly.set(false);
+    this.sortBy.set('featured');
+    this.displayedCount.set(20);
+    this.fetchFilteredFromApi();
+
+    this.notificationService.show({
+      type: 'info',
+      title: 'Filters Reset',
+      message: 'All registry search filters have been restored to default.',
+      icon: 'restart_alt'
+    });
+  }
+
+  toggleAdPosition(): void {
+    this.adPosition.update(pos => pos === 'right' ? 'left' : 'right');
+    this.notificationService.show({
+      type: 'info',
+      title: 'Ad Position Updated',
+      message: `Sponsored showcase moved to the ${this.adPosition()} side.`,
+      icon: 'swap_horiz'
+    });
+  }
+
+  dismissAd(): void {
+    this.isAdVisible.set(false);
+  }
+
+  openSponsoredProject(): void {
+    const plot = this.propertyService.properties().find(p => p.propertyType === 'Gated CMDA Plots') || this.propertyService.properties()[0];
+    if (plot) {
+      this.propertyService.openMediaModal(plot, 'premium');
+    }
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'property-placeholder.svg';
+  }
 }

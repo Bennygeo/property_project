@@ -78,6 +78,7 @@ try {
 $stmt = $db->prepare("SELECT * FROM users WHERE phone LIKE ? OR phone LIKE ? LIMIT 1");
 $stmt->execute(["%{$last10}", "%{$cleanPhone}%"]);
 $user = $stmt->fetch();
+$isFirstLogin = (!$user);
 
 if (!$user) {
     // Register new user as standard 'buyer' with restricted user-only permissions and 40 starter points
@@ -138,11 +139,13 @@ Response::success([
         'email'         => $user['email'],
         'phone'         => $user['phone'],
         'role'          => $user['role'] ?: 'buyer',
+        'primaryGoal'   => $user['primary_goal'] ?? null,
         'permissions'   => $decodedPermissions,
         'developerId'   => !empty($user['developer_id']) ? (int)$user['developer_id'] : null,
         'companyName'   => (!empty($user['developer_id'])) ? 'Experion Developers & Infrastructure' : null,
         'pointsBalance' => (int)$user['points_balance'],
         'createdAt'     => $user['created_at'],
     ],
+    'isFirstLogin' => $isFirstLogin || empty($user['primary_goal']),
     'token' => $token,
 ], "Welcome back, {$user['name']}! OTP verified successfully.");

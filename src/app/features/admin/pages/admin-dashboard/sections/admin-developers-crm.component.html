@@ -1157,9 +1157,8 @@
 
               <h3 class="dropzone-title">Drag &amp; Drop Property Master Excel File Here</h3>
               <p class="dropzone-sub">
-                Supports <strong>.xlsx, .xls, and .csv</strong> files containing up to 100+ columns (51 Canonical
-                Cadastral
-                Fields).
+                Supports <strong>.xlsx, .xls, and .csv</strong> spreadsheets mapped directly to <strong>projects</strong>
+                &amp; <strong>project_details</strong> SQL database tables (78 Canonical Master Fields).
               </p>
 
               <button type="button" class="btn-browse-file" (click)="excelFileInput.click()">
@@ -1241,13 +1240,13 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Property ID</th>
+                    <th>Project ID</th>
                     <th>Developer</th>
-                    <th>Project Name &amp; Plot</th>
-                    <th>RERA / DTCP</th>
-                    <th>Locality / District</th>
-                    <th>Area (Sq.ft / Cents)</th>
-                    <th>Price / Rate</th>
+                    <th>Project Name &amp; Category</th>
+                    <th>Approvals &amp; RERA</th>
+                    <th>Locality / City</th>
+                    <th>Layout &amp; Plots</th>
+                    <th>Price / sq.ft Rate</th>
                     <th>Facing / Corner</th>
                     <th>Cadastral GPS Status</th>
                     <th>Contact</th>
@@ -1258,33 +1257,33 @@
                   @for (row of bulkParsedRows(); track $index) {
                   <tr [class.row-gps-invalid]="!row._gpsAudit?.isValid">
                     <td class="col-idx">{{ $index + 1 }}</td>
-                    <td><code class="cell-code">{{ row.propertyId }}</code></td>
+                    <td><code class="cell-code">{{ row.projectId || row.propertyId }}</code></td>
                     <td>
                       <strong>{{ row.developer }}</strong>
                     </td>
                     <td>
                       <strong>{{ row.projectName }}</strong>
-                      <span class="cell-sub">Plot No: {{ row.plotNo }}</span>
+                      <span class="cell-sub">{{ row.category || 'Gated Plots' }} • {{ row.landType || 'Residential' }}</span>
                     </td>
                     <td>
-                      <div>{{ row.reraNumber }}</div>
-                      <span class="cell-sub">DTCP: {{ row.dtcpApproved }} {{ row.dtcpApprovalNo }}</span>
+                      <div>{{ row.reraNumber || 'TNRERA Approved' }}</div>
+                      <span class="cell-sub">{{ row.approvalAuthority }} {{ row.approvalReference }}</span>
                     </td>
                     <td>
-                      <div>{{ row.villageLocality }}</div>
-                      <span class="cell-sub">{{ row.district }} ({{ row.pincode }})</span>
+                      <div>{{ row.locality || row.villageLocality }}</div>
+                      <span class="cell-sub">{{ row.city }} ({{ row.pincode }})</span>
                     </td>
                     <td>
                       <strong>{{ row.plotSizeSqft | number }} sq.ft</strong>
-                      <span class="cell-sub">({{ row.plotSizeCents }} Cents)</span>
+                      <span class="cell-sub">{{ row.totalLayoutArea || 'Approved Layout' }} • {{ row.totalPlots || 24 }} Plots</span>
                     </td>
                     <td>
-                      <strong class="text-price">₹ {{ row.totalPrice | number }}</strong>
-                      <span class="cell-sub">₹ {{ row.pricePerSqft | number }}/sq.ft</span>
+                      <strong class="text-price">₹ {{ (row.priceFrom || row.totalPrice) | number }}</strong>
+                      <span class="cell-sub">₹ {{ (row.sqftRate || row.pricePerSqft) | number }}/sq.ft</span>
                     </td>
                     <td>
                       <div>{{ row.facing }}</div>
-                      <span class="cell-sub">{{ row.cornerPlot === 'Yes' ? 'Corner Plot' : 'Regular' }}</span>
+                      <span class="cell-sub">{{ row.cornerPlot === 'Yes' || row.cornerPlot === '1' ? 'Corner Plot' : 'Regular' }}</span>
                     </td>
                     <td>
                       @if (row._gpsAudit?.isValid) {
@@ -1300,7 +1299,7 @@
                       }
                     </td>
                     <td>
-                      <div>{{ row.contactPersonPhone }}</div>
+                      <div>{{ row.whatsappNumber || row.contactPersonPhone }}</div>
                     </td>
                     <td class="col-link">
                       @if (row.googleMapsLink && row.googleMapsLink.startsWith('http')) {
@@ -1320,9 +1319,9 @@
             <!-- Bottom Floating Commit Strip -->
             <div class="bulk-bottom-commit-strip">
               <div class="commit-stats-note">
-                Ready to insert <strong>{{ bulkParsedRows().length }}</strong> properties into
-                <strong>properties</strong>
-                and <strong>property_master_details</strong> SQL tables.
+                Ready to insert <strong>{{ bulkParsedRows().length }}</strong> records into
+                <strong>projects</strong>
+                and <strong>project_details</strong> SQL database tables.
               </div>
               <button type="button" class="btn-commit-import-large" (click)="executeBulkImport()"
                 [disabled]="isUploadingBulk()">

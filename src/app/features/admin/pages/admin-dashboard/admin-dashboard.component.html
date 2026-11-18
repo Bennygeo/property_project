@@ -567,7 +567,8 @@
           </button>
 
           <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'leads_assignment'"
-            (click)="setTab('leads_assignment')" title="View all leads and assign to specific Sales, Advisor, and Operations staff">
+            (click)="setTab('leads_assignment')"
+            title="View all leads and assign to specific Sales, Advisor, and Operations staff">
             <span class="material-symbols-outlined" style="color:#0f766e;">assignment_ind</span>
             <span>Leads</span>
             <span class="tab-badge-studio" style="background:#0f766e;color:#ffffff;">ASSIGN ROLES</span>
@@ -753,9 +754,11 @@
                     <span class="badge-edit-mode">LIVE EDIT MODE</span>
                     <span class="text-xs text-slate-500 font-mono">REF: {{ editingPropertyId() }}</span>
                   </div>
-                  <h3 class="form-title text-emerald-800">Edit Architectural Property: {{ adminMaster.projectName || newProp().title }}</h3>
+                  <h3 class="form-title text-emerald-800">Edit Architectural Property: {{ adminMaster.projectName ||
+                    newProp().title }}</h3>
                   <p class="form-sub">
-                    Editing complete database record across <strong>projects</strong>, <strong>project_details</strong>, and <strong>property_master_details</strong> (~70 fields).
+                    Editing complete database record across <strong>projects</strong>, <strong>project_details</strong>,
+                    and <strong>property_master_details</strong> (~70 fields).
                   </p>
                 </div>
                 <button type="button" class="btn-cancel-edit-hdr" (click)="cancelEditProperty()">
@@ -821,93 +824,98 @@
                   </div>
 
                   <div class="form-field" style="position: relative;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                       <label class="field-label" style="margin: 0;">Developer / Promoter Name *</label>
                       @if (adminDevelopers().length > 0) {
-                        <span style="font-size: 11px; color: #64748b; font-weight: 500;">
-                          {{ adminDevelopers().length }} registered builders
-                        </span>
+                      <span style="font-size: 11px; color: #64748b; font-weight: 500;">
+                        {{ adminDevelopers().length }} registered builders
+                      </span>
                       }
                     </div>
-                    <input type="text" class="field-input"
-                      [ngModel]="adminMaster.developer" name="admDeveloper"
+                    <input type="text" class="field-input" [ngModel]="adminMaster.developer" name="admDeveloper"
                       (focus)="openAdminDeveloperDropdown()" (input)="onAdminDeveloperInput($any($event.target).value)"
-                      (blur)="closeAdminDeveloperDropdown()"
-                      (change)="onAdminDeveloperChange(adminMaster.developer)"
+                      (blur)="closeAdminDeveloperDropdown()" (change)="onAdminDeveloperChange(adminMaster.developer)"
                       placeholder="Type or select existing developer/promoter..." required autocomplete="off" />
 
                     <!-- Live Auto-Populate Dropdown -->
                     @if (isAdminDeveloperDropdownOpen() && matchingAdminDevelopers().length > 0) {
-                      <div class="developer-suggestions-dropdown"
-                        style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); max-height: 260px; overflow-y: auto;">
-                        <div style="padding: 6px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; color: #475569; display: flex; justify-content: space-between;">
-                          <span>SELECT VERIFIED DEVELOPER TO AUTO-FILL</span>
-                          <span>{{ matchingAdminDevelopers().length }} matches</span>
-                        </div>
-                        @for (dev of matchingAdminDevelopers(); track dev.id || dev.name) {
-                          <div class="dev-suggestion-item" (mousedown)="selectAdminDeveloper(dev)"
-                            style="padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease;"
-                            onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
-                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                              <span style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ dev.name }}</span>
-                              @if (dev.projectCount) {
-                                <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-weight: 600;">
-                                  {{ dev.projectCount }} {{ dev.projectCount === 1 ? 'Project' : 'Projects' }}
-                                </span>
-                              }
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 11px; color: #64748b;">
-                              @if (dev.reraNumber) {
-                                <span style="display: inline-flex; align-items: center; gap: 2px; color: #166534; font-weight: 500;">
-                                  <span class="material-symbols-outlined" style="font-size: 12px;">verified</span>
-                                  RERA: {{ dev.reraNumber }}
-                                </span>
-                              }
-                              @if (dev.districts && dev.districts.length > 0) {
-                                <span>• {{ dev.districts.slice(0, 2).join(', ') }}</span>
-                              }
-                            </div>
-                          </div>
-                        }
+                    <div class="developer-suggestions-dropdown"
+                      style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); max-height: 260px; overflow-y: auto;">
+                      <div
+                        style="padding: 6px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; color: #475569; display: flex; justify-content: space-between;">
+                        <span>SELECT VERIFIED DEVELOPER TO AUTO-FILL</span>
+                        <span>{{ matchingAdminDevelopers().length }} matches</span>
                       </div>
+                      @for (dev of matchingAdminDevelopers(); track dev.id || dev.name) {
+                      <div class="dev-suggestion-item" (mousedown)="selectAdminDeveloper(dev)"
+                        style="padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease;"
+                        onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                          <span style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ dev.name }}</span>
+                          @if (dev.projectCount) {
+                          <span
+                            style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-weight: 600;">
+                            {{ dev.projectCount }} {{ dev.projectCount === 1 ? 'Project' : 'Projects' }}
+                          </span>
+                          }
+                        </div>
+                        <div
+                          style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 11px; color: #64748b;">
+                          @if (dev.reraNumber) {
+                          <span
+                            style="display: inline-flex; align-items: center; gap: 2px; color: #166534; font-weight: 500;">
+                            <span class="material-symbols-outlined" style="font-size: 12px;">verified</span>
+                            RERA: {{ dev.reraNumber }}
+                          </span>
+                          }
+                          @if (dev.districts && dev.districts.length > 0) {
+                          <span>• {{ dev.districts.slice(0, 2).join(', ') }}</span>
+                          }
+                        </div>
+                      </div>
+                      }
+                    </div>
                     }
                   </div>
 
                   <div class="form-field">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                       <label class="field-label" style="margin: 0;">RERA Registration Number</label>
                       @if (adminReraInput()) {
-                        @if (newPropReraValidation(); as rVal) {
-                          <span class="rera-status-pill" [class.is-valid]="rVal.isValid && !rVal.isExemptOrUnderProcess"
-                            [class.is-invalid]="!rVal.isValid" [class.is-exempt]="rVal.isExemptOrUnderProcess"
-                            style="font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px;"
-                            [style.background]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#e0f2fe' : '#f0fdf4') : '#fef2f2'"
-                            [style.color]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#0369a1' : '#15803d') : '#b91c1c'"
-                            [style.border]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '1px solid #bae6fd' : '1px solid #bbf7d0') : '1px solid #fecaca'">
-                            <span class="material-symbols-outlined" style="font-size: 13px;">{{ rVal.isValid ? 'verified' : 'error' }}</span>
-                            <span>{{ rVal.badgeText }}</span>
-                          </span>
-                        }
+                      @if (newPropReraValidation(); as rVal) {
+                      <span class="rera-status-pill" [class.is-valid]="rVal.isValid && !rVal.isExemptOrUnderProcess"
+                        [class.is-invalid]="!rVal.isValid" [class.is-exempt]="rVal.isExemptOrUnderProcess"
+                        style="font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px;"
+                        [style.background]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#e0f2fe' : '#f0fdf4') : '#fef2f2'"
+                        [style.color]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#0369a1' : '#15803d') : '#b91c1c'"
+                        [style.border]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '1px solid #bae6fd' : '1px solid #bbf7d0') : '1px solid #fecaca'">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">{{ rVal.isValid ? 'verified' :
+                          'error' }}</span>
+                        <span>{{ rVal.badgeText }}</span>
+                      </span>
+                      }
                       }
                     </div>
                     <div style="display: flex; gap: 8px;">
-                      <input type="text" class="field-input" style="flex: 1;"
-                        [ngModel]="adminMaster.reraNumber" name="admReraNumber"
-                        (input)="onAdminReraInput($any($event.target).value)"
+                      <input type="text" class="field-input" style="flex: 1;" [ngModel]="adminMaster.reraNumber"
+                        name="admReraNumber" (input)="onAdminReraInput($any($event.target).value)"
                         placeholder="e.g. TN/29/Layout/0123/2025 or TN/29/Building/0811/2026" />
-                      @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera && newPropReraValidation().canonicalRera !== adminReraInput()) {
-                        <button type="button" class="btn-canonical-fix" (click)="applyCanonicalRera()"
-                          style="padding: 0 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"
-                          title="Apply standardized canonical RERA format">
-                          Standardize
-                        </button>
+                      @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera &&
+                      newPropReraValidation().canonicalRera !== adminReraInput()) {
+                      <button type="button" class="btn-canonical-fix" (click)="applyCanonicalRera()"
+                        style="padding: 0 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"
+                        title="Apply standardized canonical RERA format">
+                        Standardize
+                      </button>
                       }
                     </div>
                     @if (adminReraInput()) {
-                      <p class="rera-validation-msg" style="margin: 4px 0 0; font-size: 11px; line-height: 1.4;"
-                        [style.color]="newPropReraValidation().isValid ? '#64748b' : '#dc2626'">
-                        {{ newPropReraValidation().message }}
-                      </p>
+                    <p class="rera-validation-msg" style="margin: 4px 0 0; font-size: 11px; line-height: 1.4;"
+                      [style.color]="newPropReraValidation().isValid ? '#64748b' : '#dc2626'">
+                      {{ newPropReraValidation().message }}
+                    </p>
                     }
                   </div>
 
@@ -1131,7 +1139,8 @@
                   <div class="form-field">
                     <label class="field-label">
                       Plot No.
-                      <span class="auto-calc-tag" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
+                      <span class="auto-calc-tag"
+                        style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
                     </label>
                     <input type="text" class="field-input font-bold" [(ngModel)]="adminMaster.plotNo" name="admPlotNo"
                       placeholder="e.g. A-12 (Optional)" />
@@ -1139,16 +1148,14 @@
 
                   <div class="form-field">
                     <label class="field-label">Min Plot Size (sq.ft) *</label>
-                    <input type="number" class="field-input" [(ngModel)]="adminMaster.minPlotSize"
-                      name="admMinPlotSize" (ngModelChange)="onAdminPlotRangeChange()" placeholder="e.g. 500"
-                      required />
+                    <input type="number" class="field-input" [(ngModel)]="adminMaster.minPlotSize" name="admMinPlotSize"
+                      (ngModelChange)="onAdminPlotRangeChange()" placeholder="e.g. 500" required />
                   </div>
 
                   <div class="form-field">
                     <label class="field-label">Max Plot Size (sq.ft) *</label>
-                    <input type="number" class="field-input" [(ngModel)]="adminMaster.maxPlotSize"
-                      name="admMaxPlotSize" (ngModelChange)="onAdminPlotRangeChange()" placeholder="e.g. 2400"
-                      required />
+                    <input type="number" class="field-input" [(ngModel)]="adminMaster.maxPlotSize" name="admMaxPlotSize"
+                      (ngModelChange)="onAdminPlotRangeChange()" placeholder="e.g. 2400" required />
                   </div>
 
                   <div class="form-field">
@@ -1198,16 +1205,14 @@
 
                   <div class="form-field">
                     <label class="field-label">Starting Price / Price From (₹) *</label>
-                    <input type="number" class="field-input" [(ngModel)]="adminMaster.priceFrom"
-                      name="admPriceFrom" (ngModelChange)="onAdminPriceRangeChange()" placeholder="e.g. 1500000"
-                      required />
+                    <input type="number" class="field-input" [(ngModel)]="adminMaster.priceFrom" name="admPriceFrom"
+                      (ngModelChange)="onAdminPriceRangeChange()" placeholder="e.g. 1500000" required />
                   </div>
 
                   <div class="form-field">
                     <label class="field-label">Max Price / Price To (₹) *</label>
-                    <input type="number" class="field-input" [(ngModel)]="adminMaster.priceTo"
-                      name="admPriceTo" (ngModelChange)="onAdminPriceRangeChange()" placeholder="e.g. 7200000"
-                      required />
+                    <input type="number" class="field-input" [(ngModel)]="adminMaster.priceTo" name="admPriceTo"
+                      (ngModelChange)="onAdminPriceRangeChange()" placeholder="e.g. 7200000" required />
                   </div>
 
                   <div class="form-field">
@@ -1225,10 +1230,12 @@
                   <div class="form-field">
                     <label class="field-label">
                       Price per sq.ft (₹)
-                      <span class="auto-calc-tag" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
+                      <span class="auto-calc-tag"
+                        style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
                     </label>
                     <input type="number" class="field-input" [(ngModel)]="adminMaster.pricePerSqft"
-                      name="admPricePerSqft" (ngModelChange)="onAdminPricePerSqftChange()" placeholder="e.g. 3200 (Optional)" />
+                      name="admPricePerSqft" (ngModelChange)="onAdminPricePerSqftChange()"
+                      placeholder="e.g. 3200 (Optional)" />
                   </div>
 
                   <div class="form-field">
@@ -2021,39 +2028,42 @@
               </div>
 
               <div class="form-field">
-                <div class="rera-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div class="rera-label-row"
+                  style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <label class="field-label" style="margin: 0;">RERA or Approval / Patta Reference</label>
                   @if (adminReraInput()) {
-                    @if (newPropReraValidation(); as rVal) {
-                      <span class="rera-status-pill" [class.is-valid]="rVal.isValid && !rVal.isExemptOrUnderProcess"
-                        [class.is-invalid]="!rVal.isValid" [class.is-exempt]="rVal.isExemptOrUnderProcess"
-                        style="font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px;"
-                        [style.background]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#e0f2fe' : '#f0fdf4') : '#fef2f2'"
-                        [style.color]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#0369a1' : '#15803d') : '#b91c1c'"
-                        [style.border]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '1px solid #bae6fd' : '1px solid #bbf7d0') : '1px solid #fecaca'">
-                        <span class="material-symbols-outlined" style="font-size: 13px;">{{ rVal.isValid ? 'verified' : 'error' }}</span>
-                        <span>{{ rVal.badgeText }}</span>
-                      </span>
-                    }
+                  @if (newPropReraValidation(); as rVal) {
+                  <span class="rera-status-pill" [class.is-valid]="rVal.isValid && !rVal.isExemptOrUnderProcess"
+                    [class.is-invalid]="!rVal.isValid" [class.is-exempt]="rVal.isExemptOrUnderProcess"
+                    style="font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px;"
+                    [style.background]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#e0f2fe' : '#f0fdf4') : '#fef2f2'"
+                    [style.color]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '#0369a1' : '#15803d') : '#b91c1c'"
+                    [style.border]="rVal.isValid ? (rVal.isExemptOrUnderProcess ? '1px solid #bae6fd' : '1px solid #bbf7d0') : '1px solid #fecaca'">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">{{ rVal.isValid ? 'verified' :
+                      'error' }}</span>
+                    <span>{{ rVal.badgeText }}</span>
+                  </span>
+                  }
                   }
                 </div>
                 <div class="input-with-format-btn" style="display: flex; gap: 8px;">
                   <input type="text" class="field-input" style="flex: 1;" [ngModel]="adminReraInput()" name="reraNumber"
                     (input)="onAdminReraInput($any($event.target).value)"
                     placeholder="e.g. TN/29/Layout/0123/2025 or TN/29/Building/0811/2026" />
-                  @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera && newPropReraValidation().canonicalRera !== adminReraInput()) {
-                    <button type="button" class="btn-canonical-fix" (click)="applyCanonicalRera()"
-                      style="padding: 0 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"
-                      title="Apply standardized canonical RERA format">
-                      Standardize
-                    </button>
+                  @if (newPropReraValidation().isValid && newPropReraValidation().canonicalRera &&
+                  newPropReraValidation().canonicalRera !== adminReraInput()) {
+                  <button type="button" class="btn-canonical-fix" (click)="applyCanonicalRera()"
+                    style="padding: 0 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"
+                    title="Apply standardized canonical RERA format">
+                    Standardize
+                  </button>
                   }
                 </div>
                 @if (adminReraInput()) {
-                  <p class="rera-validation-msg" style="margin: 4px 0 0; font-size: 11px; line-height: 1.4;"
-                    [style.color]="newPropReraValidation().isValid ? '#64748b' : '#dc2626'">
-                    {{ newPropReraValidation().message }}
-                  </p>
+                <p class="rera-validation-msg" style="margin: 4px 0 0; font-size: 11px; line-height: 1.4;"
+                  [style.color]="newPropReraValidation().isValid ? '#64748b' : '#dc2626'">
+                  {{ newPropReraValidation().message }}
+                </p>
                 }
               </div>
 
@@ -2261,7 +2271,9 @@
               <div class="form-actions-row">
                 <div class="form-notice">
                   <span class="material-symbols-outlined">info</span>
-                  <span>{{ editingPropertyId() ? 'Saving will update this property and all master specifications directly in the database.' : 'Clicking submit will route this listing into the Co-Admin peer review queue.' }}</span>
+                  <span>{{ editingPropertyId() ? 'Saving will update this property and all master specifications
+                    directly in the database.' : 'Clicking submit will route this listing into the Co-Admin peer review
+                    queue.' }}</span>
                 </div>
 
                 <div class="flex items-center gap-3">
@@ -2273,7 +2285,8 @@
                   }
                   <button type="submit" class="btn-submit-post" [disabled]="adminService.isSubmitting()">
                     <span class="material-symbols-outlined">{{ editingPropertyId() ? 'save' : 'publish' }}</span>
-                    <span>{{ adminService.isSubmitting() ? 'Saving...' : (editingPropertyId() ? 'Update Property & Master Data' : 'Submit for Co-Admin Peer Review') }}</span>
+                    <span>{{ adminService.isSubmitting() ? 'Saving...' : (editingPropertyId() ? 'Update Property &
+                      Master Data' : 'Submit for Co-Admin Peer Review') }}</span>
                   </button>
                 </div>
               </div>
@@ -2838,11 +2851,11 @@
 
 
         @if (activeTab() === 'lead_pipeline') {
-          <app-lead-pipeline-command-center />
+        <app-lead-pipeline-command-center />
         }
 
         @if (activeTab() === 'leads_assignment') {
-          <app-admin-leads-assignment />
+        <app-admin-leads-assignment />
         }
 
         <!-- PART 2: DEVELOPERS, FINANCIALS, MINDSET, BULK UPLOAD & BUYER CRM -->

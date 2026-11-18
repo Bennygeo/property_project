@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor-purpose.service';
@@ -72,47 +72,30 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     .intent-modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1rem;
       z-index: 99999;
-      animation: backdropFadeIn 0.2s ease-out forwards;
-    }
-
-    @keyframes backdropFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     .intent-modal-container {
-      background: #ffffff;
-      border-radius: 9px;
-      max-width: 520px;
+      background: #ffffff !important;
+      opacity: 1 !important;
+      border-radius: 8px;
+      max-width: 540px;
       width: 100%;
-      box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(226, 232, 240, 0.9);
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(226, 232, 240, 0.95);
       position: relative;
       overflow: hidden;
-      padding: 1.35rem 1.45rem 1.15rem;
+      padding: 1.5rem 1.6rem 1.25rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       font-family: inherit;
-    }
-
-    @keyframes modalPopIn {
-      from {
-        opacity: 0;
-        transform: scale(0.96) translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
     }
 
     /* Modal Header */
@@ -126,12 +109,12 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     .header-titles {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
 
     .modal-heading {
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 1.12rem;
+      font-weight: 600;
       color: #0f172a;
       letter-spacing: -0.02em;
       margin: 0;
@@ -139,7 +122,7 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     }
 
     .modal-subheading {
-      font-size: 12px;
+      font-size: 13px;
       color: #64748b;
       margin: 0;
       line-height: 1.4;
@@ -252,7 +235,7 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     }
 
     .purpose-title {
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       font-weight: 500;
       color: #0f172a;
       margin: 0;
@@ -261,14 +244,14 @@ import { VisitorPurposeService, VisitorPurposeKey } from '../../services/visitor
     }
 
     .purpose-item.selected .purpose-title {
-      color: #2c4938;
+      color: #1e3a2b;
     }
 
     .purpose-tagline {
-      font-size: 11px;
+      font-size: 12px;
       color: #64748b;
       margin: 0;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     /* Modal Footer */
@@ -342,10 +325,16 @@ export class VisitorIntentModalComponent {
   readonly selectedKey = signal<VisitorPurposeKey>('build_home');
 
   constructor() {
-    const existing = this.visitorService.currentPurpose();
-    if (existing) {
-      this.selectedKey.set(existing);
-    }
+    effect(() => {
+      if (this.visitorService.isModalOpen()) {
+        const existing = this.visitorService.currentPurpose();
+        if (existing) {
+          this.selectedKey.set(existing);
+        } else {
+          this.selectedKey.set('build_home');
+        }
+      }
+    });
   }
 
   onSelect(key: VisitorPurposeKey): void {

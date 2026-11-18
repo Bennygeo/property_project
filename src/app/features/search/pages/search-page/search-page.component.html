@@ -5,7 +5,32 @@
   <!-- Navigation Header -->
   <app-header />
 
-  <!-- Search Hero Sub-Header Bar -->
+  <!-- Compact Sticky Mobile Results Summary Bar (Mobile Only - Replaces Redundant Search & Filter Forms) -->
+  <div class="mobile-results-summary-bar">
+    <a routerLink="/" class="mrs-back-btn" aria-label="Back to Home">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+
+    <button type="button" class="mrs-search-pill" (click)="openDedicatedMobileSearch()"
+      aria-label="Modify search location and filters">
+      <span class="material-symbols-outlined mrs-search-icon">search</span>
+      <div class="mrs-search-texts">
+        <span class="mrs-location-title">{{ mobileSummaryLocation() }}</span>
+        <span class="mrs-sub-meta">{{ mobileSummarySubtitle() }}</span>
+      </div>
+      <span class="material-symbols-outlined mrs-edit-icon">edit</span>
+    </button>
+
+    <button type="button" class="mrs-filter-btn" [class.has-filters]="activeFilterCount() > 0"
+      (click)="openDedicatedMobileSearch()" aria-label="Open filters">
+      <span class="material-symbols-outlined">tune</span>
+      @if (activeFilterCount() > 0) {
+      <span class="mrs-filter-badge">{{ activeFilterCount() }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- Search Hero Sub-Header Bar (Desktop Only) -->
   <section class="search-subheader">
     <div class="max-w-content subheader-inner">
       <!-- Breadcrumbs -->
@@ -406,49 +431,9 @@
             <div class="budget-grid">
               @for (b of budgetOptions; track b.value) {
               <button type="button" class="budget-pill"
-                [class.selected]="selectedBudget() === b.value && !isCustomBudgetActive()" (click)="setBudget(b.value)">
+                [class.selected]="selectedBudget() === b.value" (click)="setBudget(b.value)">
                 {{ b.label }}
               </button>
-              }
-            </div>
-
-            <!-- Custom Budget Range Slider -->
-            <div class="budget-slider-box" [class.is-active]="isCustomBudgetActive()">
-              <div class="slider-header-row">
-                <span class="slider-label">Custom Range</span>
-                <span class="slider-range-val">
-                  {{ formatBudgetInr(customBudgetMin()) }} – {{ customBudgetMax() >= MAX_BUDGET_LIMIT ?
-                  formatBudgetInr(customBudgetMax()) + '+' : formatBudgetInr(customBudgetMax()) }}
-                </span>
-              </div>
-
-              <div class="range-slider-wrapper">
-                <div class="range-slider-track"></div>
-                <div class="range-slider-fill" [style.left.%]="sliderMinPercent()"
-                  [style.width.%]="sliderWidthPercent()"></div>
-                <input type="range" class="range-slider-input range-input-min" [min]="MIN_BUDGET_LIMIT"
-                  [max]="MAX_BUDGET_LIMIT" [step]="BUDGET_STEP" [value]="customBudgetMin()"
-                  (input)="onMinSliderChange($event)" aria-label="Minimum budget slider" />
-                <input type="range" class="range-slider-input range-input-max" [min]="MIN_BUDGET_LIMIT"
-                  [max]="MAX_BUDGET_LIMIT" [step]="BUDGET_STEP" [value]="customBudgetMax()"
-                  (input)="onMaxSliderChange($event)" aria-label="Maximum budget slider" />
-              </div>
-
-              <div class="slider-ticks-row">
-                <span>₹0</span>
-                <span>₹1 Cr</span>
-                <span>₹2 Cr</span>
-                <span>₹5 Cr</span>
-                <span>₹10 Cr+</span>
-              </div>
-
-              @if (isCustomBudgetActive()) {
-              <div class="slider-reset-row">
-                <button type="button" class="btn-reset-slider" (click)="resetCustomBudget()">
-                  <span class="material-symbols-outlined reset-ico">restart_alt</span>
-                  <span>Clear Custom Range</span>
-                </button>
-              </div>
               }
             </div>
           </div>
@@ -1190,6 +1175,262 @@
 
   <!-- Comprehensive Footer -->
   <app-footer />
+
+  <!-- Dedicated Full-Screen Mobile Search & Filters Page (NoBroker-Style Overlay) -->
+  @if (isMobileFilterOpen()) {
+  <div class="nb-mobile-search-page" (click)="isMobileSuggestDropdownOpen.set(false)">
+    <!-- Top App Bar: Back Button + Brand Logo + Clear All -->
+    <div class="nb-top-bar" (click)="$event.stopPropagation()">
+      <button type="button" class="nb-back-btn" (click)="closeDedicatedMobileSearch()" aria-label="Back to Search Results">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <img src="logo.svg" alt="Find a Plot" class="nb-brand-logo" />
+      @if (activeFilterCount() > 0) {
+      <button type="button" class="nb-clear-all-btn" (click)="resetAllFilters()">
+        Clear All
+      </button>
+      }
+    </div>
+
+    <!-- Mode Tabs Strip: Buy | Sell | Commercial -->
+    <div class="nb-mode-tabs" role="tablist" (click)="$event.stopPropagation()">
+      <button type="button" class="nb-mode-tab"
+        [class.active]="selectedType() !== 'Commercial Spaces' && selectedType() !== 'Agricultural Lands'"
+        (click)="setType('Gated CMDA Plots')">
+        Buy
+      </button>
+      <a routerLink="/post-property" class="nb-mode-tab" (click)="closeDedicatedMobileSearch()">
+        Sell
+      </a>
+      <button type="button" class="nb-mode-tab"
+        [class.active]="selectedType() === 'Commercial Spaces'"
+        (click)="setType('Commercial Spaces')">
+        Commercial
+      </button>
+      @if (propertyService.hasAgriculturalProperties()) {
+      <button type="button" class="nb-mode-tab"
+        [class.active]="selectedType() === 'Agricultural Lands'"
+        (click)="setType('Agricultural Lands')">
+        Agriculture
+      </button>
+      }
+    </div>
+
+    <!-- Scrollable Filters Body -->
+    <div class="nb-scroll-body">
+      <!-- 1. District / City Selector Dropdown -->
+      <div class="nb-district-select-wrap" (click)="$event.stopPropagation()">
+        <select class="nb-district-select" [value]="selectedDistrict()" (change)="onMobileDedicatedDistrictChange($event)"
+          aria-label="Select District">
+          <option value="" [selected]="!selectedDistrict()">All Districts &amp; Regions</option>
+          @for (dist of locationService.districts; track dist.id) {
+          <option [value]="dist.name" [selected]="dist.name === selectedDistrict()">
+            {{ dist.name }}
+          </option>
+          }
+        </select>
+        <span class="material-symbols-outlined nb-select-chevron">expand_more</span>
+      </div>
+
+      <!-- 2. Search Type Toggle -->
+      <div class="nb-section" (click)="$event.stopPropagation()">
+        <div class="nb-section-label">Search Type</div>
+        <div class="nb-search-type-bar">
+          <button type="button" class="nb-search-type-btn" [class.active]="mobileSearchType() === 'locality'"
+            (click)="setMobileSearchType('locality')">
+            <span class="material-symbols-outlined nb-type-icon">location_on</span>
+            <span>Locality Search</span>
+          </button>
+          <button type="button" class="nb-search-type-btn" [class.active]="mobileSearchType() === 'developer'"
+            (click)="setMobileSearchType('developer')">
+            <span class="material-symbols-outlined nb-type-icon">apartment</span>
+            <span>Builder / Project</span>
+          </button>
+        </div>
+
+        <!-- 3. Search Input + GPS Target + Live Suggestions -->
+        <div class="nb-input-container">
+          <div class="nb-input-box">
+            <span class="material-symbols-outlined nb-input-search-icon">search</span>
+            <input type="text" id="nb-search-page-locality-input" class="nb-text-input" [value]="rawSearchInput()"
+              (focus)="onMobileDedicatedInputFocus()" (input)="onMobileDedicatedInput($any($event.target).value)"
+              (keydown)="onMobileDedicatedKeydown($event)"
+              [placeholder]="mobileSearchType() === 'developer' ? 'Search verified builders or projects...' : 'Search upto 3 localities or landmarks'"
+              autocomplete="off" />
+            @if (rawSearchInput()) {
+            <button type="button" class="nb-input-clear-btn" (click)="rawSearchInput.set(''); $event.stopPropagation()"
+              aria-label="Clear input">
+              &times;
+            </button>
+            }
+            <button type="button" class="nb-gps-btn" (click)="detectMobileGpsLocation($event)"
+              title="Detect current GPS location">
+              <span class="material-symbols-outlined" [class.spin]="locationService.isDetecting()">my_location</span>
+            </button>
+          </div>
+
+          <!-- Live Suggestions Dropdown -->
+          @if (isMobileSuggestDropdownOpen()) {
+          <div class="nb-suggest-dropdown">
+            @if (mobileSearchType() === 'developer') {
+            <div class="nb-suggest-group-header">Verified Builders &amp; Developers</div>
+            @for (b of getMobileDeveloperSuggestions(); track b.name) {
+            <div class="nb-suggest-row" (click)="selectMobileBuilderFilter(b.name)">
+              <span class="material-symbols-outlined nb-s-icon">apartment</span>
+              <div class="nb-s-texts">
+                <span class="nb-s-title">{{ b.name }}</span>
+                <span class="nb-s-sub">Verified Developer • {{ b.propertyCount || 0 }} Projects</span>
+              </div>
+              <span class="nb-s-tag">Select</span>
+            </div>
+            }
+            } @else {
+            @if (searchSuggestions().length > 0) {
+            <div class="nb-suggest-group-header">
+              {{ selectedDistrict() ? ('Top Localities in ' + selectedDistrict()) : 'Suggested Locations & Projects' }}
+            </div>
+            @for (item of searchSuggestions().slice(0, 8); track item.query + item.label) {
+            <div class="nb-suggest-row" (click)="selectMobileLocalitySuggestion(item)">
+              <span class="material-symbols-outlined nb-s-icon">{{ item.icon || 'location_on' }}</span>
+              <div class="nb-s-texts">
+                <span class="nb-s-title">{{ item.label }}</span>
+                <span class="nb-s-sub">{{ item.sub }}</span>
+              </div>
+              <span class="nb-s-tag">{{ item.type === 'developer' ? 'Builder' : 'Add +' }}</span>
+            </div>
+            }
+            }
+            }
+          </div>
+          }
+        </div>
+
+        <!-- Selected Locality & Builder Chips (NoBroker Green Pill Style) -->
+        @if (selectedLocalities().length > 0 || selectedDeveloper() !== 'all') {
+        <div class="nb-chips-row">
+          @for (loc of selectedLocalities(); track loc; let idx = $index) {
+          <span class="nb-selected-chip">
+            <span class="nb-chip-text">{{ loc }}</span>
+            <button type="button" class="nb-chip-remove" (click)="removeLocalityTag(idx)"
+              [attr.aria-label]="'Remove ' + loc">&times;</button>
+          </span>
+          }
+          @if (selectedDeveloper() !== 'all') {
+          <span class="nb-selected-chip">
+            <span class="nb-chip-text">Builder: {{ selectedDeveloper() }}</span>
+            <button type="button" class="nb-chip-remove" (click)="setDeveloper('all')"
+              aria-label="Remove builder filter">&times;</button>
+          </span>
+          }
+        </div>
+        }
+
+        <!-- Verified Builder Projects Checkbox with Badge -->
+        <label class="nb-checkbox-row nb-mt-12">
+          <input type="checkbox" class="nb-checkbox" [checked]="cmdaOnly()" (change)="toggleCmda()" />
+          <span class="nb-checkbox-text">New Verified Builder Layouts</span>
+          <span class="nb-offer-badge">Verified</span>
+        </label>
+      </div>
+
+      <!-- 4. Looking For -->
+      <div class="nb-section">
+        <div class="nb-section-label">Looking For</div>
+        <div class="nb-grid-2">
+          <button type="button" class="nb-option-btn"
+            [class.selected]="selectedType() === 'Gated CMDA Plots' || selectedType() === 'all'"
+            (click)="setType('Gated CMDA Plots')">
+            Residential Plots
+          </button>
+          <button type="button" class="nb-option-btn" [class.selected]="selectedType() === 'Commercial Spaces'"
+            (click)="setType('Commercial Spaces')">
+            Commercial Land
+          </button>
+        </div>
+        <label class="nb-checkbox-row nb-mt-10">
+          <input type="checkbox" class="nb-checkbox" [checked]="mobileIncludeNearby()"
+            (change)="toggleMobileIncludeNearby()" />
+          <span class="nb-checkbox-text">Include Nearby Properties</span>
+        </label>
+      </div>
+
+      <!-- 5. Approval Authority (3-Column Grid) -->
+      <div class="nb-section">
+        <div class="nb-section-label">Approval Authority</div>
+        <div class="nb-grid-3">
+          @for (auth of mobileApprovalOptions; track auth.value) {
+          <button type="button" class="nb-option-btn" [class.selected]="isMobileApprovalSelected(auth.value)"
+            (click)="toggleMobileApproval(auth.value)">
+            {{ auth.label }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- 6. Property Type (2-Column Grid) -->
+      <div class="nb-section">
+        <div class="nb-section-label">Property Type</div>
+        <div class="nb-grid-2">
+          @for (ptype of mobilePlotTypeOptions; track ptype.value) {
+          <button type="button" class="nb-option-btn" [class.selected]="isMobilePlotSubtypeSelected(ptype.value)"
+            (click)="toggleMobilePlotSubtype(ptype.value)">
+            {{ ptype.label }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- 7. Price Range / Budget Bracket (3-Column Grid, No Custom Slider) -->
+      <div class="nb-section">
+        <div class="nb-section-label">Price Range</div>
+        <div class="nb-grid-3">
+          @for (b of budgetOptions; track b.value) {
+          <button type="button" class="nb-option-btn nb-budget-btn" [class.selected]="selectedBudget() === b.value"
+            (click)="setBudget(b.value)">
+            {{ b.label }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- 8. Property Status & Media (2-Column Grid) -->
+      <div class="nb-section">
+        <div class="nb-section-label">Property Status</div>
+        <div class="nb-grid-2">
+          <button type="button" class="nb-option-btn" [class.selected]="readyToMoveOnly()"
+            (click)="toggleReadyToMove()">
+            Ready to Build
+          </button>
+          <button type="button" class="nb-option-btn" [class.selected]="directOwnerOnly()"
+            (click)="toggleDirectOwner()">
+            Direct Owner
+          </button>
+        </div>
+      </div>
+
+      <!-- 9. Media & Virtual Tours (2-Column Grid) -->
+      <div class="nb-section">
+        <div class="nb-section-label">Media &amp; Survey</div>
+        <div class="nb-grid-2">
+          <button type="button" class="nb-option-btn" [class.selected]="videoOnly()" (click)="toggleVideoOnly()">
+            4K Video Tour
+          </button>
+          <button type="button" class="nb-option-btn" [class.selected]="droneOnly()" (click)="toggleDroneOnly()">
+            Drone Survey
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Search CTA Bar -->
+    <div class="nb-bottom-bar" (click)="$event.stopPropagation()">
+      <button type="button" class="nb-submit-search-btn" id="nb-search-page-submit-btn"
+        (click)="applyDedicatedMobileSearch()">
+        SEARCH
+      </button>
+    </div>
+  </div>
+  }
 
   <!-- Global Modals & Notifications -->
   <app-property-media-modal />

@@ -1,5 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { NotificationService } from './notification.service';
+import { environment } from '../../../environments/environment';
 
 export type VisitorPurposeKey =
   | 'build_home'
@@ -29,6 +31,7 @@ const STORAGE_DISMISSED_KEY = 'findaplot_visitor_purpose_dismissed';
 })
 export class VisitorPurposeService {
   private readonly notificationService = inject(NotificationService);
+  private readonly http = inject(HttpClient);
 
   readonly options: VisitorPurposeOption[] = [
     {
@@ -138,7 +141,7 @@ export class VisitorPurposeService {
   }
 
   /**
-   * Automatically displays the stylish popup on first-time visit
+   * Automatically displays the stylish popup on first-time visit (including localhost)
    */
   public checkFirstVisit(): void {
     if (typeof window === 'undefined') return;
@@ -147,14 +150,67 @@ export class VisitorPurposeService {
       const storedPurpose = localStorage.getItem(STORAGE_PURPOSE_KEY) || localStorage.getItem('mannidam_visitor_purpose');
       const dismissed = localStorage.getItem(STORAGE_DISMISSED_KEY) || localStorage.getItem('mannidam_visitor_purpose_dismissed');
 
-      const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-      if (!storedPurpose && !dismissed && !isLocal && !(typeof navigator !== 'undefined' && navigator.webdriver)) {
-        // Subtle entrance delay after initial UI paint
-        setTimeout(() => {
-          this.isModalOpen.set(true);
-        }, 850);
-      }
-    } catch { }
+        // Check if user is logged in
+        const authUserStr = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
+        if (authUserStr) {
+          try {
+            const user = JSON.parse(authUserStr);
+            if (user) {
+              this.checkOnLogin(user, false);
+              return;
+            }
+          } catch { }
+        }
+
+        // First-time guest visit: prompt if not previously set or dismissed
+        if (!storedPurpose && !dismissed && !(typeof navigator !== 'undefined' && navigator.webdriver)) {
+          setTimeout(() => {
+            this.isModalOpen.set(true);
+          }, 850);
+        }
+      } catch { }
+    }
+
+  /**
+   * Prompts user with "What is your primary goal?" modal on first login or if unselected
+   */
+  public checkOnLogin(user: any, isExplicitFirstLogin = false): void {
+    if (typeof window === 'undefined' || !user) return;
+
+    // Staff/admin roles use operational portals, skip buyer goal onboarding
+    const adminRoles = [
+      'admin',
+      'super_admin',
+      'co_admin',
+      'sales_executive',
+      'property_advisor',
+      'operations_executive',
+      'finance_admin',
+      'content_gis_admin'
+    ];
+    if (adminRoles.includes(user.role)) return;
+
+    const userId = user.id;
+    const userPurposeKey = `fap_user_${userId}_visitor_purpose`;
+    const userDismissedKey = `fap_user_${userId}_visitor_purpose_dismissed`;
+
+    // 1. If user already has a saved primary goal:
+    const existingGoal = user.primaryGoal || (typeof localStorage !== 'undefined' ? localStorage.getItem(userPurposeKey) : null);
+    if (existingGoal) {
+      this.currentPurpose.set(existingGoal as VisitorPurposeKey);
+      try {
+        localStorage.setItem(STORAGE_PURPOSE_KEY, existingGoal);
+      } catch { }
+      return;
+    }
+
+    // 2. If it is first login OR this user has not chosen their primary goal yet:
+    const userDismissed = typeof localStorage !== 'undefined' ? localStorage.getItem(userDismissedKey) : null;
+    if (isExplicitFirstLogin || !userDismissed) {
+      setTimeout(() => {
+        this.isModalOpen.set(true);
+      }, 700);
+    }
   }
 
   public openModal(): void {
@@ -166,6 +222,17 @@ export class VisitorPurposeService {
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_DISMISSED_KEY, 'true');
+
+        // Also mark dismissed for logged-in user session
+        const authUserStr = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
+        if (authUserStr) {
+          try {
+            const user = JSON.parse(authUserStr);
+            if (user?.id) {
+              localStorage.setItem(`fap_user_${user.id}_visitor_purpose_dismissed`, 'true');
+            }
+          } catch { }
+        }
       }
     } catch { }
   }
@@ -176,6 +243,9 @@ export class VisitorPurposeService {
       this.currentNote.set(note);
     }
 
+    let loggedInUserId: number | null = null;
+    let loggedInPhone: string | null = null;
+
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_PURPOSE_KEY, key);
@@ -183,8 +253,38 @@ export class VisitorPurposeService {
           localStorage.setItem(STORAGE_PURPOSE_NOTE, note);
         }
         localStorage.setItem(STORAGE_DISMISSED_KEY, 'true');
+
+        // Check if user is logged in
+        const authUserStr = localStorage.getItem('findaplot_auth_user') || localStorage.getItem('mannidam_auth_user');
+        if (authUserStr) {
+          try {
+            const user = JSON.parse(authUserStr);
+            if (user?.id) {
+              loggedInUserId = Number(user.id);
+              loggedInPhone = user.phone || null;
+              localStorage.setItem(`fap_user_${user.id}_visitor_purpose`, key);
+              localStorage.setItem(`fap_user_${user.id}_visitor_purpose_dismissed`, 'true');
+              user.primaryGoal = key;
+              localStorage.setItem('findaplot_auth_user', JSON.stringify(user));
+            }
+          } catch { }
+        }
       }
     } catch { }
+
+    // Persist to MySQL backend if user is identified or phone is available
+    if (loggedInUserId || loggedInPhone) {
+      this.http.post(`${environment.apiUrl}/auth/save-purpose.php`, {
+        userId: loggedInUserId,
+        phone: loggedInPhone,
+        purpose: key,
+        note: note || ''
+      }).subscribe({
+        error: () => {
+          // Non-fatal, local storage is already set
+        }
+      });
+    }
 
     this.isModalOpen.set(false);
 
