@@ -14,6 +14,8 @@ import {
   EntitlementConsumptionResult
 } from '../models/subscription.model';
 
+import { loadRazorpaySdk } from '../utils/razorpay-loader';
+
 declare global {
   interface Window {
     Razorpay?: any;
@@ -160,7 +162,7 @@ export class SubscriptionService {
   });
 
   constructor() {
-    this.fetchPlans().subscribe();
+    // plans.php deferred to post-render or on-demand to optimize initial FCP
     if (this.authService.isLoggedIn()) {
       this.fetchCurrentSubscription().subscribe();
     } else {
@@ -698,10 +700,12 @@ export class SubscriptionService {
     ) as Observable<any>);
   }
 
-  private openRazorpayCheckout(plan: SubscriptionPlan, orderData: any, user: any): void {
+  private async openRazorpayCheckout(plan: SubscriptionPlan, orderData: any, user: any): Promise<void> {
     const uid = this.getEffectiveUserId();
     const keyId = orderData.keyId || 'rzp_test_51MockFindAPlot';
     const amountPaise = orderData.amountPaise || (plan.priceInr * 100);
+
+    await loadRazorpaySdk();
 
     const completeVerification = (razorpayPaymentId: string, razorpayOrderId: string, signature: string) => {
       this.verifyPayment(plan, razorpayPaymentId, razorpayOrderId, signature).subscribe({

@@ -124,7 +124,7 @@ app-root {
   width: 100%;
 }
 
-app-root > :not(router-outlet):not(app-otp-login-modal):not(app-visitor-intent-modal):not(app-district-selector-modal):not(app-property-compare-dock):not(app-property-compare-modal) {
+app-root> :not(router-outlet):not(app-otp-login-modal):not(app-visitor-intent-modal):not(app-district-selector-modal):not(app-property-compare-dock):not(app-property-compare-modal) {
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
@@ -173,14 +173,12 @@ app-footer {
    Smooth hardware-accelerated shimmer to prevent layout shifts (CLS = 0)
    ========================================================================== */
 .shimmer-effect {
-  background: linear-gradient(
-    90deg,
-    #f1f5f9 0%,
-    #e2e8f0 35%,
-    #f8fafc 50%,
-    #e2e8f0 65%,
-    #f1f5f9 100%
-  ) !important;
+  background: linear-gradient(90deg,
+      #f1f5f9 0%,
+      #e2e8f0 35%,
+      #f8fafc 50%,
+      #e2e8f0 65%,
+      #f1f5f9 100%) !important;
   background-size: 250% 100% !important;
   animation: appGlobalShimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
 }
@@ -189,6 +187,7 @@ app-footer {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -825,7 +824,7 @@ app-home-page .section-title,
 app-home-page .hero-headline,
 app-home-page .title-200,
 app-home-page .why-title {
-  font-size: 1.1rem !important;
+  font-size: 1rem !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em;
 }

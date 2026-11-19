@@ -4,8 +4,6 @@ import { TopConciergeBarComponent } from '../../components/top-concierge-bar/top
 import { HeaderComponent } from '../../components/header/header.component';
 import { HeroSearchComponent } from '../../components/hero-search/hero-search.component';
 import { RecentSitesComponent } from '../../components/recent-sites/recent-sites.component';
-import { ValuePropsComponent } from '../../components/value-props/value-props.component';
-import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
 import { FeaturedPropertiesComponent } from '../../components/featured-properties/featured-properties.component';
 import { HomeDevelopersComponent } from '../../components/home-developers/home-developers.component';
 import { WhyChooseUsComponent } from '../../components/why-choose-us/why-choose-us.component';
@@ -42,33 +40,54 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       <app-header />
 
       <main class="page-main">
-        <!-- Hero Search Console (Search-Section Background starts flush below header, containing header banner, intent strip & search console) -->
+        <!-- Hero Search Console (Above-the-fold critical render) -->
         <app-hero-search />
 
-        <!-- Recently Added Sites (Two Columns in a Row) -->
-        <app-recent-sites />
+        <!-- Recently Added Sites (Deferred until viewport approach) -->
+        @defer (on viewport) {
+          <app-recent-sites />
+        } @placeholder {
+          <div class="section-lazy-placeholder" style="min-height: 260px;"></div>
+        }
 
         <!-- Discover Developers Row -->
-        <app-home-developers />
-
-        <!-- Silhouette Building Diagram Standing Over The Line -->
-        <!-- <app-economy-banner /> -->
+        @defer (on viewport) {
+          <app-home-developers />
+        } @placeholder {
+          <div class="section-lazy-placeholder" style="min-height: 130px;"></div>
+        }
 
         <!-- Featured Verified Properties Grid -->
-        <app-featured-properties />
+        @defer (on viewport) {
+          <app-featured-properties />
+        } @placeholder {
+          <div class="section-lazy-placeholder" style="min-height: 380px;"></div>
+        }
 
         <!-- Why Choose Find a Plot vs Traditional Brokers -->
-        <app-why-choose-us />
+        @defer (on viewport) {
+          <app-why-choose-us />
+        } @placeholder {
+          <div class="section-lazy-placeholder" style="min-height: 300px;"></div>
+        }
       </main>
 
       <!-- Comprehensive Footer -->
-      <app-footer />
+      @defer (on viewport) {
+        <app-footer />
+      } @placeholder {
+        <div class="section-lazy-placeholder" style="min-height: 280px;"></div>
+      }
 
-      <!-- Interactive Modals & Toast -->
-      <app-property-media-modal />
-      <app-topup-dialog />
+      <!-- Interactive Modals (Loaded during browser idle time) -->
+      @defer (on idle) {
+        <app-property-media-modal />
+        <app-topup-dialog />
+        <app-ai-chat-modal />
+      }
+
+      <!-- Active Feedback Toasts -->
       <app-toast />
-      <app-ai-chat-modal />
     </div>
   `,
   styles: [`
@@ -89,11 +108,6 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       position: relative;
       z-index: 10;
     }
-    app-economy-banner {
-      display: block;
-      position: relative;
-      z-index: 1;
-    }
     app-featured-properties {
       display: block;
       position: relative;
@@ -111,6 +125,10 @@ import { AiChatModalComponent } from '../../components/ai-chat-modal/ai-chat-mod
       position: relative;
       z-index: 1;
       width: 100%;
+    }
+    .section-lazy-placeholder {
+      width: 100%;
+      background: transparent;
     }
   `]
 })

@@ -34,7 +34,7 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled'
       })
     ),
-    provideHttpClient(),
-    { provide: ErrorHandler, useClass: GlobalChunkErrorHandler }
+provideHttpClient(),
+  { provide: ErrorHandler, useClass: GlobalChunkErrorHandler }
   ]
 };

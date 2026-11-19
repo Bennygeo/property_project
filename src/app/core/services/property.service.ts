@@ -2,14 +2,12 @@ import { Injectable, computed, inject, signal, effect, untracked } from '@angula
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap, finalize } from 'rxjs/operators';
+import { catchError, map, tap, finalize, shareReplay } from 'rxjs/operators';
 import { ListingMode, Property, PropertyType } from '../models/property.model';
 import { validateGpsData, annotateInterPropertyProximity } from '../utils/gps-helper';
 import { formatPriceIndian, parsePriceToNumber } from '../utils/price-helper';
 import { NotificationService } from './notification.service';
 import { WalletService } from './wallet.service';
-import { enrichPropertyWithMockDetails } from './property-details-mock.helper';
-import { MOCK_50_PROPERTIES } from './mock-properties-data';
 import { AuthService, ADMIN_PORTAL_ROLES } from './auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -117,23 +115,6 @@ export interface ReverseGeocodeResult {
   longitude: number;
 }
 
-function enrichInitialGps(props: Property[]): Property[] {
-  return props.map(p => {
-    const gpsRes = validateGpsData(p.googleMapsLink, p.latitude, p.longitude, p.locality, p.city);
-    const lat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
-    const lng = (typeof p.longitude === 'number' && !isNaN(p.longitude)) ? p.longitude : gpsRes.coordinates?.longitude;
-    return {
-      ...p,
-      price: formatPriceIndian(p.price),
-      latitude: lat,
-      longitude: lng,
-      googleMapsLink: p.googleMapsLink || gpsRes.mapsUrl,
-      isGpsValid: true,
-      gpsFormatted: gpsRes.formattedText
-    };
-  });
-}
-
 export const SESSION_TRACKER_KEY = 'fap_active_session_phone';
 
 export function getPhoneStoragePrefix(phone?: string | null): string {
@@ -199,7 +180,7 @@ export class PropertyService {
     return `https://wa.me/${cleanNum}?text=${text}`;
   }
   public readonly isFetchingApi = signal<boolean>(false);
-  public readonly suggestedProperties = signal<Property[]>(annotateInterPropertyProximity(enrichInitialGps(MOCK_50_PROPERTIES.slice(0, 8))));
+  public readonly suggestedProperties = signal<Property[]>([]);
   public readonly hasMoreApiProperties = computed(() => {
     return this._properties().length < this.totalApiProperties();
   });
@@ -210,8 +191,8 @@ export class PropertyService {
   private lastHandledUserId: number | null | undefined = undefined;
   private isFetchingShortlists = false;
 
-  // Master property list initialized with 50+ mock properties directly from database (10L to 3Cr)
-  private readonly _properties = signal<Property[]>(enrichInitialGps(MOCK_50_PROPERTIES));
+  // Master property list loaded strictly from live MySQL API
+  private readonly _properties = signal<Property[]>([]);
 
   // Active search criteria
   public readonly activeTab = signal<ListingMode>('buy');
@@ -514,7 +495,7 @@ export class PropertyService {
         localStorage.removeItem(SESSION_TRACKER_KEY);
         localStorage.removeItem('fap_guest_shortlists');
         localStorage.removeItem('fap_guest_shortlist_dossiers');
-      } catch {}
+      } catch { }
     }
     this.shortlistedPropertyIds.set(new Set());
     this.shortlistedProperties.set([]);
@@ -764,8 +745,7 @@ export class PropertyService {
 
     if (nextState) {
       currentSet.add(trimmedId);
-      const candidate = this._properties().find(p => p.id === trimmedId) ||
-        MOCK_50_PROPERTIES.find(p => p.id === trimmedId);
+      const candidate = this._properties().find(p => p.id === trimmedId);
       if (candidate) {
         const newDossier = { ...candidate, isShortlisted: true };
         const updatedDossiers = [
@@ -790,7 +770,7 @@ export class PropertyService {
     this.syncShortlistedStateInProperties();
 
     // Find property title for user feedback
-    const prop = this._properties().find(p => p.id === trimmedId) || MOCK_50_PROPERTIES.find(p => p.id === trimmedId);
+    const prop = this._properties().find(p => p.id === trimmedId);
     const title = prop?.title || 'Property';
 
     this.notificationService.show({
@@ -877,7 +857,7 @@ export class PropertyService {
     }
 
     this.syncShortlistedStateInProperties();
-    this.loadPropertiesFromApi();
+    // properties/list.php deferred to post-render or on-demand to optimize initial FCP
 
     // Dynamically check session continuity and load data whenever authenticated user changes
     effect(() => {
@@ -1125,7 +1105,7 @@ export class PropertyService {
           });
           this.suggestedProperties.set(annotateInterPropertyProximity(sanitizedSuggested));
         } else if (total === 0) {
-          this.suggestedProperties.set(annotateInterPropertyProximity(MOCK_50_PROPERTIES.slice(0, 8)));
+          this.suggestedProperties.set([]);
         }
 
         this.isSqlLoaded.set(true);
@@ -1133,17 +1113,25 @@ export class PropertyService {
     });
   }
 
+  private _suggestionsCache = new Map<string, Observable<any[]>>();
+
   /**
-   * Fetch live clean suggestions from MySQL database, targeted by selected district
+   * Fetch live clean suggestions from MySQL database, targeted by selected district with cache deduplication
    */
   public fetchSuggestions(query: string, district?: string): Observable<any[]> {
-    const q = query.trim();
+    const q = (query || '').trim();
+    const d = (district || '').trim();
+    const cacheKey = `${q.toLowerCase()}__${d.toLowerCase()}`;
+    if (this._suggestionsCache.has(cacheKey)) {
+      return this._suggestionsCache.get(cacheKey)!;
+    }
+
     let qs = 'q=' + encodeURIComponent(q);
-    if (district && district.trim()) {
-      qs += '&district=' + encodeURIComponent(district.trim());
+    if (d) {
+      qs += '&district=' + encodeURIComponent(d);
     }
     const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: any }>(baseUrl + '?' + qs);
-    return (tryGet(environment.apiUrl + '/geo/suggest.php').pipe(
+    const obs = (tryGet(environment.apiUrl + '/geo/suggest.php').pipe(
       catchError(() => tryGet('/P_demo_5/backend/api/geo/suggest.php')),
       catchError(() => tryGet('/api/geo/suggest.php')),
       catchError(() => tryGet(environment.apacheApiUrl + '/geo/suggest.php')),
@@ -1156,8 +1144,12 @@ export class PropertyService {
           return res.data.suggestions;
         }
         return [];
-      })
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+
+    this._suggestionsCache.set(cacheKey, obs);
+    return obs;
   }
 
   /**
@@ -1595,20 +1587,13 @@ export class PropertyService {
   }
 
   getPropertyById(id: string): Property | undefined {
-    let found = this._properties().find(p => p.id === id);
-    if (!found) {
-      found = MOCK_50_PROPERTIES.find(p => p.id === id);
-    }
+    const found = this._properties().find(p => p.id === id);
     if (!found) return undefined;
-    const formattedFound = {
+    return {
       ...found,
       price: formatPriceIndian(found.price),
       isShortlisted: this.isShortlisted(found.id)
     };
-    if (formattedFound.floorPlans || formattedFound.villaDetails || formattedFound.apartmentDetails || formattedFound.plotDetails || formattedFound.cadastralAudit) {
-      return formattedFound;
-    }
-    return enrichPropertyWithMockDetails(formattedFound);
   }
 
   unlockMedia(propertyId: string): boolean {

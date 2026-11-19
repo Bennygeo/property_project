@@ -7,6 +7,8 @@ import { NotificationService } from './notification.service';
 import { environment } from '../../../environments/environment';
 import { WalletDashboardData, RechargeResult } from '../models/user.model';
 
+import { loadRazorpaySdk } from '../utils/razorpay-loader';
+
 declare global {
   interface Window {
     Razorpay?: any;
@@ -97,7 +99,7 @@ export class WalletService {
 
   constructor() {
     this.loadBalanceFromApi();
-    this.loadPackagesFromApi();
+    // packages.php deferred to post-render or on-demand to optimize initial FCP
   }
 
   /**
@@ -261,6 +263,7 @@ export class WalletService {
   }
 
   openTopupModal(): void {
+    this.loadPackagesFromApi();
     // When user wants top-up, navigate directly to wallet page or open dialog
     this.navigateToWallet();
   }
@@ -300,10 +303,12 @@ export class WalletService {
   }
 
   /**
-   * Recharge points through official Razorpay Checkout SDK
+   * Recharge points through official Razorpay Checkout SDK (dynamically loaded on-demand)
    */
-  rechargeWithRazorpay(points: number, rupees: number, bonus = 0): void {
+  async rechargeWithRazorpay(points: number, rupees: number, bonus = 0): Promise<void> {
     this._isProcessingPayment.set(true);
+
+    await loadRazorpaySdk();
 
     if (typeof window !== 'undefined' && window.Razorpay) {
       try {

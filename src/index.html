@@ -7,15 +7,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Explore properties through stunning drone views and detailed photography, so you can understand every angle before your visit. Make informed property decisions with greater clarity, transparency, and confidence.">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Font Preconnect & Non-Blocking Async Stylesheet Loading for Fastest FCP -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
-  <!-- Official Razorpay Checkout Payment Gateway SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+  </noscript>
+
+  <!-- Instant Minimalist Preloader Styles (<400 bytes, paints in first frame <30ms) -->
+  <style>
+    .fap-preloader-wrap {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      z-index: 999999;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fap-preloader-wrap.fap-fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .fap-brand-text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      font-size: clamp(26px, 6vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #0f172a;
+      animation: fap-breathe 1.5s ease-in-out infinite;
+      user-select: none;
+    }
+    .fap-brand-text span {
+      color: #b91c1c;
+    }
+    @keyframes fap-breathe {
+      0%, 100% {
+        opacity: 0.75;
+        transform: scale(0.99);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.02);
+      }
+    }
+  </style>
 </head>
 <body class="antialiased">
+  <!-- Ultra-Lightweight Zero-JS Minimalist Preloader -->
+  <div id="app-preloader" class="fap-preloader-wrap" aria-label="Loading findAplot.in">
+    <div class="fap-brand-text">find<span>A</span>plot.in</div>
+  </div>
+
   <app-root></app-root>
+
+  <script>
+    // Fail-safe auto-dismiss after 6 seconds in case of catastrophic network failure
+    setTimeout(function() {
+      var p = document.getElementById('app-preloader');
+      if (p && !p.classList.contains('fap-fade-out')) {
+        p.classList.add('fap-fade-out');
+        setTimeout(function() { p.remove(); }, 350);
+      }
+    }, 6000);
+  </script>
 </body>
 </html>

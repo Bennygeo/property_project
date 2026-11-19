@@ -18,7 +18,6 @@ import { AiChatModalComponent } from '../../../home/components/ai-chat-modal/ai-
 import { AuthService } from '../../../../core/services/auth.service';
 import { LocationService } from '../../../../core/services/location.service';
 import { CompareService } from '../../../../core/services/compare.service';
-import { MOCK_50_PROPERTIES } from '../../../../core/services/mock-properties-data';
 
 export interface FilterOption {
   value: string;
@@ -892,8 +891,8 @@ export class SearchPageComponent implements OnInit {
       }
     }
 
-    // 3. Fallback to curated mock properties with DTCP / RERA clearance
-    return annotateInterPropertyProximity(MOCK_50_PROPERTIES.slice(0, 8));
+    // 3. Fallback to available live properties from database (strictly no mock data)
+    return all.length > 0 ? annotateInterPropertyProximity(all.slice(0, 8)) : [];
   });
 
   // Displayed properties slice for infinite scroll expansion (no pagination)
@@ -1242,8 +1241,8 @@ export class SearchPageComponent implements OnInit {
       return;
     }
     this.scrollToTop();
-      this.omniboxInputRef?.nativeElement?.focus();
-    }
+    this.omniboxInputRef?.nativeElement?.focus();
+  }
 
   onSearchFocus(): void {
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
