@@ -1,8 +1,3 @@
-@if (isNavigating()) {
-<div class="route-progress-bar" role="progressbar" aria-label="Navigating to page">
-  <div class="route-progress-fill"></div>
-</div>
-}
 <router-outlet />
 @defer (on idle; on timer(400ms); prefetch on idle) {
 <app-otp-login-modal />

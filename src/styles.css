@@ -140,6 +140,7 @@ a.btn:active,
    with short/minimal content while naturally flowing on longer pages.
    ========================================================================== */
 app-root {
+  background-color: #ffffff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
