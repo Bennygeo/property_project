@@ -364,6 +364,12 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       text-decoration: none;
       box-sizing: border-box;
       padding: 1.25rem 1.35rem;
+      contain: paint;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
+      content-visibility: auto;
+      contain-intrinsic-size: 330px;
     }
 
     /* Background Image */
@@ -378,8 +384,10 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .recent-site-card:hover .recent-site-bg-img {
-      transform: scale(1.035);
+    @media (hover: hover) and (pointer: fine) {
+      .recent-site-card:hover .recent-site-bg-img {
+        transform: scale(1.035);
+      }
     }
 
     /* Architectural Cinematic Gradient Overlay (Vertical High Contrast) */
@@ -397,20 +405,40 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       transition: background 0.3s ease;
     }
 
-    .recent-site-card:hover .recent-site-overlay {
-      background: linear-gradient(
-        180deg, 
-        rgba(15, 59, 74, 0.6) 0%, 
-        rgba(15, 23, 42, 0.28) 32%, 
-        rgba(15, 23, 42, 0.88) 65%, 
-        rgba(2, 6, 23, 0.98) 100%
-      );
+    @media (hover: hover) and (pointer: fine) {
+      .recent-site-card:hover .recent-site-overlay {
+        background: linear-gradient(
+          180deg, 
+          rgba(15, 59, 74, 0.6) 0%, 
+          rgba(15, 23, 42, 0.28) 32%, 
+          rgba(15, 23, 42, 0.88) 65%, 
+          rgba(2, 6, 23, 0.98) 100%
+        );
+      }
     }
 
     @media (max-width: 768px) {
       .recent-site-card {
         min-height: 330px;
         padding: 1.15rem;
+      }
+
+      /* High-performance GPU-friendly 2-stop linear scrim on mobile */
+      .recent-site-overlay {
+        background: linear-gradient(
+          180deg,
+          rgba(15, 23, 42, 0.35) 0%,
+          rgba(2, 6, 23, 0.95) 75%
+        ) !important;
+        transition: none !important;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+      }
+
+      .recent-site-bg-img {
+        transition: none !important;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
       }
     }
 
@@ -502,6 +530,7 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       border-radius: 50% !important;
       background: rgba(15, 59, 74, 0.65);
       backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #ffffff;
       display: flex;
@@ -510,16 +539,28 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       cursor: pointer;
       text-decoration: none;
       transition: all 0.2s ease;
+      touch-action: manipulation;
     }
 
-    .btn-action-icon:hover {
-      background: rgba(255, 255, 255, 0.95);
-      color: var(--brand-teal, #0f3b4a);
-      transform: scale(1.08);
+    @media (max-width: 768px) {
+      .btn-action-icon {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(15, 59, 74, 0.88) !important;
+        transition: none !important;
+      }
     }
 
-    .btn-action-wa:hover {
-      color: #25d366 !important;
+    @media (hover: hover) and (pointer: fine) {
+      .btn-action-icon:hover {
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--brand-teal, #0f3b4a);
+        transform: scale(1.08);
+      }
+
+      .btn-action-wa:hover {
+        color: #25d366 !important;
+      }
     }
 
     .btn-action-compare.is-comparing {
@@ -681,20 +722,22 @@ import { formatPriceIndian } from '../../../../core/utils/price-helper';
       white-space: nowrap;
     }
 
-    .recent-site-card:hover .btn-explore-site {
-      background: var(--brand-green-hover, #497259);
-      border-color: var(--brand-green-hover, #497259);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(94, 143, 114, 0.35);
-    }
-
     .cta-arrow {
       font-size: 16px;
       transition: transform 0.2s ease;
     }
 
-    .recent-site-card:hover .cta-arrow {
-      transform: translateX(4px);
+    @media (hover: hover) and (pointer: fine) {
+      .recent-site-card:hover .btn-explore-site {
+        background: var(--brand-green-hover, #497259);
+        border-color: var(--brand-green-hover, #497259);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(94, 143, 114, 0.35);
+      }
+
+      .recent-site-card:hover .cta-arrow {
+        transform: translateX(4px);
+      }
     }
   `]
 })
