@@ -126,6 +126,16 @@ if ($method === 'POST' || $method === 'DELETE') {
             exit;
         }
 
+        // Keep POST consistent with GET: staff, admin, and developer accounts do not have buyer shortlists
+        $roleCheck = $db->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+        $roleCheck->execute([$userId]);
+        $userRole = (string)$roleCheck->fetchColumn();
+        $adminRoles = ['admin', 'super_admin', 'co_admin', 'sales_executive', 'property_advisor', 'operations_executive', 'finance_admin', 'content_gis_admin', 'developer'];
+        if (in_array($userRole, $adminRoles, true)) {
+            Response::error('Property shortlisting is available for buyer accounts.', 403);
+            exit;
+        }
+
         if (empty($propertyId)) {
             Response::error('Property ID is required', 400);
             exit;

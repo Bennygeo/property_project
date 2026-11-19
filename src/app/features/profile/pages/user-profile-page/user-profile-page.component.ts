@@ -133,7 +133,7 @@ export class UserProfilePageComponent implements OnInit {
 
   // Computed counts for badges
   readonly shortlistsCount = computed<number>(() => {
-    return this.propertyService.shortlistCount() || this.profileData()?.shortlists?.length || 0;
+    return this.propertyService.shortlistCount();
   });
 
   readonly viewsCount = computed<number>(() => {

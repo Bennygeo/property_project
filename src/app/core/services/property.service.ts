@@ -11,6 +11,45 @@ import { WalletService } from './wallet.service';
 import { AuthService, ADMIN_PORTAL_ROLES } from './auth.service';
 import { environment } from '../../../environments/environment';
 
+/**
+ * Prevents Mixed Content / HTTPS Best Practices failures on production by rewriting
+ * any leftover http://localhost(:port)/uploads/... URLs to the current origin's uploads path,
+ * and upgrading any http:// URL to https:// when served over HTTPS.
+ */
+function sanitizeMediaUrl(url: string | null | undefined, fallback: string = '', maxWidth: number = 640): string {
+  if (!url || typeof url !== 'string') return fallback;
+  let trimmed = url.trim();
+  if (!trimmed) return fallback;
+
+  // Rewrite any leftover http://localhost(:port)/uploads/... URLs to current origin's uploads path
+  const localhostMatch = trimmed.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/.*)$/i);
+  if (localhostMatch) {
+    const relPath = localhostMatch[1];
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host !== 'localhost' && host !== '127.0.0.1') {
+        const apiBase = environment.apiUrl.replace(/\/api\/?$/, '');
+        trimmed = `${apiBase}${relPath}`;
+      }
+    }
+  }
+
+  // Upgrade any http:// URL to https:// when served over HTTPS
+  if (trimmed.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    trimmed = 'https://' + trimmed.slice(7);
+  }
+
+  // Route first-party uploaded PNG/JPG images through cached WebP thumbnail resizer (thumb.php)
+  // Cuts 1.6MB–2.7MB uploaded PNGs down to ~5–30KB WebP for mobile Lighthouse image delivery
+  const uploadsMatch = trimmed.match(/\/uploads\/([a-zA-Z0-9_\-\/]+\.(?:png|jpe?g|webp))(?:\?.*)?$/i);
+  if (uploadsMatch && maxWidth > 0) {
+    const relFile = uploadsMatch[1];
+    return `${environment.apiUrl}/media/thumb.php?f=${encodeURIComponent(relFile)}&w=${maxWidth}`;
+  }
+
+  return trimmed;
+}
+
 export interface NearbyLocality {
   name: string;
   city: string;
@@ -195,6 +234,8 @@ export class PropertyService {
   public readonly shortlistedProperties = signal<Property[]>([]);
   private lastHandledUserId: number | null | undefined = undefined;
   private isFetchingShortlists = false;
+  private pendingShortlistPropertyId: string | null = null;
+  private shortlistMutationVersion = 0;
 
   // Master property list loaded strictly from live MySQL API
   private readonly _properties = signal<Property[]>([]);
@@ -315,8 +356,9 @@ export class PropertyService {
   public getActiveUserId(): number {
     try {
       const user = this.authService.currentUser();
-      if (user && typeof user.id === 'number' && user.id > 0) {
-        return user.id;
+      const uid = Number(user?.id) || 0;
+      if (uid > 0) {
+        return uid;
       }
     } catch {
       // Fallback
@@ -494,7 +536,9 @@ export class PropertyService {
   }
 
   public clearShortlistsOnLogout(): void {
+    this.shortlistMutationVersion++;
     this.lastHandledUserId = 0;
+    this.pendingShortlistPropertyId = null;
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         localStorage.removeItem(SESSION_TRACKER_KEY);
@@ -510,7 +554,7 @@ export class PropertyService {
   public handleSessionChange(user: any): void {
     if (typeof window === 'undefined' || !window.localStorage) return;
 
-    const currentUserId = (user && typeof user.id === 'number' && user.id > 0) ? user.id : 0;
+    const currentUserId = Number(user?.id) || 0;
     const userRole = user?.role || '';
     const isStaffOrAdmin = ADMIN_PORTAL_ROLES.includes(userRole) || userRole === 'developer';
 
@@ -524,6 +568,7 @@ export class PropertyService {
 
     // Admins and staff manage the platform and do not have buyer shortlists
     if (isStaffOrAdmin) {
+      this.pendingShortlistPropertyId = null;
       if (this.lastHandledUserId !== currentUserId) {
         this.lastHandledUserId = currentUserId;
         this.shortlistedPropertyIds.set(new Set());
@@ -557,10 +602,10 @@ export class PropertyService {
       this.syncShortlistedStateInProperties();
 
       // Query backend for this user's real database records without sending localIds
-      this.fetchShortlistsFromBackend(user.id, { allowLocalSync: false });
+      this.fetchShortlistsFromBackend(currentUserId, { allowLocalSync: false });
     } else {
       // Same session continues
-      this.fetchShortlistsFromBackend(user.id, { allowLocalSync: true });
+      this.fetchShortlistsFromBackend(currentUserId, { allowLocalSync: true });
     }
   }
 
@@ -648,7 +693,7 @@ export class PropertyService {
    * and automatically pruned from both shortlistedPropertyIds and localStorage.
    */
   public fetchShortlistsFromBackend(userId?: number, options?: { allowLocalSync?: boolean }): void {
-    const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
+    const effectiveUserId = (userId && Number(userId) > 0) ? Number(userId) : this.getActiveUserId();
     if (effectiveUserId <= 0) {
       this.clearShortlistsOnLogout();
       return;
@@ -664,6 +709,7 @@ export class PropertyService {
       return;
     }
     this.isFetchingShortlists = true;
+    const startVersion = this.shortlistMutationVersion;
 
     const allowSync = options?.allowLocalSync ?? true;
 
@@ -676,18 +722,12 @@ export class PropertyService {
       qParams.set('localIds', currentLocalIds.join(','));
     }
 
-    const tryGet = (baseUrl: string) => {
-      const sep = baseUrl.includes('?') ? '&' : '?';
-      return this.http.get<{
-        success: boolean;
-        data: { propertyIds: string[]; purgedPropertyIds?: string[]; shortlists?: any[] };
-      }>(`${baseUrl}${sep}${qParams.toString()}`);
-    };
+    const url = `${environment.apiUrl}/properties/shortlist.php?${qParams.toString()}`;
 
-    (tryGet(environment.apiUrl + '/properties/shortlist.php').pipe(
-      catchError(() => tryGet('/p_demo_5/backend/api/properties/shortlist.php')),
-      catchError(() => tryGet('/api/properties/shortlist.php')),
-      catchError(() => tryGet(environment.apacheApiUrl + '/properties/shortlist.php')),
+    (this.http.get<{
+      success: boolean;
+      data: { propertyIds: string[]; purgedPropertyIds?: string[]; shortlists?: any[] };
+    }>(url).pipe(
       catchError(err => {
         console.warn('[Shortlist API] Unable to connect to MySQL shortlist endpoint; retaining local cache.', err);
         return of(null);
@@ -696,6 +736,11 @@ export class PropertyService {
         this.isFetchingShortlists = false;
       })
     ) as Observable<any>).subscribe((res: any) => {
+      // Ignore stale GET response if a local toggle or logout happened while GET was in-flight
+      if (this.shortlistMutationVersion !== startVersion) {
+        return;
+      }
+
       if (res && res.success && res.data) {
         const validBackendIds: string[] = Array.isArray(res.data.propertyIds) ? res.data.propertyIds : [];
         const rawShortlists: any[] = Array.isArray(res.data.shortlists) ? res.data.shortlists : [];
@@ -717,26 +762,60 @@ export class PropertyService {
           this.saveShortlistDossiersToStorage([]);
         }
       }
+
+      // If user clicked shortlist BEFORE logging in, automatically complete that shortlist action now
+      if (this.pendingShortlistPropertyId) {
+        const pendingId = this.pendingShortlistPropertyId;
+        this.pendingShortlistPropertyId = null;
+        if (!this.isShortlisted(pendingId)) {
+          this.toggleShortlist(pendingId, effectiveUserId);
+        } else {
+          this.notificationService.show({
+            type: 'info',
+            title: 'Already Shortlisted',
+            message: 'This property is already in your shortlisted dossiers.',
+            icon: 'favorite'
+          });
+        }
+      }
     });
   }
 
   toggleShortlist(propertyId: string, userId?: number): void {
     if (!propertyId) return;
 
-    if (!this.authService.isLoggedIn()) {
+    const trimmedId = propertyId.trim();
+    const effectiveUserId = (userId && Number(userId) > 0) ? Number(userId) : this.getActiveUserId();
+
+    if (!this.authService.isLoggedIn() || effectiveUserId <= 0) {
+      // Remember which property the guest wanted to shortlist so we auto-save it right after login
+      this.pendingShortlistPropertyId = trimmedId;
       this.notificationService.show({
         type: 'warning',
         title: 'Sign In Required',
-        message: 'Please sign in with your mobile number to shortlist properties.',
+        message: 'Please sign in with your mobile number — we will save this property to your shortlist automatically.',
         icon: 'lock'
       });
       this.authService.openOtpModal('general');
       return;
     }
 
-    const trimmedId = propertyId.trim();
-    const effectiveUserId = (userId && userId > 0) ? userId : this.getActiveUserId();
-    const currentSet = new Set(this.shortlistedPropertyIds());
+    // Staff, admin, and developer accounts do not have buyer shortlists
+    const userRole = this.authService.currentUser()?.role || '';
+    if (ADMIN_PORTAL_ROLES.includes(userRole) || userRole === 'developer') {
+      this.notificationService.show({
+        type: 'info',
+        title: 'Buyer Feature Only',
+        message: 'Property shortlisting is available for buyer accounts.',
+        icon: 'info'
+      });
+      return;
+    }
+
+    // Snapshot previous state for rollback if backend sync fails
+    const prevIds = new Set(this.shortlistedPropertyIds());
+    const prevDossiers = [...this.shortlistedProperties()];
+    const currentSet = new Set(prevIds);
 
     let existingMatch: string | null = null;
     for (const id of currentSet) {
@@ -747,22 +826,26 @@ export class PropertyService {
     }
 
     const nextState = !existingMatch;
+    const candidate = this._properties().find(
+      p => p.id && p.id.trim().toUpperCase() === trimmedId.toUpperCase()
+    );
+
+    this.shortlistMutationVersion++;
 
     if (nextState) {
       currentSet.add(trimmedId);
-      const candidate = this._properties().find(p => p.id === trimmedId);
       if (candidate) {
         const newDossier = { ...candidate, isShortlisted: true };
         const updatedDossiers = [
           newDossier,
-          ...this.shortlistedProperties().filter(p => p.id.trim().toUpperCase() !== trimmedId.toUpperCase())
+          ...prevDossiers.filter(p => p.id.trim().toUpperCase() !== trimmedId.toUpperCase())
         ];
         this.shortlistedProperties.set(updatedDossiers);
         this.saveShortlistDossiersToStorage(updatedDossiers);
       }
     } else if (existingMatch) {
       currentSet.delete(existingMatch);
-      const remainingDossiers = this.shortlistedProperties().filter(
+      const remainingDossiers = prevDossiers.filter(
         p => p.id.trim().toUpperCase() !== trimmedId.toUpperCase()
       );
       this.shortlistedProperties.set(remainingDossiers);
@@ -775,8 +858,7 @@ export class PropertyService {
     this.syncShortlistedStateInProperties();
 
     // Find property title for user feedback
-    const prop = this._properties().find(p => p.id === trimmedId);
-    const title = prop?.title || 'Property';
+    const title = candidate?.title || prevDossiers.find(p => p.id.trim().toUpperCase() === trimmedId.toUpperCase())?.title || 'Property';
 
     this.notificationService.show({
       type: 'info',
@@ -792,15 +874,27 @@ export class PropertyService {
       userId: effectiveUserId
     };
 
-    const tryPost = (baseUrl: string) =>
-      this.http.post<{ success: boolean; data: any }>(baseUrl, payload);
+    const rollback = (reason?: string) => {
+      this.shortlistedPropertyIds.set(prevIds);
+      this.saveShortlistsToStorage(prevIds);
+      this.shortlistedProperties.set(prevDossiers);
+      this.saveShortlistDossiersToStorage(prevDossiers);
+      this.syncShortlistedStateInProperties();
+      if (reason) {
+        this.notificationService.show({
+          type: 'warning',
+          title: 'Shortlist Not Saved',
+          message: reason,
+          icon: 'error'
+        });
+      }
+    };
 
-    (tryPost(environment.apiUrl + '/properties/shortlist.php').pipe(
-      catchError(() => tryPost('/p_demo_5/backend/api/properties/shortlist.php')),
-      catchError(() => tryPost('/api/properties/shortlist.php')),
-      catchError(() => tryPost(environment.apacheApiUrl + '/properties/shortlist.php')),
+    this.http.post<{ success: boolean; data: any; message?: string }>(
+      `${environment.apiUrl}/properties/shortlist.php`,
+      payload
+    ).pipe(
       catchError(err => {
-        // If property was deleted from database by admin (404), remove it immediately from shortlisted Set
         if (err?.status === 404) {
           const purged = new Set(this.shortlistedPropertyIds());
           for (const item of Array.from(purged)) {
@@ -811,10 +905,23 @@ export class PropertyService {
           this.shortlistedPropertyIds.set(purged);
           this.saveShortlistsToStorage(purged);
           this.syncShortlistedStateInProperties();
+          return of(null);
         }
+        rollback(err?.error?.message || 'Unable to sync shortlist with server. Please try again.');
         return of(null);
       })
-    ) as Observable<any>).subscribe();
+    ).subscribe((res: any) => {
+      if (!res) return;
+      if (!res.success) {
+        rollback(res.message || 'Unable to update shortlist.');
+        return;
+      }
+      // If added from a page where the property wasn't in _properties() (e.g. direct Property Details URL),
+      // refresh dossiers from MySQL so /profile?tab=favourites immediately has the full property card
+      if (nextState && !candidate) {
+        this.fetchShortlistsFromBackend(effectiveUserId, { allowLocalSync: false });
+      }
+    });
   }
 
   openMediaModal(property: Property, initialTab: 'free' | 'premium' = 'free'): void {
@@ -843,7 +950,10 @@ export class PropertyService {
   constructor() {
     this.purgeLegacyStorageKeys();
     const user = this.authService.currentUser();
-    if (user && user.id > 0) {
+    const initialUserId = Number(user?.id) || 0;
+    const initialRole = user?.role || '';
+    const isInitialStaffOrAdmin = ADMIN_PORTAL_ROLES.includes(initialRole) || initialRole === 'developer';
+    if (user && initialUserId > 0 && !isInitialStaffOrAdmin) {
       const currentPhone = this.getSessionPhonePrefix(user.phone);
       if (typeof window !== 'undefined') {
         const lastSessionPhone = localStorage.getItem(SESSION_TRACKER_KEY);
@@ -970,18 +1080,17 @@ export class PropertyService {
         }
 
         const mockImages = [
-          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
-          'https://www.gobroker.co.in/uploads/amenities_image/banner27.png',
-          'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80'
+          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1524813686514-a57563d77d61?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1592595896551-12b371d546d5?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=640&q=72&fm=webp',
+          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=640&q=72&fm=webp'
         ];
 
         if (rawList.length > 0 || !append) {
@@ -996,11 +1105,11 @@ export class PropertyService {
               p.city
             );
             const fallbackMain = mockImages[globalIdx % mockImages.length];
-            const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http'))
-              ? p.imageUrl
+            const resolvedImg = (p.imageUrl && typeof p.imageUrl === 'string' && (p.imageUrl.startsWith('http') || p.imageUrl.startsWith('/')))
+              ? sanitizeMediaUrl(p.imageUrl, fallbackMain)
               : fallbackMain;
-            const resolvedPhotos = (Array.isArray(p.freePhotos) && p.freePhotos.length > 0 && p.freePhotos[0]?.startsWith('http'))
-              ? p.freePhotos
+            const resolvedPhotos = (Array.isArray(p.freePhotos) && p.freePhotos.length > 0 && (p.freePhotos[0]?.startsWith('http') || p.freePhotos[0]?.startsWith('/')))
+              ? p.freePhotos.map((u: string) => sanitizeMediaUrl(u, fallbackMain))
               : [resolvedImg, mockImages[(globalIdx + 1) % mockImages.length], mockImages[(globalIdx + 2) % mockImages.length]];
 
             const resolvedLat = (typeof p.latitude === 'number' && !isNaN(p.latitude)) ? p.latitude : gpsRes.coordinates?.latitude;
@@ -1423,7 +1532,11 @@ export class PropertyService {
     ) as Observable<{ success: boolean; data: any }>).pipe(
       map(res => {
         if (res && res.success && res.data && Array.isArray(res.data.builders)) {
-          return res.data.builders;
+          return res.data.builders.map((b: any) => ({
+            ...b,
+            logoUrl: sanitizeMediaUrl(b.logoUrl, '', 160),
+            coverImageUrl: sanitizeMediaUrl(b.coverImageUrl, '', 640)
+          }));
         }
         return [];
       })

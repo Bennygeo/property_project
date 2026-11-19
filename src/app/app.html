@@ -1,5 +1,5 @@
 <router-outlet />
-@defer (on idle; on timer(400ms); prefetch on idle) {
+@defer (when shouldLoadModals()) {
 <app-otp-login-modal />
 <app-visitor-intent-modal />
 <app-district-selector-modal />

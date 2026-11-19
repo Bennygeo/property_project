@@ -133,12 +133,8 @@ export class LocationService {
 
   constructor() {
     if (typeof window !== 'undefined') {
-      const isManual = localStorage.getItem(this.STORAGE_MANUAL_FLAG) === 'true';
-      // If user has not explicitly locked a district manually from the dropdown,
-      // run GPS detection so their true physical location (e.g. Kanyakumari) is detected.
-      if (!isManual) {
-        this.detectLocation({ autoPromptOnBlock: false, silentOnSuccess: true });
-      }
+      // Never request geolocation permission on page load (Lighthouse Best Practices: geolocation-on-start).
+      // Only auto-detect silently if permission was ALREADY granted by the user previously.
       this.checkPermissionStatus();
     }
   }
@@ -164,6 +160,10 @@ export class LocationService {
           this.isBlocked.set(true);
         } else if (status.state === 'granted') {
           this.isBlocked.set(false);
+          const isManual = localStorage.getItem(this.STORAGE_MANUAL_FLAG) === 'true';
+          if (!isManual) {
+            this.detectLocation({ autoPromptOnBlock: false, silentOnSuccess: true });
+          }
         }
       });
 

@@ -3050,14 +3050,17 @@ export class HeroSearchComponent implements OnInit {
 
   ngOnInit(): void {
     this.refreshUserSearchHistory();
-    this.propertyService.fetchTrendingCorridors().subscribe(corridors => {
-      if (corridors && corridors.length > 0) {
-        this.trendingLocations.set(corridors);
-      }
-    });
-    this.propertyService.fetchBuilders().subscribe(builders => {
-      this.buildersList.set(builders || []);
-    });
+    // Defer non-critical search dropdown metadata (corridors & builders) until after initial mobile LCP/TBT window
+    setTimeout(() => {
+      this.propertyService.fetchTrendingCorridors().subscribe(corridors => {
+        if (corridors && corridors.length > 0) {
+          this.trendingLocations.set(corridors);
+        }
+      });
+      this.propertyService.fetchBuilders().subscribe(builders => {
+        this.buildersList.set(builders || []);
+      });
+    }, 3000);
   }
 
   // Matched Properties Signal (real-time from MySQL/PropertyService)

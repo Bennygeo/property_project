@@ -9,11 +9,13 @@ export const routes: Routes = [
   {
     path: 'search',
     loadComponent: () => import('./features/search/pages/search-page/search-page.component').then(m => m.SearchPageComponent),
+    data: { preload: true },
     title: 'Search Properties, Plots & Apartments — Find a Plot Verified Registry'
   },
   {
     path: 'property/:id',
     loadComponent: () => import('./features/property-details/pages/property-details-page/property-details-page.component').then(m => m.PropertyDetailsPageComponent),
+    data: { preload: true },
     title: 'Property Details — Find a Plot Verified Registry'
   },
   {

@@ -1748,7 +1748,6 @@ input[type="radio"] {
   gap: 5px;
   padding: 0.25rem 0.625rem;
   border-radius: 0;
-  background: var(--brand-green-subtle, #e5f7ec);
   border: 1px solid rgba(94, 143, 114, 0.25);
   font-size: 11px;
   font-weight: 500;
@@ -1756,7 +1755,6 @@ input[type="radio"] {
 }
 
 .active-tag-district {
-  background: #eef5f1 !important;
   color: #0f3b4a !important;
   border: 1px solid #cbd5e1 !important;
   font-weight: 700 !important;
@@ -3776,10 +3774,13 @@ input[type="radio"] {
 }
 
 @keyframes shimmerPulseDot {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.35;
     transform: scale(0.85);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.15);
@@ -5113,6 +5114,7 @@ input[type="radio"] {
 }
 
 @media (max-width: 768px) {
+
   /* Hide redundant desktop search subheader & sidebar filters on mobile results view */
   .search-subheader,
   .search-sidebar,
@@ -5224,7 +5226,6 @@ input[type="radio"] {
 
   .mrs-filter-btn.has-filters {
     border-color: var(--brand-green, #5e8f72);
-    background: #eef6f1;
     color: var(--brand-green-dark, #2c4938);
   }
 

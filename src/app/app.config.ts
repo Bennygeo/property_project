@@ -1,7 +1,25 @@
 import { ApplicationConfig, ErrorHandler, Injectable, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withInMemoryScrolling, withPreloading, PreloadAllModules } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withPreloading, PreloadingStrategy, Route } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { Observable, of, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { routes } from './app.routes';
+
+/**
+ * Selective delayed preloading strategy:
+ * - Never preloads heavy admin/portal/developer bundles (2+ MB)
+ * - Only preloads high-traffic buyer routes marked with data: { preload: true }
+ * - Waits 5s after bootstrap so initial mobile FCP, LCP, SI, and TBT remain untouched
+ */
+@Injectable({ providedIn: 'root' })
+export class SelectivePreloadingStrategy implements PreloadingStrategy {
+  preload(route: Route, load: () => Observable<any>): Observable<any> {
+    if (route.data && route.data['preload']) {
+      return timer(5000).pipe(switchMap(() => load()));
+    }
+    return of(null);
+  }
+}
 
 @Injectable()
 export class GlobalChunkErrorHandler implements ErrorHandler {
@@ -33,9 +51,9 @@ export const appConfig: ApplicationConfig = {
         scrollPositionRestoration: 'top',
         anchorScrolling: 'enabled'
       }),
-      withPreloading(PreloadAllModules)
+      withPreloading(SelectivePreloadingStrategy)
     ),
-provideHttpClient(),
-  { provide: ErrorHandler, useClass: GlobalChunkErrorHandler }
+    provideHttpClient(),
+    { provide: ErrorHandler, useClass: GlobalChunkErrorHandler }
   ]
 };

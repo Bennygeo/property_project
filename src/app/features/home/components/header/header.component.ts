@@ -54,7 +54,7 @@ import { LocationService } from '../../../../core/services/location.service';
         <div class="header-actions">
 
           <!-- Shortlist Counter -->
-          <a class="shortlist-btn" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" title="Saved Shortlisted Properties">
+          <a class="shortlist-btn" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" (click)="onShortlistNavClick($event)" title="Saved Shortlisted Properties">
             <span class="material-symbols-outlined text-red">{{ propertyService.shortlistCount() > 0 ? 'favorite' : 'favorite_border' }}</span>
             <span class="hidden-sm">Shortlist</span>
             <span class="shortlist-count">{{ propertyService.shortlistCount() }}</span>
@@ -226,7 +226,7 @@ import { LocationService } from '../../../../core/services/location.service';
                     <span class="material-symbols-outlined text-green">card_membership</span>
                     <span>Membership &amp; Plans</span>
                   </a>
-                  <a class="drawer-nav-item" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" (click)="closeMobileMenu()">
+                  <a class="drawer-nav-item" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" (click)="onShortlistNavClick($event); closeMobileMenu()">
                     <span class="material-symbols-outlined text-red">favorite</span>
                     <span>Saved Shortlists</span>
                     <span class="pts-badge">{{ propertyService.shortlistCount() }}</span>
@@ -1410,6 +1410,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   getFirstName(): string {
     const name = this.authService.currentUser()?.name || 'User';
     return name.split(' ')[0];
+  }
+
+  onShortlistNavClick(event: Event): void {
+    if (!this.authService.isLoggedIn()) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.authService.openOtpModal('general');
+    }
   }
 
   onSignOut(): void {

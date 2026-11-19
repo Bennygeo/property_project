@@ -22,36 +22,41 @@ import { PropertyCompareModalComponent } from './shared/components/property-comp
 })
 export class App implements OnInit {
   protected readonly title = signal('property-registry');
+  protected readonly shouldLoadModals = signal<boolean>(false);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
 
   ngOnInit(): void {
-    // When the initial route finishes loading and activates its component view
+    // Load global modals immediately on first user interaction or after 5s idle (zero TBT during initial load)
+    if (typeof window !== 'undefined') {
+      const triggerModals = () => {
+        if (!this.shouldLoadModals()) {
+          this.shouldLoadModals.set(true);
+        }
+      };
+      window.addEventListener('pointerdown', triggerModals, { once: true, passive: true });
+      window.addEventListener('keydown', triggerModals, { once: true, passive: true });
+      setTimeout(triggerModals, 5000);
+    }
+
+    // Dismiss preloader immediately when the initial route activates so Hero LCP paints on frame 0
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
       take(1)
     ).subscribe(() => {
-      // Allow browser paint frame to render the routed component before smoothly fading out
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          this.dismissPreloader();
-          // Defer plans, properties list and wallet packages until strictly after the initial rendering
-          this.schedulePostRenderSync();
-        }, 80);
-      });
+      this.dismissPreloader();
+      // Defer background API sync strictly after initial paint & TBT window settles
+      this.schedulePostRenderSync();
     });
   }
 
   private dismissPreloader(): void {
     if (typeof document === 'undefined') return;
     const preloader = document.getElementById('app-preloader');
-    if (preloader && !preloader.classList.contains('fap-fade-out')) {
-      preloader.classList.add('fap-fade-out');
-      setTimeout(() => {
-        try {
-          preloader.remove();
-        } catch (e) { }
-      }, 400);
+    if (preloader) {
+      try {
+        preloader.remove();
+      } catch (e) { }
     }
   }
 
@@ -94,10 +99,14 @@ export class App implements OnInit {
       }
     };
 
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(runSync, { timeout: 3000 });
-    } else {
-      setTimeout(runSync, 1200);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(runSync, { timeout: 3000 });
+        } else {
+          runSync();
+        }
+      }, 4500);
     }
   }
 }

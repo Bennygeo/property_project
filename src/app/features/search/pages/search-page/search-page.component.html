@@ -430,8 +430,8 @@
             </label>
             <div class="budget-grid">
               @for (b of budgetOptions; track b.value) {
-              <button type="button" class="budget-pill"
-                [class.selected]="selectedBudget() === b.value" (click)="setBudget(b.value)">
+              <button type="button" class="budget-pill" [class.selected]="selectedBudget() === b.value"
+                (click)="setBudget(b.value)">
                 {{ b.label }}
               </button>
               }
@@ -825,8 +825,7 @@
                   <span class="material-symbols-outlined">chat</span>
                 </a>
 
-                <button type="button" class="btn-list-compare"
-                  [class.comparing]="compareService.isInCompare(prop.id)"
+                <button type="button" class="btn-list-compare" [class.comparing]="compareService.isInCompare(prop.id)"
                   (click)="compareService.toggleCompare(prop)"
                   [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property'">
                   <span class="material-symbols-outlined">compare_arrows</span>
@@ -1058,8 +1057,7 @@
                     <span class="material-symbols-outlined">chat</span>
                   </a>
 
-                  <button type="button" class="btn-list-compare"
-                    [class.comparing]="compareService.isInCompare(prop.id)"
+                  <button type="button" class="btn-list-compare" [class.comparing]="compareService.isInCompare(prop.id)"
                     (click)="compareService.toggleCompare(prop)"
                     [title]="compareService.isInCompare(prop.id) ? 'Remove from comparison' : 'Compare property'">
                     <span class="material-symbols-outlined">compare_arrows</span>
@@ -1226,7 +1224,8 @@
   <div class="nb-mobile-search-page" (click)="isMobileSuggestDropdownOpen.set(false)">
     <!-- Top App Bar: Back Button + Brand Logo + Clear All -->
     <div class="nb-top-bar" (click)="$event.stopPropagation()">
-      <button type="button" class="nb-back-btn" (click)="closeDedicatedMobileSearch()" aria-label="Back to Search Results">
+      <button type="button" class="nb-back-btn" (click)="closeDedicatedMobileSearch()"
+        aria-label="Back to Search Results">
         <span class="material-symbols-outlined">arrow_back</span>
       </button>
       <img src="logo.svg" alt="Find a Plot" class="nb-brand-logo" />
@@ -1247,14 +1246,12 @@
       <a routerLink="/post-property" class="nb-mode-tab" (click)="closeDedicatedMobileSearch()">
         Sell
       </a>
-      <button type="button" class="nb-mode-tab"
-        [class.active]="selectedType() === 'Commercial Spaces'"
+      <button type="button" class="nb-mode-tab" [class.active]="selectedType() === 'Commercial Spaces'"
         (click)="setType('Commercial Spaces')">
         Commercial
       </button>
       @if (propertyService.hasAgriculturalProperties()) {
-      <button type="button" class="nb-mode-tab"
-        [class.active]="selectedType() === 'Agricultural Lands'"
+      <button type="button" class="nb-mode-tab" [class.active]="selectedType() === 'Agricultural Lands'"
         (click)="setType('Agricultural Lands')">
         Agriculture
       </button>
@@ -1265,8 +1262,8 @@
     <div class="nb-scroll-body">
       <!-- 1. District / City Selector Dropdown -->
       <div class="nb-district-select-wrap" (click)="$event.stopPropagation()">
-        <select class="nb-district-select" [value]="selectedDistrict()" (change)="onMobileDedicatedDistrictChange($event)"
-          aria-label="Select District">
+        <select class="nb-district-select" [value]="selectedDistrict()"
+          (change)="onMobileDedicatedDistrictChange($event)" aria-label="Select District">
           <option value="" [selected]="!selectedDistrict()">All Districts &amp; Regions</option>
           @for (dist of locationService.districts; track dist.id) {
           <option [value]="dist.name" [selected]="dist.name === selectedDistrict()">
