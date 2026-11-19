@@ -180,6 +180,8 @@ export class PropertyService {
     return `https://wa.me/${cleanNum}?text=${text}`;
   }
   public readonly isFetchingApi = signal<boolean>(false);
+  public readonly isFreshFetchingApi = signal<boolean>(false);
+  private activeListRequestId = 0;
   public readonly suggestedProperties = signal<Property[]>([]);
   public readonly hasMoreApiProperties = computed(() => {
     return this._properties().length < this.totalApiProperties();
@@ -898,7 +900,12 @@ export class PropertyService {
     }
 
     const qs = qParams.toString();
+    const requestId = ++this.activeListRequestId;
     this.isFetchingApi.set(true);
+    if (!append) {
+      this.isFreshFetchingApi.set(true);
+      this.suggestedProperties.set([]);
+    }
 
     const tryGet = (baseUrl: string) => {
       const sep = baseUrl.includes('?') ? '&' : '?';
@@ -910,11 +917,18 @@ export class PropertyService {
       catchError(() => tryGet(environment.apacheApiUrl + '/properties/list.php')),
       catchError(err => {
         console.error('[XHR API] All MySQL API endpoints failed. Retaining local state.', err);
-        this.isFetchingApi.set(false);
+        if (requestId === this.activeListRequestId) {
+          this.isFetchingApi.set(false);
+          this.isFreshFetchingApi.set(false);
+        }
         return of(null);
       })
     ) as Observable<{ success: boolean; data: any } | null>).subscribe((res: any) => {
+      if (requestId !== this.activeListRequestId) {
+        return;
+      }
       this.isFetchingApi.set(false);
+      this.isFreshFetchingApi.set(false);
       if (res && res.success) {
         const rawList = Array.isArray(res.data)
           ? res.data

@@ -92,6 +92,12 @@ export class SearchPageComponent implements OnInit {
 
   // Tracks whether the user manually adjusted the search bar/district on /search
   readonly isSearchManuallyAdjusted = signal<boolean>(false);
+  // Prevents flashing stale/old properties on initial route mount before the first API query starts
+  readonly isInitialQueryPending = signal<boolean>(true);
+  // True whenever a fresh search API fetch (non-append) is in progress
+  readonly isSearchLoading = computed<boolean>(() => {
+    return this.isInitialQueryPending() || this.propertyService.isFreshFetchingApi();
+  });
   private lastHeaderDistrictRev = -1;
 
   constructor() {
@@ -680,6 +686,9 @@ export class SearchPageComponent implements OnInit {
   });
 
   readonly mobileSummarySubtitle = computed<string>(() => {
+    if (this.isSearchLoading()) {
+      return 'Searching verified properties...';
+    }
     const count = this.propertyService.totalApiProperties() || this.filteredProperties().length;
     const type = this.selectedType() !== 'all' ? this.selectedType() : 'All Properties';
     const budgetObj = this.budgetOptions.find(b => b.value === this.selectedBudget());
@@ -1167,6 +1176,7 @@ export class SearchPageComponent implements OnInit {
       developer: this.selectedDeveloper() !== 'all' ? this.selectedDeveloper() : undefined,
       sort: this.sortBy()
     });
+    this.isInitialQueryPending.set(false);
   }
 
   syncUrlParams(): void {

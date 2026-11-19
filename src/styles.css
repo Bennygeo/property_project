@@ -112,6 +112,29 @@ body {
 }
 
 /* ==========================================================================
+   INSTANT RESPONSE & ZERO-LATENCY TAP ENGINE
+   Eliminates the 300ms mobile touch delay and provides immediate 0ms tactile feedback
+   ========================================================================== */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+.clickable {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active:not(:disabled),
+a.btn:active,
+.preset-chip:active,
+[role="button"]:active {
+  transform: scale(0.975);
+  transition: transform 0.04s ease-out;
+}
+
+/* ==========================================================================
    UNIVERSAL STICKY FOOTER ARCHITECTURE
    Guarantees footer stays pinned to the bottom of the viewport across all pages
    with short/minimal content while naturally flowing on longer pages.

@@ -1,5 +1,5 @@
 import { Component, signal, inject, Injector, OnInit } from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { filter, take } from 'rxjs/operators';
 import { OtpLoginModalComponent } from './core/components/otp-login-modal/otp-login-modal.component';
 import { VisitorIntentModalComponent } from './core/components/visitor-intent-modal/visitor-intent-modal.component';
@@ -22,10 +22,20 @@ import { PropertyCompareModalComponent } from './shared/components/property-comp
 })
 export class App implements OnInit {
   protected readonly title = signal('property-registry');
+  public readonly isNavigating = signal<boolean>(false);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
 
   ngOnInit(): void {
+    // Instant 0ms visual feedback on route navigation button clicks
+    this.router.events.subscribe(e => {
+      if (e instanceof NavigationStart) {
+        this.isNavigating.set(true);
+      } else if (e instanceof NavigationEnd || e instanceof NavigationCancel || e instanceof NavigationError) {
+        this.isNavigating.set(false);
+      }
+    });
+
     // When the initial route finishes loading and activates its component view
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),

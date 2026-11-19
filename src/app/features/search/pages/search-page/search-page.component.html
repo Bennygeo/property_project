@@ -519,8 +519,13 @@
         <!-- Results Counter & Active Pills -->
         <div class="controls-left">
           <h1 class="results-heading">
+            @if (isSearchLoading()) {
+            <span class="results-count-shimmer shimmer-bg" aria-hidden="true"></span>
+            <span class="results-label">Searching Properties &amp; Land...</span>
+            } @else {
             <span class="results-count">{{ propertyService.totalApiProperties() || filteredProperties().length }}</span>
             <span class="results-label">Properties &amp; Land Found</span>
+            }
           </h1>
 
           <!-- Semantic Mild Spectrum Accent Bar (Reversible) -->
@@ -659,7 +664,7 @@
       }
 
       <!-- 5KM GPS RADIUS EXTENSION BANNER -->
-      @if (isRadiusExtendedSearch()) {
+      @if (!isSearchLoading() && isRadiusExtendedSearch()) {
       <div class="radius-search-banner">
         <div class="radius-icon-circle">
           <span class="material-symbols-outlined radius-icon">radar</span>
@@ -679,7 +684,47 @@
       }
 
       <!-- RESULTS CONTAINER -->
-      @if (filteredProperties().length > 0) {
+      @if (isSearchLoading()) {
+      <!-- SEARCH API FETCH IN PROGRESS: FULL SHIMMER SKELETON VIEW -->
+      <div class="search-loading-shimmer-section" aria-busy="true" aria-label="Loading search results">
+        <div class="search-shimmer-status-bar">
+          <span class="shimmer-status-dot"></span>
+          <span class="shimmer-status-text">
+            Searching verified properties
+            @if (selectedLocalities().length > 0) {
+            in <strong>{{ selectedLocalities().join(', ') }}</strong>
+            } @else if (searchQuery()) {
+            for <strong>"{{ searchQuery() }}"</strong>
+            } @else if (selectedDistrict()) {
+            in <strong>{{ selectedDistrict() }}</strong>
+            }
+            ...
+          </span>
+        </div>
+
+        <div class="scroll-skeleton-grid search-initial-skeleton-grid">
+          @for (s of [1, 2, 3, 4, 5, 6]; track s) {
+          <div class="skeleton-card">
+            <div class="skeleton-thumb-frame shimmer-bg">
+              <div class="skeleton-badge shimmer-bg"></div>
+            </div>
+            <div class="skeleton-content-frame">
+              <div class="skeleton-line shimmer-bg line-title"></div>
+              <div class="skeleton-line shimmer-bg line-sub"></div>
+              <div class="skeleton-meta-row">
+                <div class="skeleton-tag shimmer-bg"></div>
+                <div class="skeleton-tag shimmer-bg"></div>
+              </div>
+              <div class="skeleton-foot-row">
+                <div class="skeleton-price-line shimmer-bg"></div>
+                <div class="skeleton-btn shimmer-bg"></div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      } @else if (filteredProperties().length > 0) {
       <!-- 1. GRID VIEW -->
       @if (viewMode() === 'grid') {
       <div class="results-grid">
