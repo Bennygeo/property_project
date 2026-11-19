@@ -182,6 +182,9 @@ export class PropertyService {
   public readonly isFetchingApi = signal<boolean>(false);
   public readonly isFreshFetchingApi = signal<boolean>(false);
   private activeListRequestId = 0;
+  private inFlightListQs: string | null = null;
+  private lastCompletedListQs: string | null = null;
+  private lastCompletedListTime = 0;
   public readonly suggestedProperties = signal<Property[]>([]);
   public readonly hasMoreApiProperties = computed(() => {
     return this._properties().length < this.totalApiProperties();
@@ -900,6 +903,19 @@ export class PropertyService {
     }
 
     const qs = qParams.toString();
+
+    // 1. In-flight request deduplication: if identical query is already fetching, skip redundant call
+    if (this.isFetchingApi() && this.inFlightListQs === qs) {
+      return;
+    }
+
+    // 2. Short-term cache deduplication: if identical non-append query was completed within the last 1500ms, skip duplicate call
+    const now = Date.now();
+    if (!append && this.lastCompletedListQs === qs && (now - this.lastCompletedListTime < 1500)) {
+      return;
+    }
+
+    this.inFlightListQs = qs;
     const requestId = ++this.activeListRequestId;
     this.isFetchingApi.set(true);
     if (!append) {
@@ -907,28 +923,31 @@ export class PropertyService {
       this.suggestedProperties.set([]);
     }
 
-    const tryGet = (baseUrl: string) => {
-      const sep = baseUrl.includes('?') ? '&' : '?';
-      return this.http.get<{ success: boolean; data: any }>(baseUrl + sep + qs);
+    const cleanUp = () => {
+      if (requestId === this.activeListRequestId) {
+        this.isFetchingApi.set(false);
+        this.isFreshFetchingApi.set(false);
+        this.inFlightListQs = null;
+      }
     };
 
-    (tryGet(environment.apiUrl + '/properties/list.php').pipe(
-      catchError(() => tryGet('/api/properties/list.php')),
-      catchError(() => tryGet(environment.apacheApiUrl + '/properties/list.php')),
+    const url = `${environment.apiUrl}/properties/list.php?${qs}`;
+
+    this.http.get<{ success: boolean; data: any }>(url).pipe(
       catchError(err => {
-        console.error('[XHR API] All MySQL API endpoints failed. Retaining local state.', err);
-        if (requestId === this.activeListRequestId) {
-          this.isFetchingApi.set(false);
-          this.isFreshFetchingApi.set(false);
-        }
+        console.error('[XHR API] Failed fetching property list:', err);
+        cleanUp();
         return of(null);
       })
-    ) as Observable<{ success: boolean; data: any } | null>).subscribe((res: any) => {
+    ).subscribe((res: any) => {
       if (requestId !== this.activeListRequestId) {
         return;
       }
       this.isFetchingApi.set(false);
       this.isFreshFetchingApi.set(false);
+      this.inFlightListQs = null;
+      this.lastCompletedListQs = qs;
+      this.lastCompletedListTime = Date.now();
       if (res && res.success) {
         const rawList = Array.isArray(res.data)
           ? res.data

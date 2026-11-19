@@ -71,7 +71,7 @@ export class App implements OnInit {
 
         try {
           const propertyService = this.injector.get(PropertyService);
-          if (!propertyService.isSqlLoaded() && !propertyService.isFetchingApi()) {
+          if (propertyService.allProperties().length === 0 && !propertyService.isSqlLoaded() && !propertyService.isFetchingApi()) {
             propertyService.loadPropertiesFromApi();
           }
         } catch (e) {

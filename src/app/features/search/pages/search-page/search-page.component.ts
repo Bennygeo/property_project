@@ -137,7 +137,7 @@ export class SearchPageComponent implements OnInit {
             this.liveDbSuggestions.set(res);
           });
           this.syncUrlParams();
-          this.fetchFilteredFromApi();
+          // Initial API fetch is dispatched once via route.queryParams.subscribe in ngOnInit to avoid duplicate requests
         }
       }
     });
