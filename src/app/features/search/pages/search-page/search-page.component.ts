@@ -124,7 +124,6 @@ export class SearchPageComponent implements OnInit {
           this.liveDbSuggestions.set(res);
         });
         this.syncUrlParams();
-        this.fetchFilteredFromApi();
       } else if (isInitialSync) {
         this.lastHeaderDistrictRev = rev;
         const snap = this.route.snapshot.queryParams;
@@ -974,6 +973,11 @@ export class SearchPageComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['district']) {
         this.selectedDistrict.set(params['district']);
+      } else if (!params['localities'] && !params['q'] && !this.isSearchManuallyAdjusted()) {
+        const headerDist = this.locationService.selectedDistrict();
+        if (headerDist && headerDist !== 'all') {
+          this.selectedDistrict.set(headerDist);
+        }
       }
       if (params['localities']) {
         const arr = (params['localities'] as string).split(',').map(s => s.trim()).filter(Boolean);
@@ -1399,7 +1403,6 @@ export class SearchPageComponent implements OnInit {
     this.liveDbSuggestions.set([]);
     this.displayedCount.set(20);
     this.syncUrlParams();
-    this.fetchFilteredFromApi();
   }
 
   selectAllAssets(): void {
@@ -1571,7 +1574,6 @@ export class SearchPageComponent implements OnInit {
     this.closeDedicatedMobileSearch();
     this.displayedCount.set(20);
     this.syncUrlParams();
-    this.fetchFilteredFromApi();
     setTimeout(() => this.recordSearchPreferencesFromActiveState(), 350);
   }
 

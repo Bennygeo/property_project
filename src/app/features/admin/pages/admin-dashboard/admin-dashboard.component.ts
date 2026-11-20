@@ -154,6 +154,7 @@ import { SubscriptionService } from '../../../../core/services/subscription.serv
 import { SubscriptionPlan } from '../../../../core/models/subscription.model';
 import {
   SiteVisitItem,
+  CalendarDayCell,
   AdvisoryConsultationItem,
   SavedSearchItem,
   PlotBookingItem
@@ -166,6 +167,7 @@ export type AdminActiveTab =
   | 'review_queue'
   | 'lead_pipeline'
   | 'leads_assignment'
+  | 'site_visits'
   | 'post_property'
   | 'plot_studio'
   | 'all_directory'
@@ -406,6 +408,7 @@ export class AdminDashboardComponent {
     'review_queue',
     'lead_pipeline',
     'leads_assignment',
+    'site_visits',
     'post_property',
     'plot_studio',
     'all_directory',
@@ -440,6 +443,12 @@ export class AdminDashboardComponent {
     this.loadDashboardMetrics();
     this.loadWhatsappSettings();
     this.loadAdminDevelopers();
+    this.workspaceService.fetchAdminWorkspaces().subscribe();
+
+    if (this.router.url.includes('site-visits')) {
+      this.setTab('site_visits', false);
+      return;
+    }
 
     this.route.queryParams.subscribe(params => {
       const queryTab = params['tab'] as string | undefined;
@@ -473,6 +482,7 @@ export class AdminDashboardComponent {
       review_queue: 'Project Review Queue',
       lead_pipeline: 'Master Lead Pipeline (10 Stages)',
       leads_assignment: 'All Leads & Role Assignment',
+      site_visits: 'Site Visit Requests & Field Escort Desk',
       post_property: 'Post New Property',
       plot_studio: 'Plot Partition Studio 3D',
       all_directory: 'All Properties & Audit Trail',
@@ -528,7 +538,7 @@ export class AdminDashboardComponent {
     if (tab === 'user_mindset') {
       this.loadMindsetLeads();
     }
-    if (tab === 'buyer_workspaces') {
+    if (tab === 'buyer_workspaces' || tab === 'site_visits') {
       this.workspaceService.fetchAdminWorkspaces().subscribe();
     }
   }
@@ -1846,6 +1856,235 @@ export class AdminDashboardComponent {
       (v.status && v.status.toLowerCase().includes(q))
     );
   });
+
+  // Dedicated Site Visit Requests Page & Interactive Calendar State
+  readonly siteVisitViewMode = signal<'calendar' | 'table'>('calendar');
+  readonly siteVisitStatusFilter = signal<'all' | 'requested' | 'confirmed' | 'completed' | 'cancelled'>('all');
+  readonly siteVisitSearchQuery = signal<string>('');
+  readonly calendarCurrentDate = signal<Date>(new Date());
+  readonly calendarSelectedDate = signal<string | null>(null);
+
+  formatLocalDate(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  formatSelectedDateLong(dateStr: string | null): string {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        return d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    } catch { }
+    return dateStr;
+  }
+
+  readonly siteVisitsByDate = computed<Map<string, SiteVisitItem[]>>(() => {
+    const list = this.adminWorkspaces()?.allVisits || [];
+    const map = new Map<string, SiteVisitItem[]>();
+    for (const v of list) {
+      if (!v.visit_date) continue;
+      const dStr = v.visit_date.substring(0, 10);
+      if (!map.has(dStr)) {
+        map.set(dStr, []);
+      }
+      map.get(dStr)!.push(v);
+    }
+    return map;
+  });
+
+  readonly calendarMonthYearLabel = computed(() => {
+    const d = this.calendarCurrentDate();
+    return d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  });
+
+  readonly calendarMonthStats = computed(() => {
+    const current = this.calendarCurrentDate();
+    const year = current.getFullYear();
+    const month = current.getMonth();
+    const yyyyMm = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const list = this.adminWorkspaces()?.allVisits || [];
+    const monthVisits = list.filter(v => v.visit_date && v.visit_date.startsWith(yyyyMm));
+
+    return {
+      monthLabel: this.calendarMonthYearLabel(),
+      total: monthVisits.length,
+      requested: monthVisits.filter(v => v.status === 'requested').length,
+      confirmed: monthVisits.filter(v => v.status === 'confirmed').length,
+      completed: monthVisits.filter(v => v.status === 'completed').length,
+      cancelled: monthVisits.filter(v => v.status === 'cancelled').length
+    };
+  });
+
+  readonly calendarDays = computed<CalendarDayCell[]>(() => {
+    const current = this.calendarCurrentDate();
+    const year = current.getFullYear();
+    const month = current.getMonth();
+
+    const todayStr = this.formatLocalDate(new Date());
+    const selectedStr = this.calendarSelectedDate();
+    const visitsMap = this.siteVisitsByDate();
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startDayOfWeek = firstDayOfMonth.getDay();
+    const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const cells: CalendarDayCell[] = [];
+
+    // 1. Previous Month Spillover Days
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      const dayNum = daysInPrevMonth - i;
+      const cellDate = new Date(year, month - 1, dayNum);
+      const dateStr = this.formatLocalDate(cellDate);
+      const visits = visitsMap.get(dateStr) || [];
+      cells.push(this.buildCalendarDayCell(cellDate, dateStr, dayNum, false, dateStr === todayStr, dateStr === selectedStr, visits));
+    }
+
+    // 2. Current Month Days
+    for (let dayNum = 1; dayNum <= daysInCurrentMonth; dayNum++) {
+      const cellDate = new Date(year, month, dayNum);
+      const dateStr = this.formatLocalDate(cellDate);
+      const visits = visitsMap.get(dateStr) || [];
+      cells.push(this.buildCalendarDayCell(cellDate, dateStr, dayNum, true, dateStr === todayStr, dateStr === selectedStr, visits));
+    }
+
+    // 3. Next Month Spillover Days to fill complete 7-column rows
+    const remaining = (7 - (cells.length % 7)) % 7;
+    for (let dayNum = 1; dayNum <= remaining; dayNum++) {
+      const cellDate = new Date(year, month + 1, dayNum);
+      const dateStr = this.formatLocalDate(cellDate);
+      const visits = visitsMap.get(dateStr) || [];
+      cells.push(this.buildCalendarDayCell(cellDate, dateStr, dayNum, false, dateStr === todayStr, dateStr === selectedStr, visits));
+    }
+
+    return cells;
+  });
+
+  private buildCalendarDayCell(
+    date: Date,
+    dateStr: string,
+    dayNumber: number,
+    isCurrentMonth: boolean,
+    isToday: boolean,
+    isSelected: boolean,
+    visits: SiteVisitItem[]
+  ): CalendarDayCell {
+    return {
+      date,
+      dateStr,
+      dayNumber,
+      isCurrentMonth,
+      isToday,
+      isSelected,
+      visits,
+      count: visits.length,
+      requestedCount: visits.filter(v => v.status === 'requested').length,
+      confirmedCount: visits.filter(v => v.status === 'confirmed').length,
+      completedCount: visits.filter(v => v.status === 'completed').length,
+      cancelledCount: visits.filter(v => v.status === 'cancelled').length
+    };
+  }
+
+  readonly selectedDateVisits = computed<SiteVisitItem[]>(() => {
+    const sel = this.calendarSelectedDate();
+    if (!sel) return [];
+    return this.siteVisitsByDate().get(sel) || [];
+  });
+
+  prevCalendarMonth(): void {
+    const cur = new Date(this.calendarCurrentDate());
+    cur.setMonth(cur.getMonth() - 1);
+    this.calendarCurrentDate.set(cur);
+  }
+
+  nextCalendarMonth(): void {
+    const cur = new Date(this.calendarCurrentDate());
+    cur.setMonth(cur.getMonth() + 1);
+    this.calendarCurrentDate.set(cur);
+  }
+
+  goToCalendarToday(): void {
+    const today = new Date();
+    this.calendarCurrentDate.set(today);
+    const dateStr = this.formatLocalDate(today);
+    this.calendarSelectedDate.set(dateStr);
+  }
+
+  selectCalendarDate(dateStr: string): void {
+    if (this.calendarSelectedDate() === dateStr) {
+      this.calendarSelectedDate.set(null);
+    } else {
+      this.calendarSelectedDate.set(dateStr);
+    }
+  }
+
+  clearCalendarDateSelection(): void {
+    this.calendarSelectedDate.set(null);
+  }
+
+  readonly siteVisitsStats = computed(() => {
+    const list = this.adminWorkspaces()?.allVisits || [];
+    return {
+      total: list.length,
+      requested: list.filter(v => v.status === 'requested').length,
+      confirmed: list.filter(v => v.status === 'confirmed').length,
+      completed: list.filter(v => v.status === 'completed').length,
+      cancelled: list.filter(v => v.status === 'cancelled').length
+    };
+  });
+
+  readonly dedicatedSiteVisits = computed(() => {
+    const list = this.adminWorkspaces()?.allVisits || [];
+    const filter = this.siteVisitStatusFilter();
+    const dateFilter = this.calendarSelectedDate();
+    const q = this.siteVisitSearchQuery().toLowerCase().trim();
+
+    return list.filter(v => {
+      if (dateFilter && (!v.visit_date || !v.visit_date.startsWith(dateFilter))) {
+        return false;
+      }
+      if (filter !== 'all' && v.status !== filter) {
+        return false;
+      }
+      if (!q) return true;
+      return (
+        (v.user_name && v.user_name.toLowerCase().includes(q)) ||
+        (v.user_phone && v.user_phone.toLowerCase().includes(q)) ||
+        (v.property_title && v.property_title.toLowerCase().includes(q)) ||
+        (v.locality && v.locality.toLowerCase().includes(q)) ||
+        (v.assigned_executive_name && v.assigned_executive_name.toLowerCase().includes(q)) ||
+        (v.visit_date && v.visit_date.includes(q)) ||
+        (v.visit_slot && v.visit_slot.toLowerCase().includes(q)) ||
+        (v.pickup_location && v.pickup_location.toLowerCase().includes(q))
+      );
+    });
+  });
+
+  quickUpdateVisitStatus(v: SiteVisitItem, newStatus: 'requested' | 'confirmed' | 'completed' | 'cancelled'): void {
+    this.workspaceService.updateSiteVisit({
+      visitId: v.id,
+      status: newStatus,
+      executiveName: v.assigned_executive_name || 'Ramesh V (Relationship Mgr)',
+      executivePhone: v.assigned_executive_phone || '+91 94440 12345',
+      pickupLocation: v.pickup_location || 'Koyambedu Metro Station, Gate 2',
+      adminNotes: v.admin_notes || ''
+    }).subscribe({
+      next: () => {
+        this.notificationService.show({
+          type: 'success',
+          title: 'Site Visit Status Updated',
+          message: `Visit #${v.id} marked as ${newStatus.toUpperCase()}`,
+          icon: 'check_circle'
+        });
+        this.workspaceService.fetchAdminWorkspaces().subscribe();
+      }
+    });
+  }
 
   readonly filteredAdminUsers = computed(() => {
     const list = this.adminWorkspaces()?.users || [];
@@ -3293,19 +3532,19 @@ export class AdminDashboardComponent {
       this.adminMaster.totalPrice = this.adminMaster.priceFrom;
     }
 
-    const effectivePrice = (this.adminMaster.priceFrom || this.adminMaster.priceTo) 
-      ? this.getAdminFormattedPriceRange() 
+    const effectivePrice = (this.adminMaster.priceFrom || this.adminMaster.priceTo)
+      ? this.getAdminFormattedPriceRange()
       : (this.adminMaster.totalPrice > 0 ? this.getAdminFormattedTotalPrice() : raw.price);
 
     const effectiveSqft = (this.adminMaster.minPlotSize && this.adminMaster.maxPlotSize && this.adminMaster.minPlotSize !== this.adminMaster.maxPlotSize)
       ? `${this.adminMaster.minPlotSize} - ${this.adminMaster.maxPlotSize} sq.ft`
       : (this.adminMaster.plotSizeSqft ? `${this.adminMaster.plotSizeSqft} sq.ft` : (this.adminMaster.minPlotSize ? `${this.adminMaster.minPlotSize} sq.ft` : raw.sqft));
 
-    const effectivePricePerSqft = this.adminMaster.pricePerSqft 
-      ? `₹ ${this.adminMaster.pricePerSqft.toLocaleString('en-IN')}/sq.ft` 
-      : (this.adminMaster.priceFrom && this.adminMaster.minPlotSize 
-          ? `₹ ${Math.round(this.adminMaster.priceFrom / this.adminMaster.minPlotSize).toLocaleString('en-IN')}/sq.ft` 
-          : (raw.pricePerSqft || ''));
+    const effectivePricePerSqft = this.adminMaster.pricePerSqft
+      ? `₹ ${this.adminMaster.pricePerSqft.toLocaleString('en-IN')}/sq.ft`
+      : (this.adminMaster.priceFrom && this.adminMaster.minPlotSize
+        ? `₹ ${Math.round(this.adminMaster.priceFrom / this.adminMaster.minPlotSize).toLocaleString('en-IN')}/sq.ft`
+        : (raw.pricePerSqft || ''));
 
     const data = {
       ...raw,

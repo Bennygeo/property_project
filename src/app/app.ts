@@ -76,7 +76,9 @@ export class App implements OnInit {
 
         try {
           const propertyService = this.injector.get(PropertyService);
-          if (propertyService.allProperties().length === 0 && !propertyService.isSqlLoaded() && !propertyService.isFetchingApi()) {
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+          const isListingRoute = currentPath === '/' || currentPath.endsWith('/p_demo_5/') || currentPath.includes('/search');
+          if (!isListingRoute && propertyService.allProperties().length === 0 && !propertyService.isSqlLoaded() && !propertyService.isFetchingApi()) {
             propertyService.loadPropertiesFromApi();
           }
         } catch (e) {

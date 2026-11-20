@@ -32,8 +32,8 @@
 }
 
 .premier-title {
-  font-size: 1.3rem;
-  font-weight: 400;
+  font-size: 1.2rem;
+  font-weight: 500;
   line-height: 1.15;
   color: #0f172a;
   margin: 0 0 0.375rem 0;
@@ -317,7 +317,7 @@
 /* Compact Developer Card */
 .developer-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e9eaeb;
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -326,7 +326,7 @@
 }
 
 .developer-card:hover {
-  border-color: rgba(var(--brand-teal), 0.1);
+  border-color: #c5bfbf;
   background-color: #fafcff;
   box-shadow: none !important;
 }
@@ -452,7 +452,7 @@
   }
 
   .premier-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
 
   .premier-header-actions {

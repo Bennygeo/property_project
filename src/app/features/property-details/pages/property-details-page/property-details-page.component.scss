@@ -3718,7 +3718,7 @@
       top: 62px !important;
       z-index: 45 !important;
       display: grid !important;
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       gap: 5px !important;
       padding: 8px 8px 0 8px !important;
       border-radius: 8px 8px 0 0 !important;
@@ -4152,8 +4152,7 @@
 
   /* Hidden on Mobile */
   .hanu-realtor-card,
-  .sticky-wa-floating-bar,
-  :host ::ng-deep app-virtual-property-presenter {
+  .sticky-wa-floating-bar {
     display: none !important;
   }
 

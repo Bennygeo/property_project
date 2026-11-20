@@ -114,6 +114,10 @@ export interface PipelineLead {
   deal_notes: string | null;
   transferred_at: string | null;
   last_activity_at: string | null;
+  next_callback_at?: string | null;
+  callback_status?: 'none' | 'scheduled' | 'completed' | 'missed' | string;
+  callback_notes?: string | null;
+  callback_urgency?: 'overdue' | 'due_today' | 'upcoming' | 'none';
   subscription_plan: string | null;
   viewed_properties: PipelineViewedProperty[];
   viewed_properties_count: number;

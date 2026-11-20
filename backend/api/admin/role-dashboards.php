@@ -55,6 +55,31 @@ try {
     if (!in_array('gps_coords', $sliCols, true)) {
         $db->exec("ALTER TABLE `sales_lead_interactions` ADD COLUMN `gps_coords` VARCHAR(100) DEFAULT NULL");
     }
+    if (!in_array('next_callback_at', $sliCols, true)) {
+        $db->exec("ALTER TABLE `sales_lead_interactions` ADD COLUMN `next_callback_at` DATETIME DEFAULT NULL");
+    }
+    if (!in_array('callback_status', $sliCols, true)) {
+        $db->exec("ALTER TABLE `sales_lead_interactions` ADD COLUMN `callback_status` VARCHAR(30) DEFAULT 'none'");
+    }
+    if (!in_array('callback_notes', $sliCols, true)) {
+        $db->exec("ALTER TABLE `sales_lead_interactions` ADD COLUMN `callback_notes` VARCHAR(255) DEFAULT NULL");
+    }
+
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS `lead_callbacks` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `user_id` INT NOT NULL,
+          `assigned_to` INT DEFAULT NULL,
+          `scheduled_at` DATETIME NOT NULL,
+          `status` VARCHAR(30) DEFAULT 'scheduled',
+          `notes` TEXT DEFAULT NULL,
+          `completed_at` DATETIME DEFAULT NULL,
+          `created_by` INT DEFAULT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX `idx_exec_due` (`assigned_to`, `status`, `scheduled_at`),
+          INDEX `idx_lead_cb` (`user_id`, `scheduled_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
 
     $svCols = $db->query("SHOW COLUMNS FROM `user_site_visits`")->fetchAll(PDO::FETCH_COLUMN);
     if (!in_array('dtcp_marker_status', $svCols, true)) {
@@ -1078,6 +1103,182 @@ if ($method === 'POST') {
         ], 'Visit cancelled & client moved to On Hold');
     }
 
+    if ($action === 'schedule_callback') {
+        $userId = (int)($input['user_id'] ?? 0);
+        $callbackDate = trim((string)($input['callback_date'] ?? ''));
+        $callbackTime = trim((string)($input['callback_time'] ?? ''));
+        $scheduledAt = trim((string)($input['scheduled_at'] ?? ''));
+        $notes = trim((string)($input['notes'] ?? $input['callback_notes'] ?? ''));
+        $adminId = (int)($input['admin_id'] ?? 103);
+
+        if ($userId <= 0) {
+            Response::error('Invalid user ID', 400);
+        }
+
+        if ($scheduledAt === '') {
+            if ($callbackDate === '') {
+                Response::error('Callback date is required', 400);
+            }
+            $timePart = $callbackTime !== '' ? $callbackTime : '11:00';
+            if (strlen($timePart) === 5) {
+                $timePart .= ':00';
+            }
+            $scheduledAt = $callbackDate . ' ' . $timePart;
+        }
+
+        $existing = assertLeadNotDiscontinued($db, $userId);
+        $fromStage = $existing['status'] ?? 'new_enquiry';
+        $nextStage = in_array($fromStage, ['new', 'new_enquiry', ''], true) ? 'customer_contacted' : $fromStage;
+
+        // Resolve admin/executive name
+        $adminName = 'Sales Executive';
+        try {
+            $aStmt = $db->prepare("SELECT name FROM users WHERE id = ? LIMIT 1");
+            $aStmt->execute([$adminId]);
+            $foundName = trim((string)($aStmt->fetchColumn() ?: ''));
+            if ($foundName !== '') $adminName = $foundName;
+        } catch (\Throwable $e) {}
+
+        $assignedTo = (int)($input['assigned_to'] ?? ($existing['assigned_sales_id'] ?? $adminId));
+
+        // Mark any previously scheduled callbacks as rescheduled
+        try {
+            $db->prepare("UPDATE lead_callbacks SET status = 'rescheduled' WHERE user_id = ? AND status = 'scheduled'")
+               ->execute([$userId]);
+        } catch (\Throwable $e) {}
+
+        // Insert into lead_callbacks audit log
+        $cbStmt = $db->prepare("
+            INSERT INTO lead_callbacks (user_id, assigned_to, scheduled_at, status, notes, created_by, created_at)
+            VALUES (?, ?, ?, 'scheduled', ?, ?, NOW())
+        ");
+        $cbStmt->execute([$userId, $assignedTo, $scheduledAt, $notes !== '' ? $notes : null, $adminId]);
+        $callbackId = (int)$db->lastInsertId();
+
+        // Upsert sales_lead_interactions
+        $combinedNote = $notes !== '' ? $notes : ("Callback scheduled for " . date('d M Y, h:i A', strtotime($scheduledAt)));
+        if ($existing) {
+            $existingNotes = trim((string)($existing['notes'] ?? ''));
+            $mergedNotes = $notes !== '' ? $notes : $existingNotes;
+            $upd = $db->prepare("
+                UPDATE sales_lead_interactions
+                SET status = ?,
+                    next_callback_at = ?,
+                    callback_status = 'scheduled',
+                    callback_notes = ?,
+                    notes = ?,
+                    assigned_sales_id = COALESCE(assigned_sales_id, ?),
+                    updated_by = ?,
+                    updated_at = NOW()
+                WHERE user_id = ?
+            ");
+            $upd->execute([$nextStage, $scheduledAt, $combinedNote, $mergedNotes, $assignedTo, $adminId, $userId]);
+            $interactionId = (int)$existing['id'];
+        } else {
+            $ins = $db->prepare("
+                INSERT INTO sales_lead_interactions (
+                    user_id, status, intention, notes, next_callback_at, callback_status, callback_notes,
+                    assigned_sales_id, updated_by, updated_at
+                ) VALUES (?, ?, 'Callback Requested', ?, ?, 'scheduled', ?, ?, ?, NOW())
+            ");
+            $ins->execute([$userId, $nextStage, $combinedNote, $scheduledAt, $combinedNote, $assignedTo, $adminId]);
+            $interactionId = (int)$db->lastInsertId();
+        }
+
+        // Record in lead_stage_history
+        try {
+            $hStmt = $db->prepare("
+                INSERT INTO lead_stage_history (
+                    user_id, interaction_id, from_stage, to_stage, department,
+                    action_type, notes, metadata, changed_by, changed_by_name, created_at
+                ) VALUES (?, ?, ?, ?, 'sales', 'callback_scheduled', ?, ?, ?, ?, NOW())
+            ");
+            $meta = json_encode(['callback_id' => $callbackId, 'scheduled_at' => $scheduledAt]);
+            $hStmt->execute([
+                $userId,
+                $interactionId,
+                $fromStage,
+                $nextStage,
+                "Callback scheduled for " . date('d M Y, h:i A', strtotime($scheduledAt)) . ($notes !== '' ? " — {$notes}" : ''),
+                $meta,
+                $adminId,
+                $adminName
+            ]);
+        } catch (\Throwable $e) {}
+
+        Response::success([
+            'callback_id'      => $callbackId,
+            'user_id'          => $userId,
+            'status'           => $nextStage,
+            'next_callback_at' => $scheduledAt,
+            'callback_status'  => 'scheduled',
+            'callback_notes'   => $combinedNote
+        ], 'Callback scheduled successfully');
+    }
+
+    if ($action === 'complete_callback') {
+        $userId = (int)($input['user_id'] ?? 0);
+        $notes = trim((string)($input['notes'] ?? ''));
+        $adminId = (int)($input['admin_id'] ?? 103);
+
+        if ($userId <= 0) {
+            Response::error('Invalid user ID', 400);
+        }
+
+        $existing = assertLeadNotDiscontinued($db, $userId);
+        $currentStage = $existing['status'] ?? 'customer_contacted';
+
+        $adminName = 'Sales Executive';
+        try {
+            $aStmt = $db->prepare("SELECT name FROM users WHERE id = ? LIMIT 1");
+            $aStmt->execute([$adminId]);
+            $foundName = trim((string)($aStmt->fetchColumn() ?: ''));
+            if ($foundName !== '') $adminName = $foundName;
+        } catch (\Throwable $e) {}
+
+        try {
+            $db->prepare("UPDATE lead_callbacks SET status = 'completed', completed_at = NOW() WHERE user_id = ? AND status = 'scheduled'")
+               ->execute([$userId]);
+        } catch (\Throwable $e) {}
+
+        if ($existing) {
+            $upd = $db->prepare("
+                UPDATE sales_lead_interactions
+                SET callback_status = 'completed',
+                    next_callback_at = NULL,
+                    notes = CASE WHEN ? != '' THEN ? ELSE notes END,
+                    updated_by = ?,
+                    updated_at = NOW()
+                WHERE user_id = ?
+            ");
+            $upd->execute([$notes, $notes, $adminId, $userId]);
+            $interactionId = (int)$existing['id'];
+
+            try {
+                $hStmt = $db->prepare("
+                    INSERT INTO lead_stage_history (
+                        user_id, interaction_id, from_stage, to_stage, department,
+                        action_type, notes, changed_by, changed_by_name, created_at
+                    ) VALUES (?, ?, ?, ?, 'sales', 'callback_completed', ?, ?, ?, NOW())
+                ");
+                $hStmt->execute([
+                    $userId,
+                    $interactionId,
+                    $currentStage,
+                    $currentStage,
+                    $notes !== '' ? "Callback completed — {$notes}" : 'Scheduled callback completed',
+                    $adminId,
+                    $adminName
+                ]);
+            } catch (\Throwable $e) {}
+        }
+
+        Response::success([
+            'user_id'         => $userId,
+            'callback_status' => 'completed'
+        ], 'Callback marked as completed');
+    }
+
     Response::error('Invalid POST action', 400);
 }
 
@@ -1157,7 +1358,10 @@ if ($role === 'sales_executive') {
             sli.assigned_ops_id,
             ops_u.name AS assigned_ops_name,
             sli.transferred_at,
-            sli.updated_at AS last_contacted_at
+            sli.updated_at AS last_contacted_at,
+            sli.next_callback_at,
+            COALESCE(sli.callback_status, 'none') AS callback_status,
+            COALESCE(sli.callback_notes, '') AS callback_notes
         FROM users u
         LEFT JOIN sales_lead_interactions sli ON sli.user_id = u.id
         LEFT JOIN users sales_u ON sales_u.id = sli.assigned_sales_id
@@ -1266,18 +1470,49 @@ if ($role === 'sales_executive') {
             }
         }
 
-        // Tally statuses
+        // Tally statuses & callback urgency
+        $cbUrgency = 'none';
+        if (($v['callback_status'] ?? 'none') === 'scheduled' && !empty($v['next_callback_at'])) {
+            $cbTs = strtotime((string)$v['next_callback_at']);
+            $nowTs = time();
+            $todayDate = date('Y-m-d');
+            $cbDate = date('Y-m-d', $cbTs);
+            if ($cbTs !== false) {
+                if ($cbTs <= $nowTs) {
+                    $cbUrgency = 'overdue';
+                } elseif ($cbDate === $todayDate) {
+                    $cbUrgency = 'due_today';
+                } else {
+                    $cbUrgency = 'upcoming';
+                }
+            }
+        }
+        $v['callback_urgency'] = $cbUrgency;
+
         if ($v['interaction_status'] === 'interested_site_visit') $interestedCount++;
         else if ($v['interaction_status'] === 'contacted') $contactedCount++;
         else if ($v['interaction_status'] === 'transferred_advisor') $transferredCount++;
     }
     unset($v);
 
+    $callbacksScheduledCount = 0;
+    $callbacksDueCount = 0;
+    foreach ($visitors as $vis) {
+        if (($vis['callback_status'] ?? 'none') === 'scheduled') {
+            $callbacksScheduledCount++;
+            if (in_array($vis['callback_urgency'] ?? 'none', ['overdue', 'due_today'], true)) {
+                $callbacksDueCount++;
+            }
+        }
+    }
+
     $kpis = [
-        'totalAssignedLeads' => count($visitors),
-        'hotProspects'       => $interestedCount,
-        'contactedLeads'     => $contactedCount,
-        'transferredAdvisor' => $transferredCount
+        'totalAssignedLeads'  => count($visitors),
+        'hotProspects'        => $interestedCount,
+        'contactedLeads'      => $contactedCount,
+        'transferredAdvisor'  => $transferredCount,
+        'callbacksScheduled'  => $callbacksScheduledCount,
+        'callbacksDue'        => $callbacksDueCount
     ];
 
     Response::success([
@@ -1897,7 +2132,7 @@ if ($role === 'finance_admin') {
 // 5. CONTENT / GIS ADMIN DASHBOARD DATA (LIVE COUNTS)
 // -------------------------------------------------------------
 if ($role === 'content_gis_admin') {
-    $locStmt = $db->query("SELECT COUNT(*) AS loc_count FROM localities");
+    $locStmt = $db->query("SELECT COUNT(DISTINCT TRIM(locality)) AS loc_count FROM projects WHERE locality IS NOT NULL AND TRIM(locality) <> ''");
     $locCount = (int)($locStmt->fetch(PDO::FETCH_ASSOC)['loc_count'] ?? 0);
 
     $projStmt = $db->query("SELECT COUNT(*) AS proj_count FROM projects");

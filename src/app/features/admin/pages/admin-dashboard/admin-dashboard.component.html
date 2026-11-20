@@ -104,6 +104,18 @@
           }
         </button>
 
+        <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'site_visits'"
+          (click)="setTab('site_visits')">
+          <span class="material-symbols-outlined nav-icon text-amber">calendar_month</span>
+          @if (!isSidebarCollapsed()) {
+          <span class="nav-label">Site Visit Requests</span>
+          <span class="nav-badge" style="background:#ea580c;color:#ffffff;">
+            {{ siteVisitsStats().requested > 0 ? siteVisitsStats().requested + ' NEW' : siteVisitsStats().total + '
+            VISITS' }}
+          </span>
+          }
+        </button>
+
         <button type="button" class="sidebar-nav-item" [class.active]="activeTab() === 'buyer_workspaces'"
           (click)="setTab('buyer_workspaces')">
           <span class="material-symbols-outlined nav-icon">groups</span>
@@ -572,6 +584,15 @@
             <span class="material-symbols-outlined" style="color:#0f766e;">assignment_ind</span>
             <span>Leads</span>
             <span class="tab-badge-studio" style="background:#0f766e;color:#ffffff;">ASSIGN ROLES</span>
+          </button>
+
+          <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'site_visits'"
+            (click)="setTab('site_visits')" title="View and Coordinate Field Site Visit Requests">
+            <span class="material-symbols-outlined text-amber">calendar_month</span>
+            <span>Site Visits</span>
+            <span class="tab-badge-studio" style="background:#ea580c;color:#ffffff;">
+              {{ siteVisitsStats().requested > 0 ? siteVisitsStats().requested + ' NEW' : siteVisitsStats().total }}
+            </span>
           </button>
 
           <button type="button" class="admin-nav-item" [class.active]="activeTab() === 'buyer_workspaces'"
@@ -2856,6 +2877,695 @@
 
         @if (activeTab() === 'leads_assignment') {
         <app-admin-leads-assignment />
+        }
+
+        <!-- ======================================================== -->
+        <!-- DEDICATED ADMIN PAGE: SITE VISIT REQUESTS DESK           -->
+        <!-- ======================================================== -->
+        @if (activeTab() === 'site_visits') {
+        <section class="tab-pane-section site-visits-admin-section">
+
+          <!-- Command Center Hero Header -->
+          <div class="workspace-header-banner"
+            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 24px 28px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+            <div class="banner-title-block" style="display: flex; align-items: center; gap: 16px;">
+              <div class="banner-icon-box"
+                style="width: 52px; height: 52px; background: rgba(234, 88, 12, 0.18); border: 1px solid rgba(234, 88, 12, 0.4); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fb923c;">
+                <span class="material-symbols-outlined" style="font-size: 28px;">calendar_month</span>
+              </div>
+              <div>
+                <h2 class="banner-main-title"
+                  style="font-size: 22px; font-weight: 700; margin: 0 0 4px 0; color: #ffffff;">Site Visit Requests
+                  &amp; Field Escort Desk</h2>
+                <p class="banner-subtitle" style="font-size: 13px; color: #94a3b8; margin: 0;">Centralized coordination
+                  of buyer physical plot inspections, field vehicle escorts, and relationship manager assignments.</p>
+              </div>
+            </div>
+
+            <!-- Summary KPI Metric Cards -->
+            <div class="workspace-stats-pills" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px;">
+              <div class="stat-pill"
+                style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+                [style.borderColor]="siteVisitStatusFilter() === 'all' ? '#ea580c' : 'rgba(255,255,255,0.1)'"
+                (click)="siteVisitStatusFilter.set('all')">
+                <span class="stat-num" style="font-size: 18px; font-weight: 700; color: #ffffff; display: block;">{{
+                  siteVisitsStats().total }}</span>
+                <span class="stat-lbl" style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Total
+                  Requests</span>
+              </div>
+              <div class="stat-pill"
+                style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+                [style.borderColor]="siteVisitStatusFilter() === 'requested' ? '#f59e0b' : 'rgba(245, 158, 11, 0.3)'"
+                (click)="siteVisitStatusFilter.set('requested')">
+                <span class="stat-num" style="font-size: 18px; font-weight: 700; color: #fbbf24; display: block;">{{
+                  siteVisitsStats().requested }}</span>
+                <span class="stat-lbl" style="font-size: 11px; color: #fde68a; text-transform: uppercase;">Pending /
+                  New</span>
+              </div>
+              <div class="stat-pill"
+                style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+                [style.borderColor]="siteVisitStatusFilter() === 'confirmed' ? '#10b981' : 'rgba(16, 185, 129, 0.3)'"
+                (click)="siteVisitStatusFilter.set('confirmed')">
+                <span class="stat-num" style="font-size: 18px; font-weight: 700; color: #34d399; display: block;">{{
+                  siteVisitsStats().confirmed }}</span>
+                <span class="stat-lbl"
+                  style="font-size: 11px; color: #a7f3d0; text-transform: uppercase;">Confirmed</span>
+              </div>
+              <div class="stat-pill"
+                style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+                [style.borderColor]="siteVisitStatusFilter() === 'completed' ? '#3b82f6' : 'rgba(59, 130, 246, 0.3)'"
+                (click)="siteVisitStatusFilter.set('completed')">
+                <span class="stat-num" style="font-size: 18px; font-weight: 700; color: #60a5fa; display: block;">{{
+                  siteVisitsStats().completed }}</span>
+                <span class="stat-lbl"
+                  style="font-size: 11px; color: #bfdbfe; text-transform: uppercase;">Completed</span>
+              </div>
+              <div class="stat-pill"
+                style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer;"
+                [style.borderColor]="siteVisitStatusFilter() === 'cancelled' ? '#ef4444' : 'rgba(239, 68, 68, 0.3)'"
+                (click)="siteVisitStatusFilter.set('cancelled')">
+                <span class="stat-num" style="font-size: 18px; font-weight: 700; color: #f87171; display: block;">{{
+                  siteVisitsStats().cancelled }}</span>
+                <span class="stat-lbl"
+                  style="font-size: 11px; color: #fecaca; text-transform: uppercase;">Cancelled</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Bar: Filter Chips, View Mode Switcher & Search -->
+          <div
+            style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <!-- Status Filter Tabs -->
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <button type="button" class="subtab-btn" [class.active]="siteVisitStatusFilter() === 'all'"
+                (click)="siteVisitStatusFilter.set('all')"
+                style="padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease;">
+                <span>All Visits</span>
+                <span
+                  style="margin-left: 6px; background: #e2e8f0; color: #334155; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 600;">{{
+                  siteVisitsStats().total }}</span>
+              </button>
+              <button type="button" class="subtab-btn" [class.active]="siteVisitStatusFilter() === 'requested'"
+                (click)="siteVisitStatusFilter.set('requested')"
+                style="padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease;">
+                <span>Pending Assignment</span>
+                <span
+                  style="margin-left: 6px; background: #fef3c7; color: #92400e; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 600;">{{
+                  siteVisitsStats().requested }}</span>
+              </button>
+              <button type="button" class="subtab-btn" [class.active]="siteVisitStatusFilter() === 'confirmed'"
+                (click)="siteVisitStatusFilter.set('confirmed')"
+                style="padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease;">
+                <span>Confirmed</span>
+                <span
+                  style="margin-left: 6px; background: #dcfce7; color: #166534; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 600;">{{
+                  siteVisitsStats().confirmed }}</span>
+              </button>
+              <button type="button" class="subtab-btn" [class.active]="siteVisitStatusFilter() === 'completed'"
+                (click)="siteVisitStatusFilter.set('completed')"
+                style="padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease;">
+                <span>Completed</span>
+                <span
+                  style="margin-left: 6px; background: #dbeafe; color: #1e40af; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 600;">{{
+                  siteVisitsStats().completed }}</span>
+              </button>
+              <button type="button" class="subtab-btn" [class.active]="siteVisitStatusFilter() === 'cancelled'"
+                (click)="siteVisitStatusFilter.set('cancelled')"
+                style="padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease;">
+                <span>Cancelled</span>
+                <span
+                  style="margin-left: 6px; background: #fee2e2; color: #991b1b; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 600;">{{
+                  siteVisitsStats().cancelled }}</span>
+              </button>
+
+              @if (calendarSelectedDate()) {
+              <div class="active-date-chip"
+                style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size: 14px;">calendar_today</span>
+                <span>Date: {{ formatSelectedDateLong(calendarSelectedDate()) }}</span>
+                <button type="button" (click)="clearCalendarDateSelection()"
+                  style="background: none; border: none; cursor: pointer; color: #1d4ed8; display: flex; align-items: center; padding: 0;"
+                  title="Clear date filter">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                </button>
+              </div>
+              }
+            </div>
+
+            <!-- View Switcher & Search Bar -->
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <!-- Calendar vs Table View Mode Switcher -->
+              <div class="view-mode-pill-group"
+                style="display: flex; background: #f1f5f9; padding: 3px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <button type="button" class="view-mode-btn" [class.active]="siteVisitViewMode() === 'calendar'"
+                  (click)="siteVisitViewMode.set('calendar')"
+                  style="padding: 6px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;"
+                  [style.background]="siteVisitViewMode() === 'calendar' ? '#0f172a' : 'transparent'"
+                  [style.color]="siteVisitViewMode() === 'calendar' ? '#ffffff' : '#475569'">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span>
+                  <span>Calendar View</span>
+                </button>
+                <button type="button" class="view-mode-btn" [class.active]="siteVisitViewMode() === 'table'"
+                  (click)="siteVisitViewMode.set('table')"
+                  style="padding: 6px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;"
+                  [style.background]="siteVisitViewMode() === 'table' ? '#0f172a' : 'transparent'"
+                  [style.color]="siteVisitViewMode() === 'table' ? '#ffffff' : '#475569'">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">table_chart</span>
+                  <span>Table View</span>
+                </button>
+              </div>
+
+              <!-- Search Box -->
+              <div class="workspace-search-box" style="position: relative; min-width: 240px;">
+                <span class="material-symbols-outlined"
+                  style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; color: #94a3b8;">search</span>
+                <input type="text" [ngModel]="siteVisitSearchQuery()" (ngModelChange)="siteVisitSearchQuery.set($event)"
+                  placeholder="Search buyer, phone, plot..." class="workspace-search-input"
+                  style="width: 100%; padding: 8px 32px 8px 34px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+                @if (siteVisitSearchQuery()) {
+                <button type="button" class="btn-clear-search" (click)="siteVisitSearchQuery.set('')"
+                  style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8;">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+                </button>
+                }
+              </div>
+
+              <button type="button" class="btn-action-primary"
+                (click)="workspaceService.fetchAdminWorkspaces().subscribe()"
+                title="Refresh latest requests from database"
+                style="padding: 8px 14px; background: #0f172a; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">sync</span>
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- VIEW 1: INTERACTIVE SITE VISIT CALENDAR WITH COUNTS      -->
+          <!-- ======================================================== -->
+          @if (siteVisitViewMode() === 'calendar') {
+          <div class="site-visit-calendar-container"
+            style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); margin-bottom: 24px;">
+
+            <!-- Calendar Month Toolbar -->
+            <div class="calendar-toolbar"
+              style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
+              <!-- Left: Month Navigation -->
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <button type="button" (click)="prevCalendarMonth()" class="btn-cal-nav"
+                    style="width: 36px; height: 36px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #334155; transition: all 0.15s ease;"
+                    title="Previous Month">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">chevron_left</span>
+                  </button>
+                  <button type="button" (click)="nextCalendarMonth()" class="btn-cal-nav"
+                    style="width: 36px; height: 36px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #334155; transition: all 0.15s ease;"
+                    title="Next Month">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+                  </button>
+                </div>
+
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                  <h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #0f172a; min-width: 180px;">
+                    {{ calendarMonthYearLabel() }}
+                  </h3>
+                  <button type="button" (click)="goToCalendarToday()"
+                    style="padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 5px; border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a; cursor: pointer;">
+                    Jump to Today
+                  </button>
+                </div>
+
+                @if (calendarSelectedDate()) {
+                <button type="button" (click)="clearCalendarDateSelection()"
+                  style="padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 6px; border: 1px solid #cbd5e1; background: #eff6ff; color: #1d4ed8; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">filter_alt_off</span>
+                  <span>Show Entire Month</span>
+                </button>
+                }
+              </div>
+
+              <!-- Right: Month Summary Badges -->
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">{{
+                  calendarMonthStats().monthLabel }}:</span>
+                <span
+                  style="font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #f1f5f9; color: #0f172a; font-weight: 700; border: 1px solid #e2e8f0;">
+                  {{ calendarMonthStats().total }} Scheduled
+                </span>
+                @if (calendarMonthStats().requested > 0) {
+                <span
+                  style="font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #fef3c7; color: #92400e; font-weight: 700; border: 1px solid #fde68a;">
+                  {{ calendarMonthStats().requested }} Pending
+                </span>
+                }
+                @if (calendarMonthStats().confirmed > 0) {
+                <span
+                  style="font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #dcfce7; color: #166534; font-weight: 700; border: 1px solid #bbf7d0;">
+                  {{ calendarMonthStats().confirmed }} Confirmed
+                </span>
+                }
+                @if (calendarMonthStats().completed > 0) {
+                <span
+                  style="font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #dbeafe; color: #1e40af; font-weight: 700; border: 1px solid #bfdbfe;">
+                  {{ calendarMonthStats().completed }} Done
+                </span>
+                }
+              </div>
+            </div>
+
+            <!-- 7-Column Calendar Grid -->
+            <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+              <!-- Weekday Headers -->
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Sun</div>
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Mon</div>
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Tue</div>
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Wed</div>
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Thu</div>
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Fri</div>
+              <div class="weekday-header"
+                style="text-align: center; font-size: 11.5px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 6px; text-transform: uppercase;">
+                Sat</div>
+
+              <!-- Day Cells -->
+              @for (day of calendarDays(); track day.dateStr) {
+              <div class="calendar-cell" (click)="selectCalendarDate(day.dateStr)"
+                [style.opacity]="day.isCurrentMonth ? '1' : '0.38'"
+                [style.background]="day.isSelected ? '#eff6ff' : (day.isToday ? '#f0f9ff' : '#ffffff')"
+                [style.borderColor]="day.isSelected ? '#2563eb' : (day.isToday ? '#0284c7' : '#e2e8f0')"
+                [style.boxShadow]="day.isSelected ? '0 0 0 2px #2563eb, 0 8px 16px rgba(37,99,235,0.1)' : 'none'"
+                style="min-height: 104px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.15s ease; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+
+                <!-- Cell Header: Day Number & Today Tag -->
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 13px; font-weight: 700;"
+                    [style.color]="day.isToday ? '#0284c7' : (day.isCurrentMonth ? '#0f172a' : '#94a3b8')">
+                    {{ day.dayNumber }}
+                  </span>
+
+                  @if (day.isToday) {
+                  <span
+                    style="font-size: 9px; font-weight: 700; background: #0284c7; color: #ffffff; padding: 1px 5px; border-radius: 3px; text-transform: uppercase;">
+                    Today
+                  </span>
+                  }
+                </div>
+
+                <!-- Cell Body: NUMBER OF SITE VISITS COUNT BADGE -->
+                <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                  @if (day.count > 0) {
+                  <!-- SITE VISIT COUNT BADGE ON THE DATE -->
+                  <div class="site-visit-count-badge"
+                    [style.background]="day.requestedCount > 0 ? '#fef3c7' : (day.confirmedCount > 0 ? '#dcfce7' : '#dbeafe')"
+                    [style.color]="day.requestedCount > 0 ? '#92400e' : (day.confirmedCount > 0 ? '#166534' : '#1e40af')"
+                    [style.borderColor]="day.requestedCount > 0 ? '#fcd34d' : (day.confirmedCount > 0 ? '#86efac' : '#bfdbfe')"
+                    style="border: 1px solid #cbd5e1; padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
+                    <span style="display: inline-flex; align-items: center; gap: 3px;">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">calendar_month</span>
+                      <span>{{ day.count }} {{ day.count === 1 ? 'Visit' : 'Visits' }}</span>
+                    </span>
+                    <span style="width: 7px; height: 7px; border-radius: 50%;"
+                      [style.background]="day.requestedCount > 0 ? '#f59e0b' : (day.confirmedCount > 0 ? '#10b981' : '#3b82f6')">
+                    </span>
+                  </div>
+
+                  <!-- Mini Plot Preview Snippets -->
+                  @for (v of day.visits.slice(0, 2); track v.id) {
+                  <div
+                    style="font-size: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #334155;"
+                    [title]="v.property_title + ' • ' + (v.user_name || 'Buyer #' + v.user_id)">
+                    <span style="font-weight: 700; color: #0f172a;">{{ v.status === 'confirmed' ? '✓' : '•' }}</span>
+                    {{ v.property_title }}
+                  </div>
+                  }
+
+                  @if (day.count > 2) {
+                  <span style="font-size: 9.5px; color: #64748b; font-weight: 600; text-align: right;">
+                    +{{ day.count - 2 }} more
+                  </span>
+                  }
+                  }
+                </div>
+
+                <!-- Active Selection Indicator -->
+                @if (day.isSelected) {
+                <div
+                  style="margin-top: 4px; text-align: center; font-size: 9.5px; font-weight: 700; color: #1d4ed8; background: #dbeafe; border-radius: 4px; padding: 1px 0;">
+                  Selected Day
+                </div>
+                }
+              </div>
+              }
+            </div>
+
+            <!-- Day Schedule Inspector Panel -->
+            <div class="calendar-day-inspector"
+              style="margin-top: 24px; padding: 20px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0;">
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <h4
+                    style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined"
+                      style="color: #ea580c; font-size: 22px;">event_available</span>
+                    <span>
+                      {{ calendarSelectedDate() ? 'Site Visits for ' + formatSelectedDateLong(calendarSelectedDate()) :
+                      'Appointments Inspector' }}
+                    </span>
+                  </h4>
+                  <p style="margin: 3px 0 0 0; font-size: 12.5px; color: #64748b;">
+                    {{ calendarSelectedDate() ? selectedDateVisits().length + ' site visit(s) scheduled for this date' :
+                    'Click on any highlighted date in the calendar above to view buyer contacts and assign executives.'
+                    }}
+                  </p>
+                </div>
+
+                @if (calendarSelectedDate()) {
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button type="button" (click)="clearCalendarDateSelection()"
+                    style="padding: 6px 12px; font-size: 12px; border: 1px solid #cbd5e1; background: #ffffff; border-radius: 6px; cursor: pointer; color: #475569;">
+                    Show All Dates
+                  </button>
+                  <button type="button" (click)="siteVisitViewMode.set('table')"
+                    style="padding: 6px 14px; font-size: 12px; font-weight: 600; border: none; background: #0f172a; color: #ffffff; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">table_chart</span>
+                    <span>View in Table</span>
+                  </button>
+                </div>
+                }
+              </div>
+
+              <!-- List of Visit Cards for Selected Date -->
+              @if (calendarSelectedDate()) {
+              @if (selectedDateVisits().length > 0) {
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 14px;">
+                @for (v of selectedDateVisits(); track v.id) {
+                <div class="calendar-visit-card"
+                  style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                  <!-- Card Header: ID & Status -->
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="font-mono text-muted"
+                      style="font-weight: 700; color: #64748b; font-size: 12px;">VISIT-{{ v.id }}</span>
+                    <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'"
+                      [class.status-requested]="v.status === 'requested'"
+                      [class.status-completed]="v.status === 'completed'"
+                      [class.status-cancelled]="v.status === 'cancelled'">
+                      <span class="status-dot"></span>
+                      <span>{{ v.status | uppercase }}</span>
+                    </span>
+                  </div>
+
+                  <!-- Buyer Details -->
+                  <div>
+                    <strong style="color: #0f172a; font-size: 14px; display: block;">{{ v.user_name || 'Buyer #' +
+                      v.user_id }}</strong>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                      <a [href]="'tel:' + v.user_phone"
+                        style="font-size: 12px; color: #0284c7; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">call</span>
+                        <span>{{ v.user_phone }}</span>
+                      </a>
+                      <a [href]="'https://wa.me/' + (v.user_phone | slice:0:15)" target="_blank"
+                        style="font-size: 12px; color: #16a34a; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">chat</span>
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Property & Location -->
+                  <div style="background: #f8fafc; padding: 8px 10px; border-radius: 6px; border: 1px solid #f1f5f9;">
+                    <a [routerLink]="['/property', v.property_id]"
+                      style="color: #0f172a; font-weight: 600; font-size: 13px; text-decoration: none; display: block;">
+                      {{ v.property_title }}
+                    </a>
+                    <span
+                      style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 3px; margin-top: 2px;">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">location_on</span>
+                      {{ v.locality }}
+                    </span>
+                  </div>
+
+                  <!-- Appointment Slot & Escort Info -->
+                  <div style="font-size: 12px; color: #334155; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <span class="material-symbols-outlined" style="font-size: 15px; color: #ea580c;">schedule</span>
+                      <span style="font-weight: 600;">{{ v.visit_slot }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <span class="material-symbols-outlined" style="font-size: 15px; color: #64748b;">commute</span>
+                      <span>Pickup: <strong>{{ v.pickup_location || 'Koyambedu Metro Station, Gate 2' }}</strong></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <span class="material-symbols-outlined" style="font-size: 15px; color: #64748b;">badge</span>
+                      <span>Field Escort: <strong>{{ v.assigned_executive_name || 'Unassigned' }}</strong></span>
+                    </div>
+                  </div>
+
+                  <!-- Card Actions -->
+                  <div
+                    style="display: flex; gap: 6px; justify-content: flex-end; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                    <button type="button" class="btn-action-primary" (click)="openAssignVisitModal(v)"
+                      style="padding: 6px 10px; font-size: 11px; background: #0f172a; color: #ffffff; border-radius: 5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">person_add</span>
+                      <span>Assign</span>
+                    </button>
+
+                    @if (v.status === 'requested') {
+                    <button type="button" (click)="quickUpdateVisitStatus(v, 'confirmed')"
+                      style="padding: 6px 10px; font-size: 11px; background: #16a34a; color: #ffffff; border-radius: 5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">check</span>
+                      <span>Confirm</span>
+                    </button>
+                    }
+
+                    @if (v.status === 'confirmed') {
+                    <button type="button" (click)="quickUpdateVisitStatus(v, 'completed')"
+                      style="padding: 6px 10px; font-size: 11px; background: #2563eb; color: #ffffff; border-radius: 5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">done_all</span>
+                      <span>Done</span>
+                    </button>
+                    }
+
+                    @if (v.status !== 'cancelled' && v.status !== 'completed') {
+                    <button type="button" (click)="quickUpdateVisitStatus(v, 'cancelled')"
+                      style="padding: 6px 8px; font-size: 11px; background: #fee2e2; color: #b91c1c; border-radius: 5px; border: 1px solid #fecaca; cursor: pointer; display: inline-flex; align-items: center;"
+                      title="Cancel Appointment">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">close</span>
+                    </button>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+              } @else {
+              <div
+                style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 24px; text-align: center; color: #64748b;">
+                <span class="material-symbols-outlined" style="font-size: 32px; color: #94a3b8;">event_busy</span>
+                <p style="margin: 6px 0 0 0; font-size: 13px;">No site visits scheduled for {{
+                  formatSelectedDateLong(calendarSelectedDate()) }}.</p>
+              </div>
+              }
+              } @else {
+              <div
+                style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div
+                    style="width: 40px; height: 40px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">touch_app</span>
+                  </div>
+                  <div>
+                    <strong style="color: #0f172a; font-size: 13.5px; display: block;">Interactive Site Visit Calendar
+                      Ready</strong>
+                    <span style="font-size: 12px; color: #64748b;">Each date displays the exact count of scheduled
+                      visits. Click any date cell above to inspect buyers and manage field vehicle escorts.</span>
+                  </div>
+                </div>
+                <button type="button" (click)="goToCalendarToday()"
+                  style="padding: 6px 14px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; color: #0f172a;">
+                  Inspect Today
+                </button>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- ======================================================== -->
+          <!-- VIEW 2: COMPREHENSIVE DATA TABLE VIEW                     -->
+          <!-- ======================================================== -->
+          @if (siteVisitViewMode() === 'table') {
+          @if (dedicatedSiteVisits().length > 0) {
+          <div class="workspace-table-container">
+            <table class="workspace-table">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Visit ID</th>
+                  <th>Buyer Contact</th>
+                  <th>Property &amp; Location</th>
+                  <th>Appointment</th>
+                  <th>Pickup Point</th>
+                  <th>Assigned Executive</th>
+                  <th style="width: 120px;">Status</th>
+                  <th class="th-actions" style="text-align: right; min-width: 220px;">Administrative Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of dedicatedSiteVisits(); track v.id) {
+                <tr>
+                  <td><span class="font-mono text-muted" style="font-weight: 600; color: #64748b;">VISIT-{{ v.id
+                      }}</span></td>
+                  <td>
+                    <div class="user-meta-sub">
+                      <strong style="color: #0f172a; display: block;">{{ v.user_name || 'Buyer #' + v.user_id
+                        }}</strong>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                        <a [href]="'tel:' + v.user_phone" class="text-muted-xs"
+                          style="color: #0284c7; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;">
+                          <span class="material-symbols-outlined" style="font-size: 12px;">call</span>
+                          <span>{{ v.user_phone }}</span>
+                        </a>
+                        <a [href]="'https://wa.me/' + (v.user_phone | slice:0:15)" target="_blank" class="text-muted-xs"
+                          style="color: #16a34a; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;"
+                          title="Chat on WhatsApp">
+                          <span class="material-symbols-outlined" style="font-size: 12px;">chat</span>
+                          <span>WhatsApp</span>
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="prop-meta-cell">
+                      <a [routerLink]="['/property', v.property_id]" class="prop-link-bold"
+                        style="color: #0f172a; font-weight: 600; text-decoration: none;">
+                        {{ v.property_title }}
+                      </a>
+                      <span class="text-muted-xs"
+                        style="display: flex; align-items: center; gap: 3px; color: #64748b; font-size: 11px; margin-top: 2px;">
+                        <span class="material-symbols-outlined"
+                          style="font-size: 13px; color: #94a3b8;">location_on</span>
+                        {{ v.locality }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="slot-cell">
+                      <span class="font-bold"
+                        style="display: flex; align-items: center; gap: 4px; color: #0f172a; font-size: 13px;">
+                        <span class="material-symbols-outlined"
+                          style="font-size: 14px; color: #ea580c;">calendar_today</span>
+                        {{ v.visit_date }}
+                      </span>
+                      <span class="text-muted-xs" style="color: #64748b; font-size: 11px; margin-left: 18px;">{{
+                        v.visit_slot }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pickup-text"
+                      style="font-size: 12px; color: #334155; display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 14px; color: #64748b;">commute</span>
+                      {{ v.pickup_location || 'Koyambedu Metro Station, Gate 2' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="exec-cell">
+                      @if (v.assigned_executive_name) {
+                      <span class="exec-name-bold"
+                        style="font-weight: 600; color: #0f172a; font-size: 12px; display: block;">{{
+                        v.assigned_executive_name }}</span>
+                      <a [href]="'tel:' + v.assigned_executive_phone" class="exec-phone-sub"
+                        style="font-size: 11px; color: #0284c7; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;">
+                        <span class="material-symbols-outlined" style="font-size: 11px;">phone</span>
+                        <span>{{ v.assigned_executive_phone }}</span>
+                      </a>
+                      } @else {
+                      <span
+                        style="font-size: 11px; color: #ea580c; background: #fff7ed; padding: 2px 6px; border-radius: 4px; border: 1px dashed #fdba74;">
+                        Unassigned
+                      </span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-chip" [class.status-confirmed]="v.status === 'confirmed'"
+                      [class.status-requested]="v.status === 'requested'"
+                      [class.status-completed]="v.status === 'completed'"
+                      [class.status-cancelled]="v.status === 'cancelled'">
+                      <span class="status-dot"></span>
+                      <span>{{ v.status | uppercase }}</span>
+                    </span>
+                  </td>
+                  <td class="td-actions" style="text-align: right;">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                      <!-- Assign / Edit Modal Trigger -->
+                      <button type="button" class="btn-action-primary" (click)="openAssignVisitModal(v)"
+                        style="padding: 6px 10px; font-size: 11px; background: #0f172a; color: #ffffff; border-radius: 5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                        title="Assign Executive, Change Pickup Location, or Add Notes">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">person_add</span>
+                        <span>Assign</span>
+                      </button>
+
+                      @if (v.status === 'requested') {
+                      <button type="button" (click)="quickUpdateVisitStatus(v, 'confirmed')"
+                        style="padding: 6px 10px; font-size: 11px; background: #16a34a; color: #ffffff; border-radius: 5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                        title="Mark Site Visit Confirmed">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                        <span>Confirm</span>
+                      </button>
+                      }
+
+                      @if (v.status === 'confirmed') {
+                      <button type="button" (click)="quickUpdateVisitStatus(v, 'completed')"
+                        style="padding: 6px 10px; font-size: 11px; background: #2563eb; color: #ffffff; border-radius: 5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                        title="Mark Site Visit Completed">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">done_all</span>
+                        <span>Done</span>
+                      </button>
+                      }
+
+                      @if (v.status !== 'cancelled' && v.status !== 'completed') {
+                      <button type="button" (click)="quickUpdateVisitStatus(v, 'cancelled')"
+                        style="padding: 6px 8px; font-size: 11px; background: #fee2e2; color: #b91c1c; border-radius: 5px; border: 1px solid #fecaca; cursor: pointer; display: inline-flex; align-items: center;"
+                        title="Cancel Appointment">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                      </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          } @else {
+          <div
+            style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 48px 24px; text-align: center;">
+            <span class="material-symbols-outlined"
+              style="font-size: 48px; color: #94a3b8; display: block; margin-bottom: 8px;">event_busy</span>
+            <h3 style="font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 4px 0;">No Site Visits Found</h3>
+            <p style="font-size: 13px; color: #64748b; margin: 0 0 16px 0;">No site visits match status filter "{{
+              siteVisitStatusFilter() }}" or search term "{{ siteVisitSearchQuery() }}".</p>
+            <button type="button"
+              (click)="siteVisitStatusFilter.set('all'); siteVisitSearchQuery.set(''); clearCalendarDateSelection()"
+              style="padding: 8px 16px; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; cursor: pointer;">
+              Reset Filters
+            </button>
+          </div>
+          }
+          }
+
+        </section>
         }
 
         <!-- PART 2: DEVELOPERS, FINANCIALS, MINDSET, BULK UPLOAD & BUYER CRM -->

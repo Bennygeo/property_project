@@ -20,6 +20,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
 import { CompareService } from '../../../../core/services/compare.service';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { HeaderComponent } from '../../../home/components/header/header.component';
 import { FooterComponent } from '../../../home/components/footer/footer.component';
 import { TopConciergeBarComponent } from '../../../home/components/top-concierge-bar/top-concierge-bar.component';
@@ -27,11 +28,10 @@ import { TopupDialogComponent } from '../../../home/components/topup-dialog/topu
 import { ToastComponent } from '../../../home/components/toast/toast.component';
 import { PropertyMediaModalComponent } from '../../../home/components/property-media-modal/property-media-modal.component';
 import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
-import { VirtualPropertyPresenterComponent } from '../../../../shared/components/virtual-property-presenter/virtual-property-presenter.component';
 
 export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
 export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
-export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_transit' | 'overview';
+export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_transit';
 
 @Component({
   selector: 'app-property-details-page',
@@ -46,8 +46,7 @@ export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_tran
     TopupDialogComponent,
     ToastComponent,
     PropertyMediaModalComponent,
-    SecureVideoPlayerComponent,
-    VirtualPropertyPresenterComponent
+    SecureVideoPlayerComponent
   ],
   templateUrl: './property-details-page.component.html',
   styleUrls: ['./property-details-page.component.scss']
@@ -79,6 +78,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly authService = inject(AuthService);
   readonly userBehaviorService = inject(UserBehaviorService);
   readonly compareService = inject(CompareService);
+  readonly workspaceService = inject(WorkspaceService);
 
   readonly isEntitlementExhausted = signal<boolean>(false);
   readonly isQuotaModalDismissed = signal<boolean>(false);
@@ -136,7 +136,7 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   });
 
   // Active in-page navigation section
-  readonly activeNavSection = signal<string>('overview');
+  readonly activeNavSection = signal<string>('infrastructure');
   readonly activeDetailTab = signal<DetailContextTab>('infrastructure');
 
   setDetailTab(tab: DetailContextTab): void {
@@ -577,8 +577,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       this.activeDetailTab.set('legal_specs');
     } else if (sectionId === 'transit-connectivity' || sectionId === 'gps-audit' || sectionId === 'location') {
       this.activeDetailTab.set('location_transit');
-    } else if (sectionId === 'overview' || sectionId === 'amenities' || sectionId === 'floor-plan') {
-      this.activeDetailTab.set('overview');
     }
     this.activeNavSection.set(sectionId);
     const element = document.getElementById(sectionId) || document.getElementById('details-context-workspace');
@@ -756,15 +754,20 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
     this.isSubmittingVisit.set(true);
 
+    const currentUid = this.authService.currentUser()?.id;
     this.propertyService.submitSiteVisitLead({
       propertyId: prop.id,
       name: this.buyerName() || 'Guest Buyer',
       phone: this.buyerPhone() || '+91 94441 00000',
+      userId: currentUid,
       date: this.visitDate(),
       slot: this.visitTimeSlot(),
       notes: `Requested via Property Details Page for ${prop.title}`
     }).subscribe(() => {
       this.isSubmittingVisit.set(false);
+      if (currentUid) {
+        this.workspaceService.fetchUserWorkspace(currentUid).subscribe();
+      }
       this.notificationService.show({
         type: 'success',
         title: 'Survey Visit Scheduled & Logged to DB',
@@ -937,10 +940,12 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
     this.isSubmittingPromptVisit.set(true);
 
+    const currentUid = this.authService.currentUser()?.id;
     this.propertyService.submitSiteVisitLead({
       propertyId: prop.id,
       name,
       phone,
+      userId: currentUid,
       date,
       slot,
       notes: `High-Intent 50s Engagement Prompt for ${prop.title}`
@@ -948,6 +953,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       next: () => {
         this.isSubmittingPromptVisit.set(false);
         this.isSiteVisitPromptOpen.set(false);
+        if (currentUid) {
+          this.workspaceService.fetchUserWorkspace(currentUid).subscribe();
+        }
         this.notificationService.show({
           type: 'success',
           title: 'Free Site Visit Scheduled!',
@@ -958,6 +966,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       error: () => {
         this.isSubmittingPromptVisit.set(false);
         this.isSiteVisitPromptOpen.set(false);
+        if (currentUid) {
+          this.workspaceService.fetchUserWorkspace(currentUid).subscribe();
+        }
         this.notificationService.show({
           type: 'success',
           title: 'Site Visit Request Logged',

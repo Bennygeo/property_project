@@ -361,10 +361,10 @@
                   <span class="prop-ref-code">#{{ prop.id }}</span>
 
                   <!-- Status Badges -->
-                  @if (prop.status === 'pending_review') {
+                  @if (prop.status === 'pending_review' || prop.status === 'in_review') {
                   <span class="status-chip pending">
                     <span class="material-symbols-outlined">schedule</span>
-                    <span>Pending Admin Verification</span>
+                    <span>In Review</span>
                   </span>
                   } @else if (prop.status === 'published') {
                   <span class="status-chip success">

@@ -87,39 +87,43 @@ if (empty($mainImageUrl)) {
 
 $db = (new Database())->getConnection();
 
-// Generate unique property ID
+// Generate unique project ID
 $propId = 'prop-usr-' . bin2hex(random_bytes(4));
 
-$sql = "
-    INSERT INTO properties (
-        id, city_id, locality_id, title, property_type, listing_mode, locality_name, city_name,
-        price, price_per_sqft, sqft, bhk_badge, facing_or_view, main_image_url, rera_number,
-        status, submitted_by_user_id, submitted_by_name, submitted_by_role
-    ) VALUES (
-        :id, 1, 1, :title, :propertyType, :listingMode, :localityName, :cityName,
-        :price, :pricePerSqft, :sqft, :bhkBadge, :facingOrView, :mainImageUrl, :reraNumber,
-        'pending_review', :userId, :userName, 'user'
-    )
-";
+// Save complete project record directly into `projects` and `project_details`
+$savedToProjects = PropertyMasterHelper::saveProjectAndDetails(
+    $db,
+    $propId,
+    $input,
+    is_array($masterDetails) ? $masterDetails : [],
+    [
+        'status'               => 'pending_review',
+        'submitted_by'         => $userName,
+        'submitted_by_user_id' => $userId
+    ]
+);
 
-$stmt = $db->prepare($sql);
-$stmt->execute([
-    ':id'           => $propId,
-    ':title'        => $title,
-    ':propertyType' => $propertyType,
-    ':listingMode'  => $listingMode,
-    ':localityName' => $localityName,
-    ':cityName'     => $cityName,
-    ':price'        => $price,
-    ':pricePerSqft' => !empty($pricePerSqft) ? $pricePerSqft : 'Market Standard',
-    ':sqft'         => !empty($sqft) ? $sqft : 'Standard',
-    ':bhkBadge'     => $bhkBadge,
-    ':facingOrView' => $facingOrView,
-    ':mainImageUrl' => $mainImageUrl,
-    ':reraNumber'   => $reraNumber,
-    ':userId'       => $userId,
-    ':userName'     => $userName
-]);
+if (!$savedToProjects) {
+    Response::error('Failed to save property into projects and project_details tables', 500);
+}
+
+// Remove the draft entry from `property_submission_drafts` immediately after successful insertion
+$draftId    = trim((string)($input['draftId'] ?? ''));
+$sessionKey = trim((string)($input['sessionKey'] ?? ''));
+try {
+    if ($draftId !== '') {
+        $delDraft = $db->prepare("DELETE FROM property_submission_drafts WHERE id = :id");
+        $delDraft->execute([':id' => $draftId]);
+    } elseif ($sessionKey !== '') {
+        $delDraft = $db->prepare("DELETE FROM property_submission_drafts WHERE session_key = :sk AND status = 'in_progress'");
+        $delDraft->execute([':sk' => $sessionKey]);
+    } elseif ($userId > 0) {
+        $delDraft = $db->prepare("DELETE FROM property_submission_drafts WHERE user_id = :uid AND status = 'in_progress'");
+        $delDraft->execute([':uid' => $userId]);
+    }
+} catch (\Throwable $e) {
+    error_log('Draft cleanup after submission warning: ' . $e->getMessage());
+}
 
 // Also save additional uploaded gallery photos if provided
 $galleryImages = $input['galleryImages'] ?? $input['images'] ?? [];
@@ -287,18 +291,6 @@ if ($propertyType === 'Gated CMDA Plots' || !empty($plotFactsheet) || !empty($su
             error_log('User plot factsheet/subdivided plots insert error: ' . $e->getMessage());
         }
     }
-
-// Save complete ~70-column record into `projects`, `project_details`, and `property_master_details`
-PropertyMasterHelper::saveProjectAndDetails(
-    $db,
-    $propId,
-    $input,
-    is_array($masterDetails) ? $masterDetails : [],
-    [
-        'status'       => 'pending_review',
-        'submitted_by' => $userName
-    ]
-);
 
 Response::success([
     'propertyId' => $propId,

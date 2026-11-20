@@ -1,7 +1,7 @@
 <?php
 /**
  * Mannidam Real Estate Marketplace - High-Growth Corridors API
- * Dynamically aggregates verified growth corridors from property_master_details and properties tables.
+ * Dynamically aggregates verified growth corridors from projects and project_details tables.
  */
 
 declare(strict_types=1);

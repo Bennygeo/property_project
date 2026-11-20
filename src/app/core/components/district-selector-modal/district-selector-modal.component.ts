@@ -523,6 +523,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
     .districts-container {
       flex: 1 1 auto;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 0.75rem 1.5rem 1rem 1.5rem;
       max-height: 420px;
     }
@@ -531,7 +532,9 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 0.65rem;
+      flex-wrap: wrap;
     }
 
     .section-title {
@@ -540,6 +543,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      white-space: nowrap;
     }
 
     .region-hint {
@@ -551,9 +555,11 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 7px;
+      width: 100%;
+      box-sizing: border-box;
 
       @media (max-width: 580px) {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
@@ -561,6 +567,11 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
       padding: 9px 12px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -596,6 +607,8 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       align-items: center;
       gap: 9px;
       min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
     }
 
     .district-indicator {
@@ -603,6 +616,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       align-items: center;
       justify-content: center;
       color: #94a3b8;
+      flex-shrink: 0;
 
       .material-symbols-outlined {
         font-size: 18px;
@@ -612,22 +626,35 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
     .district-names {
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 5px;
+      min-width: 0;
+      flex: 1 1 auto;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .district-title {
       font-size: 13px;
       font-weight: 600;
       color: #1e293b;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .district-alt {
       font-size: 11px;
       color: #64748b;
       font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .district-card-right {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
     }
 
     .region-badge {
@@ -639,6 +666,7 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       background: #f1f5f9;
       color: #475569;
       flex-shrink: 0;
+      white-space: nowrap;
 
       &[data-region="Northern"] {
         background: #eff6ff;
@@ -724,10 +752,19 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       gap: 6px;
       font-size: 12px;
       color: #475569;
+      min-width: 0;
+      overflow: hidden;
 
       .material-symbols-outlined {
         font-size: 16px;
         color: #10b981;
+        flex-shrink: 0;
+      }
+
+      span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       strong {
@@ -744,10 +781,45 @@ import { LocationService, TamilNaduDistrict } from '../../services/location.serv
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
+      flex-shrink: 0;
       transition: background 0.15s ease;
 
       &:hover {
         background: #497259;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .district-modal-backdrop {
+        padding: 0.75rem 0.5rem;
+      }
+
+      .district-modal-card {
+        max-height: 92vh;
+      }
+
+      .district-modal-header {
+        padding: 1.125rem 1rem 0.875rem 1rem;
+      }
+
+      .gps-detect-bar {
+        padding: 0.75rem 1rem 0.5rem 1rem;
+      }
+
+      .district-search-bar {
+        margin: 0.375rem 1rem 0.625rem 1rem;
+      }
+
+      .popular-chips-section {
+        padding: 0 1rem 0.625rem 1rem;
+      }
+
+      .districts-container {
+        padding: 0.625rem 1rem 0.875rem 1rem;
+      }
+
+      .district-modal-footer {
+        padding: 0.75rem 1rem;
       }
     }
   `]

@@ -5137,8 +5137,8 @@ input[type="radio"] {
   }
 
   .mrs-back-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
@@ -5146,8 +5146,8 @@ input[type="radio"] {
     color: #1e293b;
     text-decoration: none;
     flex-shrink: 0;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: #fff;
+    border: 1px solid #e7e7e7;
   }
 
   .mrs-back-btn .material-symbols-outlined {
@@ -5162,8 +5162,8 @@ input[type="radio"] {
     align-items: center;
     gap: 8px;
     padding: 0 12px;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
+    background: #fff;
+    border: 1px solid #e7e7e7;
     border-radius: 999px;
     cursor: pointer;
     text-align: left;
@@ -5211,10 +5211,10 @@ input[type="radio"] {
 
   .mrs-filter-btn {
     position: relative;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #e7e7e7;
     background: #ffffff;
     color: #0f3b4a;
     display: inline-flex;
@@ -5225,7 +5225,7 @@ input[type="radio"] {
   }
 
   .mrs-filter-btn.has-filters {
-    border-color: var(--brand-green, #5e8f72);
+    /* border-color: var(--brand-green, #5e8f72); */
     color: var(--brand-green-dark, #2c4938);
   }
 

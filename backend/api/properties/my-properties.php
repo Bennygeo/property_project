@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 $userId = (int)($_GET['user_id'] ?? 0);
-if ($userId <= 1) {
+if ($userId <= 0) {
     Response::success([
         'total'      => 0,
         'properties' => []
@@ -40,87 +40,76 @@ if (!$user || ($user['role'] ?? '') === 'public_visitor') {
 }
 
 $role = $user['role'] ?? 'buyer';
+$userName = trim((string)($user['name'] ?? ''));
 $developerId = (int)($user['developer_id'] ?? 0);
 
+// Query projects directly from `projects` base table
+$query = "
+    SELECT
+        p.project_id AS id,
+        p.project_id AS projectId,
+        p.project_name AS title,
+        p.project_name AS projectName,
+        COALESCE(p.developer_name, p.submitted_by, 'Independent Owner') AS developerName,
+        p.category AS propertyType,
+        p.type AS listingMode,
+        p.locality AS localityName,
+        p.city AS cityName,
+        p.district,
+        p.price_from AS price,
+        p.sqft_rate AS pricePerSqft,
+        p.min_plot_size AS sqft,
+        'Approved Plot' AS bhkBadge,
+        'Direct SRO Deed' AS facingOrView,
+        COALESCE(p.cover_image, 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80') AS mainImageUrl,
+        p.rera_no AS reraNumber,
+        COALESCE(p.status, 'pending_review') AS status,
+        p.submitted_by AS submittedByName,
+        p.submitted_by_user_id AS submittedByUserId,
+        p.reviewed_by AS reviewedByName,
+        p.reviewed_at AS reviewedAt,
+        p.review_notes AS reviewNotes,
+        p.rejection_reason AS rejectionReason,
+        p.created_at AS createdAt,
+        p.updated_at AS updatedAt
+    FROM projects p
+    WHERE (
+        p.submitted_by_user_id = :userId
+        OR (p.submitted_by IS NOT NULL AND LOWER(TRIM(p.submitted_by)) = LOWER(TRIM(:userName)))
+        " . ($role === 'developer' && $developerId > 0 ? " OR p.developer_id = :devId " : "") . "
+    )
+    ORDER BY p.created_at DESC
+";
+
+$stmt = $db->prepare($query);
+$params = [
+    ':userId'   => $userId,
+    ':userName' => $userName
+];
 if ($role === 'developer' && $developerId > 0) {
-    // Developers see projects linked to their assigned developer company ID (or direct property submissions)
-    $stmt = $db->prepare("
-        SELECT
-            p.project_id AS id,
-            p.project_id AS projectId,
-            p.project_name AS title,
-            p.project_name AS projectName,
-            p.developer_name AS developerName,
-            p.developer_name,
-            p.category AS propertyType,
-            p.type AS listingMode,
-            p.locality AS localityName,
-            p.city AS cityName,
-            p.district,
-            p.price_from AS price,
-            p.sqft_rate AS pricePerSqft,
-            p.min_plot_size AS sqft,
-            'Approved Plot' AS bhkBadge,
-            'Direct SRO Deed' AS facingOrView,
-            p.cover_image AS mainImageUrl,
-            p.rera_no AS reraNumber,
-            p.status,
-            p.submitted_by AS submittedByName,
-            p.reviewed_by AS reviewedByName,
-            p.reviewed_at AS reviewedAt,
-            p.review_notes AS reviewNotes,
-            p.rejection_reason AS rejectionReason,
-            p.created_at AS createdAt,
-            p.updated_at AS updatedAt
-        FROM projects p
-        LEFT JOIN properties prop ON UPPER(TRIM(prop.id)) = UPPER(TRIM(p.project_id))
-        WHERE p.developer_id = :devId
-           OR prop.submitted_by_user_id = :userId
-        ORDER BY p.created_at DESC
-    ");
-    $stmt->execute([
-        ':devId'  => $developerId,
-        ':userId' => $userId
-    ]);
-    $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} else {
-    // Standard buyers/users ONLY see properties they personally submitted via Create Property
-    $stmt = $db->prepare("
-        SELECT
-            prop.id AS id,
-            prop.id AS projectId,
-            prop.title AS title,
-            COALESCE(p.project_name, prop.title) AS projectName,
-            COALESCE(p.developer_name, prop.submitted_by_name) AS developerName,
-            prop.property_type AS propertyType,
-            prop.listing_mode AS listingMode,
-            prop.locality_name AS localityName,
-            prop.city_name AS cityName,
-            COALESCE(p.district, prop.city_name) AS district,
-            prop.price AS price,
-            prop.price_per_sqft AS pricePerSqft,
-            prop.sqft AS sqft,
-            prop.bhk_badge AS bhkBadge,
-            prop.facing_or_view AS facingOrView,
-            prop.main_image_url AS mainImageUrl,
-            prop.rera_number AS reraNumber,
-            prop.status AS status,
-            prop.submitted_by_name AS submittedByName,
-            prop.reviewed_by_name AS reviewedByName,
-            prop.reviewed_at AS reviewedAt,
-            prop.review_notes AS reviewNotes,
-            prop.rejection_reason AS rejectionReason,
-            prop.created_at AS createdAt,
-            prop.updated_at AS updatedAt
-        FROM properties prop
-        LEFT JOIN projects p ON UPPER(TRIM(p.project_id)) = UPPER(TRIM(prop.id))
-        WHERE prop.submitted_by_user_id = :userId
-          AND prop.submitted_by_role = 'user'
-        ORDER BY prop.created_at DESC
-    ");
-    $stmt->execute([':userId' => $userId]);
-    $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $params[':devId'] = $developerId;
 }
+
+$stmt->execute($params);
+$properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Format price & sqft for display if raw numbers
+foreach ($properties as &$p) {
+    if (is_numeric($p['price']) && (float)$p['price'] > 0) {
+        $num = (float)$p['price'];
+        if ($num >= 10000000) {
+            $p['price'] = '₹ ' . round($num / 10000000, 2) . ' Cr';
+        } elseif ($num >= 100000) {
+            $p['price'] = '₹ ' . round($num / 100000, 2) . ' L';
+        } else {
+            $p['price'] = '₹ ' . number_format($num);
+        }
+    }
+    if (is_numeric($p['sqft']) && (int)$p['sqft'] > 0) {
+        $p['sqft'] = $p['sqft'] . ' sq.ft';
+    }
+}
+unset($p);
 
 Response::success([
     'total'      => count($properties),

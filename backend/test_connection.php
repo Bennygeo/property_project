@@ -23,7 +23,7 @@ try {
     $tables = $tablesStmt->fetchAll(PDO::FETCH_COLUMN);
 
     $counts = [];
-    foreach (['properties', 'cities', 'localities', 'property_media', 'users', 'recharge_packages'] as $t) {
+    foreach (['projects', 'project_details', 'developers', 'users', 'subscription_plans'] as $t) {
         if (in_array($t, $tables, true)) {
             $c = $db->query("SELECT COUNT(*) FROM `{$t}`")->fetchColumn();
             $counts[$t] = (int)$c;

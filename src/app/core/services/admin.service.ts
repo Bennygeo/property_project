@@ -994,4 +994,27 @@ export class AdminService {
       ...payload
     });
   }
+
+  scheduleCallback(payload: {
+    user_id: number;
+    callback_date: string;
+    callback_time: string;
+    notes?: string;
+    assigned_to?: number;
+  }): Observable<any> {
+    return this.postRoleDashboardAction({
+      action: 'schedule_callback',
+      ...payload
+    });
+  }
+
+  completeCallback(payload: {
+    user_id: number;
+    notes?: string;
+  }): Observable<any> {
+    return this.postRoleDashboardAction({
+      action: 'complete_callback',
+      ...payload
+    });
+  }
 }

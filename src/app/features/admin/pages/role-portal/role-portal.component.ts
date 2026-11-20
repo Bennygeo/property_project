@@ -94,8 +94,14 @@ export class RolePortalComponent implements OnInit {
   readonly selectedVisitorForModal = signal<any | null>(null);
   readonly isSaving = signal<boolean>(false);
 
-  // Sales Executive Pipeline Tabs: 'unattempted' vs 'attempted'
-  readonly salesActiveTab = signal<'unattempted' | 'attempted'>('unattempted');
+  // Sales Executive Pipeline Tabs: 'unattempted' vs 'attempted' vs 'callbacks'
+  readonly salesActiveTab = signal<'unattempted' | 'attempted' | 'callbacks'>('unattempted');
+
+  // Schedule Callback Modal State (Sales Executive)
+  readonly selectedVisitorForCallback = signal<any | null>(null);
+  readonly callbackDate = signal<string>('');
+  readonly callbackTime = signal<string>('11:00');
+  readonly callbackNotes = signal<string>('');
 
   // Property Advisor Workspace State
   readonly advisorActiveTab = signal<'all' | 'needs_review' | 'recommended' | 'site_visit' | 'discontinued'>('all');
@@ -314,6 +320,28 @@ export class RolePortalComponent implements OnInit {
     return Number(assignedId) === Number(sf);
   }
 
+  // Scheduled & Overdue Callback Counters for Sales Executive
+  readonly callbacksCount = computed<number>(() => {
+    const visitors = this.dashboardData()?.visitors || [];
+    return visitors.filter((v: any) =>
+      v.interaction_status !== 'lost_on_hold' &&
+      !v.discontinued_at &&
+      this.matchesStaffFilter(v.assigned_sales_id) &&
+      v.callback_status === 'scheduled'
+    ).length;
+  });
+
+  readonly overdueCallbacksCount = computed<number>(() => {
+    const visitors = this.dashboardData()?.visitors || [];
+    return visitors.filter((v: any) =>
+      v.interaction_status !== 'lost_on_hold' &&
+      !v.discontinued_at &&
+      this.matchesStaffFilter(v.assigned_sales_id) &&
+      v.callback_status === 'scheduled' &&
+      (v.callback_urgency === 'overdue' || v.callback_urgency === 'due_today')
+    ).length;
+  });
+
   // Filtered Visitors for Sales Executive
   readonly filteredVisitors = computed<any[]>(() => {
     const data = this.dashboardData();
@@ -321,24 +349,40 @@ export class RolePortalComponent implements OnInit {
     const query = this.searchQuery().trim().toLowerCase();
     const activeTab = this.salesActiveTab();
 
-    return data.visitors.filter((v: any) => {
+    const list = data.visitors.filter((v: any) => {
       if (v.interaction_status === 'lost_on_hold' || v.discontinued_at) return false;
       if (!this.matchesStaffFilter(v.assigned_sales_id)) return false;
-      const isUnattempted = this.isVisitorUnattempted(v);
-      if (activeTab === 'unattempted' && !isUnattempted) return false;
-      if (activeTab === 'attempted' && isUnattempted) return false;
+
+      if (activeTab === 'callbacks') {
+        if (v.callback_status !== 'scheduled') return false;
+      } else {
+        const isUnattempted = this.isVisitorUnattempted(v);
+        if (activeTab === 'unattempted' && !isUnattempted) return false;
+        if (activeTab === 'attempted' && isUnattempted) return false;
+      }
 
       if (query) {
         const matchesQuery =
           (v.name && v.name.toLowerCase().includes(query)) ||
           (v.phone && v.phone.toLowerCase().includes(query)) ||
           (v.intention && v.intention.toLowerCase().includes(query)) ||
-          (v.notes && v.notes.toLowerCase().includes(query));
+          (v.notes && v.notes.toLowerCase().includes(query)) ||
+          (v.callback_notes && v.callback_notes.toLowerCase().includes(query));
         if (!matchesQuery) return false;
       }
 
+      if (activeTab === 'callbacks') return true;
       return this.matchesDateFilter(v.last_active);
     });
+
+    if (activeTab === 'callbacks') {
+      return [...list].sort((a, b) => {
+        const ta = a.next_callback_at ? new Date(a.next_callback_at).getTime() : Number.MAX_SAFE_INTEGER;
+        const tb = b.next_callback_at ? new Date(b.next_callback_at).getTime() : Number.MAX_SAFE_INTEGER;
+        return ta - tb;
+      });
+    }
+    return list;
   });
 
   // Filtered Consultations for Property Advisor
@@ -572,6 +616,115 @@ export class RolePortalComponent implements OnInit {
       visitor.interaction_status = 'contacted';
     }
     this.saveLeadInteraction(visitor, 'Call feedback & notes saved - moved to Attempted');
+  }
+
+  openCallbackModal(visitor: any): void {
+    this.selectedVisitorForCallback.set(visitor);
+    if (visitor.next_callback_at) {
+      const parts = String(visitor.next_callback_at).split(' ');
+      this.callbackDate.set(parts[0] || this.getLocalDateString(1));
+      this.callbackTime.set((parts[1] || '11:00').substring(0, 5));
+    } else {
+      this.callbackDate.set(this.getLocalDateString(1));
+      this.callbackTime.set('11:00');
+    }
+    this.callbackNotes.set(visitor.callback_notes || visitor.notes || '');
+  }
+
+  closeCallbackModal(): void {
+    this.selectedVisitorForCallback.set(null);
+  }
+
+  private getLocalDateString(offsetDays = 0): string {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  applyCallbackPreset(preset: 'plus2h' | 'tomorrow_am' | 'tomorrow_pm' | 'in2days'): void {
+    if (preset === 'plus2h') {
+      const d = new Date(Date.now() + 2 * 60 * 60 * 1000);
+      this.callbackDate.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+      this.callbackTime.set(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+    } else if (preset === 'tomorrow_am') {
+      this.callbackDate.set(this.getLocalDateString(1));
+      this.callbackTime.set('10:30');
+    } else if (preset === 'tomorrow_pm') {
+      this.callbackDate.set(this.getLocalDateString(1));
+      this.callbackTime.set('16:00');
+    } else if (preset === 'in2days') {
+      this.callbackDate.set(this.getLocalDateString(2));
+      this.callbackTime.set('11:00');
+    }
+  }
+
+  submitCallback(): void {
+    const visitor = this.selectedVisitorForCallback();
+    const dateVal = this.callbackDate().trim();
+    const timeVal = this.callbackTime().trim() || '11:00';
+    if (!visitor || !dateVal) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Date Required',
+        message: 'Please choose a callback date and time.',
+        icon: 'schedule'
+      });
+      return;
+    }
+
+    this.isSaving.set(true);
+    this.adminService.scheduleCallback({
+      user_id: visitor.id,
+      callback_date: dateVal,
+      callback_time: timeVal,
+      notes: this.callbackNotes().trim()
+    }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.closeCallbackModal();
+        this.notificationService.show({
+          type: 'success',
+          title: 'Callback Scheduled',
+          message: `Callback for ${visitor.name || 'Buyer #' + visitor.id} set for ${dateVal} at ${timeVal}.`,
+          icon: 'phone_callback'
+        });
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.notificationService.show({
+          type: 'error',
+          title: 'Callback Failed',
+          message: err?.message || 'Could not schedule callback.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  completeVisitorCallback(visitor: any): void {
+    this.isSaving.set(true);
+    this.adminService.completeCallback({
+      user_id: visitor.id,
+      notes: visitor.notes || ''
+    }).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.notificationService.show({
+          type: 'success',
+          title: 'Callback Completed',
+          message: `Marked callback for ${visitor.name || 'Buyer #' + visitor.id} as completed.`,
+          icon: 'check_circle'
+        });
+        this.loadDashboardData();
+      },
+      error: () => {
+        this.isSaving.set(false);
+      }
+    });
   }
 
   transferToAdvisor(visitor: any): void {

@@ -626,6 +626,20 @@
                       {{ attemptedCount() }}
                     </span>
                   </button>
+
+                  <button 
+                    type="button" 
+                    class="pipeline-tab-pill" 
+                    [class.active]="salesActiveTab() === 'callbacks'"
+                    (click)="salesActiveTab.set('callbacks')">
+                    <span class="material-symbols-outlined tab-icon">phone_callback</span>
+                    <span class="tab-label">Callbacks</span>
+                    <span class="tab-badge-pill" [class.highlight]="overdueCallbacksCount() > 0"
+                      [style.background]="overdueCallbacksCount() > 0 ? '#dc2626' : ''"
+                      [style.color]="overdueCallbacksCount() > 0 ? '#ffffff' : ''">
+                      {{ callbacksCount() }}
+                    </span>
+                  </button>
                 </div>
               </div>
 
@@ -682,7 +696,7 @@
                       }
                     </select>
                   }
-                  <span class="record-count">{{ filteredVisitors().length }} in {{ salesActiveTab() === 'unattempted' ? 'Unattempted' : 'Attempted' }}</span>
+                  <span class="record-count">{{ filteredVisitors().length }} in {{ salesActiveTab() === 'unattempted' ? 'Unattempted' : (salesActiveTab() === 'callbacks' ? 'Callbacks' : 'Attempted') }}</span>
                 </div>
               </div>
 
@@ -721,6 +735,22 @@
                               <span class="assigned-owner-pill" [class.unassigned]="!v.assigned_sales_name">
                                 {{ v.assigned_sales_name ? ('Assigned: ' + v.assigned_sales_name) : 'Unassigned' }}
                               </span>
+                              @if (v.callback_status === 'scheduled' && v.next_callback_at) {
+                                <div style="display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;"
+                                  [style.background]="v.callback_urgency === 'overdue' ? '#fee2e2' : (v.callback_urgency === 'due_today' ? '#fef3c7' : '#e0f2fe')"
+                                  [style.color]="v.callback_urgency === 'overdue' ? '#b91c1c' : (v.callback_urgency === 'due_today' ? '#92400e' : '#0369a1')"
+                                  [style.border]="v.callback_urgency === 'overdue' ? '1px solid #fecaca' : (v.callback_urgency === 'due_today' ? '1px solid #fde68a' : '1px solid #bae6fd')">
+                                  <span class="material-symbols-outlined" style="font-size: 13px;">phone_callback</span>
+                                  <span>
+                                    {{ v.callback_urgency === 'overdue' ? 'Overdue: ' : (v.callback_urgency === 'due_today' ? 'Today: ' : 'Callback: ') }}
+                                    {{ v.next_callback_at | date:'d MMM, h:mm a' }}
+                                  </span>
+                                  <button type="button" (click)="completeVisitorCallback(v)" title="Mark Callback Completed"
+                                    style="background: #16a34a; color: #ffffff; border: none; border-radius: 4px; padding: 1px 5px; font-size: 10px; font-weight: 700; cursor: pointer; margin-left: 2px;">
+                                    ✓ Done
+                                  </button>
+                                </div>
+                              }
                             </div>
                           </div>
                         </td>
@@ -780,6 +810,14 @@
                               [disabled]="!v.phone"
                               title="Send WhatsApp Concierge Message (moves to Attempted)">
                               <span class="material-symbols-outlined">chat</span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="btn-action-icon" 
+                              (click)="openCallbackModal(v)"
+                              style="background: #fff7ed; color: #c2410c; border: 1px solid #fdba74;"
+                              title="Schedule Callback Date & Time">
+                              <span class="material-symbols-outlined">phone_callback</span>
                             </button>
                           </div>
                         </td>
@@ -2429,6 +2467,80 @@
             [disabled]="isSaving()">
             <span class="material-symbols-outlined">pause_circle</span>
             <span>Confirm On Hold</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- SCHEDULE CALLBACK MODAL (SALES EXECUTIVE) -->
+  @if (selectedVisitorForCallback(); as cbVisitor) {
+    <div class="modal-backdrop" (click)="closeCallbackModal()">
+      <div class="modal-card" style="max-width: 480px;" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="material-symbols-outlined" style="color: #ea580c; font-size: 24px;">phone_callback</span>
+            <div>
+              <h3 style="margin: 0; font-size: 16px;">Schedule Callback</h3>
+              <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">
+                Lead: <strong>{{ cbVisitor.name || 'Buyer #' + cbVisitor.id }}</strong>
+                @if (cbVisitor.phone) { &bull; {{ cbVisitor.phone }} }
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="closeCallbackModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Quick Presets -->
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Quick Presets</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <button type="button" (click)="applyCallbackPreset('plus2h')"
+                style="padding: 5px 10px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; color: #0f172a;">
+                Today +2 hrs
+              </button>
+              <button type="button" (click)="applyCallbackPreset('tomorrow_am')"
+                style="padding: 5px 10px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; color: #0f172a;">
+                Tomorrow 10:30 AM
+              </button>
+              <button type="button" (click)="applyCallbackPreset('tomorrow_pm')"
+                style="padding: 5px 10px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; color: #0f172a;">
+                Tomorrow 4:00 PM
+              </button>
+              <button type="button" (click)="applyCallbackPreset('in2days')"
+                style="padding: 5px 10px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; color: #0f172a;">
+                In 2 Days 11:00 AM
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-field">
+              <label>Callback Date *</label>
+              <input type="date" class="modal-form-control" [ngModel]="callbackDate()" (ngModelChange)="callbackDate.set($event)" required />
+            </div>
+            <div class="form-field">
+              <label>Callback Time *</label>
+              <input type="time" class="modal-form-control" [ngModel]="callbackTime()" (ngModelChange)="callbackTime.set($event)" required />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Callback Reason / Discussion Notes</label>
+            <textarea rows="3" class="modal-form-control" [ngModel]="callbackNotes()" (ngModelChange)="callbackNotes.set($event)"
+              placeholder="e.g. Client busy in office, requested callback on Friday at 3:30 PM with CMDA approval details..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" (click)="closeCallbackModal()">Cancel</button>
+          <button type="button" class="btn-modal-primary" (click)="submitCallback()" [disabled]="isSaving()"
+            style="background: #ea580c; color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">phone_callback</span>
+            <span>Save Callback</span>
           </button>
         </div>
       </div>

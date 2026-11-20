@@ -26,6 +26,7 @@ export class LeadPipelineService {
 
   // State Signals
   public readonly isLoading = signal<boolean>(false);
+  public readonly loadError = signal<string | null>(null);
   public readonly pipelineData = signal<PipelineDataResponse | null>(null);
   public readonly selectedLead = signal<PipelineLead | null>(null);
   public readonly selectedStageId = signal<PipelineStageId | null>(null);
@@ -75,8 +76,9 @@ export class LeadPipelineService {
    */
   public loadPipeline(): Observable<{ success: boolean; data: PipelineDataResponse }> {
     this.isLoading.set(true);
+    this.loadError.set(null);
 
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     let params = new HttpParams().set('admin_id', adminId.toString());
 
     if (this.selectedStageId()) {
@@ -92,12 +94,19 @@ export class LeadPipelineService {
       params = params.set('date_to', this.dateToFilter());
     }
 
-    return this.http.get<{ success: boolean; data: PipelineDataResponse }>(this.API_URL, { params }).pipe(
-      catchError(() => this.http.get<{ success: boolean; data: PipelineDataResponse }>(this.FALLBACK_API_URL, { params })),
+    const tryGet = (url: string) => this.http.get<{ success: boolean; data: PipelineDataResponse }>(url, { params });
+
+    return tryGet(`${environment.apiUrl}/admin/lead-pipeline.php`).pipe(
+      catchError(() => tryGet('/P_demo_5/backend/api/admin/lead-pipeline.php')),
+      catchError(() => tryGet('/p_demo_5/backend/api/admin/lead-pipeline.php')),
+      catchError(() => tryGet('/api/admin/lead-pipeline.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/admin/lead-pipeline.php`)),
+      catchError(() => tryGet(this.FALLBACK_API_URL)),
       tap({
         next: (res) => {
           this.isLoading.set(false);
           if (res?.data) {
+            this.loadError.set(null);
             this.pipelineData.set(res.data);
             // If a lead was previously selected, refresh its details from new list
             if (this.selectedLead()) {
@@ -106,10 +115,13 @@ export class LeadPipelineService {
                 this.selectedLead.set(updated);
               }
             }
+          } else {
+            this.loadError.set('Pipeline response was empty. Click retry to reload.');
           }
         },
         error: (err) => {
           this.isLoading.set(false);
+          this.loadError.set('Failed to load lead pipeline. Please check connection and retry.');
           console.error('[LeadPipelineService] Failed to load pipeline:', err);
         }
       })
@@ -131,7 +143,7 @@ export class LeadPipelineService {
       scheduled_visit_at?: string;
     } = {}
   ): Observable<any> {
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     const payload = {
       admin_id: adminId,
       action: 'transition_stage',
@@ -145,9 +157,7 @@ export class LeadPipelineService {
       scheduled_visit_at: options.scheduled_visit_at
     };
 
-    return this.http.post(this.API_URL, payload).pipe(
-      tap(() => this.loadPipeline().subscribe())
-    );
+    return this.postPipelineAction(payload);
   }
 
   /**
@@ -162,7 +172,7 @@ export class LeadPipelineService {
       reengage_date?: string;
     } = {}
   ): Observable<any> {
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     const payload = {
       admin_id: adminId,
       action: 'discontinue_lead',
@@ -173,9 +183,7 @@ export class LeadPipelineService {
       reengage_date: options.reengage_date || null
     };
 
-    return this.http.post(this.API_URL, payload).pipe(
-      tap(() => this.loadPipeline().subscribe())
-    );
+    return this.postPipelineAction(payload);
   }
 
   /**
@@ -186,7 +194,7 @@ export class LeadPipelineService {
     restoreStage?: PipelineStageId,
     reviveNotes?: string
   ): Observable<any> {
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     const payload = {
       admin_id: adminId,
       action: 'revive_lead',
@@ -195,9 +203,7 @@ export class LeadPipelineService {
       revive_notes: reviveNotes || 'Lead reactivated by Super Admin'
     };
 
-    return this.http.post(this.API_URL, payload).pipe(
-      tap(() => this.loadPipeline().subscribe())
-    );
+    return this.postPipelineAction(payload);
   }
 
   /**
@@ -214,7 +220,7 @@ export class LeadPipelineService {
       deal_notes?: string;
     }
   ): Observable<any> {
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     const payload = {
       admin_id: adminId,
       action: 'convert_deal',
@@ -231,8 +237,14 @@ export class LeadPipelineService {
   }
 
   private postPipelineAction(payload: Record<string, any>): Observable<any> {
-    return this.http.post(this.API_URL, payload).pipe(
-      catchError(() => this.http.post(this.FALLBACK_API_URL, payload)),
+    const tryPost = (url: string) => this.http.post<any>(url, payload);
+
+    return tryPost(`${environment.apiUrl}/admin/lead-pipeline.php`).pipe(
+      catchError(() => tryPost('/P_demo_5/backend/api/admin/lead-pipeline.php')),
+      catchError(() => tryPost('/p_demo_5/backend/api/admin/lead-pipeline.php')),
+      catchError(() => tryPost('/api/admin/lead-pipeline.php')),
+      catchError(() => tryPost(`${environment.apacheApiUrl}/admin/lead-pipeline.php`)),
+      catchError(() => tryPost(this.FALLBACK_API_URL)),
       tap(() => this.loadPipeline().subscribe())
     );
   }
@@ -251,7 +263,7 @@ export class LeadPipelineService {
     advance_stage?: boolean;
     assignment_notes?: string;
   }): Observable<any> {
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     return this.postPipelineAction({
       admin_id: adminId,
       action: 'assign_lead_role',
@@ -268,7 +280,7 @@ export class LeadPipelineService {
     advanceStage = false,
     assignmentNotes = ''
   ): Observable<any> {
-    const adminId = this.authService.currentUser()?.id || 104;
+    const adminId = this.authService.currentUser()?.id || 103;
     return this.postPipelineAction({
       admin_id: adminId,
       action: 'auto_distribute_leads',
@@ -276,6 +288,37 @@ export class LeadPipelineService {
       user_ids: userIds,
       advance_stage: advanceStage,
       assignment_notes: assignmentNotes
+    });
+  }
+
+  /**
+   * Schedule a specific callback date & time for a lead
+   */
+  public scheduleCallback(payload: {
+    user_id: number;
+    callback_date: string;
+    callback_time: string;
+    notes?: string;
+    assigned_to?: number;
+  }): Observable<any> {
+    const adminId = this.authService.currentUser()?.id || 103;
+    return this.postPipelineAction({
+      admin_id: adminId,
+      action: 'schedule_callback',
+      ...payload
+    });
+  }
+
+  /**
+   * Mark a scheduled callback as completed
+   */
+  public completeCallback(userId: number, notes = ''): Observable<any> {
+    const adminId = this.authService.currentUser()?.id || 103;
+    return this.postPipelineAction({
+      admin_id: adminId,
+      action: 'complete_callback',
+      user_id: userId,
+      notes
     });
   }
 

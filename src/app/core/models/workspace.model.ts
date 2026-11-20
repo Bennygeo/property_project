@@ -16,6 +16,21 @@ export interface SiteVisitItem {
   user_phone?: string;
 }
 
+export interface CalendarDayCell {
+  date: Date;
+  dateStr: string;
+  dayNumber: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  visits: SiteVisitItem[];
+  count: number;
+  requestedCount: number;
+  confirmedCount: number;
+  completedCount: number;
+  cancelledCount: number;
+}
+
 export interface AdvisoryConsultationItem {
   id: number;
   user_id: number;

@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, shareReplay, finalize } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
 import { environment } from '../../../environments/environment';
@@ -161,15 +161,14 @@ export class SubscriptionService {
     return pid !== 'explorer' && (this.daysRemaining() > 0 || !this.currentSubscription()?.expiresAt);
   });
 
-  constructor() {
-    // plans.php deferred to post-render or on-demand to optimize initial FCP
-    if (this.authService.isLoggedIn()) {
-      this.fetchCurrentSubscription().subscribe();
-    } else {
-      this.resetToFreeExplorer();
-    }
+  private inFlightCurrentSub$: Observable<any> | null = null;
+  private inFlightCurrentSubUserId: number | null = null;
+  private lastCurrentSubFetchTime = 0;
 
-    // Automatically sync when user logs in or logs out
+  constructor() {
+    // Automatically sync when user logs in or logs out.
+    // In Angular, effect() runs once immediately upon creation, so there is no need
+    // to call fetchCurrentSubscription() in the constructor body beforehand.
     effect(() => {
       const user = this.authService.currentUser();
       if (user && user.id > 0) {
@@ -373,25 +372,40 @@ export class SubscriptionService {
       });
     }
 
-    const tryGet = (baseUrl: string) =>
-      this.http.get<{
-        success: boolean;
-        data: {
-          hasActiveSubscription: boolean;
-          subscription: UserSubscription | null;
-          daysRemaining: number;
-          entitlements: UserEntitlements;
-          unlockedProjectIds: string[];
-          comparedPairs?: string[];
-          comparedPropertyIds?: string[];
-          invoices: SubscriptionInvoice[];
-        }
-      }>(`${baseUrl}?userId=${uid}`);
+    // 1. In-flight deduplication: return existing active observable for same user
+    if (this.inFlightCurrentSub$ && this.inFlightCurrentSubUserId === uid) {
+      return this.inFlightCurrentSub$;
+    }
 
-    return tryGet(`${environment.apiUrl}/subscriptions/current.php`).pipe(
-      catchError(() => tryGet('/p_demo_5/backend/api/subscriptions/current.php')),
-      catchError(() => tryGet('/api/subscriptions/current.php')),
-      catchError(() => tryGet(`${environment.apacheApiUrl}/subscriptions/current.php`)),
+    // 2. Short-term cache: if fetched within last 2.5s and state is available, return cached state
+    const now = Date.now();
+    if (now - this.lastCurrentSubFetchTime < 2500 && this.currentSubscription()) {
+      return of({
+        hasActiveSubscription: true,
+        subscription: this.currentSubscription(),
+        daysRemaining: this.daysRemaining(),
+        entitlements: this.entitlements(),
+        unlockedProjectIds: Array.from(this.unlockedProjectIds()),
+        invoices: this.invoices()
+      });
+    }
+
+    this.inFlightCurrentSubUserId = uid;
+    const url = `${environment.apiUrl}/subscriptions/current.php?userId=${uid}`;
+
+    this.inFlightCurrentSub$ = this.http.get<{
+      success: boolean;
+      data: {
+        hasActiveSubscription: boolean;
+        subscription: UserSubscription | null;
+        daysRemaining: number;
+        entitlements: UserEntitlements;
+        unlockedProjectIds: string[];
+        comparedPairs?: string[];
+        comparedPropertyIds?: string[];
+        invoices: SubscriptionInvoice[];
+      }
+    }>(url).pipe(
       map(res => (res && res.success) ? res.data : null),
       tap(data => {
         if (data) {
@@ -418,8 +432,16 @@ export class SubscriptionService {
       catchError(err => {
         console.warn('[SubscriptionService] Failed to fetch current subscription:', err);
         return of(null);
-      })
+      }),
+      finalize(() => {
+        this.inFlightCurrentSub$ = null;
+        this.inFlightCurrentSubUserId = null;
+        this.lastCurrentSubFetchTime = Date.now();
+      }),
+      shareReplay(1)
     );
+
+    return this.inFlightCurrentSub$;
   }
 
   /**

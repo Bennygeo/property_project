@@ -522,7 +522,6 @@ if ($method === 'POST') {
 
         if ($useProjectsTable) {
             try { $db->prepare("DELETE FROM project_details WHERE project_id = ?")->execute([$propId]); } catch (\Throwable $e) {}
-            try { $db->prepare("DELETE FROM property_master_details WHERE property_id = ?")->execute([$propId]); } catch (\Throwable $e) {}
             try { $db->prepare("DELETE FROM property_plot_details WHERE property_id = ?")->execute([$propId]); } catch (\Throwable $e) {}
             try { $db->prepare("DELETE FROM property_subdivided_plots WHERE property_id = ?")->execute([$propId]); } catch (\Throwable $e) {}
             $delStmt = $db->prepare("DELETE FROM projects WHERE project_id = ?");

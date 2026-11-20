@@ -340,64 +340,7 @@
         <!-- ====================================================================== -->
         <!-- IMPROVISED EXECUTIVE CONTEXT BAR: 6 CRITICAL PURCHASE VALUE METRICS   -->
         <!-- ====================================================================== -->
-        <div class="executive-snapshot-grid">
-          <div class="snapshot-tile theme-tile-price">
-            <div class="snapshot-icon-wrap theme-amber">
-              <span class="material-symbols-outlined">payments</span>
-            </div>
-            <div class="snapshot-text">
-              <span class="snapshot-label">Price &amp; Rate</span>
-              <strong class="snapshot-val text-brand">{{ formatPriceIndian(prop.price) }}</strong>
-              <span class="snapshot-sub">{{ prop.pricePerSqFt }}</span>
-            </div>
-          </div>
 
-          <div class="snapshot-tile theme-tile-sqft">
-            <div class="snapshot-icon-wrap theme-green">
-              <span class="material-symbols-outlined">square_foot</span>
-            </div>
-            <div class="snapshot-text">
-              <span class="snapshot-label">Plot Extent</span>
-              <strong class="snapshot-val text-emerald">{{ prop.sqft }}</strong>
-              <span class="snapshot-sub">{{ (prop.masterDetails?.plotSizeCents && prop.masterDetails?.plotSizeCents >= 0.5) ? (prop.masterDetails?.plotSizeCents + ' Cents') : (prop.plotDetails?.dimensionRanges || 'Standard Layout') }}</span>
-            </div>
-          </div>
-
-          <div class="snapshot-tile theme-tile-road">
-            <div class="snapshot-icon-wrap theme-blue">
-              <span class="material-symbols-outlined">add_road</span>
-            </div>
-            <div class="snapshot-text">
-              <span class="snapshot-label">Road &amp; Frontage</span>
-              <strong class="snapshot-val">{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft
-                Wide') : (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.roadType || 'Blacktop Tar Road' }}</span>
-            </div>
-          </div>
-
-          <div class="snapshot-tile theme-tile-facing">
-            <div class="snapshot-icon-wrap theme-purple">
-              <span class="material-symbols-outlined">explore</span>
-            </div>
-            <div class="snapshot-text">
-              <span class="snapshot-label">Facing &amp; Zoning</span>
-              <strong class="snapshot-val">{{ prop.facingOrView || prop.masterDetails?.facing || 'East Facing'
-                }}</strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.landUse || 'Residential Zone' }}</span>
-            </div>
-          </div>
-
-          <div class="snapshot-tile theme-tile-utilities">
-            <div class="snapshot-icon-wrap theme-cyan">
-              <span class="material-symbols-outlined">bolt</span>
-            </div>
-            <div class="snapshot-text">
-              <span class="snapshot-label">Utilities Status</span>
-              <strong class="snapshot-val text-cyan">{{ prop.masterDetails?.electricity || '3-Phase EB Line' }}</strong>
-              <span class="snapshot-sub">{{ prop.masterDetails?.waterConnection || 'Sweet Potable Water' }}</span>
-            </div>
-          </div>
-        </div>
 
         <!-- ====================================================================== -->
         <!-- DEVELOPMENT READINESS PIPELINE (CADASTRAL STAGES & CHEVRON JOURNEY)    -->
@@ -503,12 +446,6 @@
               [attr.aria-selected]="activeDetailTab() === 'location_transit'">
               <span class="material-symbols-outlined ctx-tab-icon">near_me</span>
               <span class="ctx-tab-text">Connectivity</span>
-            </button>
-
-            <button type="button" class="ctx-tab-btn" [class.active]="activeDetailTab() === 'overview'"
-              (click)="setDetailTab('overview')" role="tab" [attr.aria-selected]="activeDetailTab() === 'overview'">
-              <span class="material-symbols-outlined ctx-tab-icon">description</span>
-              <span class="ctx-tab-text">Overview</span>
             </button>
           </nav>
 
@@ -1208,104 +1145,6 @@
               }
             </div>
             }
-
-            <!-- TAB 4: OVERVIEW & AMENITIES & EMI -->
-            @if (activeDetailTab() === 'overview') {
-            <div class="tab-pane-content" id="overview-content">
-              <!-- Property Description & Highlights -->
-              <section class="hanu-card">
-                <div class="hanu-card-header">
-                  <div>
-                    <h2>Property Overview &amp; Highlights</h2>
-                    <p class="hanu-card-subtitle">Verified property narrative, development viability, and layout
-                      advantages</p>
-                  </div>
-                </div>
-
-                <!-- Executive Narrative Editorial Box -->
-                <div class="overview-narrative-card">
-                  <div class="narrative-quote-bar"></div>
-                  <div class="narrative-body">
-                    <span class="narrative-badge">DEVELOPMENT</span>
-                    <p class="narrative-lead">
-                      {{ prop.developer?.aboutText || prop.description || (prop.title + ' is an authenticated,
-                      government-sanctioned property situated in the prime corridor of ' + prop.locality + ', ' +
-                      prop.city + '. Featuring clear boundaries, direct road access, and verified freehold
-                      documentation, this property represents an outstanding asset for immediate villa construction or
-                      high-yield capital appreciation.') }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Core Development Viability Matrix -->
-                <div class="overview-specs-matrix">
-                  <div class="overview-spec-cell">
-                    <span class="overview-spec-label">Development Suitability</span>
-                    <strong class="overview-spec-val text-brand">{{ prop.masterDetails?.suitedFor ? ('Suited for ' +
-                      prop.masterDetails?.suitedFor) : 'Immediate Possession &amp; Villa Construction' }}</strong>
-                    <span class="overview-spec-sub">Ready for Immediate Construction</span>
-                  </div>
-
-                  <div class="overview-spec-cell">
-                    <span class="overview-spec-label">Possession Timeline</span>
-                    <strong class="overview-spec-val">{{ prop.masterDetails?.possessionTimeline || 'Ready for Immediate
-                      Handover' }}</strong>
-                    <span class="overview-spec-sub">Direct Handover from Promoter</span>
-                  </div>
-
-                  <div class="overview-spec-cell">
-                    <span class="overview-spec-label">Zoning Classification</span>
-                    <strong class="overview-spec-val">{{ (prop.masterDetails?.landUse || 'Residential') + ' Zone'
-                      }}</strong>
-                    <span class="overview-spec-sub">Sanctioned Land Conversion</span>
-                  </div>
-
-                  <div class="overview-spec-cell">
-                    <span class="overview-spec-label">Boundary Frontage</span>
-                    <strong class="overview-spec-val">{{ prop.masterDetails?.dimension ? (prop.masterDetails.dimension +
-                      ' Ft Dimension') : (prop.plotDetails?.dimensionRanges || 'Demarcated Boundaries') }}</strong>
-                    <span class="overview-spec-sub">{{ prop.masterDetails?.cornerPlot === 'Yes' ? 'Corner Plot (Double
-                      Road Frontage)' : 'Standard Linear Frontage' }}</span>
-                  </div>
-                </div>
-
-                <!-- Architectural Cadastral Hatch Divider (Image 3 inspiration) -->
-                <div class="cadastral-hatch-divider" role="presentation" aria-hidden="true"></div>
-
-                <!-- Key Property Advantages -->
-                @if (sanitizedHighlights().length > 0) {
-                <div class="overview-section">
-                  <h4 class="overview-section-title">Key Property Advantages</h4>
-                  <div class="overview-highlights-grid">
-                    @for (hl of sanitizedHighlights(); track $index) {
-                    <div class="overview-highlight-item">
-                      <div class="hl-icon-wrap">
-                        <span class="material-symbols-outlined">check</span>
-                      </div>
-                      <span class="hl-text">{{ hl }}</span>
-                    </div>
-                    }
-                  </div>
-                </div>
-                }
-
-                <!-- Layout Features & Amenities -->
-                @if (prop.amenitiesList && prop.amenitiesList.length > 0) {
-                <div class="overview-section">
-                  <h4 class="overview-section-title">Layout Features &amp; Amenities</h4>
-                  <div class="overview-amenities-tags">
-                    @for (amenity of prop.amenitiesList; track amenity.name) {
-                    <div class="overview-amenity-chip">
-                      <span class="material-symbols-outlined amenity-chip-icon">{{ amenity.icon || 'verified' }}</span>
-                      <span>{{ amenity.name }}</span>
-                    </div>
-                    }
-                  </div>
-                </div>
-                }
-              </section>
-            </div>
-            }
           </div>
         </div>
         } @else {
@@ -1756,12 +1595,6 @@
   <app-footer />
 
   <!-- Global Modals & Notifications -->
-  <!-- 30-SECOND 3D-SHADED 2D VIRTUAL PROPERTY PRESENTER (ELEVENLABS VOICE + LIP-SYNC) -->
-  @if (!isBlockedForGuest() && !isViewRestricted() && property(); as prop) {
-  <app-virtual-property-presenter [property]="prop" [triggerDelaySeconds]="3"
-    (scheduleVisitClicked)="openSiteVisitModal()" />
-  }
-
   <app-property-media-modal />
   <app-topup-dialog />
   <app-toast />

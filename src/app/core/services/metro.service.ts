@@ -1,18 +1,13 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
 import { LocalityBenchmark, MetroCityKey, MetroHub } from '../models/metro.model';
 import { ArchitecturalCategory } from '../models/category.model';
 import { PricingPack } from '../models/pricing-pack.model';
 import { NotificationService } from './notification.service';
-import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MetroService {
-  private readonly http = inject(HttpClient);
   private readonly notificationService = inject(NotificationService);
 
   public readonly activeMetroTab = signal<MetroCityKey>('chennai');
@@ -24,23 +19,6 @@ export class MetroService {
     { cityKey: 'mumbai', name: 'Mumbai', avgRate: 'Avg ₹19,200/sq.ft', yoyGrowth: '+7.4% YoY', deedCount: '5,410 Deeds' },
     { cityKey: 'ncr', name: 'Delhi NCR', avgRate: 'Avg ₹7,800/sq.ft', yoyGrowth: '+12.4% YoY', deedCount: '8,060 Deeds' }
   ];
-
-  constructor() {
-    this.loadCitiesFromApi();
-  }
-
-  public loadCitiesFromApi(): void {
-    const url = `${environment.apiUrl}/geo/cities.php`;
-    console.info(`[XHR API] Requesting metro cities from MySQL: ${url}`);
-    this.http.get<{ success: boolean; data: MetroHub[] }>(url).pipe(
-      catchError(err => of(null))
-    ).subscribe(res => {
-      if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-        console.info(`[XHR API] Successfully loaded ${res.data.length} metro hubs from MySQL Database:`, res.data);
-        this.metroHubs = res.data;
-      }
-    });
-  }
 
   public readonly categories: ArchitecturalCategory[] = [
     { id: 'cat-1', name: 'Luxury Flats', count: '8,420 Listings', icon: 'apartment' },

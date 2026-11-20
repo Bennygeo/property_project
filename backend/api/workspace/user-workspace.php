@@ -59,7 +59,67 @@ try {
         }
     }
 
-    // 2. Scheduled Site Visits
+    // 2. Scheduled Site Visits (with auto-sync from inquiries_and_visits)
+    $uInfoStmt = $db->prepare("SELECT id, name, phone, email FROM users WHERE id = ? LIMIT 1");
+    $uInfoStmt->execute([$userId]);
+    $currentUser = $uInfoStmt->fetch(PDO::FETCH_ASSOC);
+    $userPhone = trim((string)($currentUser['phone'] ?? ''));
+    $cleanPhone = preg_replace('/\D/', '', $userPhone);
+
+    if ($userId > 0) {
+        $inqStmt = $db->prepare("
+            SELECT iv.*, 
+                   COALESCE(p.project_name, prop.title, 'Plot Investment') AS prop_title,
+                   COALESCE(p.locality, prop.locality_name, 'Tamil Nadu') AS prop_loc,
+                   p.city, p.district
+            FROM inquiries_and_visits iv
+            LEFT JOIN projects p ON p.project_id = iv.property_id
+            LEFT JOIN properties prop ON prop.id = iv.property_id
+            WHERE iv.lead_type = 'site_visit'
+              AND (
+                  iv.user_id = :uid 
+                  OR (:cleanPhone <> '' AND REPLACE(REPLACE(iv.contact_phone, ' ', ''), '+91', '') = :cleanPhone)
+              )
+            ORDER BY iv.id DESC
+        ");
+        $inqStmt->execute([
+            ':uid'        => $userId,
+            ':cleanPhone' => $cleanPhone
+        ]);
+        $inqVisits = $inqStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($inqVisits as $iv) {
+            $cStmt = $db->prepare("SELECT id FROM user_site_visits WHERE user_id = ? AND property_id = ?");
+            $cStmt->execute([$userId, $iv['property_id']]);
+            if (!$cStmt->fetch()) {
+                $propLoc = $iv['prop_loc'];
+                if (!empty($iv['district']) && strcasecmp($iv['district'], $propLoc) !== 0) {
+                    $propLoc .= ', ' . $iv['district'];
+                }
+                $insSv = $db->prepare("
+                    INSERT INTO user_site_visits (
+                        user_id, property_id, property_title, locality, visit_date, visit_slot, status,
+                        assigned_executive_name, assigned_executive_phone, pickup_location, admin_notes, created_at
+                    ) VALUES (
+                        ?, ?, ?, ?, ?, ?, 'requested',
+                        'Ramesh V (Relationship Mgr)', '+91 94440 12345', 'Koyambedu Metro Station, Gate 2', ?, ?
+                    )
+                ");
+                $insSv->execute([
+                    $userId,
+                    $iv['property_id'],
+                    $iv['prop_title'],
+                    $propLoc,
+                    $iv['preferred_date'] ?: date('Y-m-d', strtotime('+1 day')),
+                    $iv['visit_slot'] ?: 'Morning (10:00 AM - 1:00 PM)',
+                    $iv['notes'],
+                    $iv['created_at'] ?: date('Y-m-d H:i:s')
+                ]);
+                $db->prepare("UPDATE inquiries_and_visits SET user_id = ? WHERE id = ?")->execute([$userId, $iv['id']]);
+            }
+        }
+    }
+
     $visitsStmt = $db->prepare("
         SELECT * FROM user_site_visits 
         WHERE user_id = ? 

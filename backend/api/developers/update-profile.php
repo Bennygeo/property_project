@@ -228,15 +228,10 @@ try {
         $developerId
     ]);
 
-    // Keep projects and master details in sync for existing projects
+    // Keep projects in sync for existing projects
     if ($developerId > 0) {
         $db->prepare("UPDATE projects SET developer_name = ?, developer_id = ? WHERE developer_id = ? OR LOWER(TRIM(developer_name)) = LOWER(TRIM(?))")
            ->execute([$name, $developerId, $developerId, $existing['name']]);
-    }
-    if (!empty($name) && $name !== $existing['name']) {
-        try {
-            $db->prepare("UPDATE property_master_details SET developer = ? WHERE developer = ?")->execute([$name, $existing['name']]);
-        } catch (\Throwable $ignore) {}
     }
 
     // 4. Optional initial project linking (linkProjectIds)
@@ -253,15 +248,6 @@ try {
             ");
             $upLink->execute(array_merge([$developerId, $name], $cleanIds));
             $linkedCount = $upLink->rowCount();
-
-            try {
-                $upMaster = $db->prepare("
-                    UPDATE property_master_details
-                    SET developer = ?
-                    WHERE property_id IN ($inClause)
-                ");
-                $upMaster->execute(array_merge([$name], $cleanIds));
-            } catch (\Throwable $ignore) {}
         }
     }
 

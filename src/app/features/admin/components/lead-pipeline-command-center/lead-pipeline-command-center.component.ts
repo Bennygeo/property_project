@@ -203,6 +203,13 @@ export class LeadPipelineCommandCenterComponent implements OnInit {
   public transitionBudgetMax: number | null = null;
   public transitionVisitDate = '';
 
+  // Schedule Callback Modal State
+  public isCallbackModalOpen = false;
+  public targetLeadForCallback: PipelineLead | null = null;
+  public callbackDate = '';
+  public callbackTime = '11:00';
+  public callbackNotes = '';
+
   ngOnInit(): void {
     this.pipelineService.loadPipeline().subscribe({
       next: () => {
@@ -680,6 +687,100 @@ export class LeadPipelineCommandCenterComponent implements OnInit {
   public getDeptLabel(stageId: string): string {
     const stg = this.pipelineService.stages().find(s => s.id === stageId);
     return stg ? stg.dept_label : '';
+  }
+
+  private getLocalDateOffset(offsetDays = 0): string {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  public openCallbackModal(lead: PipelineLead): void {
+    this.targetLeadForCallback = lead;
+    if (lead.next_callback_at) {
+      const parts = String(lead.next_callback_at).split(' ');
+      this.callbackDate = parts[0] || this.getLocalDateOffset(1);
+      this.callbackTime = (parts[1] || '11:00').substring(0, 5);
+    } else {
+      this.callbackDate = this.getLocalDateOffset(1);
+      this.callbackTime = '11:00';
+    }
+    this.callbackNotes = lead.callback_notes || '';
+    this.isCallbackModalOpen = true;
+  }
+
+  public closeCallbackModal(): void {
+    this.isCallbackModalOpen = false;
+    this.targetLeadForCallback = null;
+  }
+
+  public applyCallbackPreset(preset: 'plus2h' | 'tomorrow_am' | 'tomorrow_pm' | 'in2days'): void {
+    if (preset === 'plus2h') {
+      const d = new Date(Date.now() + 2 * 60 * 60 * 1000);
+      this.callbackDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      this.callbackTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    } else if (preset === 'tomorrow_am') {
+      this.callbackDate = this.getLocalDateOffset(1);
+      this.callbackTime = '10:30';
+    } else if (preset === 'tomorrow_pm') {
+      this.callbackDate = this.getLocalDateOffset(1);
+      this.callbackTime = '16:00';
+    } else if (preset === 'in2days') {
+      this.callbackDate = this.getLocalDateOffset(2);
+      this.callbackTime = '11:00';
+    }
+  }
+
+  public submitCallback(): void {
+    const lead = this.targetLeadForCallback;
+    if (!lead || !this.callbackDate) {
+      this.notificationService.show({
+        type: 'warning',
+        title: 'Callback Date Required',
+        message: 'Please select a callback date and time.',
+        icon: 'schedule'
+      });
+      return;
+    }
+
+    const timeVal = this.callbackTime || '11:00';
+    this.pipelineService.scheduleCallback({
+      user_id: lead.user_id,
+      callback_date: this.callbackDate,
+      callback_time: timeVal,
+      notes: this.callbackNotes.trim()
+    }).subscribe({
+      next: () => {
+        this.closeCallbackModal();
+        this.notificationService.show({
+          type: 'success',
+          title: 'Callback Scheduled',
+          message: `Callback for ${lead.name} scheduled on ${this.callbackDate} at ${timeVal}.`,
+          icon: 'phone_callback'
+        });
+      },
+      error: (err) => {
+        this.notificationService.show({
+          type: 'error',
+          title: 'Callback Failed',
+          message: err?.error?.error || 'Failed to schedule callback.',
+          icon: 'error'
+        });
+      }
+    });
+  }
+
+  public completeLeadCallback(lead: PipelineLead): void {
+    this.pipelineService.completeCallback(lead.user_id).subscribe({
+      next: () => {
+        this.notificationService.show({
+          type: 'success',
+          title: 'Callback Completed',
+          message: `Callback for ${lead.name} marked as completed.`,
+          icon: 'check_circle'
+        });
+      }
+    });
   }
 
   /**

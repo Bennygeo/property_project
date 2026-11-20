@@ -8362,3 +8362,81 @@
   color: #64748b;
   display: block;
 }
+
+/* ==========================================================================
+   ADMIN SITE VISIT INTERACTIVE APPOINTMENT CALENDAR
+   ========================================================================== */
+.site-visit-calendar-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.calendar-cell {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.calendar-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: #94a3b8 !important;
+  z-index: 2;
+}
+
+.calendar-cell.is-selected {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px #2563eb, 0 8px 16px rgba(37, 99, 235, 0.12) !important;
+  background: #eff6ff !important;
+}
+
+.site-visit-count-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  transition: transform 0.15s ease;
+}
+
+.site-visit-count-badge:hover {
+  transform: scale(1.02);
+}
+
+.view-mode-btn {
+  transition: all 0.15s ease;
+}
+
+.view-mode-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.calendar-visit-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.calendar-visit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 900px) {
+  .calendar-grid {
+    gap: 4px !important;
+  }
+  .calendar-cell {
+    min-height: 85px !important;
+    padding: 5px !important;
+  }
+  .site-visit-count-badge {
+    font-size: 9.5px !important;
+    padding: 2px 4px !important;
+  }
+}

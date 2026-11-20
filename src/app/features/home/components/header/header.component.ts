@@ -320,7 +320,7 @@ import { LocationService } from '../../../../core/services/location.service';
       gap: 6px;
       padding: 4px 10px 4px 8px;
       height: 36px;
-      background: #f8fafc;
+      background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 9999px;
       color: #1e293b;
@@ -733,21 +733,18 @@ import { LocationService } from '../../../../core/services/location.service';
       position: relative;
     }
     .user-profile-btn {
-          height: 42px;
-    padding: 0 0.75rem 0 0.375rem;
-    border-radius: 9999px;
-    background: #ffffff;
-    border: 1.5px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.15s;
+      height: 42px;
+      padding: 0 0.75rem 0 0.375rem;
+      border-radius: 9px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-    .user-profile-btn:hover {
-      border-color: var(--brand-red);
-      background: #fffafa;
-    }
+
     .user-avatar-mini {
       width: 32px;
       height: 32px;

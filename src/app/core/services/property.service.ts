@@ -154,6 +154,26 @@ export interface ReverseGeocodeResult {
   longitude: number;
 }
 
+export interface GeoLookupPincodeResult {
+  pincode: string;
+  district: string;
+  city: string;
+  taluk: string;
+  state: string;
+  localities: string[];
+  source?: string;
+}
+
+export interface GeoLookupLocalityResult {
+  locality: string;
+  district: string;
+  city: string;
+  taluk?: string;
+  pincode?: string;
+  projectCount?: number;
+  source?: string;
+}
+
 export const SESSION_TRACKER_KEY = 'fap_active_session_phone';
 
 export function getPhoneStoragePrefix(phone?: string | null): string {
@@ -1019,9 +1039,9 @@ export class PropertyService {
       return;
     }
 
-    // 2. Short-term cache deduplication: if identical non-append query was completed within the last 1500ms, skip duplicate call
+    // 2. Short-term cache deduplication: if identical non-append query was completed within the last 2500ms, skip duplicate call
     const now = Date.now();
-    if (!append && this.lastCompletedListQs === qs && (now - this.lastCompletedListTime < 1500)) {
+    if (!append && this.lastCompletedListQs === qs && (now - this.lastCompletedListTime < 2500)) {
       return;
     }
 
@@ -1690,6 +1710,7 @@ export class PropertyService {
     propertyId: string;
     name: string;
     phone: string;
+    userId?: number;
     email?: string;
     date?: string;
     slot?: string;
@@ -1830,6 +1851,60 @@ export class PropertyService {
         return of({ success: false, message: errorMsg });
       })
     ) as Observable<{ success: boolean; url?: string; filename?: string; message?: string }>);
+  }
+
+  getPropertyDraftEndpointUrl(): string {
+    return `${environment.apiUrl}/properties/draft.php`;
+  }
+
+  // Save progressive 7-stage property listing draft to MySQL for recovery & lead follow-up
+  savePropertyDraft(data: any): Observable<{ success: boolean; draftId?: string; updatedAt?: string }> {
+    const url = `${environment.apiUrl}/properties/draft.php`;
+    return this.http.post<{ success: boolean; data?: { draftId?: string; updatedAt?: string } }>(url, {
+      action: 'save',
+      ...data
+    }).pipe(
+      map(res => ({
+        success: !!res?.success,
+        draftId: res?.data?.draftId,
+        updatedAt: res?.data?.updatedAt
+      })),
+      catchError(() => of({ success: false }))
+    );
+  }
+
+  // Fetch latest in-progress property listing draft from MySQL
+  getLatestPropertyDraft(params: { userId?: number; sessionKey?: string; draftId?: string }): Observable<{ success: boolean; draft?: any }> {
+    const q = new URLSearchParams();
+    if (params.draftId) q.set('draftId', params.draftId);
+    if (params.userId && params.userId > 0) q.set('userId', String(params.userId));
+    if (params.sessionKey) q.set('sessionKey', params.sessionKey);
+
+    const url = `${environment.apiUrl}/properties/draft.php?${q.toString()}`;
+    return this.http.get<{ success: boolean; data?: { draft?: any } }>(url).pipe(
+      map(res => ({
+        success: !!res?.success,
+        draft: res?.data?.draft || null
+      })),
+      catchError(() => of({ success: false, draft: null }))
+    );
+  }
+
+  // Mark draft as submitted or discarded in MySQL
+  updatePropertyDraftStatus(
+    draftId: string,
+    action: 'mark_submitted' | 'discard',
+    submittedPropertyId?: string
+  ): Observable<{ success: boolean }> {
+    const url = `${environment.apiUrl}/properties/draft.php`;
+    return this.http.post<{ success: boolean }>(url, {
+      action,
+      draftId,
+      submittedPropertyId: submittedPropertyId || ''
+    }).pipe(
+      map(res => ({ success: !!res?.success })),
+      catchError(() => of({ success: false }))
+    );
   }
 
   // Fetch properties submitted by this user
@@ -1974,6 +2049,56 @@ export class PropertyService {
         if (Array.isArray(res)) return res as ReverseGeocodeResult[];
         return [];
       })
+    );
+  }
+
+  /**
+   * Auto-populates City, District, Taluk and Localities by 6-digit Pincode.
+   */
+  lookupByPincode(pincode: string): Observable<GeoLookupPincodeResult | null> {
+    const pin = pincode.replace(/\D/g, '').trim();
+    if (pin.length !== 6) return of(null);
+
+    const qs = `action=pincode&pincode=${encodeURIComponent(pin)}`;
+    const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: GeoLookupPincodeResult | null }>(`${baseUrl}?${qs}`);
+
+    return tryGet(`${environment.apiUrl}/geo/lookup.php`).pipe(
+      catchError(() => tryGet('/P_demo_5/backend/api/geo/lookup.php')),
+      catchError(() => tryGet('/p_demo_5/backend/api/geo/lookup.php')),
+      catchError(() => tryGet('/api/geo/lookup.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/geo/lookup.php`)),
+      map(res => (res && res.success && res.data) ? res.data : null),
+      catchError(() => of(null))
+    );
+  }
+
+  /**
+   * Auto-populates City, District, Taluk and Pincode by Locality / Area query.
+   * Confines search strictly to pincode and district if provided.
+   */
+  lookupByLocality(query: string, pincode?: string, district?: string): Observable<GeoLookupLocalityResult[]> {
+    const q = query.trim();
+    if (q.length < 2) return of([]);
+
+    let qs = `action=locality&q=${encodeURIComponent(q)}`;
+    const cleanPin = (pincode || '').replace(/\D/g, '').trim();
+    if (cleanPin.length === 6) {
+      qs += `&pincode=${encodeURIComponent(cleanPin)}`;
+    }
+    const cleanDist = (district || '').trim();
+    if (cleanDist) {
+      qs += `&district=${encodeURIComponent(cleanDist)}`;
+    }
+
+    const tryGet = (baseUrl: string) => this.http.get<{ success: boolean; data: GeoLookupLocalityResult[] }>(`${baseUrl}?${qs}`);
+
+    return tryGet(`${environment.apiUrl}/geo/lookup.php`).pipe(
+      catchError(() => tryGet('/P_demo_5/backend/api/geo/lookup.php')),
+      catchError(() => tryGet('/p_demo_5/backend/api/geo/lookup.php')),
+      catchError(() => tryGet('/api/geo/lookup.php')),
+      catchError(() => tryGet(`${environment.apacheApiUrl}/geo/lookup.php`)),
+      map(res => (res && res.success && Array.isArray(res.data)) ? res.data : []),
+      catchError(() => of([]))
     );
   }
 }

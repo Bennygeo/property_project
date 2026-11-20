@@ -219,7 +219,7 @@ try {
         if ($action === 'link') {
             $inClause = implode(',', array_fill(0, count($projectIds), '?'));
             
-            // 1. Update projects table
+            // Update projects table
             $upProj = $db->prepare("
                 UPDATE projects 
                 SET developer_id = ?, developer_name = ? 
@@ -227,16 +227,6 @@ try {
             ");
             $upProj->execute(array_merge([$devId, $devName], $projectIds));
             $affected = $upProj->rowCount();
-
-            // 2. Keep property_master_details table in sync
-            try {
-                $upMaster = $db->prepare("
-                    UPDATE property_master_details 
-                    SET developer = ? 
-                    WHERE property_id IN ($inClause)
-                ");
-                $upMaster->execute(array_merge([$devName], $projectIds));
-            } catch (\Throwable $ignore) {}
 
             echo json_encode([
                 'success'  => true,
@@ -257,16 +247,6 @@ try {
             ");
             $upProj->execute(array_merge([$devId], $projectIds));
             $affected = $upProj->rowCount();
-
-            // Clear in property_master_details
-            try {
-                $upMaster = $db->prepare("
-                    UPDATE property_master_details 
-                    SET developer = NULL 
-                    WHERE property_id IN ($inClause)
-                ");
-                $upMaster->execute($projectIds);
-            } catch (\Throwable $ignore) {}
 
             echo json_encode([
                 'success'  => true,

@@ -30,15 +30,130 @@
         <div>
           <h2 class="sheet-title">Property Details &amp; Specifications</h2>
           <div class="header-spectrum-rule" aria-hidden="true"></div>
-          <p class="sheet-sub">Fill in the accurate information from your sale deed or approved plan.</p>
+          <p class="sheet-sub">Every stage is automatically saved so you can pause or resume anytime without losing
+            data.</p>
         </div>
-        <span class="step-counter">Step 1 of 1</span>
+        <div class="sheet-header-meta">
+          <span class="step-counter">Stage {{ currentStage() }} of 7 • {{ completionPercent() }}%</span>
+          @if (saveStatus() === 'saving') {
+          <span class="draft-status-pill saving">
+            <span class="material-symbols-outlined spin-icon">sync</span>
+            <span>Saving stage...</span>
+          </span>
+          } @else if (saveStatus() === 'saved') {
+          <span class="draft-status-pill saved">
+            <span class="material-symbols-outlined">cloud_done</span>
+            <span>Saved{{ lastSavedTime() ? ' • ' + lastSavedTime() : '' }}</span>
+          </span>
+          } @else if (saveStatus() === 'offline' || isOffline()) {
+          <span class="draft-status-pill offline">
+            <span class="material-symbols-outlined">cloud_off</span>
+            <span>Saved locally (Offline)</span>
+          </span>
+          }
+        </div>
       </div>
 
-      <form (submit)="$event.preventDefault(); onSubmit()" class="user-post-form">
+      <!-- RESUME SAVED DRAFT BANNER -->
+      @if (showResumeBanner() && pendingDraft(); as draft) {
+      <div class="resume-draft-banner" role="region" aria-label="Resume unfinished property listing">
+        <div class="resume-draft-left">
+          <div class="resume-draft-icon">
+            <span class="material-symbols-outlined">history</span>
+          </div>
+          <div class="resume-draft-text">
+            <strong>Unfinished listing draft found</strong>
+            <span>
+              {{ draft.projectName ? ('"' + draft.projectName + '" • ') : '' }}
+              Stage {{ draft.currentStage || 1 }} of 7 ({{ draft.completionPercent || 0 }}% complete)
+            </span>
+          </div>
+        </div>
+        <div class="resume-draft-actions">
+          <button type="button" class="btn-resume-primary" (click)="resumeSavedDraft()">
+            <span class="material-symbols-outlined">play_arrow</span>
+            <span>Resume Draft</span>
+          </button>
+          <button type="button" class="btn-resume-discard" (click)="discardSavedDraft()">
+            Start Fresh
+          </button>
+        </div>
+      </div>
+      }
+
+      <!-- ========================================================= -->
+      <!-- INTERACTIVE 7-STAGE STEPPER WITH VISUAL CHECKPOINTS       -->
+      <!-- ========================================================= -->
+      <nav class="wizard-stepper-wrapper" aria-label="Property listing 7-stage progress">
+        <!-- Desktop Horizontal Stepper -->
+        <div class="wizard-stepper-desktop">
+          @for (cp of stageCheckpoints(); track cp.step; let isLast = $last) {
+          <button type="button" class="wizard-step-node" [class.is-active]="cp.status === 'active'"
+            [class.is-completed]="cp.status === 'completed'" [class.is-incomplete]="cp.status === 'incomplete'"
+            [attr.aria-current]="cp.status === 'active' ? 'step' : null"
+            [title]="cp.status === 'incomplete' ? (cp.fullTitle + ' — Missing: ' + cp.missingFields.join(', ')) : cp.fullTitle"
+            (click)="goToStage(cp.step)">
+            <span class="step-circle-wrap">
+              <span class="step-circle">
+                @if (cp.status === 'completed') {
+                <span class="material-symbols-outlined">check</span>
+                } @else {
+                <span>{{ cp.step }}</span>
+                }
+              </span>
+              @if (cp.status === 'incomplete') {
+              <span class="step-amber-dot" [title]="cp.missingCount + ' required field(s) remaining'"></span>
+              }
+            </span>
+            <span class="step-node-label">{{ cp.shortLabel }}</span>
+          </button>
+          @if (!isLast) {
+          <div class="wizard-step-connector" [class.filled]="cp.status === 'completed' || cp.step < currentStage()">
+          </div>
+          }
+          }
+        </div>
+
+        <!-- Mobile Compact Progress + Scrollable 7-Pill Checkpoints -->
+        <div class="wizard-stepper-mobile">
+          <div class="mobile-progress-top">
+            <div class="mobile-stage-heading">
+              <span class="mobile-stage-badge">Stage {{ currentStage() }} / 7</span>
+              <span class="mobile-stage-name">{{ currentStageDef().shortLabel }}</span>
+            </div>
+            <span class="mobile-percent-label">{{ completionPercent() }}%</span>
+          </div>
+          <div class="mobile-progress-track">
+            <div class="mobile-progress-fill" [style.width.%]="completionPercent()"></div>
+          </div>
+          <div class="mobile-pills-strip">
+            @for (cp of stageCheckpoints(); track cp.step) {
+            <button type="button" [id]="'wizard-mobile-pill-' + cp.step" class="mobile-step-pill"
+              [class.is-active]="cp.status === 'active'" [class.is-completed]="cp.status === 'completed'"
+              [class.is-incomplete]="cp.status === 'incomplete'" (click)="goToStage(cp.step)">
+              <span class="mobile-pill-indicator">
+                @if (cp.status === 'completed') {
+                <span class="material-symbols-outlined">check</span>
+                } @else {
+                <span>{{ cp.step }}</span>
+                }
+              </span>
+              <span class="mobile-pill-text">{{ cp.shortLabel }}</span>
+              @if (cp.status === 'incomplete') {
+              <span class="mobile-pill-amber-dot" aria-label="Missing required fields"></span>
+              }
+            </button>
+            }
+          </div>
+        </div>
+      </nav>
+
+      <form (submit)="$event.preventDefault(); onSubmit()" (input)="onFormFieldActivity()"
+        (change)="onFormFieldActivity()" class="user-post-form">
         <!-- ========================================================= -->
         <!-- GROUP 1: PROJECT & LEGAL                                  -->
         <!-- ========================================================= -->
+        @if (currentStage() === 1) {
         <div class="form-block">
           <div class="block-heading-row">
             <h3 class="block-heading">
@@ -66,7 +181,7 @@
 
             <div class="input-group developer-autocomplete-group" style="position: relative;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <label class="input-label" style="margin: 0;">Developer / Promoter Name *</label>
+                <label class="input-label" style="margin: 0;">Developer / Promoter Name</label>
                 @if (developersList().length > 0) {
                 <span style="font-size: 11px; color: #64748b; font-weight: 500;">
                   {{ developersList().length }} registered builders
@@ -75,7 +190,7 @@
               </div>
               <input type="text" class="form-input" [ngModel]="master.developer" name="developer"
                 (focus)="openDeveloperDropdown()" (input)="onDeveloperInput($any($event.target).value)"
-                (blur)="closeDeveloperDropdown()" placeholder="Type or select existing developer/promoter..." required
+                (blur)="closeDeveloperDropdown()" placeholder="Type or select existing developer/promoter (Optional)..."
                 autocomplete="off" />
 
               <!-- Live Auto-Populate Dropdown -->
@@ -288,12 +403,12 @@
             </div>
           </div>
         </div>
-
-        <div class="form-divider"></div>
+        }
 
         <!-- ========================================================= -->
         <!-- GROUP 2: LOCATION                                         -->
         <!-- ========================================================= -->
+        @if (currentStage() === 2) {
         <div class="form-block">
           <div class="block-heading-row">
             <h3 class="block-heading">
@@ -307,907 +422,1140 @@
             navigation links.</p>
 
           <div class="form-grid-3">
+            <!-- 1. Pincode (FIRST ELEMENT: Auto-populates City, District, Taluk & Suggested Localities) -->
             <div class="input-group">
-              <label class="input-label">Area / Location *</label>
-              <input type="text" class="form-input" [(ngModel)]="master.areaLocation" name="areaLocation"
-                placeholder="e.g. Guduvanchery" required />
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="input-label" style="margin: 0;">
+                  Pincode *
+                  <span
+                    style="font-size: 10px; font-weight: 500; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">Start
+                    Here</span>
+                </label>
+                @if (isPincodeResolving()) {
+                <span style="font-size: 11px; color: #0284c7; display: inline-flex; align-items: center; gap: 3px;">
+                  <span class="material-symbols-outlined spin-icon" style="font-size: 12px;">sync</span>
+                  Resolving...
+                </span>
+                } @else if (pincodeResolvedSource()) {
+                <span
+                  style="font-size: 11px; color: #166534; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                  <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span>
+                  Auto-filled
+                </span>
+                }
+              </div>
+              <input type="text" class="form-input font-mono font-bold" [ngModel]="master.pincode" name="pincode"
+                (input)="onPincodeInput($any($event.target).value)" placeholder="Enter 6-digit Pincode (e.g. 603202)"
+                maxlength="6" required autofocus />
             </div>
 
+            <!-- 2. City (Auto-populated with editable capability) -->
             <div class="input-group">
-              <label class="input-label">Village / Locality *</label>
-              <input type="text" class="form-input" [(ngModel)]="master.villageLocality" name="villageLocality"
-                placeholder="e.g. Nandivaram" required />
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="input-label" style="margin: 0;">City *</label>
+                @if (master.city) {
+                <span style="font-size: 10px; color: #64748b; font-weight: 500;">Auto-filled / Editable</span>
+                }
+              </div>
+              <input type="text" class="form-input" [(ngModel)]="master.city" name="city" placeholder="e.g. Chennai"
+                required />
             </div>
 
+            <!-- 3. District (Auto-populated with editable capability) -->
+            <div class="input-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="input-label" style="margin: 0;">District *</label>
+                @if (master.district) {
+                <span style="font-size: 10px; color: #64748b; font-weight: 500;">Auto-filled / Editable</span>
+                }
+              </div>
+              <input type="text" class="form-input" [(ngModel)]="master.district" name="district"
+                placeholder="e.g. Chengalpattu" required />
+            </div>
+
+            <!-- 4. Taluk -->
             <div class="input-group">
               <label class="input-label">Taluk</label>
               <input type="text" class="form-input" [(ngModel)]="master.taluk" name="taluk"
                 placeholder="e.g. Chengalpattu" />
             </div>
 
-            <div class="input-group">
-              <label class="input-label">City *</label>
-              <input type="text" class="form-input" [(ngModel)]="master.city" name="city" placeholder="e.g. Chennai"
-                required />
+            <!-- 5. Area / Location (Shows options based on Pincode or search) -->
+            <div class="input-group locality-autocomplete-group" style="position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="input-label" style="margin: 0;">
+                  Area / Location *
+                  @if (pincodeSuggestedLocalities().length > 0) {
+                  <span style="font-size: 10px; font-weight: 500; color: #166534; background: #dcfce7; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">PIN Options</span>
+                  }
+                </label>
+                @if (isAreaResolving()) {
+                <span style="font-size: 11px; color: #0284c7; display: inline-flex; align-items: center; gap: 3px;">
+                  <span class="material-symbols-outlined spin-icon" style="font-size: 12px;">sync</span>
+                  Searching...
+                </span>
+                }
+              </div>
+              <input type="text" class="form-input" [ngModel]="master.areaLocation" name="areaLocation"
+                (focus)="openAreaDropdown()" (input)="onAreaInput($any($event.target).value)"
+                (blur)="closeAreaDropdown()"
+                [placeholder]="pincodeSuggestedLocalities().length > 0 ? 'Select or type area in PIN ' + master.pincode : 'Type area e.g. Guduvanchery...'"
+                autocomplete="off" required />
+
+              <!-- Live Area Suggestions Dropdown (Pincode options or DB matches) -->
+              @if (isAreaDropdownOpen()) {
+                @if (filteredPincodeAreas().length > 0) {
+                <div class="locality-suggestions-dropdown"
+                  style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); max-height: 240px; overflow-y: auto;">
+                  <div
+                    style="padding: 6px 12px; background: #f0fdf4; border-bottom: 1px solid #bbf7d0; font-size: 11px; font-weight: 600; color: #166534; display: flex; justify-content: space-between;">
+                    <span>AREAS IN PIN {{ master.pincode }}</span>
+                    <span>{{ filteredPincodeAreas().length }} options</span>
+                  </div>
+                  @for (loc of filteredPincodeAreas(); track loc) {
+                  <div class="locality-suggestion-item" (mousedown)="selectAreaOption(loc)"
+                    style="padding: 9px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease; display: flex; justify-content: space-between; align-items: center;"
+                    onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='#ffffff'">
+                    <span style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ loc }}</span>
+                    <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-weight: 500;">
+                      PIN {{ master.pincode }}
+                    </span>
+                  </div>
+                  }
+                </div>
+                } @else if (master.pincode && master.pincode.length === 6) {
+                <div class="locality-suggestions-dropdown"
+                  style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); padding: 12px 14px;">
+                  <div style="font-size: 12px; color: #64748b; line-height: 1.4;">
+                    No postal area matching "<strong style="color: #0f172a;">{{ master.areaLocation }}</strong>" in PIN {{ master.pincode }}.
+                    <div style="margin-top: 4px; color: #059669; font-weight: 500;">
+                      You can keep this as your custom area name.
+                    </div>
+                  </div>
+                </div>
+                } @else if (localitySuggestions().length > 0) {
+                <div class="locality-suggestions-dropdown"
+                  style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); max-height: 240px; overflow-y: auto;">
+                  <div
+                    style="padding: 6px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; color: #475569; display: flex; justify-content: space-between;">
+                    <span>SELECT AREA TO AUTO-FILL</span>
+                    <span>{{ localitySuggestions().length }} matches</span>
+                  </div>
+                  @for (loc of localitySuggestions(); track (loc.locality + '|' + loc.district)) {
+                  <div class="locality-suggestion-item" (mousedown)="selectLocalitySuggestion(loc)"
+                    style="padding: 9px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease;"
+                    onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ loc.locality }}</span>
+                      @if (loc.pincode) {
+                      <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #f0fdf4; color: #15803d; font-weight: 600;">
+                        PIN: {{ loc.pincode }}
+                      </span>
+                      }
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11px; color: #64748b;">
+                      <span>{{ loc.city }}</span>
+                      <span>•</span>
+                      <span style="font-weight: 500; color: #0369a1;">{{ loc.district }}</span>
+                      @if (loc.projectCount) {
+                      <span>• {{ loc.projectCount }} {{ loc.projectCount === 1 ? 'Project' : 'Projects' }}</span>
+                      }
+                    </div>
+                  </div>
+                  }
+                </div>
+                }
+              }
+
+              <!-- One-Click Quick Chips for Area from Pincode -->
+              @if (pincodeSuggestedLocalities().length > 0) {
+              <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">PIN Options:</span>
+                @for (loc of pincodeSuggestedLocalities().slice(0, 8); track loc) {
+                <button type="button" (click)="selectAreaOption(loc)"
+                  style="border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: #0f172a; cursor: pointer; transition: all 0.15s ease;"
+                  [style.background]="master.areaLocation === loc ? '#dcfce7' : '#f8fafc'"
+                  [style.borderColor]="master.areaLocation === loc ? '#86efac' : '#cbd5e1'"
+                  [style.fontWeight]="master.areaLocation === loc ? '600' : 'normal'"
+                  onmouseover="this.style.background='#e0f2fe';this.style.borderColor='#7dd3fc'"
+                  onmouseout="this.style.background='#f8fafc';this.style.borderColor='#cbd5e1'">
+                  {{ master.areaLocation === loc ? '✔ ' + loc : '+ ' + loc }}
+                </button>
+                }
+              </div>
+              }
             </div>
 
-            <div class="input-group">
-              <label class="input-label">District *</label>
-              <input type="text" class="form-input" [(ngModel)]="master.district" name="district"
-                placeholder="e.g. Chengalpattu" required />
+            <!-- 6. Village / Locality (Shows options based on Pincode) -->
+            <div class="input-group locality-autocomplete-group" style="position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="input-label" style="margin: 0;">
+                  Village / Locality *
+                  @if (pincodeSuggestedLocalities().length > 0) {
+                  <span style="font-size: 10px; font-weight: 500; color: #166534; background: #dcfce7; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">PIN Options</span>
+                  }
+                </label>
+              </div>
+              <input type="text" class="form-input" [ngModel]="master.villageLocality" name="villageLocality"
+                (focus)="openVillageDropdown()" (input)="onVillageInput($any($event.target).value)"
+                (blur)="closeVillageDropdown()"
+                [placeholder]="pincodeSuggestedLocalities().length > 0 ? 'Select or type village in PIN ' + master.pincode : 'e.g. Nandivaram'"
+                autocomplete="off" required />
+
+              <!-- Live Village Suggestions Dropdown from Pincode -->
+              @if (isVillageDropdownOpen() && filteredPincodeVillages().length > 0) {
+              <div class="locality-suggestions-dropdown"
+                style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12); max-height: 240px; overflow-y: auto;">
+                <div
+                  style="padding: 6px 12px; background: #f0fdf4; border-bottom: 1px solid #bbf7d0; font-size: 11px; font-weight: 600; color: #166534; display: flex; justify-content: space-between;">
+                  <span>VILLAGES / LOCALITIES IN PIN {{ master.pincode }}</span>
+                  <span>{{ filteredPincodeVillages().length }} options</span>
+                </div>
+                @for (loc of filteredPincodeVillages(); track loc) {
+                <div class="locality-suggestion-item" (mousedown)="selectVillageOption(loc)"
+                  style="padding: 9px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease; display: flex; justify-content: space-between; align-items: center;"
+                  onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='#ffffff'">
+                  <span style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ loc }}</span>
+                  <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-weight: 500;">
+                    PIN {{ master.pincode }}
+                  </span>
+                </div>
+                }
+              </div>
+              }
+
+              <!-- One-Click Quick Chips for Village from Pincode -->
+              @if (pincodeSuggestedLocalities().length > 0) {
+              <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                <span style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">PIN Options:</span>
+                @for (loc of pincodeSuggestedLocalities().slice(0, 8); track loc) {
+                <button type="button" (click)="selectVillageOption(loc)"
+                  style="border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: #0f172a; cursor: pointer; transition: all 0.15s ease;"
+                  [style.background]="master.villageLocality === loc ? '#dcfce7' : '#f8fafc'"
+                  [style.borderColor]="master.villageLocality === loc ? '#86efac' : '#cbd5e1'"
+                  [style.fontWeight]="master.villageLocality === loc ? '600' : 'normal'"
+                  onmouseover="this.style.background='#e0f2fe';this.style.borderColor='#7dd3fc'"
+                  onmouseout="this.style.background='#f8fafc';this.style.borderColor='#cbd5e1'">
+                  {{ master.villageLocality === loc ? '✔ ' + loc : '+ ' + loc }}
+                </button>
+                }
+              </div>
+              }
             </div>
 
-            <div class="input-group">
-              <label class="input-label">Pincode *</label>
-              <input type="text" class="form-input" [(ngModel)]="master.pincode" name="pincode"
-                placeholder="e.g. 603202" required />
-            </div>
-
+            <!-- 7. GPS Coordinates -->
             <div class="input-group">
               <label class="input-label">GPS Coordinates (Lat, Lng)</label>
               <input type="text" class="form-input font-mono" [(ngModel)]="master.gps" name="gps"
                 placeholder="e.g. 12.8436, 80.0601" />
             </div>
 
+            <!-- 8. Google Maps Link -->
             <div class="input-group">
               <label class="input-label">Google Maps Link</label>
               <input type="text" class="form-input" [(ngModel)]="master.googleMapsLink" name="googleMapsLink"
                 placeholder="https://maps.google.com/..." />
             </div>
 
+            <!-- 9. 3D Plan -->
             <div class="input-group">
               <label class="input-label">Interactive 3D Masterplan URL</label>
-              <input type="text" class="form-input font-mono" [(ngModel)]="master.interactiveMap" name="interactiveMap"
-                placeholder="e.g. assets/secura-masterplan-3d.html" />
+              <input type="text" class="form-input font-mono" [(ngModel)]="master.interactiveMap"
+                name="interactiveMap" placeholder="e.g. assets/secura-masterplan-3d.html" />
             </div>
           </div>
         </div>
-
-        <div class="form-divider"></div>
-
-        <!-- ========================================================= -->
-        <!-- GROUP 3: PLOT DETAILS & VALUATION                         -->
-        <!-- ========================================================= -->
-        <div class="form-block">
-          <div class="block-heading-row">
-            <h3 class="block-heading">
-              <span class="material-symbols-outlined block-icon">square_foot</span>
-              <span>3. Plot Details &amp; Valuation (Auto-Calculated)</span>
-            </h3>
-            <span class="group-badge">PLOT DETAILS</span>
-          </div>
-          <div class="block-draft-hatch" aria-hidden="true"></div>
-          @if (isAdminPrivilege()) {
-          <p class="section-subtext">
-            Admin Range Mode: Specify plot range (sq.ft) and price ranges. Plot No. and sq.ft rate are optional.
-          </p>
-          } @else {
-          <p class="section-subtext">
-            Enter sq.ft and rate. Cents (sq.ft ÷ 435.6) and Total Price are auto-calculated in real time.
-          </p>
-          }
-
-          <div class="form-grid-3">
-            @if (isAdminPrivilege()) {
-            <!-- Admin Mode: Plot No. (Optional) -->
-            <div class="input-group">
-              <label class="input-label">
-                Plot / Unit No.
-                <span class="auto-calc-tag"
-                  style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
-              </label>
-              <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
-                placeholder="e.g. A-12 (Optional)" />
-            </div>
-
-            <!-- Admin Mode: Min Plot Size (sq.ft) -->
-            <div class="input-group">
-              <label class="input-label">Min Plot Size (sq.ft) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
-                (ngModelChange)="onPlotRangeChange()" placeholder="e.g. 500" required />
-            </div>
-
-            <!-- Admin Mode: Max Plot Size (sq.ft) -->
-            <div class="input-group">
-              <label class="input-label">Max Plot Size (sq.ft) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
-                (ngModelChange)="onPlotRangeChange()" placeholder="e.g. 2400" required />
-            </div>
-
-            <!-- Admin Mode: Plot Extent Range Preview -->
-            <div class="input-group">
-              <label class="input-label">
-                Plot Extent Range
-                <span class="auto-calc-tag">Auto Range</span>
-              </label>
-              <div class="calc-box-wrapper">
-                <input type="text" class="form-input auto-calc-field font-semibold" [value]="getFormattedPlotRange()"
-                  readonly />
-                <span class="calc-unit-pill">{{ getPlotRangeCents() }}</span>
-              </div>
-            </div>
-            } @else {
-            <!-- Standard User Mode: Plot No. * -->
-            <div class="input-group">
-              <label class="input-label">Plot No. *</label>
-              <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
-                placeholder="e.g. A-12" required />
-            </div>
-
-            <!-- Standard User Mode: Plot Size (sq.ft) * -->
-            <div class="input-group">
-              <label class="input-label">Plot Size (sq.ft) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.plotSizeSqft" name="plotSizeSqft"
-                (ngModelChange)="onPlotSizeSqftChange()" placeholder="e.g. 1200" required />
-            </div>
-
-            <!-- Standard User Mode: Plot Size (cents) -->
-            <div class="input-group">
-              <label class="input-label">
-                Plot Size (cents)
-                <span class="auto-calc-tag">Auto: sq.ft ÷ 435.6</span>
-              </label>
-              <div class="calc-box-wrapper">
-                <input type="number" step="0.01" class="form-input auto-calc-field font-mono"
-                  [ngModel]="master.plotSizeCents" name="plotSizeCents" readonly />
-                <span class="calc-unit-pill">Cents</span>
-              </div>
-            </div>
-            }
-
-            <div class="input-group">
-              <label class="input-label">Dimension (ft)</label>
-              <input type="text" class="form-input" [(ngModel)]="master.dimension" name="dimension"
-                placeholder="e.g. 30 x 40" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Facing *</label>
-              <select class="form-select" [(ngModel)]="master.facing" name="facing">
-                <option value="">-- Select Facing --</option>
-                @for (opt of facingOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Corner Plot *</label>
-              <select class="form-select" [(ngModel)]="master.cornerPlot" name="cornerPlot">
-                <option value="">-- Select --</option>
-                @for (opt of yesNoOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Land Use *</label>
-              <select class="form-select" [(ngModel)]="master.landUse" name="landUse">
-                <option value="">-- Select Land Use --</option>
-                @for (opt of landUseOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            @if (isAdminPrivilege()) {
-            <!-- Admin Mode: Price From * -->
-            <div class="input-group">
-              <label class="input-label">Starting Price / Price From (₹) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
-                (ngModelChange)="onPriceRangeChange()" placeholder="e.g. 1500000" required />
-            </div>
-
-            <!-- Admin Mode: Price To * -->
-            <div class="input-group">
-              <label class="input-label">Max Price / Price To (₹) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
-                (ngModelChange)="onPriceRangeChange()" placeholder="e.g. 7200000" required />
-            </div>
-
-            <!-- Admin Mode: Price Range Preview -->
-            <div class="input-group">
-              <label class="input-label">
-                Price Range
-                <span class="auto-calc-tag">Range Preview</span>
-              </label>
-              <div class="calc-box-wrapper">
-                <input type="text" class="form-input auto-calc-field font-bold" [value]="getFormattedPriceRange()"
-                  readonly />
-                <span class="calc-unit-pill highlight">{{ getFormattedPriceRange() }}</span>
-              </div>
-            </div>
-
-            <!-- Admin Mode: Price per sq.ft (Optional) -->
-            <div class="input-group">
-              <label class="input-label">
-                Price per sq.ft (₹)
-                <span class="auto-calc-tag"
-                  style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
-              </label>
-              <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
-                (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200 (Optional)" />
-            </div>
-            } @else {
-            <!-- Standard User Mode: Price per sq.ft * -->
-            <div class="input-group">
-              <label class="input-label">Price per sq.ft (₹) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
-                (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200" required />
-            </div>
-
-            <!-- Standard User Mode: Total Price -->
-            <div class="input-group">
-              <label class="input-label">
-                Total Price (₹)
-                <span class="auto-calc-tag">Auto: sq.ft × rate</span>
-              </label>
-              <div class="calc-box-wrapper">
-                <input type="number" class="form-input auto-calc-field font-bold" [ngModel]="master.totalPrice"
-                  name="totalPrice" readonly />
-                <span class="calc-unit-pill highlight">{{ getFormattedTotalPrice() }}</span>
-              </div>
-            </div>
-            }
-
-            <div class="input-group">
-              <label class="input-label">Availability *</label>
-              <select class="form-select" [(ngModel)]="master.availability" name="availability">
-                @for (opt of availabilityOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Total Layout Extent / Area</label>
-              <input type="text" class="form-input" [(ngModel)]="master.totalLayoutArea" name="totalLayoutArea"
-                placeholder="e.g. 14.5 Acres" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Total Plots in Layout</label>
-              <input type="number" class="form-input" [(ngModel)]="master.totalPlots" name="totalPlots"
-                placeholder="e.g. 120" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Total Units (Display)</label>
-              <input type="text" class="form-input" [(ngModel)]="master.totalUnits" name="totalUnits"
-                placeholder="e.g. 120 Villa Plots" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Units Sold / Booked</label>
-              <input type="text" class="form-input" [(ngModel)]="master.unitsSold" name="unitsSold"
-                placeholder="e.g. 42 Plots Sold" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- ========================================================= -->
-        <!-- GROUP 4: NEARBY FACILITIES & DISTANCES (KM)                -->
-        <!-- ========================================================= -->
-        <div class="form-block">
-          <div class="block-heading-row">
-            <h3 class="block-heading">
-              <span class="material-symbols-outlined block-icon">near_me</span>
-              <span>4. Nearby Facilities &amp; Distances (km)</span>
-            </h3>
-            <span class="group-badge">NEARBY FACILITIES</span>
-          </div>
-          <div class="block-draft-hatch" aria-hidden="true"></div>
-          <p class="section-subtext">Strategic growth corridor, transit stations, and social infrastructure access.</p>
-
-          <div class="form-grid-3">
-            <div class="input-group">
-              <label class="input-label">Strategic Corridor *</label>
-              <select class="form-select" [(ngModel)]="master.corridor" name="corridor">
-                <option value="">-- Select Strategic Corridor --</option>
-                @for (opt of corridorOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Highway Name</label>
-              <input type="text" class="form-input" [(ngModel)]="master.highwayName" name="highwayName"
-                placeholder="e.g. GST Road (NH45)" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Highway Access Distance (km)</label>
-              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.highwayDistance"
-                name="highwayDistance" placeholder="e.g. 1.0" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Petrol Bunk Distance (km)</label>
-              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.petrolBunkDistance"
-                name="petrolBunkDistance" placeholder="e.g. 1.2" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Bus Stop Distance (km)</label>
-              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.busStopDistance"
-                name="busStopDistance" placeholder="e.g. 0.8" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Airport Distance (km)</label>
-              <input type="number" step="0.1" class="form-input" [(ngModel)]="master.airportDistance"
-                name="airportDistance" placeholder="e.g. 28" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Schools (Name &amp; km)</label>
-              <input type="text" class="form-input" [(ngModel)]="master.schoolsNearby" name="schoolsNearby"
-                placeholder="e.g. DAV School - 1.5 km" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Colleges (Name &amp; km)</label>
-              <input type="text" class="form-input" [(ngModel)]="master.collegesNearby" name="collegesNearby"
-                placeholder="e.g. SRM University - 6 km" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Hospital (Name &amp; km)</label>
-              <input type="text" class="form-input" [(ngModel)]="master.hospitalNearby" name="hospitalNearby"
-                placeholder="e.g. Apollo Clinic - 3 km" />
-            </div>
-
-            <div class="input-group full-col">
-              <label class="input-label">Railway Station (Name &amp; km)</label>
-              <input type="text" class="form-input" [(ngModel)]="master.railwayStationNearby"
-                name="railwayStationNearby" placeholder="e.g. Guduvanchery - 2.5 km" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Nearby Arterial Roads / Access</label>
-              <input type="text" class="form-input" [(ngModel)]="master.nearbyRoads" name="nearbyRoads"
-                placeholder="e.g. GST Road (NH45), Outer Ring Road" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Nearby Employment &amp; IT Hubs</label>
-              <input type="text" class="form-input" [(ngModel)]="master.employmentHubs" name="employmentHubs"
-                placeholder="e.g. Mahindra World City, Estancia IT Park" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Surrounding Residential Growth</label>
-              <input type="text" class="form-input" [(ngModel)]="master.residentialDevelopment"
-                name="residentialDevelopment" placeholder="e.g. Gated villa townships nearby" />
-            </div>
-
-            <div class="input-group full-col">
-              <label class="input-label">Upcoming Infrastructure Projects</label>
-              <input type="text" class="form-input" [(ngModel)]="master.infrastructureProjects"
-                name="infrastructureProjects" placeholder="e.g. Metro Phase 2 Extension, Kilambakkam Hub" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- ========================================================= -->
-        <!-- GROUP 5: SUITABILITY & POSSESSION                         -->
-        <!-- ========================================================= -->
-        <div class="form-block">
-          <div class="block-heading-row">
-            <h3 class="block-heading">
-              <span class="material-symbols-outlined block-icon">verified</span>
-              <span>5. Suitability &amp; Possession</span>
-            </h3>
-            <span class="group-badge">SUITABILITY</span>
-          </div>
-          <div class="block-draft-hatch" aria-hidden="true"></div>
-
-          <div class="form-grid-2">
-            <div class="input-group">
-              <label class="input-label">Suited For *</label>
-              <select class="form-select" [(ngModel)]="master.suitedFor" name="suitedFor">
-                <option value="">-- Select Suitability --</option>
-                @for (opt of suitedForOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Possession Timeline</label>
-              <input type="text" class="form-input" [(ngModel)]="master.possessionTimeline" name="possessionTimeline"
-                placeholder="e.g. Immediate / Ready to Build" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- ========================================================= -->
-        <!-- GROUP 6: INFRASTRUCTURE & UTILITIES                       -->
-        <!-- ========================================================= -->
-        <div class="form-block">
-          <div class="block-heading-row">
-            <h3 class="block-heading">
-              <span class="material-symbols-outlined block-icon">engineering</span>
-              <span>6. Infrastructure &amp; On-Site Utilities</span>
-            </h3>
-            <span class="group-badge">INFRASTRUCTURE</span>
-          </div>
-          <div class="block-draft-hatch" aria-hidden="true"></div>
-          <p class="section-subtext">Internal roadway finish, water source, power grid, and physical boundary
-            development.</p>
-
-          <div class="form-grid-3">
-            <div class="input-group">
-              <label class="input-label">Electricity *</label>
-              <select class="form-select" [(ngModel)]="master.electricity" name="electricity">
-                <option value="">-- Select Status --</option>
-                @for (opt of utilityOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Water Connection *</label>
-              <select class="form-select" [(ngModel)]="master.waterConnection" name="waterConnection">
-                <option value="">-- Select Status --</option>
-                @for (opt of utilityOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Drainage Facility *</label>
-              <select class="form-select" [(ngModel)]="master.drainageFacility" name="drainageFacility">
-                <option value="">-- Select Facility --</option>
-                @for (opt of drainageOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Road Width (ft) *</label>
-              <input type="number" class="form-input" [(ngModel)]="master.roadWidthFt" name="roadWidthFt"
-                placeholder="e.g. 30" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Road Type *</label>
-              <select class="form-select" [(ngModel)]="master.roadType" name="roadType">
-                <option value="">-- Select Road Type --</option>
-                @for (opt of roadTypeOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Street Lights *</label>
-              <select class="form-select" [(ngModel)]="master.streetLights" name="streetLights">
-                <option value="">-- Select --</option>
-                @for (opt of yesNoOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Compound Wall / Gated *</label>
-              <select class="form-select" [(ngModel)]="master.compoundWallGated" name="compoundWallGated">
-                <option value="">-- Select --</option>
-                @for (opt of yesNoOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Park / Open Space *</label>
-              <select class="form-select" [(ngModel)]="master.park" name="park">
-                <option value="">-- Select --</option>
-                @for (opt of yesNoOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Developer Maintenance after Handover (yrs)</label>
-              <input type="number" class="form-input" [(ngModel)]="master.developerMaintenanceYears"
-                name="developerMaintenanceYears" placeholder="e.g. 2" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Road Width Description</label>
-              <input type="text" class="form-input" [(ngModel)]="master.roadWidth" name="roadWidth"
-                placeholder="e.g. 30ft & 40ft Blacktop Roads" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Internal Roads Finish</label>
-              <input type="text" class="form-input" [(ngModel)]="master.internalRoads" name="internalRoads"
-                placeholder="e.g. 40ft & 30ft Blacktop Tar" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Street Lights Specification</label>
-              <input type="text" class="form-input" [(ngModel)]="master.streetLightsDetails" name="streetLightsDetails"
-                placeholder="e.g. LED Avenue Lighting" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Drainage System Specification</label>
-              <input type="text" class="form-input" [(ngModel)]="master.drainageDetails" name="drainageDetails"
-                placeholder="e.g. Underground Stormwater Drainage" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Water Supply Specification</label>
-              <input type="text" class="form-input" [(ngModel)]="master.waterDetails" name="waterDetails"
-                placeholder="e.g. Individual OHT Water Supply" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Electricity Supply Specification</label>
-              <input type="text" class="form-input" [(ngModel)]="master.electricityDetails" name="electricityDetails"
-                placeholder="e.g. EB 3-Phase Underground Cabling" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Parks &amp; OSR Specification</label>
-              <input type="text" class="form-input" [(ngModel)]="master.parksDetails" name="parksDetails"
-                placeholder="e.g. Landscaped Children Park & Walkway" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Security &amp; Gated Access Spec</label>
-              <input type="text" class="form-input" [(ngModel)]="master.securityDetails" name="securityDetails"
-                placeholder="e.g. 24x7 Boom Barrier Security" />
-            </div>
-
-            <div class="input-group full-col">
-              <label class="input-label">Other Amenities / Facilities</label>
-              <input type="text" class="form-input" [(ngModel)]="master.otherAmenities" name="otherAmenities"
-                placeholder="e.g. Temple, play area, CCTV, Avenue plantation" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- ========================================================= -->
-        <!-- GROUP 7: RISK & REMARKS                                   -->
-        <!-- ========================================================= -->
-        <div class="form-block">
-          <div class="block-heading-row">
-            <h3 class="block-heading">
-              <span class="material-symbols-outlined block-icon">shield</span>
-              <span>7. Environmental Risk Audit &amp; Remarks</span>
-            </h3>
-            <span class="group-badge">RISK &amp; REMARKS</span>
-          </div>
-          <div class="block-draft-hatch" aria-hidden="true"></div>
-
-          <div class="form-grid-2">
-            <div class="input-group">
-              <label class="input-label">Flood Zone Risk *</label>
-              <select class="form-select" [(ngModel)]="master.floodZone" name="floodZone">
-                <option value="">-- Select Risk Level --</option>
-                @for (opt of floodZoneOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Waterlogging History *</label>
-              <select class="form-select" [(ngModel)]="master.waterloggingHistory" name="waterloggingHistory">
-                <option value="">-- Select --</option>
-                @for (opt of yesNoOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-                }
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Contact Person / Phone *</label>
-              <input type="text" class="form-input" [(ngModel)]="master.contactPersonPhone" name="contactPersonPhone"
-                placeholder="e.g. Mr. Kumar - 9876543210" required />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">WhatsApp Concierge Number</label>
-              <input type="text" class="form-input" [(ngModel)]="master.whatsappNumber" name="whatsappNumber"
-                placeholder="e.g. 9486140936" />
-            </div>
-
-            <div class="input-group full-col">
-              <label class="input-label">Remarks / Special Highlights</label>
-              <input type="text" class="form-input" [(ngModel)]="master.remarks" name="remarks"
-                placeholder="e.g. Near upcoming metro extension, rapid capital appreciation" />
-            </div>
-          </div>
-
-          <!-- Project Media & Statutory Documents Dossier -->
-          <div class="form-grid-2" style="margin-top: 1rem;">
-            <div class="input-group">
-              <label class="input-label">Walkthrough Video URLs</label>
-              <input type="text" class="form-input font-mono" [(ngModel)]="master.videos" name="videos"
-                placeholder="https://youtube.com/... or MP4 link" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">4K Drone Aerial Video URLs</label>
-              <input type="text" class="form-input font-mono" [(ngModel)]="master.droneVideos" name="droneVideos"
-                placeholder="https://... drone survey video link" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Sanctioned Layout Plan PDF URL</label>
-              <input type="text" class="form-input font-mono" [(ngModel)]="master.layoutPdf" name="layoutPdf"
-                placeholder="https://.../layout-plan.pdf" />
-            </div>
-
-            <div class="input-group">
-              <label class="input-label">Project Brochure PDF URL</label>
-              <input type="text" class="form-input font-mono" [(ngModel)]="master.brochure" name="brochure"
-                placeholder="https://.../brochure.pdf" />
-            </div>
-
-            <div class="input-group full-col">
-              <label class="input-label">Additional Gallery Image URLs (comma-separated)</label>
-              <input type="text" class="form-input font-mono" [(ngModel)]="master.galleryUrls" name="galleryUrls"
-                placeholder="https://.../photo1.jpg, https://.../photo2.jpg" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- SECTION 4: PHOTOGRAPHY & MEDIA SHOWCASE -->
-        <div class="form-block">
-          <div class="block-heading-row">
-            <h3 class="block-heading">
-              <span class="material-symbols-outlined block-icon">photo_camera</span>
-              <span>4. Architectural Photography &amp; Showcase Media</span>
-            </h3>
-            <span class="media-count-badge" *ngIf="uploadedImages().length > 0">
-              {{ uploadedImages().length }} {{ uploadedImages().length === 1 ? 'Photo' : 'Photos' }} Added
-            </span>
-          </div>
-          <div class="block-draft-hatch" aria-hidden="true"></div>
-          <p class="section-subtext">
-            Upload genuine high-resolution photographs of your property. Listings with verified, crisp architectural
-            photos receive over 3.8x more buyer walkthrough inquiries.
-          </p>
-
-          <!-- Media Mode Selector Tabs -->
-          <div class="media-tabs-nav">
-            <button type="button" class="media-tab-btn" [class.active]="activeMediaTab() === 'upload'"
-              (click)="setMediaTab('upload')">
-              <span class="material-symbols-outlined">cloud_upload</span>
-              <span>Upload Photos</span>
-              <span class="tab-badge-recommended">Recommended</span>
-            </button>
-            <button type="button" class="media-tab-btn" [class.active]="activeMediaTab() === 'url'"
-              (click)="setMediaTab('url')">
-              <span class="material-symbols-outlined">link</span>
-              <span>Direct Image URL</span>
-            </button>
-            <button type="button" class="media-tab-btn" [class.active]="activeMediaTab() === 'presets'"
-              (click)="setMediaTab('presets')">
-              <span class="material-symbols-outlined">auto_awesome</span>
-              <span>Curated Presets</span>
-            </button>
-          </div>
-
-          <!-- TAB 1: DIRECT FILE UPLOAD -->
-          <div *ngIf="activeMediaTab() === 'upload'" class="tab-content-panel">
-
-            <!-- Hidden File Input -->
-            <input #fileInput type="file" multiple
-              accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/avif"
-              (change)="onFilesSelected($event)" style="display: none" />
-
-            <!-- Drag and Drop Zone -->
-            <div class="upload-dropzone" [class.drag-over]="isDragging()" (dragover)="onDragOver($event)"
-              (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
-
-              <div class="dropzone-icon-ring">
-                <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
-              </div>
-              <h4 class="dropzone-title">Drag &amp; Drop property photos here</h4>
-              <p class="dropzone-desc">or <button type="button" class="dropzone-browse-btn"
-                  (click)="$event.stopPropagation(); fileInput.click()">Browse from your device</button></p>
-
-              <div class="dropzone-specs">
-                <span class="spec-chip">JPG, PNG, WEBP, GIF, HEIC</span>
-                <span class="spec-divider">•</span>
-                <span class="spec-chip">Up to 15MB each</span>
-                <span class="spec-divider">•</span>
-                <span class="spec-chip">Multiple files supported</span>
-              </div>
-            </div>
-
-            <!-- Uploading Progress Bar -->
-            <div *ngIf="isUploadingAny()" class="uploading-status-banner">
-              <div class="status-spinner-small"></div>
-              <span>Uploading image(s) to secure registry media storage...</span>
-            </div>
-
-            <!-- Uploaded Images Gallery Grid -->
-            <div *ngIf="uploadedImages().length > 0" class="uploaded-gallery-wrapper">
-              <div class="gallery-header-row">
-                <span class="gallery-title">Uploaded Listing Gallery</span>
-                <span class="gallery-hint">Click "Set Cover" to change which photo appears on investor search
-                  cards.</span>
-              </div>
-
-              <div class="uploaded-grid">
-                @for (item of uploadedImages(); track item.id) {
-                <div class="upload-img-card" [class.is-cover]="item.isCover">
-                  <div class="img-preview-container">
-                    <img [src]="item.previewUrl" [alt]="item.name" class="uploaded-preview-img" loading="lazy"
-                      decoding="async" />
-
-                    <!-- Cover Badge -->
-                    <div *ngIf="item.isCover" class="cover-photo-pill">
-                      <span class="material-symbols-outlined">star</span>
-                      <span>PRIMARY COVER</span>
+        }
+
+                <!-- ========================================================= -->
+                <!-- GROUP 3: PLOT DETAILS & VALUATION                         -->
+                <!-- ========================================================= -->
+                @if (currentStage() === 3) {
+                <div class="form-block">
+                  <div class="block-heading-row">
+                    <h3 class="block-heading">
+                      <span class="material-symbols-outlined block-icon">square_foot</span>
+                      <span>3. Plot Details &amp; Valuation (Auto-Calculated)</span>
+                    </h3>
+                    <span class="group-badge">PLOT DETAILS</span>
+                  </div>
+                  <div class="block-draft-hatch" aria-hidden="true"></div>
+                  @if (isAdminPrivilege()) {
+                  <p class="section-subtext">
+                    Admin Range Mode: Specify plot range (sq.ft) and price ranges. Plot No. and sq.ft rate are optional.
+                  </p>
+                  } @else {
+                  <p class="section-subtext">
+                    Enter sq.ft and rate. Cents (sq.ft ÷ 435.6) and Total Price are auto-calculated in real time.
+                  </p>
+                  }
+
+                  <div class="form-grid-3">
+                    @if (isAdminPrivilege()) {
+                    <!-- Admin Mode: Plot No. (Optional) -->
+                    <div class="input-group">
+                      <label class="input-label">
+                        Plot / Unit No.
+                        <span class="auto-calc-tag"
+                          style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
+                      </label>
+                      <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
+                        placeholder="e.g. A-12 (Optional)" />
                     </div>
 
-                    <!-- Uploading Overlay -->
-                    <div *ngIf="item.isUploading" class="upload-card-spinner-overlay">
-                      <div class="status-spinner-small"></div>
-                      <span>Uploading...</span>
+                    <!-- Admin Mode: Min Plot Size (sq.ft) -->
+                    <div class="input-group">
+                      <label class="input-label">Min Plot Size (sq.ft) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.minPlotSize" name="minPlotSize"
+                        (ngModelChange)="onPlotRangeChange()" placeholder="e.g. 500" required />
                     </div>
 
-                    <!-- Cloud Synced Checkmark -->
-                    <div *ngIf="!item.isUploading && item.serverUrl && !item.isCover" class="cloud-synced-pill"
-                      title="Synced to secure server">
-                      <span class="material-symbols-outlined">cloud_done</span>
+                    <!-- Admin Mode: Max Plot Size (sq.ft) -->
+                    <div class="input-group">
+                      <label class="input-label">Max Plot Size (sq.ft) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.maxPlotSize" name="maxPlotSize"
+                        (ngModelChange)="onPlotRangeChange()" placeholder="e.g. 2400" required />
                     </div>
 
-                    <!-- Delete Button -->
-                    <button type="button" class="card-remove-btn"
-                      (click)="$event.stopPropagation(); removeImage(item.id)" title="Delete photo">
-                      <span class="material-symbols-outlined">delete</span>
+                    <!-- Admin Mode: Plot Extent Range Preview -->
+                    <div class="input-group">
+                      <label class="input-label">
+                        Plot Extent Range
+                        <span class="auto-calc-tag">Auto Range</span>
+                      </label>
+                      <div class="calc-box-wrapper">
+                        <input type="text" class="form-input auto-calc-field font-semibold"
+                          [value]="getFormattedPlotRange()" readonly />
+                        <span class="calc-unit-pill">{{ getPlotRangeCents() }}</span>
+                      </div>
+                    </div>
+                    } @else {
+                    <!-- Standard User Mode: Plot No. * -->
+                    <div class="input-group">
+                      <label class="input-label">Plot No. *</label>
+                      <input type="text" class="form-input font-bold" [(ngModel)]="master.plotNo" name="plotNo"
+                        placeholder="e.g. A-12" required />
+                    </div>
+
+                    <!-- Standard User Mode: Plot Size (sq.ft) * -->
+                    <div class="input-group">
+                      <label class="input-label">Plot Size (sq.ft) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.plotSizeSqft" name="plotSizeSqft"
+                        (ngModelChange)="onPlotSizeSqftChange()" placeholder="e.g. 1200" required />
+                    </div>
+
+                    <!-- Standard User Mode: Plot Size (cents) -->
+                    <div class="input-group">
+                      <label class="input-label">
+                        Plot Size (cents)
+                        <span class="auto-calc-tag">Auto: sq.ft ÷ 435.6</span>
+                      </label>
+                      <div class="calc-box-wrapper">
+                        <input type="number" step="0.01" class="form-input auto-calc-field font-mono"
+                          [ngModel]="master.plotSizeCents" name="plotSizeCents" readonly />
+                        <span class="calc-unit-pill">Cents</span>
+                      </div>
+                    </div>
+                    }
+
+                    <div class="input-group">
+                      <label class="input-label">Dimension (ft)</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.dimension" name="dimension"
+                        placeholder="e.g. 30 x 40" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Facing *</label>
+                      <select class="form-select" [(ngModel)]="master.facing" name="facing">
+                        <option value="">-- Select Facing --</option>
+                        @for (opt of facingOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Corner Plot *</label>
+                      <select class="form-select" [(ngModel)]="master.cornerPlot" name="cornerPlot">
+                        <option value="">-- Select --</option>
+                        @for (opt of yesNoOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Land Use *</label>
+                      <select class="form-select" [(ngModel)]="master.landUse" name="landUse">
+                        <option value="">-- Select Land Use --</option>
+                        @for (opt of landUseOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    @if (isAdminPrivilege()) {
+                    <!-- Admin Mode: Price From * -->
+                    <div class="input-group">
+                      <label class="input-label">Starting Price / Price From (₹) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.priceFrom" name="priceFrom"
+                        (ngModelChange)="onPriceRangeChange()" placeholder="e.g. 1500000" required />
+                    </div>
+
+                    <!-- Admin Mode: Price To * -->
+                    <div class="input-group">
+                      <label class="input-label">Max Price / Price To (₹) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.priceTo" name="priceTo"
+                        (ngModelChange)="onPriceRangeChange()" placeholder="e.g. 7200000" required />
+                    </div>
+
+                    <!-- Admin Mode: Price Range Preview -->
+                    <div class="input-group">
+                      <label class="input-label">
+                        Price Range
+                        <span class="auto-calc-tag">Range Preview</span>
+                      </label>
+                      <div class="calc-box-wrapper">
+                        <input type="text" class="form-input auto-calc-field font-bold"
+                          [value]="getFormattedPriceRange()" readonly />
+                        <span class="calc-unit-pill highlight">{{ getFormattedPriceRange() }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Admin Mode: Price per sq.ft (Optional) -->
+                    <div class="input-group">
+                      <label class="input-label">
+                        Price per sq.ft (₹)
+                        <span class="auto-calc-tag"
+                          style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Optional</span>
+                      </label>
+                      <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
+                        (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200 (Optional)" />
+                    </div>
+                    } @else {
+                    <!-- Standard User Mode: Price per sq.ft * -->
+                    <div class="input-group">
+                      <label class="input-label">Price per sq.ft (₹) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.pricePerSqft" name="pricePerSqft"
+                        (ngModelChange)="onPricePerSqftChange()" placeholder="e.g. 3200" required />
+                    </div>
+
+                    <!-- Standard User Mode: Total Price -->
+                    <div class="input-group">
+                      <label class="input-label">
+                        Total Price (₹)
+                        <span class="auto-calc-tag">Auto: sq.ft × rate</span>
+                      </label>
+                      <div class="calc-box-wrapper">
+                        <input type="number" class="form-input auto-calc-field font-bold" [ngModel]="master.totalPrice"
+                          name="totalPrice" readonly />
+                        <span class="calc-unit-pill highlight">{{ getFormattedTotalPrice() }}</span>
+                      </div>
+                    </div>
+                    }
+
+                    <div class="input-group">
+                      <label class="input-label">Availability *</label>
+                      <select class="form-select" [(ngModel)]="master.availability" name="availability">
+                        @for (opt of availabilityOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Total Layout Extent / Area</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.totalLayoutArea" name="totalLayoutArea"
+                        placeholder="e.g. 14.5 Acres" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Total Plots in Layout</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.totalPlots" name="totalPlots"
+                        placeholder="e.g. 120" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Total Units (Display)</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.totalUnits" name="totalUnits"
+                        placeholder="e.g. 120 Villa Plots" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Units Sold / Booked</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.unitsSold" name="unitsSold"
+                        placeholder="e.g. 42 Plots Sold" />
+                    </div>
+                  </div>
+                </div>
+                }
+
+                <!-- ========================================================= -->
+                <!-- GROUP 4: NEARBY FACILITIES & DISTANCES (KM)                -->
+                <!-- ========================================================= -->
+                @if (currentStage() === 4) {
+                <div class="form-block">
+                  <div class="block-heading-row">
+                    <h3 class="block-heading">
+                      <span class="material-symbols-outlined block-icon">near_me</span>
+                      <span>4. Nearby Facilities &amp; Distances (km)</span>
+                    </h3>
+                    <span class="group-badge">NEARBY FACILITIES</span>
+                  </div>
+                  <div class="block-draft-hatch" aria-hidden="true"></div>
+                  <p class="section-subtext">Strategic growth corridor, transit stations, and social infrastructure
+                    access.</p>
+
+                  <div class="form-grid-3">
+                    <div class="input-group">
+                      <label class="input-label">Strategic Corridor *</label>
+                      <select class="form-select" [(ngModel)]="master.corridor" name="corridor">
+                        <option value="">-- Select Strategic Corridor --</option>
+                        @for (opt of corridorOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Highway Name</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.highwayName" name="highwayName"
+                        placeholder="e.g. GST Road (NH45)" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Highway Access Distance (km)</label>
+                      <input type="number" step="0.1" class="form-input" [(ngModel)]="master.highwayDistance"
+                        name="highwayDistance" placeholder="e.g. 1.0" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Petrol Bunk Distance (km)</label>
+                      <input type="number" step="0.1" class="form-input" [(ngModel)]="master.petrolBunkDistance"
+                        name="petrolBunkDistance" placeholder="e.g. 1.2" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Bus Stop Distance (km)</label>
+                      <input type="number" step="0.1" class="form-input" [(ngModel)]="master.busStopDistance"
+                        name="busStopDistance" placeholder="e.g. 0.8" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Airport Distance (km)</label>
+                      <input type="number" step="0.1" class="form-input" [(ngModel)]="master.airportDistance"
+                        name="airportDistance" placeholder="e.g. 28" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Schools (Name &amp; km)</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.schoolsNearby" name="schoolsNearby"
+                        placeholder="e.g. DAV School - 1.5 km" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Colleges (Name &amp; km)</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.collegesNearby" name="collegesNearby"
+                        placeholder="e.g. SRM University - 6 km" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Hospital (Name &amp; km)</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.hospitalNearby" name="hospitalNearby"
+                        placeholder="e.g. Apollo Clinic - 3 km" />
+                    </div>
+
+                    <div class="input-group full-col">
+                      <label class="input-label">Railway Station (Name &amp; km)</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.railwayStationNearby"
+                        name="railwayStationNearby" placeholder="e.g. Guduvanchery - 2.5 km" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Nearby Arterial Roads / Access</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.nearbyRoads" name="nearbyRoads"
+                        placeholder="e.g. GST Road (NH45), Outer Ring Road" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Nearby Employment &amp; IT Hubs</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.employmentHubs" name="employmentHubs"
+                        placeholder="e.g. Mahindra World City, Estancia IT Park" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Surrounding Residential Growth</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.residentialDevelopment"
+                        name="residentialDevelopment" placeholder="e.g. Gated villa townships nearby" />
+                    </div>
+
+                    <div class="input-group full-col">
+                      <label class="input-label">Upcoming Infrastructure Projects</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.infrastructureProjects"
+                        name="infrastructureProjects" placeholder="e.g. Metro Phase 2 Extension, Kilambakkam Hub" />
+                    </div>
+                  </div>
+                </div>
+                }
+
+                <!-- ========================================================= -->
+                <!-- GROUP 5: SUITABILITY & POSSESSION                         -->
+                <!-- ========================================================= -->
+                @if (currentStage() === 5) {
+                <div class="form-block">
+                  <div class="block-heading-row">
+                    <h3 class="block-heading">
+                      <span class="material-symbols-outlined block-icon">verified</span>
+                      <span>5. Suitability &amp; Possession</span>
+                    </h3>
+                    <span class="group-badge">SUITABILITY</span>
+                  </div>
+                  <div class="block-draft-hatch" aria-hidden="true"></div>
+
+                  <div class="form-grid-2">
+                    <div class="input-group">
+                      <label class="input-label">Suited For *</label>
+                      <select class="form-select" [(ngModel)]="master.suitedFor" name="suitedFor">
+                        <option value="">-- Select Suitability --</option>
+                        @for (opt of suitedForOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Possession Timeline</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.possessionTimeline"
+                        name="possessionTimeline" placeholder="e.g. Immediate / Ready to Build" />
+                    </div>
+                  </div>
+                </div>
+                }
+
+                <!-- ========================================================= -->
+                <!-- GROUP 6: INFRASTRUCTURE & UTILITIES                       -->
+                <!-- ========================================================= -->
+                @if (currentStage() === 6) {
+                <div class="form-block">
+                  <div class="block-heading-row">
+                    <h3 class="block-heading">
+                      <span class="material-symbols-outlined block-icon">engineering</span>
+                      <span>6. Infrastructure &amp; On-Site Utilities</span>
+                    </h3>
+                    <span class="group-badge">INFRASTRUCTURE</span>
+                  </div>
+                  <div class="block-draft-hatch" aria-hidden="true"></div>
+                  <p class="section-subtext">Internal roadway finish, water source, power grid, and physical boundary
+                    development.</p>
+
+                  <div class="form-grid-3">
+                    <div class="input-group">
+                      <label class="input-label">Electricity *</label>
+                      <select class="form-select" [(ngModel)]="master.electricity" name="electricity">
+                        <option value="">-- Select Status --</option>
+                        @for (opt of utilityOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Water Connection *</label>
+                      <select class="form-select" [(ngModel)]="master.waterConnection" name="waterConnection">
+                        <option value="">-- Select Status --</option>
+                        @for (opt of utilityOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Drainage Facility *</label>
+                      <select class="form-select" [(ngModel)]="master.drainageFacility" name="drainageFacility">
+                        <option value="">-- Select Facility --</option>
+                        @for (opt of drainageOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Road Width (ft) *</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.roadWidthFt" name="roadWidthFt"
+                        placeholder="e.g. 30" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Road Type *</label>
+                      <select class="form-select" [(ngModel)]="master.roadType" name="roadType">
+                        <option value="">-- Select Road Type --</option>
+                        @for (opt of roadTypeOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Street Lights *</label>
+                      <select class="form-select" [(ngModel)]="master.streetLights" name="streetLights">
+                        <option value="">-- Select --</option>
+                        @for (opt of yesNoOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Compound Wall / Gated *</label>
+                      <select class="form-select" [(ngModel)]="master.compoundWallGated" name="compoundWallGated">
+                        <option value="">-- Select --</option>
+                        @for (opt of yesNoOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Park / Open Space *</label>
+                      <select class="form-select" [(ngModel)]="master.park" name="park">
+                        <option value="">-- Select --</option>
+                        @for (opt of yesNoOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Developer Maintenance after Handover (yrs)</label>
+                      <input type="number" class="form-input" [(ngModel)]="master.developerMaintenanceYears"
+                        name="developerMaintenanceYears" placeholder="e.g. 2" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Road Width Description</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.roadWidth" name="roadWidth"
+                        placeholder="e.g. 30ft & 40ft Blacktop Roads" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Internal Roads Finish</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.internalRoads" name="internalRoads"
+                        placeholder="e.g. 40ft & 30ft Blacktop Tar" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Street Lights Specification</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.streetLightsDetails"
+                        name="streetLightsDetails" placeholder="e.g. LED Avenue Lighting" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Drainage System Specification</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.drainageDetails" name="drainageDetails"
+                        placeholder="e.g. Underground Stormwater Drainage" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Water Supply Specification</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.waterDetails" name="waterDetails"
+                        placeholder="e.g. Individual OHT Water Supply" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Electricity Supply Specification</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.electricityDetails"
+                        name="electricityDetails" placeholder="e.g. EB 3-Phase Underground Cabling" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Parks &amp; OSR Specification</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.parksDetails" name="parksDetails"
+                        placeholder="e.g. Landscaped Children Park & Walkway" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Security &amp; Gated Access Spec</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.securityDetails" name="securityDetails"
+                        placeholder="e.g. 24x7 Boom Barrier Security" />
+                    </div>
+
+                    <div class="input-group full-col">
+                      <label class="input-label">Other Amenities / Facilities</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.otherAmenities" name="otherAmenities"
+                        placeholder="e.g. Temple, play area, CCTV, Avenue plantation" />
+                    </div>
+                  </div>
+                </div>
+                }
+
+                <!-- ========================================================= -->
+                <!-- GROUP 7: RISK, CONTACT & SHOWCASE MEDIA                   -->
+                <!-- ========================================================= -->
+                @if (currentStage() === 7) {
+                <div class="form-block">
+                  <div class="block-heading-row">
+                    <h3 class="block-heading">
+                      <span class="material-symbols-outlined block-icon">shield</span>
+                      <span>7. Environmental Risk Audit &amp; Remarks</span>
+                    </h3>
+                    <span class="group-badge">RISK &amp; REMARKS</span>
+                  </div>
+                  <div class="block-draft-hatch" aria-hidden="true"></div>
+
+                  <div class="form-grid-2">
+                    <div class="input-group">
+                      <label class="input-label">Flood Zone Risk *</label>
+                      <select class="form-select" [(ngModel)]="master.floodZone" name="floodZone">
+                        <option value="">-- Select Risk Level --</option>
+                        @for (opt of floodZoneOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Waterlogging History *</label>
+                      <select class="form-select" [(ngModel)]="master.waterloggingHistory" name="waterloggingHistory">
+                        <option value="">-- Select --</option>
+                        @for (opt of yesNoOptions; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Contact Person / Phone *</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.contactPersonPhone"
+                        name="contactPersonPhone" placeholder="e.g. Mr. Kumar - 9876543210" required />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">WhatsApp Concierge Number</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.whatsappNumber" name="whatsappNumber"
+                        placeholder="e.g. 9486140936" />
+                    </div>
+
+                    <div class="input-group full-col">
+                      <label class="input-label">Remarks / Special Highlights</label>
+                      <input type="text" class="form-input" [(ngModel)]="master.remarks" name="remarks"
+                        placeholder="e.g. Near upcoming metro extension, rapid capital appreciation" />
+                    </div>
+                  </div>
+
+                  <!-- Project Media & Statutory Documents Dossier -->
+                  <div class="form-grid-2" style="margin-top: 1rem;">
+                    <div class="input-group">
+                      <label class="input-label">Walkthrough Video URLs</label>
+                      <input type="text" class="form-input font-mono" [(ngModel)]="master.videos" name="videos"
+                        placeholder="https://youtube.com/... or MP4 link" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">4K Drone Aerial Video URLs</label>
+                      <input type="text" class="form-input font-mono" [(ngModel)]="master.droneVideos"
+                        name="droneVideos" placeholder="https://... drone survey video link" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Sanctioned Layout Plan PDF URL</label>
+                      <input type="text" class="form-input font-mono" [(ngModel)]="master.layoutPdf" name="layoutPdf"
+                        placeholder="https://.../layout-plan.pdf" />
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">Project Brochure PDF URL</label>
+                      <input type="text" class="form-input font-mono" [(ngModel)]="master.brochure" name="brochure"
+                        placeholder="https://.../brochure.pdf" />
+                    </div>
+
+                    <div class="input-group full-col">
+                      <label class="input-label">Additional Gallery Image URLs (comma-separated)</label>
+                      <input type="text" class="form-input font-mono" [(ngModel)]="master.galleryUrls"
+                        name="galleryUrls" placeholder="https://.../photo1.jpg, https://.../photo2.jpg" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-divider"></div>
+
+                <!-- SECTION 4: PHOTOGRAPHY & MEDIA SHOWCASE -->
+                <div class="form-block">
+                  <div class="block-heading-row">
+                    <h3 class="block-heading">
+                      <span class="material-symbols-outlined block-icon">photo_camera</span>
+                      <span>4. Architectural Photography &amp; Showcase Media</span>
+                    </h3>
+                    <span class="media-count-badge" *ngIf="uploadedImages().length > 0">
+                      {{ uploadedImages().length }} {{ uploadedImages().length === 1 ? 'Photo' : 'Photos' }} Added
+                    </span>
+                  </div>
+                  <div class="block-draft-hatch" aria-hidden="true"></div>
+                  <p class="section-subtext">
+                    Upload genuine high-resolution photographs of your property. Listings with verified, crisp
+                    architectural
+                    photos receive over 3.8x more buyer walkthrough inquiries.
+                  </p>
+
+                  <!-- Media Mode Selector Tabs -->
+                  <div class="media-tabs-nav">
+                    <button type="button" class="media-tab-btn" [class.active]="activeMediaTab() === 'upload'"
+                      (click)="setMediaTab('upload')">
+                      <span class="material-symbols-outlined">cloud_upload</span>
+                      <span>Upload Photos</span>
+                      <span class="tab-badge-recommended">Recommended</span>
+                    </button>
+                    <button type="button" class="media-tab-btn" [class.active]="activeMediaTab() === 'url'"
+                      (click)="setMediaTab('url')">
+                      <span class="material-symbols-outlined">link</span>
+                      <span>Direct Image URL</span>
+                    </button>
+                    <button type="button" class="media-tab-btn" [class.active]="activeMediaTab() === 'presets'"
+                      (click)="setMediaTab('presets')">
+                      <span class="material-symbols-outlined">auto_awesome</span>
+                      <span>Curated Presets</span>
                     </button>
                   </div>
 
-                  <div class="img-card-meta">
-                    <div class="img-meta-info">
-                      <span class="img-filename" [title]="item.name">{{ item.name }}</span>
-                      <span class="img-filesize">{{ item.sizeFormatted }}</span>
+                  <!-- TAB 1: DIRECT FILE UPLOAD -->
+                  <div *ngIf="activeMediaTab() === 'upload'" class="tab-content-panel">
+
+                    <!-- Hidden File Input -->
+                    <input #fileInput type="file" multiple
+                      accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/avif"
+                      (change)="onFilesSelected($event)" style="display: none" />
+
+                    <!-- Drag and Drop Zone -->
+                    <div class="upload-dropzone" [class.drag-over]="isDragging()" (dragover)="onDragOver($event)"
+                      (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
+
+                      <div class="dropzone-icon-ring">
+                        <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
+                      </div>
+                      <h4 class="dropzone-title">Drag &amp; Drop property photos here</h4>
+                      <p class="dropzone-desc">or <button type="button" class="dropzone-browse-btn"
+                          (click)="$event.stopPropagation(); fileInput.click()">Browse from your device</button></p>
+
+                      <div class="dropzone-specs">
+                        <span class="spec-chip">JPG, PNG, WEBP, GIF, HEIC</span>
+                        <span class="spec-divider">•</span>
+                        <span class="spec-chip">Up to 15MB each</span>
+                        <span class="spec-divider">•</span>
+                        <span class="spec-chip">Multiple files supported</span>
+                      </div>
                     </div>
 
-                    <div class="img-card-actions">
-                      <button *ngIf="!item.isCover" type="button" class="btn-set-cover" (click)="setCoverImage(item)">
-                        <span class="material-symbols-outlined">check_circle</span>
-                        <span>Set Cover</span>
+                    <!-- Uploading Progress Bar -->
+                    <div *ngIf="isUploadingAny()" class="uploading-status-banner">
+                      <div class="status-spinner-small"></div>
+                      <span>Uploading image(s) to secure registry media storage...</span>
+                    </div>
+
+                    <!-- Uploaded Images Gallery Grid -->
+                    <div *ngIf="uploadedImages().length > 0" class="uploaded-gallery-wrapper">
+                      <div class="gallery-header-row">
+                        <span class="gallery-title">Uploaded Listing Gallery</span>
+                        <span class="gallery-hint">Click "Set Cover" to change which photo appears on investor search
+                          cards.</span>
+                      </div>
+
+                      <div class="uploaded-grid">
+                        @for (item of uploadedImages(); track item.id) {
+                        <div class="upload-img-card" [class.is-cover]="item.isCover">
+                          <div class="img-preview-container">
+                            <img [src]="item.previewUrl" [alt]="item.name" class="uploaded-preview-img" loading="lazy"
+                              decoding="async" />
+
+                            <!-- Cover Badge -->
+                            <div *ngIf="item.isCover" class="cover-photo-pill">
+                              <span class="material-symbols-outlined">star</span>
+                              <span>PRIMARY COVER</span>
+                            </div>
+
+                            <!-- Uploading Overlay -->
+                            <div *ngIf="item.isUploading" class="upload-card-spinner-overlay">
+                              <div class="status-spinner-small"></div>
+                              <span>Uploading...</span>
+                            </div>
+
+                            <!-- Cloud Synced Checkmark -->
+                            <div *ngIf="!item.isUploading && item.serverUrl && !item.isCover" class="cloud-synced-pill"
+                              title="Synced to secure server">
+                              <span class="material-symbols-outlined">cloud_done</span>
+                            </div>
+
+                            <!-- Delete Button -->
+                            <button type="button" class="card-remove-btn"
+                              (click)="$event.stopPropagation(); removeImage(item.id)" title="Delete photo">
+                              <span class="material-symbols-outlined">delete</span>
+                            </button>
+                          </div>
+
+                          <div class="img-card-meta">
+                            <div class="img-meta-info">
+                              <span class="img-filename" [title]="item.name">{{ item.name }}</span>
+                              <span class="img-filesize">{{ item.sizeFormatted }}</span>
+                            </div>
+
+                            <div class="img-card-actions">
+                              <button *ngIf="!item.isCover" type="button" class="btn-set-cover"
+                                (click)="setCoverImage(item)">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                <span>Set Cover</span>
+                              </button>
+                              <span *ngIf="item.isCover" class="active-cover-indicator">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span>Active Cover</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        }
+
+                        <!-- Quick Add More Tile -->
+                        <div class="add-more-tile" (click)="fileInput.click()">
+                          <div class="add-tile-icon-box">
+                            <span class="material-symbols-outlined">add_photo_alternate</span>
+                          </div>
+                          <span class="add-tile-label">Add More Photos</span>
+                          <span class="add-tile-sub">Select files</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- TAB 2: EXTERNAL URL -->
+                  <div *ngIf="activeMediaTab() === 'url'" class="tab-content-panel">
+                    <div class="input-group full-col">
+                      <label class="input-label">Public Image URL *</label>
+                      <div class="url-input-wrapper">
+                        <span class="material-symbols-outlined url-input-icon">link</span>
+                        <input type="url" class="form-input font-mono has-left-icon" [(ngModel)]="form.mainImageUrl"
+                          name="mainImageUrl"
+                          placeholder="https://images.unsplash.com/... or https://domain.com/photo.jpg" />
+                      </div>
+                      <span class="field-hint">Paste an HTTPS image link hosted on Unsplash, AWS S3, Cloudinary, or your
+                        CDN.</span>
+                    </div>
+
+                    <!-- URL Live Preview Box -->
+                    <div *ngIf="form.mainImageUrl" class="url-live-preview-box">
+                      <span class="preview-box-label">Live Link Preview</span>
+                      <div class="url-preview-thumb">
+                        <img [src]="form.mainImageUrl" alt="Property Cover Preview" loading="lazy" decoding="async"
+                          (error)="$any($event.target).src = 'blueprint-bg.svg'" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- TAB 3: CURATED PRESETS -->
+                  <div *ngIf="activeMediaTab() === 'presets'" class="tab-content-panel">
+                    <span class="field-hint mb-2">Select from our architectural portfolio presets if your photography
+                      shoot is
+                      pending:</span>
+                    <div class="sample-images-grid">
+                      @for (img of sampleImages; track img.url) {
+                      <div class="sample-img-card" [class.selected]="form.mainImageUrl === img.url"
+                        (click)="selectImage(img.url)">
+                        <img [src]="img.url" [alt]="img.label" class="sample-img" loading="lazy" decoding="async" />
+                        <span class="sample-label">{{ img.label }}</span>
+                        @if (form.mainImageUrl === img.url) {
+                        <span class="material-symbols-outlined check-badge">check_circle</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- ACTIVE PRIMARY SHOWCASE BANNER -->
+                  <div class="active-cover-showcase-bar">
+                    <div class="showcase-thumb-box">
+                      <img [src]="activeCoverPreview()" alt="Active Listing Cover" class="showcase-thumb" loading="lazy"
+                        decoding="async" />
+                    </div>
+                    <div class="showcase-info">
+                      <div class="showcase-status">
+                        <span class="status-dot-pulse"></span>
+                        <span class="showcase-badge-text">MARKETPLACE COVER PREVIEW</span>
+                      </div>
+                      <h5 class="showcase-title">{{ form.title || master.projectName || 'Your Architectural Listing
+                        Title' }}
+                      </h5>
+                      <p class="showcase-location">{{ form.localityName || 'Locality' }}, {{ form.cityName }} • {{
+                        form.price ||
+                        'Expected Price' }}</p>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="form-divider"></div>
+
+                <!-- FOUR-EYES REVIEW DISCLOSURE -->
+                <div class="compliance-callout-card">
+                  <div class="callout-icon-box">
+                    <span class="material-symbols-outlined">security</span>
+                  </div>
+                  <div class="callout-content">
+                    <h4 class="callout-title">Four-Eyes Security &amp; Registry Verification</h4>
+                    <p class="callout-desc">
+                      To preserve our 100% verified registry standard, your listing will be routed into our
+                      <strong>Admin Review Queue</strong> upon submission. Our compliance team verifies title
+                      encumbrance and
+                      RERA records before the property is published live. You can monitor the review progress at any
+                      time in
+                      your <strong>User Profile</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                @if (incompleteEarlierStagesCount() > 0) {
+                <div class="incomplete-stages-notice" role="status">
+                  <span class="material-symbols-outlined">info</span>
+                  <span>
+                    {{ incompleteEarlierStagesCount() }} earlier {{ incompleteEarlierStagesCount() === 1 ? 'stage has' :
+                    'stages
+                    have' }}
+                    missing required fields (marked with an amber dot above). Tap any stage to review before submitting.
+                  </span>
+                </div>
+                }
+                }
+
+                <!-- 7-STAGE WIZARD NAVIGATION ACTIONS (DESKTOP & MOBILE) -->
+                <div class="form-submit-row wizard-nav-footer">
+                  <div class="wizard-nav-left">
+                    @if (currentStage() > 1) {
+                    <button type="button" class="btn-wizard-prev" (click)="prevStage()">
+                      <span class="material-symbols-outlined">arrow_back</span>
+                      <span>Previous</span>
+                    </button>
+                    } @else {
+                    <a routerLink="/" class="btn-cancel-post">Cancel</a>
+                    }
+                  </div>
+
+                  <div class="wizard-nav-right">
+                    <button type="button" class="btn-save-draft" (click)="saveDraftManually()"
+                      [disabled]="saveStatus() === 'saving'">
+                      <span class="material-symbols-outlined">save</span>
+                      <span>Save Draft</span>
+                    </button>
+
+                    @if (currentStage() < 7) { <button type="button" class="btn-execute-post" (click)="nextStage()">
+                      <span>Save &amp; Next Stage</span>
+                      <span class="material-symbols-outlined">arrow_forward</span>
                       </button>
-                      <span *ngIf="item.isCover" class="active-cover-indicator">
-                        <span class="material-symbols-outlined">verified</span>
-                        <span>Active Cover</span>
-                      </span>
-                    </div>
+                      } @else {
+                      <button type="submit" class="btn-execute-post" [disabled]="isSubmitting()">
+                        <span class="material-symbols-outlined">
+                          {{ isSubmitting() ? 'sync' : 'publish' }}
+                        </span>
+                        <span>{{ isSubmitting() ? 'Submitting...' : 'Submit Property for Review' }}</span>
+                      </button>
+                      }
                   </div>
                 </div>
-                }
-
-                <!-- Quick Add More Tile -->
-                <div class="add-more-tile" (click)="fileInput.click()">
-                  <div class="add-tile-icon-box">
-                    <span class="material-symbols-outlined">add_photo_alternate</span>
-                  </div>
-                  <span class="add-tile-label">Add More Photos</span>
-                  <span class="add-tile-sub">Select files</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- TAB 2: EXTERNAL URL -->
-          <div *ngIf="activeMediaTab() === 'url'" class="tab-content-panel">
-            <div class="input-group full-col">
-              <label class="input-label">Public Image URL *</label>
-              <div class="url-input-wrapper">
-                <span class="material-symbols-outlined url-input-icon">link</span>
-                <input type="url" class="form-input font-mono has-left-icon" [(ngModel)]="form.mainImageUrl"
-                  name="mainImageUrl" placeholder="https://images.unsplash.com/... or https://domain.com/photo.jpg" />
-              </div>
-              <span class="field-hint">Paste an HTTPS image link hosted on Unsplash, AWS S3, Cloudinary, or your
-                CDN.</span>
-            </div>
-
-            <!-- URL Live Preview Box -->
-            <div *ngIf="form.mainImageUrl" class="url-live-preview-box">
-              <span class="preview-box-label">Live Link Preview</span>
-              <div class="url-preview-thumb">
-                <img [src]="form.mainImageUrl" alt="Property Cover Preview" loading="lazy" decoding="async"
-                  (error)="$any($event.target).src = 'blueprint-bg.svg'" />
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 3: CURATED PRESETS -->
-          <div *ngIf="activeMediaTab() === 'presets'" class="tab-content-panel">
-            <span class="field-hint mb-2">Select from our architectural portfolio presets if your photography shoot is
-              pending:</span>
-            <div class="sample-images-grid">
-              @for (img of sampleImages; track img.url) {
-              <div class="sample-img-card" [class.selected]="form.mainImageUrl === img.url"
-                (click)="selectImage(img.url)">
-                <img [src]="img.url" [alt]="img.label" class="sample-img" loading="lazy" decoding="async" />
-                <span class="sample-label">{{ img.label }}</span>
-                @if (form.mainImageUrl === img.url) {
-                <span class="material-symbols-outlined check-badge">check_circle</span>
-                }
-              </div>
-              }
-            </div>
-          </div>
-
-          <!-- ACTIVE PRIMARY SHOWCASE BANNER -->
-          <div class="active-cover-showcase-bar">
-            <div class="showcase-thumb-box">
-              <img [src]="activeCoverPreview()" alt="Active Listing Cover" class="showcase-thumb" loading="lazy"
-                decoding="async" />
-            </div>
-            <div class="showcase-info">
-              <div class="showcase-status">
-                <span class="status-dot-pulse"></span>
-                <span class="showcase-badge-text">MARKETPLACE COVER PREVIEW</span>
-              </div>
-              <h5 class="showcase-title">{{ form.title || master.projectName || 'Your Architectural Listing Title' }}
-              </h5>
-              <p class="showcase-location">{{ form.localityName || 'Locality' }}, {{ form.cityName }} • {{ form.price ||
-                'Expected Price' }}</p>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="form-divider"></div>
-
-        <!-- FOUR-EYES REVIEW DISCLOSURE -->
-        <div class="compliance-callout-card">
-          <div class="callout-icon-box">
-            <span class="material-symbols-outlined">security</span>
-          </div>
-          <div class="callout-content">
-            <h4 class="callout-title">Four-Eyes Security &amp; Registry Verification</h4>
-            <p class="callout-desc">
-              To preserve our 100% verified registry standard, your listing will be routed into our
-              <strong>Admin Review Queue</strong> upon submission. Our compliance team verifies title encumbrance and
-              RERA records before the property is published live. You can monitor the review progress at any time in
-              your <strong>User Profile</strong>.
-            </p>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-submit-row">
-          <a routerLink="/" class="btn-cancel-post">Cancel &amp; Return</a>
-
-          <button type="submit" class="btn-execute-post" [disabled]="isSubmitting()">
-            <span class="material-symbols-outlined">
-              {{ isSubmitting() ? 'sync' : 'publish' }}
-            </span>
-            <span>{{ isSubmitting() ? 'Submitting to Registry Desk...' : 'Submit Property for Admin Review' }}</span>
-          </button>
-        </div>
 
       </form>
     </div>
@@ -1314,6 +1662,34 @@
       </div>
     </div>
   </ng-template>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ACCIDENTAL LEAVE CONFIRMATION GUARD -->
+  <!-- ========================================== -->
+  @if (showLeaveConfirmModal()) {
+  <div class="modal-backdrop leave-guard-backdrop" (click)="confirmStayOnForm()">
+    <div class="leave-guard-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+      aria-labelledby="leave-guard-title">
+      <div class="leave-guard-icon">
+        <span class="material-symbols-outlined">cloud_sync</span>
+      </div>
+      <h3 id="leave-guard-title" class="modal-title">Leave Property Listing?</h3>
+      <p class="modal-sub">
+        You are on <strong>Stage {{ currentStage() }} of 7</strong> ({{ completionPercent() }}% complete).
+        Your progress is saved as a draft so you can return and continue anytime.
+      </p>
+      <div class="leave-guard-actions">
+        <button type="button" class="btn-primary-action" (click)="confirmStayOnForm()">
+          <span class="material-symbols-outlined">edit_note</span>
+          <span>Stay &amp; Continue Editing</span>
+        </button>
+        <button type="button" class="btn-leave-secondary" (click)="confirmSaveAndLeave()">
+          <span>Save Draft &amp; Leave</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 
   <!-- ========================================== -->
   <!-- MODAL: SUCCESSFUL SUBMISSION CONFIRMATION  -->

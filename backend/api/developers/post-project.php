@@ -113,17 +113,11 @@ try {
         $mainImageUrl = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
     }
 
-    // Resolve city_id
-    $cityStmt = $db->prepare("SELECT id FROM cities WHERE LOWER(name) = LOWER(?) LIMIT 1");
-    $cityStmt->execute([$cityName]);
-    $cityId = (int)$cityStmt->fetchColumn();
-    if ($cityId <= 0) $cityId = 1;
-
-    // Generate unique ID
+    // Generate unique ID directly against `projects`
     $prefix = 'PRJ-';
     $randNum = rand(1000, 9999);
     $propId = $prefix . $randNum;
-    $idCheck = $db->prepare("SELECT id FROM properties WHERE id = ?");
+    $idCheck = $db->prepare("SELECT project_id FROM projects WHERE project_id = ?");
     $idCheck->execute([$propId]);
     while ($idCheck->fetch()) {
         $randNum = rand(1000, 9999);
@@ -133,50 +127,7 @@ try {
 
     $db->beginTransaction();
 
-    // 3. Insert into properties
-    $propInsert = $db->prepare("
-        INSERT INTO properties (
-            id, developer_id, city_id, title, property_type, listing_mode,
-            locality_name, city_name, price, price_per_sqft, sqft,
-            bhk_badge, facing_or_view, main_image_url, rera_number,
-            brokerage_badge, special_tag, points_badge, possession_date,
-            project_status, total_land_parcel, total_units, media_points,
-            is_featured, status, submitted_by_user_id, submitted_by_name, submitted_by_role
-        ) VALUES (
-            ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            '0% Direct SRO Deed', 'Developer Verified', 4, ?,
-            ?, ?, ?, 4,
-            1, 'published', ?, ?, 'developer'
-        )
-    ");
-
-    $propInsert->execute([
-        $propId,
-        $developerId,
-        $cityId,
-        $title,
-        $propertyType,
-        $listingMode,
-        $localityName,
-        $cityName,
-        $price,
-        $pricePerSqft,
-        $sqft,
-        $bhkBadge,
-        $facingOrView,
-        $mainImageUrl,
-        $reraNumber,
-        $possessionDate,
-        $projectStatus,
-        $totalLandParcel,
-        $totalUnits,
-        $userId > 0 ? $userId : 105,
-        $user ? $user['name'] : $developer['name']
-    ]);
-
-    // 4. Insert complete ~70-column record into `projects`, `project_details`, and `property_master_details`
+    // Insert complete project record directly into `projects` and `project_details`
     $masterData = $input['masterData'] ?? $input['masterDetails'] ?? [];
     if (!is_array($masterData)) {
         $masterData = [];

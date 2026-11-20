@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { postPropertyLeaveGuard } from './core/guards/post-property-leave.guard';
 
 export const routes: Routes = [
   {
@@ -119,6 +120,11 @@ export const routes: Routes = [
     title: 'Role & Staff Access Governance — Find a Plot Super Admin'
   },
   {
+    path: 'admin/site-visits',
+    loadComponent: () => import('./features/admin/pages/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+    title: 'Site Visit Requests — Find a Plot Admin'
+  },
+  {
     path: 'admin/compare',
     loadComponent: () => import('./features/admin/pages/admin-search-compare/admin-search-compare.component').then(m => m.AdminSearchCompareComponent),
     title: 'Admin Property Search & Comparison Matrix — Find a Plot'
@@ -136,6 +142,7 @@ export const routes: Routes = [
   {
     path: 'post-property',
     loadComponent: () => import('./features/properties/pages/post-property-page/post-property-page.component').then(m => m.PostPropertyPageComponent),
+    canDeactivate: [postPropertyLeaveGuard],
     title: 'Post Property — Verified Direct Registry — Find a Plot'
   },
   {

@@ -1,7 +1,7 @@
 <?php
 /**
- * GET /api/geo/localities.php?cityKey={chennai}
- * Fetches localities and cadastral benchmarks for a given city.
+ * GET /api/geo/localities.php?district={Chengalpattu}
+ * Fetches localities directly from the `projects` table (no dependency on `cities`).
  */
 
 declare(strict_types=1);
@@ -14,41 +14,41 @@ use Mannidam\Helpers\Response;
 
 Response::initCors();
 
-$cityKey = $_GET['cityKey'] ?? null;
+$district = trim((string)($_GET['district'] ?? $_GET['cityKey'] ?? ''));
 
 $db = (new Database())->getConnection();
 
-if (!empty($cityKey)) {
+if ($district !== '') {
     $stmt = $db->prepare("
-        SELECT 
-            l.id,
-            l.name,
-            l.pin_code AS pinCode,
-            l.avg_sqft_rate AS avgSqftRate,
-            l.growth_yoy AS growthYoY,
-            l.deed_count AS deedCount,
-            c.city_key AS cityKey,
-            c.name AS cityName
-        FROM localities l
-        JOIN cities c ON l.city_id = c.id
-        WHERE c.city_key = ?
-        ORDER BY l.name ASC
+        SELECT
+            MIN(project_id) AS id,
+            TRIM(locality) AS name,
+            '' AS pinCode,
+            ROUND(AVG(NULLIF(sqft_rate, 0))) AS avgSqftRate,
+            COUNT(*) AS deedCount,
+            MAX(district) AS districtName
+        FROM projects
+        WHERE locality IS NOT NULL AND TRIM(locality) <> ''
+          AND (LOWER(TRIM(district)) = LOWER(?) OR LOWER(TRIM(city)) = LOWER(?))
+          AND (status = 'published' OR status IS NULL)
+        GROUP BY TRIM(locality)
+        ORDER BY deedCount DESC, name ASC
     ");
-    $stmt->execute([$cityKey]);
+    $stmt->execute([$district, $district]);
 } else {
     $stmt = $db->query("
-        SELECT 
-            l.id,
-            l.name,
-            l.pin_code AS pinCode,
-            l.avg_sqft_rate AS avgSqftRate,
-            l.growth_yoy AS growthYoY,
-            l.deed_count AS deedCount,
-            c.city_key AS cityKey,
-            c.name AS cityName
-        FROM localities l
-        JOIN cities c ON l.city_id = c.id
-        ORDER BY c.name ASC, l.name ASC
+        SELECT
+            MIN(project_id) AS id,
+            TRIM(locality) AS name,
+            '' AS pinCode,
+            ROUND(AVG(NULLIF(sqft_rate, 0))) AS avgSqftRate,
+            COUNT(*) AS deedCount,
+            MAX(district) AS districtName
+        FROM projects
+        WHERE locality IS NOT NULL AND TRIM(locality) <> ''
+          AND (status = 'published' OR status IS NULL)
+        GROUP BY TRIM(locality)
+        ORDER BY deedCount DESC, name ASC
     ");
 }
 
