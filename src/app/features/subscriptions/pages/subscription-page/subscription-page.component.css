@@ -122,8 +122,8 @@
 }
 
 .sub-hero-title {
-  font-size: 18px;
-  font-weight: 400;
+  font-size: 1.1rem;
+  font-weight: 500;
   color: var(--brand-teal);
   letter-spacing: -0.25px;
   margin: 0 0 0.5rem 0;

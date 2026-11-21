@@ -353,6 +353,20 @@ CREATE TABLE IF NOT EXISTS `lead_stage_history` (
   KEY `idx_hist_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `lead_callbacks` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `assigned_to` INT DEFAULT NULL,
+  `scheduled_at` DATETIME NOT NULL,
+  `status` VARCHAR(30) DEFAULT 'scheduled',
+  `notes` TEXT DEFAULT NULL,
+  `completed_at` DATETIME DEFAULT NULL,
+  `created_by` INT DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_exec_due` (`assigned_to`, `status`, `scheduled_at`),
+  INDEX `idx_lead_cb` (`user_id`, `scheduled_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ----------------------------------------------------------------------------
 -- 9. USER INTERACTION & ENGAGEMENT TRACKING
 -- ----------------------------------------------------------------------------

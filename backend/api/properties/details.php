@@ -328,21 +328,30 @@ if ($minSz > 0 && $maxSz > 0 && $minSz !== $maxSz) {
     $sqftFormatted = 'Plots from 1,200 sq.ft';
 }
 
-$mainImg = (!empty($prop['cover_image']) && str_starts_with($prop['cover_image'], 'http'))
-    ? $prop['cover_image']
+$rawMainImg = trim((string)($prop['cover_image'] ?? ''));
+$mainImg = ($rawMainImg !== '' && (str_starts_with($rawMainImg, 'http') || str_starts_with($rawMainImg, '/')))
+    ? $rawMainImg
     : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
 
-// Parse Gallery
+// Parse Gallery (supports JSON array and comma-separated URL strings, including relative '/' paths)
 $gallery = [];
 if (!empty($prop['gallery'])) {
-    $dec = json_decode((string)$prop['gallery'], true);
-    if (is_array($dec)) {
-        $gallery = $dec;
-    } elseif (is_string($prop['gallery']) && str_starts_with($prop['gallery'], 'http')) {
-        $gallery = [$prop['gallery']];
+    $rawGallery = (string)$prop['gallery'];
+    $dec = json_decode($rawGallery, true);
+    $candidates = is_array($dec)
+        ? $dec
+        : (preg_split('/\s*,\s*/', trim($rawGallery)) ?: []);
+    foreach ($candidates as $u) {
+        $url = trim((string)$u);
+        if ($url !== '' && (str_starts_with($url, 'http') || str_starts_with($url, '/'))) {
+            $gallery[] = $url;
+        }
     }
+    $gallery = array_values(array_unique($gallery));
 }
-$freePhotos = !empty($gallery) ? $gallery : [$mainImg];
+$allFreePhotos = !empty($gallery) ? $gallery : [$mainImg];
+$totalPhotoCount = count($allFreePhotos);
+$freePhotos = $isViewRestricted ? [$allFreePhotos[0]] : $allFreePhotos;
 
 // Premium Media
 $premiumMedia = [];
@@ -708,6 +717,7 @@ $response = [
     'mediaPoints'            => 4,
     'isMediaUnlocked'        => false,
     'freePhotos'             => $freePhotos,
+    'totalPhotoCount'        => $totalPhotoCount,
     'premiumMedia'           => $isViewRestricted ? [] : $premiumMedia,
     'googleMapsLink'         => $isViewRestricted ? null : ($prop['interactive_map'] ?: ($lat && $lon ? "https://www.google.com/maps?q={$lat},{$lon}" : null)),
     'latitude'               => $isViewRestricted ? null : $lat,

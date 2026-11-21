@@ -7,7 +7,9 @@ import {
   OnDestroy,
   ViewChild,
   signal,
-  computed
+  computed,
+  inject,
+  NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as THREE from 'three';
@@ -143,12 +145,15 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly soldCount = computed(() => this.plots().filter(p => p.status === 'sold').length);
 
   // Three.js Core
+  private readonly ngZone = inject(NgZone);
   private renderer?: THREE.WebGLRenderer;
   private scene?: THREE.Scene;
   private camera?: THREE.PerspectiveCamera;
   private controls?: OrbitControls;
   private animationFrameId?: number;
   private resizeObserver?: ResizeObserver;
+  private intersectionObserver?: IntersectionObserver;
+  private isViewportVisible = true;
 
   // Scene Meshes & Groups
   private mapGroup = new THREE.Group();
@@ -186,9 +191,11 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initThreeJs();
-    }, 60);
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        this.initThreeJs();
+      }, 60);
+    });
   }
 
   ngOnDestroy(): void {
@@ -197,6 +204,9 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
+    }
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
     }
     if (this.renderer) {
       this.renderer.dispose();
@@ -275,17 +285,29 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
     // 7. Load Real Masterplan Texture on 3D Diorama Plinth
     this.loadRealMasterplanTexture();
 
-    // 8. Event Listeners for Raycasting
+    // 8. Event Listeners for Raycasting (outside Angular zone to avoid 60fps change detection)
     const dom = this.renderer.domElement;
-    dom.addEventListener('pointermove', (e) => this.onPointerMove(e));
-    dom.addEventListener('click', (e) => this.onPointerClick(e));
+    dom.addEventListener('pointermove', (e) => this.onPointerMove(e), { passive: true });
+    dom.addEventListener('click', (e) => this.ngZone.run(() => this.onPointerClick(e)));
 
-    // 9. Resize Observer
+    // 9. Resize & Viewport Intersection Observers (pause GPU loop when scrolled off-screen)
     this.resizeObserver = new ResizeObserver(() => this.onResize());
     this.resizeObserver.observe(container);
 
-    // 10. Start Animation Loop
-    this.animate();
+    if (typeof IntersectionObserver !== 'undefined') {
+      this.intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          this.isViewportVisible = entries[0]?.isIntersecting ?? true;
+        },
+        { threshold: 0.05 }
+      );
+      this.intersectionObserver.observe(container);
+    }
+
+    // 10. Start Animation Loop outside Angular zone
+    this.ngZone.runOutsideAngular(() => {
+      this.animate();
+    });
 
     // If an initial plot is selected, trigger its highlight box
     const initPlot = this.selectedPlot();
@@ -887,10 +909,14 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // =========================================================================
-  // ANIMATION LOOP
+  // ANIMATION LOOP (Runs outside Angular zone & pauses when off-screen/hidden)
   // =========================================================================
   private animate = (): void => {
     this.animationFrameId = requestAnimationFrame(this.animate);
+
+    if (!this.isViewportVisible || (typeof document !== 'undefined' && document.hidden)) {
+      return;
+    }
 
     // Camera tween interpolation
     if (this.isCameraTransitioning && this.camera && this.controls) {
@@ -924,9 +950,12 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.controls) {
       this.controls.update();
 
-      // Update Compass dial angle in real-time
+      // Update Compass dial angle only when changed by >= 0.5 deg to prevent unnecessary signal updates
       const azimuth = this.controls.getAzimuthalAngle();
-      this.compassRotation.set(-azimuth * (180 / Math.PI));
+      const nextDeg = Math.round(-azimuth * (180 / Math.PI) * 2) / 2;
+      if (Math.abs(this.compassRotation() - nextDeg) >= 0.5) {
+        this.compassRotation.set(nextDeg);
+      }
     }
 
     // Project 3D Pin screen coordinates for selected plot
@@ -942,7 +971,9 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
     const sel = this.selectedPlot();
     const mesh = this.getMeshForPlot(sel);
     if (!mesh || !this.camera || !this.webglContainer) {
-      this.isPinVisible.set(false);
+      if (this.isPinVisible()) {
+        this.isPinVisible.set(false);
+      }
       return;
     }
 
@@ -961,11 +992,21 @@ export class PlotexViewerComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Check if behind camera
     if (pos.z > 1.0 || screenX < 0 || screenX > container.clientWidth || screenY < 0 || screenY > container.clientHeight) {
-      this.isPinVisible.set(false);
+      if (this.isPinVisible()) {
+        this.isPinVisible.set(false);
+      }
     } else {
-      this.selectedPinScreenX.set(Math.round(screenX));
-      this.selectedPinScreenY.set(Math.round(screenY));
-      this.isPinVisible.set(true);
+      const nextX = Math.round(screenX);
+      const nextY = Math.round(screenY);
+      if (this.selectedPinScreenX() !== nextX) {
+        this.selectedPinScreenX.set(nextX);
+      }
+      if (this.selectedPinScreenY() !== nextY) {
+        this.selectedPinScreenY.set(nextY);
+      }
+      if (!this.isPinVisible()) {
+        this.isPinVisible.set(true);
+      }
     }
   }
 }

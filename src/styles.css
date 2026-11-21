@@ -770,8 +770,6 @@ optgroup {
    ========================================================================== */
 
 /* 2. Comprehensive 3px Rule for All Components & Pages Except Property Card & Circular Elements */
-app-home-page app-header,
-app-home-page app-header *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-economy-banner,
 app-home-page app-economy-banner *:not([class*="circle"]):not([class*="avatar"]),
 app-home-page app-featured-properties>*:not(app-property-card),
@@ -843,4 +841,58 @@ app-home-page .why-subtitle,
 app-home-page .desc-200,
 app-home-page .pillar-text {
   font-size: 14px !important;
+}
+
+/* ==========================================================================
+   BATTERY & GPU POWER OPTIMIZATIONS
+   - Respect OS Low Power / Reduced Motion preferences for decorative infinite animations
+   - Offload expensive continuous backdrop-filter blurs on mobile sticky elements
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .compare-dock-bar,
+  .mindset-sticky-bar,
+  .sticky-filter-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ==========================================================================
+   BATTERY & GPU POWER OPTIMIZATIONS
+   - Respect OS Low Power / Reduced Motion preferences for decorative infinite animations
+   - Offload expensive continuous backdrop-filter blurs on mobile sticky elements
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .compare-dock-bar,
+  .mindset-sticky-bar,
+  .sticky-filter-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }

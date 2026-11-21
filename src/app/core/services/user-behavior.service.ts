@@ -251,6 +251,8 @@ export class UserBehaviorService {
 
   // Real-time visitor presence heartbeat
   private readonly sessionId: string = this.getOrCreateSessionId();
+  private resolvedHeartbeatUrl: string | null = null;
+  private lastHeartbeatSentAt = 0;
 
   private getOrCreateSessionId(): string {
     try {
@@ -266,6 +268,16 @@ export class UserBehaviorService {
   }
 
   public sendHeartbeat(): void {
+    // Battery optimization: Do not wake cellular/Wi-Fi radio when browser tab or phone screen is hidden
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      return;
+    }
+    const now = Date.now();
+    if (now - this.lastHeartbeatSentAt < 10000) {
+      return;
+    }
+    this.lastHeartbeatSentAt = now;
+
     const payload = {
       sessionId: this.sessionId,
       userPhone: this.authService.currentUser()?.phone || (this.activeUserPhone() !== 'Guest Visitor' ? this.activeUserPhone() : ''),
@@ -273,19 +285,52 @@ export class UserBehaviorService {
     };
 
     const tryPing = (url: string) => this.http.post(url, payload);
-    tryPing(`${environment.apiUrl}/analytics/heartbeat.php`).pipe(
-      catchError(() => tryPing('/P_demo_5/backend/api/analytics/heartbeat.php')),
-      catchError(() => tryPing('/the-property-project/backend/api/analytics/heartbeat.php')),
-      catchError(() => tryPing('/api/analytics/heartbeat.php')),
-      catchError(() => of(null))
-    ).subscribe();
+
+    if (this.resolvedHeartbeatUrl) {
+      tryPing(this.resolvedHeartbeatUrl).pipe(catchError(() => of(null))).subscribe();
+      return;
+    }
+
+    const candidates = [
+      `${environment.apiUrl}/analytics/heartbeat.php`,
+      '/P_demo_5/backend/api/analytics/heartbeat.php',
+      '/the-property-project/backend/api/analytics/heartbeat.php',
+      '/api/analytics/heartbeat.php'
+    ];
+
+    tryPing(candidates[0]).pipe(
+      catchError(() => {
+        this.resolvedHeartbeatUrl = candidates[1];
+        return tryPing(candidates[1]);
+      }),
+      catchError(() => {
+        this.resolvedHeartbeatUrl = candidates[2];
+        return tryPing(candidates[2]);
+      }),
+      catchError(() => {
+        this.resolvedHeartbeatUrl = candidates[3];
+        return tryPing(candidates[3]);
+      }),
+      catchError(() => {
+        this.resolvedHeartbeatUrl = null;
+        return of(null);
+      })
+    ).subscribe((res) => {
+      if (res && !this.resolvedHeartbeatUrl) {
+        this.resolvedHeartbeatUrl = candidates[0];
+      }
+    });
   }
 
   constructor() {
     this.sendHeartbeat();
     if (typeof window !== 'undefined') {
       setInterval(() => this.sendHeartbeat(), 45000);
-      window.addEventListener('focus', () => this.sendHeartbeat());
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.sendHeartbeat();
+        }
+      }, { passive: true });
     }
 
     // Automatically synchronize tracked mindset identity with the logged-in user

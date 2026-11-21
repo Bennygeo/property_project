@@ -8,7 +8,8 @@ import {
   signal, 
   computed, 
   inject, 
-  HostListener 
+  HostListener,
+  NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -25,6 +26,7 @@ import { User } from '../../../core/models/user.model';
 export class SecureVideoPlayerComponent implements OnInit, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly authService = inject(AuthService);
+  private readonly ngZone = inject(NgZone);
 
   @Input() videoUrl: string = '';
   @Input() posterUrl: string = '';
@@ -88,12 +90,18 @@ export class SecureVideoPlayerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateTimestamp();
-    this.timerInterval = setInterval(() => this.updateTimestamp(), 1000);
+    this.ngZone.runOutsideAngular(() => {
+      this.timerInterval = setInterval(() => {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        this.updateTimestamp();
+      }, 1000);
 
-    // Shift forensic watermark position every 8s to foil video crop tools
-    this.watermarkInterval = setInterval(() => {
-      this.watermarkQuadrant.update(q => (q + 1) % 4);
-    }, 8000);
+      // Shift forensic watermark position every 8s to foil video crop tools
+      this.watermarkInterval = setInterval(() => {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        this.watermarkQuadrant.update(q => (q + 1) % 4);
+      }, 8000);
+    });
 
     // Initial check for visibility
     if (typeof document !== 'undefined' && document.hidden) {

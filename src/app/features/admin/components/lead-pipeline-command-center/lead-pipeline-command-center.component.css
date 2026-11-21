@@ -313,6 +313,7 @@
 .kpi-avatar-circle.bg-blue {
   background: #eff6ff;
 }
+
 .ic-kpi-blue {
   color: #3b82f6;
   font-size: 22px;
@@ -321,6 +322,7 @@
 .kpi-avatar-circle.bg-cyan {
   background: #ecfeff;
 }
+
 .ic-kpi-cyan {
   color: #06b6d4;
   font-size: 22px;
@@ -329,6 +331,7 @@
 .kpi-avatar-circle.bg-emerald {
   background: #f0fdf4;
 }
+
 .ic-kpi-emerald {
   color: #16a34a;
   font-size: 22px;
@@ -337,6 +340,7 @@
 .kpi-avatar-circle.bg-rose {
   background: #fef2f2;
 }
+
 .ic-kpi-rose {
   color: #ef4444;
   font-size: 22px;
@@ -345,6 +349,7 @@
 .kpi-avatar-circle.bg-purple {
   background: #f5f3ff;
 }
+
 .ic-kpi-purple {
   color: #7c3aed;
   font-size: 22px;
@@ -928,22 +933,27 @@
   background: #eff6ff;
   color: #2563eb;
 }
+
 .dept-pill-sales_advisor {
   background: #e0f2fe;
   color: #0284c7;
 }
+
 .dept-pill-property_advisor {
   background: #f5f3ff;
   color: #7c3aed;
 }
+
 .dept-pill-operations {
   background: #fff7ed;
   color: #ea580c;
 }
+
 .dept-pill-closing {
   background: #dcfce7;
   color: #15803d;
 }
+
 .dept-pill-terminal {
   background: #fee2e2;
   color: #dc2626;
@@ -980,9 +990,11 @@
 .text-blue {
   color: #2563eb;
 }
+
 .text-slate {
   color: #0f172a;
 }
+
 .text-orange {
   color: #ea580c;
 }
@@ -1597,7 +1609,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-ic {
@@ -2002,8 +2016,13 @@
 }
 
 @keyframes slideLeft {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .drawer-header {
@@ -2556,6 +2575,7 @@
 .th-step.dept-th-sales {
   border-top-color: #2563eb;
 }
+
 .th-step.dept-th-sales .step-badge-no {
   background: #dbeafe;
   color: #1e40af;
@@ -2564,6 +2584,7 @@
 .th-step.dept-th-sales_advisor {
   border-top-color: #0d9488;
 }
+
 .th-step.dept-th-sales_advisor .step-badge-no {
   background: #ccfbf1;
   color: #0f766e;
@@ -2572,6 +2593,7 @@
 .th-step.dept-th-property_advisor {
   border-top-color: #7c3aed;
 }
+
 .th-step.dept-th-property_advisor .step-badge-no {
   background: #ede9fe;
   color: #6d28d9;
@@ -2580,6 +2602,7 @@
 .th-step.dept-th-operations {
   border-top-color: #ea580c;
 }
+
 .th-step.dept-th-operations .step-badge-no {
   background: #ffedd5;
   color: #c2410c;
@@ -2588,6 +2611,7 @@
 .th-step.dept-th-closing {
   border-top-color: #16a34a;
 }
+
 .th-step.dept-th-closing .step-badge-no {
   background: #dcfce7;
   color: #15803d;
@@ -2596,6 +2620,7 @@
 .th-step.dept-th-terminal {
   border-top-color: #dc2626;
 }
+
 .th-step.dept-th-terminal .step-badge-no {
   background: #fee2e2;
   color: #b91c1c;
@@ -2844,9 +2869,17 @@ thead th.sticky-actions {
 }
 
 @keyframes pulse-border {
-  0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(2, 132, 199, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(2, 132, 199, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
+  }
 }
 
 .step-chip-status.dropped-halt {
@@ -3076,7 +3109,7 @@ thead th.sticky-actions {
   padding: 12px 16px;
 }
 
-.matrix-toolbar-strip + .matrix-table-card {
+.matrix-toolbar-strip+.matrix-table-card {
   border-radius: 0 0 12px 12px;
 }
 
@@ -3305,6 +3338,7 @@ thead th.sticky-actions {
   .crm-pipeline-header {
     flex-wrap: wrap;
   }
+
   .drawer-container {
     max-width: 100%;
   }

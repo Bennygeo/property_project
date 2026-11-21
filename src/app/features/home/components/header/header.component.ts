@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, HostListener, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PropertyService } from '../../../../core/services/property.service';
@@ -149,27 +149,24 @@ import { LocationService } from '../../../../core/services/location.service';
         <div class="mobile-drawer-panel" (click)="$event.stopPropagation()">
             <!-- Drawer Header -->
             <div class="drawer-header">
-              <div class="drawer-brand">
-                <img src="logo.svg" alt="Find a Plot Logo" class="drawer-logo">
-              </div>
+              @if (authService.isLoggedIn()) {
+                <div class="drawer-header-user">
+                  <div class="drawer-user-avatar">
+                    <span class="material-symbols-outlined">{{ getUserGenderIcon() }}</span>
+                  </div>
+                  <span class="drawer-header-user-name">{{ authService.currentUser()?.name }}</span>
+                </div>
+              } @else {
+                <span class="drawer-header-title">Navigation</span>
+              }
               <button type="button" class="drawer-close-btn" (click)="closeMobileMenu()" aria-label="Close menu">
                 <span class="material-symbols-outlined">close</span>
               </button>
             </div>
 
             <div class="drawer-scroll-body">
-              <!-- User / Auth Banner inside Drawer -->
-              @if (authService.isLoggedIn()) {
-                <div class="drawer-user-card">
-                  <div class="drawer-user-avatar">
-                    <span class="material-symbols-outlined">{{ getUserGenderIcon() }}</span>
-                  </div>
-                  <div class="drawer-user-info">
-                    <span class="drawer-user-name">{{ authService.currentUser()?.name }}</span>
-                    <span class="drawer-user-role">{{ authService.currentUser()?.phone }}</span>
-                  </div>
-                </div>
-              } @else {
+              <!-- Sign In (if guest) -->
+              @if (!authService.isLoggedIn()) {
                 <button type="button" class="drawer-btn-signin" (click)="authService.openOtpModal(); closeMobileMenu()">
                   <span class="material-symbols-outlined">login</span>
                   <span>Sign In</span>
@@ -178,13 +175,15 @@ import { LocationService } from '../../../../core/services/location.service';
 
               <!-- City Jurisdiction / District Picker in Drawer -->
               <div class="drawer-section">
-                <span class="drawer-section-title">Tamil Nadu District</span>
                 <button 
                   type="button" 
                   class="drawer-district-card" 
                   (click)="locationService.openDistrictModal(); closeMobileMenu()">
                   <div class="drawer-district-left">
-                    <span class="material-symbols-outlined">location_on</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 21 12 21C12 21 19 14.25 19 9C19 5.13 15.87 2 12 2Z"/>
+                      <circle cx="12" cy="9" r="2.5" fill="rgba(213, 179, 87, 0.25)"/>
+                    </svg>
                     <div class="drawer-district-text">
                       <span class="drawer-dist-name">{{ locationService.selectedDistrict() }}</span>
                       <span class="drawer-dist-sub">Serving 38 districts • Tap to switch</span>
@@ -199,52 +198,104 @@ import { LocationService } from '../../../../core/services/location.service';
                 <span class="drawer-section-title">Explore Registry</span>
                 <nav class="drawer-nav">
                   <a class="drawer-nav-item" routerLink="/" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined">home</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H4C3.45 21 3 20.55 3 20V10.5Z"/>
+                      <path d="M9 21V13H15V21"/>
+                    </svg>
                     <span>Home Registry</span>
                   </a>
                   <a class="drawer-nav-item" routerLink="/search" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined text-red">search</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="7.5"/>
+                      <line x1="21" y1="21" x2="16.5" y2="16.5"/>
+                      <path d="M8.5 11.5L10.5 13.5L14 9.5"/>
+                    </svg>
                     <span>Search Verified Registry</span>
                   </a>
                   <a class="drawer-nav-item" (click)="setTab('buy'); closeMobileMenu()">
-                    <span class="material-symbols-outlined">apartment</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="2.5" width="16" height="19" rx="1.5"/>
+                      <line x1="8" y1="6.5" x2="8" y2="6.51"/>
+                      <line x1="16" y1="6.5" x2="16" y2="6.51"/>
+                      <line x1="8" y1="10.5" x2="8" y2="10.51"/>
+                      <line x1="16" y1="10.5" x2="16" y2="10.51"/>
+                      <line x1="8" y1="14.5" x2="8" y2="14.51"/>
+                      <line x1="16" y1="14.5" x2="16" y2="14.51"/>
+                      <path d="M10 21.5V17.5H14V21.5"/>
+                    </svg>
                     <span>Buy Apartments &amp; Flats</span>
                   </a>
                   <a class="drawer-nav-item" routerLink="/search" [queryParams]="{ type: 'Gated CMDA Plots' }" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined">terrain</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="3,6 15,3 21,9 9,13"/>
+                      <polygon points="3,6 9,13 9,20 3,13"/>
+                      <polygon points="9,13 21,9 21,16 9,20"/>
+                      <line x1="9" y1="5" x2="9" y2="13" stroke-dasharray="1.5 1.5"/>
+                    </svg>
                     <span>Plots &amp; Land (CMDA)</span>
                   </a>
                   <a class="drawer-nav-item" routerLink="/search" [queryParams]="{ type: 'Commercial Spaces' }" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined">domain</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 21V4C4 3.45 4.45 3 5 3H19C19.55 3 20 3.45 20 4V21"/>
+                      <line x1="2" y1="21" x2="22" y2="21"/>
+                      <line x1="8" y1="7" x2="16" y2="7"/>
+                      <line x1="8" y1="11" x2="16" y2="11"/>
+                      <line x1="8" y1="15" x2="16" y2="15"/>
+                      <rect x="10" y="18" width="4" height="3"/>
+                    </svg>
                     <span>Commercial Spaces</span>
                   </a>
                   <a class="drawer-nav-item" routerLink="/developers" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined">domain_add</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 21H21"/>
+                      <path d="M5 21V7L13 3V21"/>
+                      <path d="M13 10L19 7V21"/>
+                      <circle cx="18" cy="11" r="2.8" fill="rgba(213, 179, 87, 0.2)"/>
+                      <path d="M16.8 11L17.7 11.9L19.3 10.1"/>
+                    </svg>
                     <span>Verified Developers</span>
                   </a>
                   <a class="drawer-nav-item" routerLink="/subscriptions" (click)="closeMobileMenu()">
-                    <span class="material-symbols-outlined text-green">card_membership</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="8" cy="8" r="5"/>
+                      <circle cx="8" cy="8" r="1.5" fill="#d5b357"/>
+                      <path d="M12 11L20 19M16.5 15.5L18.5 17.5M18 14L20 16"/>
+                    </svg>
                     <span>Membership &amp; Plans</span>
                   </a>
                   <a class="drawer-nav-item" [routerLink]="['/profile']" [queryParams]="{ tab: 'favourites' }" (click)="onShortlistNavClick($event); closeMobileMenu()">
-                    <span class="material-symbols-outlined text-red">favorite</span>
+                    <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/>
+                    </svg>
                     <span>Saved Shortlists</span>
                     <span class="pts-badge">{{ propertyService.shortlistCount() }}</span>
                   </a>
                   @if (authService.isLoggedIn()) {
                     @if (authService.isDeveloper()) {
                       <a class="drawer-nav-item" routerLink="/developer" (click)="closeMobileMenu()">
-                        <span class="material-symbols-outlined text-green">apartment</span>
+                        <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/>
+                          <path d="M7 17L12 7L17 17"/>
+                          <line x1="9" y1="13" x2="15" y2="13"/>
+                        </svg>
                         <span>Developer Workspace</span>
                       </a>
                     }
                     <a class="drawer-nav-item" routerLink="/profile" (click)="closeMobileMenu()">
-                      <span class="material-symbols-outlined">dashboard</span>
+                      <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="3" width="7" height="4.5" rx="1.5"/>
+                        <rect x="14" y="11" width="7" height="10" rx="1.5"/>
+                        <rect x="3" y="13.5" width="7" height="7.5" rx="1.5"/>
+                      </svg>
                       <span>My Dashboard</span>
                     </a>
                     @if (authService.isAdmin()) {
                       <a class="drawer-nav-item" routerLink="/admin" (click)="closeMobileMenu()">
-                        <span class="material-symbols-outlined text-purple">admin_panel_settings</span>
+                        <svg class="nav-flaticon" viewBox="0 0 24 24" fill="none" stroke="#d5b357" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 2L4 5V11C4 16.5 7.4 21.6 12 23C16.6 21.6 20 16.5 20 11V5L12 2Z"/>
+                          <path d="M8.5 11.5L11 14L15.5 9.5"/>
+                        </svg>
                         <span>Compliance Portal</span>
                       </a>
                     }
@@ -258,11 +309,23 @@ import { LocationService } from '../../../../core/services/location.service';
               @if (authService.isLoggedIn()) {
                 <div class="drawer-signout-row">
                   <button type="button" class="btn-drawer-signout" (click)="onSignOut(); closeMobileMenu()">
-                    <span class="material-symbols-outlined">logout</span>
+                    <svg class="signout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3H9"/>
+                      <path d="M16 17L21 12L16 7"/>
+                      <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
                     <span>Sign Out</span>
                   </button>
                 </div>
               }
+            </div>
+
+            <!-- Drawer Footer with Footer Logo -->
+            <div class="drawer-footer">
+              <a routerLink="/" (click)="closeMobileMenu()" class="drawer-footer-brand" aria-label="Find a Plot Home">
+                <img src="logo_footer.svg" alt="Find a Plot" class="drawer-footer-logo">
+              </a>
+              <span class="drawer-footer-tagline">Exclusive platform for plots</span>
             </div>
           </div>
         </div>
@@ -399,17 +462,16 @@ import { LocationService } from '../../../../core/services/location.service';
       justify-content: space-between;
       width: 100%;
       padding: 10px 14px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      border:none;
       cursor: pointer;
       text-align: left;
-      transition: all 0.15s ease;
       box-sizing: border-box;
 
       &:hover {
-        background: #ffffff;
-        border-color: #cbd5e1;
+        background: rgba(213, 179, 87, 0.08);
+        border-color: rgba(213, 179, 87, 0.45);
       }
 
       .drawer-district-left {
@@ -419,7 +481,7 @@ import { LocationService } from '../../../../core/services/location.service';
 
         .material-symbols-outlined {
           font-size: 20px;
-          color: #16a34a;
+          color: #34d399;
         }
       }
 
@@ -432,12 +494,12 @@ import { LocationService } from '../../../../core/services/location.service';
       .drawer-dist-name {
         font-size: 13.5px;
         font-weight: 700;
-        color: #0f172a;
+        color: #ffffff;
       }
 
       .drawer-dist-sub {
         font-size: 11px;
-        color: #64748b;
+        color: #94a3b8;
       }
 
       .drawer-arrow {
@@ -890,9 +952,9 @@ import { LocationService } from '../../../../core/services/location.service';
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .mobile-menu-btn:hover, .mobile-menu-btn.is-active {
-      background: #fef2f2;
-      border-color: var(--brand-red);
-      color: var(--brand-red);
+      background: rgba(15, 59, 74, 0.08);
+      border-color: var(--brand-teal, #0f3b4a);
+      color: var(--brand-teal, #0f3b4a);
     }
     @media (min-width: 1024px) {
       .mobile-menu-btn {
@@ -910,7 +972,9 @@ import { LocationService } from '../../../../core/services/location.service';
       width: 100vw;
       height: 100vh;
       height: 100dvh;
-      background: rgba(2, 6, 23, 0.65);
+      background: rgba(4, 18, 24, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 99999;
       display: flex;
       justify-content: flex-end;
@@ -923,15 +987,14 @@ import { LocationService } from '../../../../core/services/location.service';
       max-width: 340px;
       height: 100vh;
       height: 100dvh;
-      background: #ffffff;
-      box-shadow: none !important;
-      border-left: 1px solid #cbd5e1;
+      background: var(--brand-teal, #0f3b4a);
+      color: #f1f5f9;
       display: flex;
       flex-direction: column;
       animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 100000;
       overflow: hidden;
-      border-radius: 9px 0 0 9px;
+      border-radius: 0 !important;
       font-family: var(--font-sans);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -946,130 +1009,118 @@ import { LocationService } from '../../../../core/services/location.service';
       to { transform: translateX(0); }
     }
     .drawer-header {
-      padding: 1rem 1.25rem;
+      padding: 0.875rem 1.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #e2e8f0;
-      background: #f8fafc;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       flex-shrink: 0;
     }
-    .drawer-brand {
+    .drawer-header-user {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
+      gap: 0.75rem;
+      min-width: 0;
+      flex: 1;
     }
-    .drawer-logo {
-      height: 28px;
-      width: auto;
+    .drawer-header-user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.01em;
     }
-    .drawer-brand-name {
+    .drawer-header-title {
       font-family: var(--font-sans);
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--text-slate-950);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
       -webkit-font-smoothing: antialiased;
     }
-    .drawer-close-btn {
-      width: 32px;
-      height: 32px;
+    .drawer-user-avatar {
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: var(--text-slate-600);
+      background: rgba(213, 179, 87, 0.15);
+      border: 1px solid rgba(213, 179, 87, 0.35);
+      color: #d5b357;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      .material-symbols-outlined {
+        font-size: 20px;
+        color: #d5b357;
+      }
+    }
+    .drawer-close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      flex-shrink: 0;
       transition: all 0.15s;
     }
     .drawer-close-btn:hover {
-      background: #fbf0ee;
-      border-color: #fca5a5;
-      color: var(--brand-red);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
     }
     .drawer-scroll-body {
-      padding: 1rem 1.25rem 2rem;
+      padding: 1rem 1.25rem 1.5rem;
       overflow-y: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     }
-    .drawer-user-card {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.875rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
+    .drawer-scroll-body::-webkit-scrollbar {
+      width: 4px;
     }
-    .drawer-user-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #eeeeee;
-      color: #303030ff;
-      font-weight: 600;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .drawer-user-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-    .drawer-user-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-slate-950);
-    }
-    .drawer-user-role {
-      font-size: 11px;
-      color: var(--text-slate-500);
-    }
-    .drawer-user-pts {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--brand-booked, #d5b357);
-      background: #faf5e6;
-      padding: 1px 6px;
+    .drawer-scroll-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
       border-radius: 4px;
-      margin-top: 2px;
-      width: fit-content;
-      cursor: pointer;
     }
     .drawer-btn-signin {
       font-family: var(--font-sans);
       width: 100%;
       height: 42px;
-      border-radius: 9999px;
-      background: #ffffff;
-      color: var(--brand-red);
+      border-radius: 10px;
+      background: var(--brand-green, #5e8f72);
+      color: #ffffff;
       font-size: 13px;
       font-weight: 600;
-      border: 1.5px solid var(--brand-red);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
       cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
       transition: all 0.15s ease;
       -webkit-font-smoothing: antialiased;
     }
     .drawer-btn-signin:hover {
-      background: #fef2f2;
-      border-color: var(--brand-red-hover);
-      color: var(--brand-red-hover);
+      background: var(--brand-green-hover, #497259);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
     }
     .drawer-section {
       display: flex;
@@ -1083,59 +1134,8 @@ import { LocationService } from '../../../../core/services/location.service';
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-slate-400);
+      color: rgba(148, 163, 184, 0.85);
       -webkit-font-smoothing: antialiased;
-    }
-    .drawer-cities-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      font-family: var(--font-sans);
-    }
-    .drawer-city-chip {
-      font-family: var(--font-sans);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.625rem 0.875rem;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      background: #ffffff;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.15s;
-    }
-    .drawer-city-chip.active {
-      border-color: var(--brand-red);
-      background: #fffafa;
-    }
-    .drawer-city-chip .city-icon {
-      font-size: 16px;
-      color: var(--brand-red);
-    }
-    .city-texts {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      font-family: var(--font-sans);
-    }
-    .city-title {
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-slate-900);
-      -webkit-font-smoothing: antialiased;
-    }
-    .city-sub {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      color: var(--text-slate-500);
-      -webkit-font-smoothing: antialiased;
-    }
-    .check-icon {
-      font-size: 16px;
-      color: var(--brand-red);
-      margin-left: auto;
     }
     .drawer-nav {
       display: flex;
@@ -1151,118 +1151,132 @@ import { LocationService } from '../../../../core/services/location.service';
       padding: 0.625rem 0.75rem;
       border-radius: 8px;
       font-size: 13px;
-      font-weight: 600;
-      color: var(--text-slate-800);
+      font-weight: 500;
+      color: #e2e8f0;
       letter-spacing: 0.01em;
       text-decoration: none;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s ease;
       -webkit-font-smoothing: antialiased;
-      font-weight: normal;
     }
     .drawer-nav-item:hover {
-      background: #f1f5f9;
-      color: var(--text-slate-950);
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .nav-flaticon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      opacity: 0.5;
+      display: inline-block;
+      vertical-align: middle;
+      stroke: #bfbfbf;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .drawer-nav-item:hover .nav-flaticon,
+    .drawer-district-card:hover .nav-flaticon {
+      transform: scale(1.12);
+      stroke: #fef08a;
     }
     .drawer-nav-item span.material-symbols-outlined {
       font-size: 18px;
-      color: var(--text-slate-500);
+      color: #94a3b8;
+      transition: color 0.15s ease;
+    }
+    .drawer-nav-item:hover span.material-symbols-outlined {
+      color: #ffffff;
     }
     .pts-badge {
       margin-left: auto;
       font-size: 10px;
       font-weight: 600;
-      padding: 1px 6px;
+      padding: 2px 7px;
       border-radius: 9999px;
-      background: #f1f5f9;
-      color: var(--text-slate-700);
+      background: rgba(213, 179, 87, 0.12);
+      color: #d5b357;
+      border: 1px solid rgba(213, 179, 87, 0.3);
       font-family: ui-monospace, monospace;
     }
-    .drawer-post-card {
-      padding: 0.875rem;
-      border-radius: 10px;
-      background: var(--brand-teal);
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      gap: 0.625rem;
-    }
-    .post-card-tag {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: #34d399;
-      text-transform: uppercase;
-    }
-    .post-card-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #ffffff;
-    }
-    .post-card-sub {
-      font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.35;
-    }
-    .btn-drawer-post {
-      height: 36px;
-      border-radius: 6px;
-      background: var(--brand-red);
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
-      cursor: pointer;
-    }
-    .drawer-help-box {
-      padding: 0.75rem;
-      border-radius: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.375rem;
-    }
-    .drawer-help-title {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--text-slate-400);
-      margin-bottom: 2px;
-    }
-    .drawer-help-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-slate-700);
-      text-decoration: none;
-    }
     .drawer-signout-row {
-      padding-top: 0.5rem;
-      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
+      padding-top: 0.875rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
     .btn-drawer-signout {
       width: 100%;
-      height: 36px;
-      border-radius: 8px;
-      border: 1px solid #fee2e2;
-      background: #fff5f5;
-      color: var(--brand-sold);
-      font-size: 12px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(248, 113, 113, 0.32);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(239, 68, 68, 0.08) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.18);
+      color: #f1f5f9;
+      font-family: var(--font-sans);
+      font-size: 13.5px;
       font-weight: 600;
+      letter-spacing: 0.02em;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.375rem;
+      gap: 0.5rem;
       cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-font-smoothing: antialiased;
+    }
+    .btn-drawer-signout .signout-icon {
+      width: 19px;
+      height: 19px;
+      flex-shrink: 0;
+      color: #f87171;
+      stroke: #f87171;
+      transition: transform 0.2s ease, stroke 0.2s ease;
+    }
+    .btn-drawer-signout:hover,
+    .btn-drawer-signout:active {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(220, 38, 38, 0.24) 100%);
+      border-color: rgba(248, 113, 113, 0.55);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 6px 16px rgba(239, 68, 68, 0.18);
+    }
+    .btn-drawer-signout:hover .signout-icon {
+      transform: translateX(2px);
+      stroke: #fca5a5;
+    }
+    .drawer-footer {
+      padding: 1.25rem 1rem 1.5rem;
+      background: rgba(0, 0, 0, 0.22);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .drawer-footer-brand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: opacity 0.15s ease;
+    }
+    .drawer-footer-brand:hover {
+      opacity: 0.85;
+    }
+    .drawer-footer-logo {
+      height: 52px;
+      width: auto;
+      max-width: 180px;
+      object-fit: contain;
+      image-rendering: -webkit-optimize-contrast;
+      display: block;
+    }
+    .drawer-footer-tagline {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: rgba(148, 163, 184, 0.7);
     }
     @media (max-width: 1023px) {
       .main-header {
@@ -1295,6 +1309,7 @@ import { LocationService } from '../../../../core/services/location.service';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly ngZone = inject(NgZone);
   readonly propertyService = inject(PropertyService);
   readonly notificationService = inject(NotificationService);
   readonly locationService = inject(LocationService);
@@ -1302,9 +1317,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly isCityDropdownOpen = signal<boolean>(false);
   readonly isMobileMenuOpen = signal<boolean>(false);
   readonly isScrolled = signal<boolean>(false);
+  private readonly boundScrollHandler = () => this.checkScroll();
 
   ngOnInit(): void {
     this.checkScroll();
+    if (typeof window !== 'undefined') {
+      this.ngZone.runOutsideAngular(() => {
+        window.addEventListener('scroll', this.boundScrollHandler, { passive: true });
+      });
+    }
     this.router.events.subscribe(() => {
       if (this.isMobileMenuOpen()) {
         this.closeMobileMenu();
@@ -1314,17 +1335,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.setBodyScroll(true);
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    this.checkScroll();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.boundScrollHandler);
+    }
   }
 
   private checkScroll(): void {
     if (typeof window !== 'undefined') {
       const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
-      this.isScrolled.set(scrollY > 15);
+      const next = scrollY > 15;
+      if (this.isScrolled() !== next) {
+        this.ngZone.run(() => this.isScrolled.set(next));
+      }
     }
   }
 

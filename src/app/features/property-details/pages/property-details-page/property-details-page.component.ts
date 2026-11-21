@@ -1,21 +1,15 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed, effect, HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed, effect, HostListener, NgZone } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { validateGpsData, GpsValidationResult } from '../../../../core/utils/gps-helper';
-import { formatPriceIndian, parsePriceToNumber } from '../../../../core/utils/price-helper';
+import { formatPriceIndian } from '../../../../core/utils/price-helper';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
   Property,
-  PremiumMediaItem,
-  FloorPlanItem,
-  AmenityItem,
-  ConnectivityItem
+  PremiumMediaItem
 } from '../../../../core/models/property.model';
-import { PropertyService, NearbyLocality } from '../../../../core/services/property.service';
+import { PropertyService } from '../../../../core/services/property.service';
 import { WalletService } from '../../../../core/services/wallet.service';
 import { SubscriptionService } from '../../../../core/services/subscription.service';
-import { MetroService } from '../../../../core/services/metro.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserBehaviorService } from '../../../../core/services/user-behavior.service';
@@ -30,7 +24,6 @@ import { PropertyMediaModalComponent } from '../../../home/components/property-m
 import { SecureVideoPlayerComponent } from '../../../../shared/components/secure-video-player/secure-video-player.component';
 
 export type MediaStageTab = 'photos' | 'walkthrough' | 'drone';
-export type AmenityFilterCategory = 'all' | 'sports' | 'leisure' | 'eco' | 'security';
 export type DetailContextTab = 'infrastructure' | 'legal_specs' | 'location_transit';
 
 @Component({
@@ -56,24 +49,28 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly isScrolledPastHeader = signal<boolean>(false);
   private waObserver: IntersectionObserver | null = null;
   readonly formatPriceIndian = formatPriceIndian;
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
+  private readonly ngZone = inject(NgZone);
+  private readonly boundScrollHandler = (): void => {
     if (typeof window !== 'undefined') {
       const scrolled = window.scrollY > 180;
       if (this.isScrolledPastHeader() !== scrolled) {
-        this.isScrolledPastHeader.set(scrolled);
+        this.ngZone.run(() => this.isScrolledPastHeader.set(scrolled));
       }
     }
-  }
+  };
+  private readonly scrollListenerInit = (() => {
+    if (typeof window !== 'undefined') {
+      this.ngZone.runOutsideAngular(() => {
+        window.addEventListener('scroll', this.boundScrollHandler, { passive: true });
+      });
+    }
+  })();
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
-  private readonly sanitizer = inject(DomSanitizer);
   readonly propertyService = inject(PropertyService);
   readonly walletService = inject(WalletService);
   readonly subscriptionService = inject(SubscriptionService);
-  readonly metroService = inject(MetroService);
   readonly notificationService = inject(NotificationService);
   readonly authService = inject(AuthService);
   readonly userBehaviorService = inject(UserBehaviorService);
@@ -81,22 +78,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly workspaceService = inject(WorkspaceService);
 
   readonly isEntitlementExhausted = signal<boolean>(false);
-  readonly isQuotaModalDismissed = signal<boolean>(false);
-  readonly entitlementExhaustedMessage = signal<string>('');
-
-  dismissQuotaModal(): void {
-    this.isQuotaModalDismissed.set(true);
-  }
-
-  openQuotaModal(): void {
-    this.isQuotaModalDismissed.set(false);
-  }
 
   readonly isViewRestricted = computed<boolean>(() => {
     return !!this.property()?.isViewRestricted || this.isEntitlementExhausted();
-  });
-  readonly activePlanName = computed<string>(() => {
-    return this.property()?.activePlanName || this.subscriptionService.activePlanName();
   });
   readonly projectViewsUsed = computed<number>(() => {
     return this.property()?.projectViewsUsed ?? this.subscriptionService.entitlements()?.projectViewsUsed ?? 2;
@@ -108,8 +92,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   readonly propertyId = signal<string>('');
   readonly fetchedProperty = signal<Property | null>(null);
   readonly isLoading = signal<boolean>(true);
-  readonly nearbyLocalities = signal<NearbyLocality[]>([]);
-  readonly nearbyProperties = signal<Property[]>([]);
   readonly property = computed<Property | null>(() => {
     let p = this.fetchedProperty();
     if (!p) {
@@ -124,19 +106,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     };
   });
 
-  readonly gpsAudit = computed<GpsValidationResult>(() => {
-    const prop = this.property();
-    const rawLink = prop?.googleMapsLink || prop?.masterDetails?.googleMapsLink || (prop?.latitude && prop?.longitude ? `${prop.latitude}, ${prop.longitude}` : '');
-    return validateGpsData(rawLink);
-  });
-
-  readonly isPlot = computed<boolean>(() => {
-    const prop = this.property();
-    return prop?.propertyType === 'Gated CMDA Plots';
-  });
-
-  // Active in-page navigation section
-  readonly activeNavSection = signal<string>('infrastructure');
   readonly activeDetailTab = signal<DetailContextTab>('infrastructure');
 
   setDetailTab(tab: DetailContextTab): void {
@@ -170,98 +139,34 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     return trimmed;
   }
 
-  readonly sanitizedHighlights = computed<string[]>(() => {
-    const prop = this.property();
-    if (!prop) return [];
-    const raw = Array.isArray(prop.highlights) ? prop.highlights : [];
-    const blacklisted = new Set(['plots', 'plot', 'published', 'strategic published', 'draft', 'null', 'undefined', 'yes', 'no']);
-    const cleaned = raw
-      .map(h => String(h || '').trim())
-      .filter(h => h.length > 2 && !blacklisted.has(h.toLowerCase()));
-
-    if (cleaned.length === 0) {
-      const list: string[] = [];
-      if (prop.masterDetails?.dtcpApproved === 'Yes') list.push('DTCP / CMDA Sanctioned Layout');
-      if (prop.masterDetails?.roadWidthFt) list.push(`${prop.masterDetails.roadWidthFt} Ft Wide ${prop.masterDetails.roadType || 'Bitumen'} Road`);
-      if (prop.masterDetails?.clearTitleAvailable === 'Yes') list.push('30-Year Verified Clear Title Deed');
-      if (prop.masterDetails?.pattaType) list.push(prop.masterDetails.pattaType);
-      if (prop.masterDetails?.bankLoanApproved === 'Yes') list.push('Pre-Approved Bank Loans Available');
-      if (prop.masterDetails?.suitedFor) list.push(`Suited for ${prop.masterDetails.suitedFor}`);
-      return list.length > 0 ? list : ['Government Sanctioned Layout', 'Clear Freehold Ownership', 'Verified Cadastral Survey'];
-    }
-    return cleaned;
-  });
 
   // Media-First Top Stage State
   readonly activeMediaTab = signal<MediaStageTab>('photos');
   readonly currentPhotoIdx = signal<number>(0);
   readonly isFullscreenOpen = signal<boolean>(false);
+  readonly isPhotoUpgradePromptOpen = signal<boolean>(false);
 
-  // Floor Plans State
-  readonly selectedFloorPlanIndex = signal<number>(0);
-  readonly isFloorPlanModalOpen = signal<boolean>(false);
-  readonly activeModalFloorPlan = signal<FloorPlanItem | null>(null);
-
-  // Plot Layout View Mode: 'plotex3d' (Plotex WebGL 3D) or 'plan2d' (Aerial Plan)
-  // Amenities Filter State
-  readonly selectedAmenityCategory = signal<AmenityFilterCategory>('all');
-  readonly filteredAmenities = computed<AmenityItem[]>(() => {
-    const prop = this.property();
-    if (!prop || !prop.amenitiesList) return [];
-    const cat = this.selectedAmenityCategory();
-    if (cat === 'all') return prop.amenitiesList;
-    return prop.amenitiesList.filter(a => a.category === cat);
+  readonly totalPhotoCount = computed<number>(() => {
+    const p = this.property();
+    if (!p) return 0;
+    return Math.max(p.totalPhotoCount || 0, p.freePhotos?.length || 0, p.imageUrl ? 1 : 0);
   });
 
-  // Interactive EMI Calculator State (100acress Style)
-  readonly loanAmount = signal<number>(8000000);
-  readonly interestRate = signal<number>(8.5);
-  readonly loanTenureYears = signal<number>(20);
+  readonly additionalPhotosCount = computed<number>(() => Math.max(0, this.totalPhotoCount() - 1));
 
-  // Computed EMI Metrics
-  readonly computedMonthlyEmi = computed<number>(() => {
-    const p = this.loanAmount();
-    const annualRate = this.interestRate();
-    const years = this.loanTenureYears();
-    if (!p || p <= 0 || !years || years <= 0) return 0;
-    const monthlyRate = annualRate / (12 * 100);
-    const months = years * 12;
-    const emi = (p * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-    return Math.round(emi);
+  readonly lockedPhotoSlots = computed<number[]>(() => {
+    const extra = this.additionalPhotosCount();
+    return Array.from({ length: Math.min(extra, 6) }, (_, i) => i + 1);
   });
 
-  readonly computedTotalPayment = computed<number>(() => {
-    return this.computedMonthlyEmi() * this.loanTenureYears() * 12;
+  readonly displayedPhotoUrl = computed<string>(() => {
+    const p = this.property();
+    if (!p) return '';
+    if (this.isViewRestricted()) {
+      return p.freePhotos?.[0] || p.imageUrl;
+    }
+    return p.freePhotos?.[this.currentPhotoIdx()] || p.imageUrl;
   });
-
-  readonly computedTotalInterest = computed<number>(() => {
-    return Math.max(0, this.computedTotalPayment() - this.loanAmount());
-  });
-
-  // Stamp duty & registration fee estimates
-  readonly computedStampDuty = computed<number>(() => {
-    const prop = this.property();
-    if (!prop) return 0;
-    const baseVal = parsePriceToNumber(prop.price);
-    return Math.round(baseVal * 0.07); // 7% State Stamp Duty
-  });
-
-  readonly computedRegistrationFee = computed<number>(() => {
-    const prop = this.property();
-    if (!prop) return 0;
-    const baseVal = parsePriceToNumber(prop.price);
-    return Math.round(baseVal * 0.02); // 2% SRO Registration Fee
-  });
-
-  // FAQ Accordion State
-  readonly expandedFaqIdx = signal<number | null>(0);
-
-  // Inquire & Site Visit Form State
-  readonly buyerName = signal<string>('');
-  readonly buyerPhone = signal<string>('');
-  readonly visitDate = signal<string>('');
-  readonly visitTimeSlot = signal<string>('morning');
-  readonly isSubmittingVisit = signal<boolean>(false);
 
   // 50-Second High-Intent Site Visit Prompt State
   private siteVisitPromptTimer: any = null;
@@ -384,10 +289,9 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       if (id) {
         this.propertyId.set(id);
         this.currentPhotoIdx.set(0);
-        this.selectedFloorPlanIndex.set(0);
+        this.isPhotoUpgradePromptOpen.set(false);
         this.hasPromptedSiteVisitForSession = false;
         this.isSiteVisitPromptOpen.set(false);
-        this.isQuotaModalDismissed.set(false);
         this.clearSiteVisitPromptTimer();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => this.setupWhatsAppObserver(), 400);
@@ -424,15 +328,28 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
           // User has reached quota limit! DO NOT download details.php from DB
           this.isLoading.set(false);
           this.isEntitlementExhausted.set(true);
+          this.currentPhotoIdx.set(0);
+          this.isPhotoUpgradePromptOpen.set(false);
           this.clearSiteVisitPromptTimer();
           this.isSiteVisitPromptOpen.set(false);
-          this.entitlementExhaustedMessage.set(limitCheck.upgradeMessage || 'Project view limit reached.');
 
-          // Construct basic property for display (title, price, image only - NO deep project details)
-          const base = (limitCheck as any).basicProperty || this.propertyService.getPropertyById(id);
+          // Construct basic property for display (title, price, 1st photo only + total count)
+          const basic = (limitCheck as any).basicProperty;
+          const cached = this.propertyService.getPropertyById(id);
+          const base = basic || cached;
           if (base) {
+            const firstPhoto = basic?.freePhotos?.[0] || basic?.imageUrl || cached?.freePhotos?.[0] || cached?.imageUrl || '';
+            const totalPhotos = Math.max(
+              basic?.totalPhotoCount || 0,
+              cached?.totalPhotoCount || 0,
+              cached?.freePhotos?.length || 0,
+              firstPhoto ? 1 : 0
+            );
             const restrictedProp: Property = {
               ...base,
+              imageUrl: firstPhoto || base.imageUrl,
+              freePhotos: firstPhoto ? [firstPhoto] : [],
+              totalPhotoCount: totalPhotos,
               isViewRestricted: true,
               isMasked: true,
               activePlanName: limitCheck.activePlanName,
@@ -461,11 +378,12 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
             this.isLoading.set(false);
             if (prop) {
               this.fetchedProperty.set(prop);
+              this.currentPhotoIdx.set(0);
+              this.isPhotoUpgradePromptOpen.set(false);
               if (prop.isViewRestricted) {
                 this.isEntitlementExhausted.set(true);
                 this.clearSiteVisitPromptTimer();
                 this.isSiteVisitPromptOpen.set(false);
-                this.entitlementExhaustedMessage.set(prop.upgradeMessage || 'Project view limit reached.');
                 if (!this.authService.isLoggedIn()) {
                   setTimeout(() => {
                     this.authService.openOtpModal('guest_limit');
@@ -482,13 +400,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
             const resolved = prop || this.propertyService.getPropertyById(id);
             if (resolved) {
               this.userBehaviorService.trackPropertyView(resolved);
-              const priceNum = parsePriceToNumber(resolved.price);
-              if (priceNum > 0) {
-                this.loanAmount.set(Math.round(priceNum * 0.8));
-              }
-              if (!prop?.isViewRestricted) {
-                this.loadNearbyLocalities(resolved);
-              }
             }
           },
           error: () => {
@@ -503,6 +414,8 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
             this.isLoading.set(false);
             if (prop) {
               this.fetchedProperty.set(prop);
+              this.currentPhotoIdx.set(0);
+              this.isPhotoUpgradePromptOpen.set(false);
               if (prop.isViewRestricted) {
                 this.isEntitlementExhausted.set(true);
                 this.clearSiteVisitPromptTimer();
@@ -529,31 +442,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     });
   }
 
-  loadNearbyLocalities(prop: Property): void {
-    const loc = prop.villageLocality || prop.locality || prop.masterDetails?.villageLocality || '';
-    const district = prop.district || prop.masterDetails?.district || prop.city || '';
-    const taluk = prop.taluk || prop.masterDetails?.taluk || '';
-
-    this.propertyService.fetchNearbyData({
-      propertyId: prop.id,
-      locality: loc,
-      district: district,
-      taluk: taluk
-    }).subscribe(res => {
-      this.nearbyLocalities.set(res.nearbyLocalities || []);
-      this.nearbyProperties.set(res.nearbyProperties || []);
-    });
-  }
-
-  // 1-Click Instant Demo Login from blocked view
-  quickLoginAndUnlock(): void {
-    this.authService.quickDemoLogin();
-    const id = this.propertyId();
-    if (id) {
-      this.authService.recordPropertyView(id).subscribe();
-    }
-  }
-
   // Prescribe login explicitly via OTP modal
   promptLogin(): void {
     this.authService.openOtpModal('guest_limit');
@@ -566,31 +454,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
       this.router.navigateByUrl(lastUrl);
     } else {
       this.location.back();
-    }
-  }
-
-  // Smooth Scroll to Section or switch Context Tab
-  scrollToSection(sectionId: string): void {
-    if (sectionId === 'site-infrastructure' || sectionId === 'infrastructure') {
-      this.activeDetailTab.set('infrastructure');
-    } else if (sectionId === 'cadastral-specs' || sectionId === 'legal-approvals' || sectionId === 'specs') {
-      this.activeDetailTab.set('legal_specs');
-    } else if (sectionId === 'transit-connectivity' || sectionId === 'gps-audit' || sectionId === 'location') {
-      this.activeDetailTab.set('location_transit');
-    }
-    this.activeNavSection.set(sectionId);
-    const element = document.getElementById(sectionId) || document.getElementById('details-context-workspace');
-    if (element) {
-      const offset = 72;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = element.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
     }
   }
 
@@ -615,24 +478,52 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  // Photo Carousel Controls
+  // Photo Carousel & Upgrade Prompt Controls
+  openPhotoUpgradePrompt(): void {
+    this.isPhotoUpgradePromptOpen.set(true);
+  }
+
+  closePhotoUpgradePrompt(): void {
+    this.isPhotoUpgradePromptOpen.set(false);
+    this.currentPhotoIdx.set(0);
+  }
+
   nextPhoto(): void {
+    if (this.isViewRestricted()) {
+      this.openPhotoUpgradePrompt();
+      return;
+    }
     const prop = this.property();
     if (!prop || !prop.freePhotos.length) return;
     this.currentPhotoIdx.update(idx => (idx + 1) % prop.freePhotos.length);
   }
 
   prevPhoto(): void {
+    if (this.isViewRestricted()) {
+      this.openPhotoUpgradePrompt();
+      return;
+    }
     const prop = this.property();
     if (!prop || !prop.freePhotos.length) return;
     this.currentPhotoIdx.update(idx => (idx - 1 + prop.freePhotos.length) % prop.freePhotos.length);
   }
 
   selectPhoto(idx: number): void {
+    if (this.isViewRestricted()) {
+      if (idx === 0) {
+        this.closePhotoUpgradePrompt();
+      } else {
+        this.openPhotoUpgradePrompt();
+      }
+      return;
+    }
     this.currentPhotoIdx.set(idx);
   }
 
   openFullscreen(): void {
+    if (this.isViewRestricted() && this.isPhotoUpgradePromptOpen()) {
+      return;
+    }
     this.isFullscreenOpen.set(true);
   }
 
@@ -683,122 +574,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
   }
 
   // Floor Plan Selection & Lightbox
-  selectFloorPlan(idx: number): void {
-    this.selectedFloorPlanIndex.set(idx);
-  }
-
-  openFloorPlanModal(plan: FloorPlanItem): void {
-    this.activeModalFloorPlan.set(plan);
-    this.isFloorPlanModalOpen.set(true);
-  }
-
-  closeFloorPlanModal(): void {
-    this.isFloorPlanModalOpen.set(false);
-    this.activeModalFloorPlan.set(null);
-  }
-
-  downloadFloorPlan(plan: FloorPlanItem): void {
-    this.notificationService.show({
-      type: 'success',
-      title: 'Floor Plan Blueprint Downloaded',
-      message: `High-resolution architectural schematic for ${plan.name} has been downloaded.`,
-      icon: 'download_done'
-    });
-  }
-
-  // Amenities Filter
-  setAmenityCategory(cat: AmenityFilterCategory): void {
-    this.selectedAmenityCategory.set(cat);
-  }
-
-  // EMI Slider Handlers
-  onLoanAmountChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.loanAmount.set(parseFloat(input.value));
-  }
-
-  onInterestRateChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.interestRate.set(parseFloat(input.value));
-  }
-
-  onTenureChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.loanTenureYears.set(parseInt(input.value, 10));
-  }
-
-  // FAQ Accordion Toggle
-  toggleFaq(idx: number): void {
-    if (this.expandedFaqIdx() === idx) {
-      this.expandedFaqIdx.set(null);
-    } else {
-      this.expandedFaqIdx.set(idx);
-    }
-  }
-
-  // Schedule Survey Visit
-  scheduleVisit(event: Event): void {
-    event.preventDefault();
-    const prop = this.property();
-    if (!prop) return;
-
-    if (this.isViewRestricted() || this.isEntitlementExhausted() || this.isBlockedForGuest() || prop.isViewRestricted) {
-      this.notificationService.show({
-        type: 'warning',
-        title: 'Membership Quota Reached',
-        message: 'You have reached your membership view quota. Please upgrade your membership plan to schedule physical site visits.',
-        icon: 'lock'
-      });
-      return;
-    }
-
-    this.isSubmittingVisit.set(true);
-
-    const currentUid = this.authService.currentUser()?.id;
-    this.propertyService.submitSiteVisitLead({
-      propertyId: prop.id,
-      name: this.buyerName() || 'Guest Buyer',
-      phone: this.buyerPhone() || '+91 94441 00000',
-      userId: currentUid,
-      date: this.visitDate(),
-      slot: this.visitTimeSlot(),
-      notes: `Requested via Property Details Page for ${prop.title}`
-    }).subscribe(() => {
-      this.isSubmittingVisit.set(false);
-      if (currentUid) {
-        this.workspaceService.fetchUserWorkspace(currentUid).subscribe();
-      }
-      this.notificationService.show({
-        type: 'success',
-        title: 'Survey Visit Scheduled & Logged to DB',
-        message: `Cadastral appointment registered in database for ${prop.title}. Concierge desk will WhatsApp the coordinates.`,
-        icon: 'event_available'
-      });
-      this.buyerName.set('');
-      this.buyerPhone.set('');
-      this.visitDate.set('');
-    });
-  }
-
-  // Download Brochure
-  downloadBrochure(): void {
-    const prop = this.property();
-    if (!prop) return;
-
-    this.propertyService.captureBrochureLead({
-      propertyId: prop.id,
-      name: this.buyerName() || 'Guest Buyer',
-      phone: this.buyerPhone() || '+91 94441 00000'
-    }).subscribe(res => {
-      this.notificationService.show({
-        type: 'success',
-        title: 'Brochure & Cadastral Dossier Downloaded',
-        message: `Complete regulatory dossier, floor plans, and SRO title deed extracts for ${prop.title} downloaded.`,
-        icon: 'description'
-      });
-    });
-  }
-
   // Share Property Link
   shareProperty(): void {
     const prop = this.property();
@@ -821,17 +596,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  formatIndianCurrency(num: number): string {
-    if (!num || isNaN(num)) return '₹0';
-    if (num >= 10000000) {
-      return `₹${(num / 10000000).toFixed(2)} Cr`;
-    }
-    if (num >= 100000) {
-      return `₹${(num / 100000).toFixed(2)} Lakh`;
-    }
-    return `₹${num.toLocaleString('en-IN')}`;
-  }
-
   onImgError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target && !target.src.includes('photo-1600585154340-be6161a56a0c')) {
@@ -841,6 +605,10 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
 
   ngOnDestroy(): void {
     this.clearSiteVisitPromptTimer();
+    this.waObserver?.disconnect();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.boundScrollHandler);
+    }
   }
 
   /**
@@ -883,9 +651,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     if (user) {
       if (user.name && !this.promptBuyerName()) this.promptBuyerName.set(user.name);
       if (user.phone && !this.promptBuyerPhone()) this.promptBuyerPhone.set(user.phone);
-    } else {
-      if (this.buyerName() && !this.promptBuyerName()) this.promptBuyerName.set(this.buyerName());
-      if (this.buyerPhone() && !this.promptBuyerPhone()) this.promptBuyerPhone.set(this.buyerPhone());
     }
 
     // Default visit date to tomorrow
@@ -917,9 +682,6 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     if (user) {
       if (user.name && !this.promptBuyerName()) this.promptBuyerName.set(user.name);
       if (user.phone && !this.promptBuyerPhone()) this.promptBuyerPhone.set(user.phone);
-    } else {
-      if (this.buyerName() && !this.promptBuyerName()) this.promptBuyerName.set(this.buyerName());
-      if (this.buyerPhone() && !this.promptBuyerPhone()) this.promptBuyerPhone.set(this.buyerPhone());
     }
     if (!this.promptVisitDate()) {
       const tomorrow = new Date(Date.now() + 86400000);
@@ -933,8 +695,8 @@ export class PropertyDetailsPageComponent implements OnInit, AfterViewInit, OnDe
     const prop = this.property();
     if (!prop) return;
 
-    const name = this.promptBuyerName().trim() || this.buyerName().trim() || 'Guest Buyer';
-    const phone = this.promptBuyerPhone().trim() || this.buyerPhone().trim() || '+91 94441 00000';
+    const name = this.promptBuyerName().trim() || 'Guest Buyer';
+    const phone = this.promptBuyerPhone().trim() || '+91 94441 00000';
     const date = this.promptVisitDate() || new Date(Date.now() + 86400000).toISOString().split('T')[0];
     const slot = this.promptVisitSlot() || 'morning';
 

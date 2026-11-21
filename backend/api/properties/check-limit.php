@@ -47,11 +47,14 @@ function resolveClientIp(): string {
 $clientIp = resolveClientIp();
 $db = (new Database())->getConnection();
 
-// Quick existence check and basic info on projects (WITHOUT joining project_details)
+// Quick existence check and basic info on projects (read pd.gallery only for photo count; NO deep details)
 $projCheck = $db->prepare("
-    SELECT project_id, project_name, city, district, locality, type, price_from, price_to, sqft_rate, min_plot_size, max_plot_size, cover_image 
-    FROM projects 
-    WHERE project_id = ? 
+    SELECT p.project_id, p.project_name, p.city, p.district, p.locality, p.type,
+           p.price_from, p.price_to, p.sqft_rate, p.min_plot_size, p.max_plot_size, p.cover_image,
+           pd.gallery
+    FROM projects p
+    LEFT JOIN project_details pd ON p.project_id = pd.project_id
+    WHERE p.project_id = ?
     LIMIT 1
 ");
 $projCheck->execute([$id]);
@@ -59,6 +62,27 @@ $projectRow = $projCheck->fetch(PDO::FETCH_ASSOC);
 
 if (!$projectRow) {
     Response::error('Property dossier not found in registry', 404);
+}
+
+function parseGalleryUrls($rawGallery): array {
+    $gallery = [];
+    if (empty($rawGallery)) {
+        return $gallery;
+    }
+    $dec = json_decode((string)$rawGallery, true);
+    $candidates = [];
+    if (is_array($dec)) {
+        $candidates = $dec;
+    } elseif (is_string($rawGallery)) {
+        $candidates = preg_split('/\s*,\s*/', trim($rawGallery)) ?: [];
+    }
+    foreach ($candidates as $u) {
+        $url = trim((string)$u);
+        if ($url !== '' && (str_starts_with($url, 'http') || str_starts_with($url, '/'))) {
+            $gallery[] = $url;
+        }
+    }
+    return array_values(array_unique($gallery));
 }
 
 function formatBasicAmount(float $num): string {
@@ -82,9 +106,15 @@ if ($priceFrom < 100000 && $sqftRate > 0) {
     $priceFrom = $sqftRate * $minPlot;
 }
 $basicPrice = $priceFrom > 0 ? ('Starting ' . formatBasicAmount($priceFrom)) : 'Price on Request';
-$basicCover = (!empty($projectRow['cover_image']) && str_starts_with($projectRow['cover_image'], 'http'))
-    ? $projectRow['cover_image']
+$rawCover = trim((string)($projectRow['cover_image'] ?? ''));
+$basicCover = ($rawCover !== '' && (str_starts_with($rawCover, 'http') || str_starts_with($rawCover, '/')))
+    ? $rawCover
     : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80';
+
+$galleryUrls = parseGalleryUrls($projectRow['gallery'] ?? '');
+$allPhotos = !empty($galleryUrls) ? $galleryUrls : [$basicCover];
+$firstPhoto = $allPhotos[0] ?? $basicCover;
+$totalPhotoCount = count($allPhotos);
 
 $basicProperty = [
     'id'               => $projectRow['project_id'],
@@ -96,9 +126,10 @@ $basicProperty = [
     'propertyType'     => $projectRow['type'] ?: 'Gated CMDA Plots',
     'price'            => $basicPrice,
     'pricePerSqFt'     => $sqftRate > 0 ? ('₹ ' . number_format($sqftRate, 0) . ' / sq.ft') : '',
-    'imageUrl'         => $basicCover,
-    'coverImage'       => $basicCover,
-    'freePhotos'       => [$basicCover],
+    'imageUrl'         => $firstPhoto,
+    'coverImage'       => $firstPhoto,
+    'freePhotos'       => [$firstPhoto],
+    'totalPhotoCount'  => $totalPhotoCount,
     'isViewRestricted' => true,
     'isMasked'         => true
 ];

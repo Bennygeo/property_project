@@ -207,7 +207,7 @@
             <button type="button" class="hanu-tab-btn" [class.active]="activeMediaTab() === 'photos'"
               (click)="setMediaTab('photos')">
               <span class="material-symbols-outlined">photo_library</span>
-              <span>Photos ({{ prop.freePhotos.length }})</span>
+              <span>Photos ({{ totalPhotoCount() }})</span>
             </button>
 
 
@@ -236,12 +236,36 @@
             <!-- 1. PHOTOS STAGE -->
             @if (activeMediaTab() === 'photos') {
             <div class="hanu-photo-frame">
-              <img [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" [alt]="prop.title"
+              <img [src]="displayedPhotoUrl()" [alt]="prop.title"
+                [class.photo-upgrade-blurred]="isViewRestricted() && isPhotoUpgradePromptOpen()"
                 (error)="onImgError($event)" (click)="openFullscreen()" class="hanu-main-img" loading="lazy"
                 decoding="async" title="Click to view fullscreen">
 
+              <!-- In-Frame Upgrade Prompt Overlay when clicking locked photo controls -->
+              @if (isViewRestricted() && isPhotoUpgradePromptOpen()) {
+              <div class="hanu-photo-upgrade-overlay">
+                <span class="material-symbols-outlined photo-upgrade-lock-icon">lock</span>
+                <h3>Upgrade to View Additional Photos</h3>
+                <p>
+                  @if (additionalPhotosCount() > 0) {
+                  You have used {{ projectViewsUsed() }} / {{ projectViewLimit() }} project views. Only 1 preview photo
+                  is available now — upgrade your plan to view all {{ totalPhotoCount() }} photos.
+                  } @else {
+                  You have used {{ projectViewsUsed() }} / {{ projectViewLimit() }} project views. Only 1 preview photo
+                  is available now — upgrade your plan to view additional property photos &amp; full gallery.
+                  }
+                </p>
+                <div class="photo-upgrade-actions">
+                  <a routerLink="/subscriptions" class="btn-photo-upgrade-cta">Upgrade Plan</a>
+                  <button type="button" class="btn-photo-back-preview" (click)="closePhotoUpgradePrompt()">Back to
+                    Photo 1</button>
+                </div>
+              </div>
+              }
+
               <!-- Arrows -->
-              @if (prop.freePhotos.length > 1) {
+              @if (!isPhotoUpgradePromptOpen() && (isViewRestricted() ? totalPhotoCount() > 1 : prop.freePhotos.length >
+              1)) {
               <button type="button" class="hanu-arrow arrow-prev" (click)="prevPhoto()" aria-label="Previous">
                 <span class="material-symbols-outlined">chevron_left</span>
               </button>
@@ -250,21 +274,60 @@
               </button>
               }
 
+              @if (!isPhotoUpgradePromptOpen()) {
               <div class="hanu-photo-meta">
-                <span class="hanu-photo-counter">{{ currentPhotoIdx() + 1 }} / {{ prop.freePhotos.length }}</span>
+                <span class="hanu-photo-counter">{{ isViewRestricted() ? 1 : (currentPhotoIdx() + 1) }} / {{
+                  totalPhotoCount() }}</span>
 
                 <button type="button" class="hanu-btn-fs" (click)="openFullscreen()">
                   <span class="material-symbols-outlined">fullscreen</span>
                 </button>
               </div>
+              }
             </div>
 
             <!-- Thumbnails -->
             <div class="hanu-thumb-strip">
+              @if (!isViewRestricted()) {
               @for (photo of prop.freePhotos; track $index) {
               <div class="hanu-thumb-box" [class.active]="$index === currentPhotoIdx()" (click)="selectPhoto($index)">
                 <img [src]="photo" [alt]="'Photo ' + ($index + 1)" (error)="onImgError($event)" loading="lazy"
                   decoding="async">
+              </div>
+              }
+              } @else {
+              <!-- 1 Unlocked Preview Photo -->
+              <div class="hanu-thumb-box" [class.active]="!isPhotoUpgradePromptOpen()" (click)="selectPhoto(0)"
+                title="Free preview photo">
+                <img [src]="displayedPhotoUrl()" alt="Photo 1" (error)="onImgError($event)" loading="lazy"
+                  decoding="async">
+              </div>
+
+              <!-- Locked Additional Photo Thumbnails (visible blurred previews) -->
+              @for (slotIdx of lockedPhotoSlots(); track slotIdx) {
+              <div class="hanu-thumb-box is-locked-thumb" [class.active]="isPhotoUpgradePromptOpen()"
+                (click)="openPhotoUpgradePrompt()" title="Upgrade plan to view photo">
+                <img [src]="displayedPhotoUrl()" [alt]="'Locked photo ' + (slotIdx + 1)" (error)="onImgError($event)"
+                  loading="lazy" decoding="async">
+                <span class="locked-thumb-badge">
+                  <span class="material-symbols-outlined">lock</span>
+                </span>
+              </div>
+              }
+
+              <!-- Always-visible inline upgrade prompt in the photo strip -->
+              <div class="hanu-thumb-upgrade-prompt">
+                <div class="thumb-upgrade-text">
+                  @if (additionalPhotosCount() > 0) {
+                  <strong>+{{ additionalPhotosCount() }} more {{ additionalPhotosCount() === 1 ? 'photo' : 'photos' }}
+                    locked</strong>
+                  <span>Upgrade to view additional photos</span>
+                  } @else {
+                  <strong>1 preview photo shown</strong>
+                  <span>Upgrade to view additional photos &amp; full gallery</span>
+                  }
+                </div>
+                <a routerLink="/subscriptions" class="btn-thumb-upgrade">Upgrade Now</a>
               </div>
               }
             </div>
@@ -480,22 +543,12 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">add_road</span>
                       </div>
-                      <div class="infra-pill green">
-                        <span class="pill-dot"></span>
-                        <span>{{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + ' Ft Wide') :
-                          (prop.plotDetails?.frontageRoadWidth || '30 Ft Wide') }}</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">ROAD NETWORK</span>
                       <h4 class="infra-main-title">{{ prop.masterDetails?.roadType || 'Blacktop Bitumen Heavy-Duty Tar
                         Road'
                         }}</h4>
-                      <p class="infra-summary-text">
-                        Approach frontage of {{ prop.masterDetails?.roadWidthFt ? (prop.masterDetails?.roadWidthFt + '
-                        feet') : '30-40 feet' }} with constructed stormwater shoulders ensuring heavy vehicle and car
-                        access.
-                      </p>
                     </div>
                   </div>
 
@@ -505,19 +558,11 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">bolt</span>
                       </div>
-                      <div class="infra-pill amber">
-                        <span class="pill-dot"></span>
-                        <span>Active EB Line</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">POWER GRID</span>
                       <h4 class="infra-main-title">{{ cleanInfraText(prop.masterDetails?.electricity, '3-Phase EB Line
                         Active with Transformer') }}</h4>
-                      <p class="infra-summary-text">
-                        Dedicated local distribution transformer with 3-phase high/low-tension power lines active for
-                        immediate domestic meter commissioning.
-                      </p>
                     </div>
                   </div>
 
@@ -527,19 +572,11 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">water_drop</span>
                       </div>
-                      <div class="infra-pill cyan">
-                        <span class="pill-dot"></span>
-                        <span>Sweet Water</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">WATER RESOURCE</span>
                       <h4 class="infra-main-title">{{ cleanInfraText(prop.masterDetails?.waterConnection, 'Sweet Potable
                         Ground Water Connection') }}</h4>
-                      <p class="infra-summary-text">
-                        Natural groundwater table accessible at shallow depths, yielding pure sweet potable water with
-                        overhead reservoir piping access.
-                      </p>
                     </div>
                   </div>
 
@@ -549,20 +586,11 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">waves</span>
                       </div>
-                      <div class="infra-pill blue">
-                        <span class="pill-dot"></span>
-                        <span>Constructed</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">CIVIL DRAINAGE</span>
                       <h4 class="infra-main-title">{{ cleanInfraText(prop.masterDetails?.drainageFacility, 'Constructed
                         Storm Water Drainage') }}</h4>
-                      <p class="infra-summary-text">
-                        Engineered masonry stormwater channels along road flanks preventing surface water accumulation
-                        and
-                        soil waterlogging.
-                      </p>
                     </div>
                   </div>
 
@@ -572,21 +600,12 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">light_mode</span>
                       </div>
-                      <div class="infra-pill amber">
-                        <span class="pill-dot"></span>
-                        <span>LED Avenue</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">AVENUE ILLUMINATION</span>
                       <h4 class="infra-main-title">{{ prop.masterDetails?.streetLights === 'Yes' ? 'LED Avenue Street
                         Lights
                         Installed' : 'Avenue Street Lighting Active' }}</h4>
-                      <p class="infra-summary-text">
-                        Evenly spaced illumination poles with energy-efficient LED luminaires along layout spine roads
-                        for
-                        night-time visibility and safety.
-                      </p>
                     </div>
                   </div>
 
@@ -596,21 +615,12 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">fence</span>
                       </div>
-                      <div class="infra-pill green">
-                        <span class="pill-dot"></span>
-                        <span>{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Gated & Guarded' : 'Demarcated'
-                          }}</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">PERIMETER &amp; SECURITY</span>
                       <h4 class="infra-main-title">{{ prop.masterDetails?.compoundWallGated === 'Yes' ? 'Fully Gated
                         Community with Security Entrance Arch' : 'Demarcated Boundary Stones with Perimeter Fence' }}
                       </h4>
-                      <p class="infra-summary-text">
-                        Clear corner survey stones planted with Cadastral markings and robust perimeter security fencing
-                        enclosing the layout development.
-                      </p>
                     </div>
                   </div>
 
@@ -620,20 +630,12 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">park</span>
                       </div>
-                      <div class="infra-pill green">
-                        <span class="pill-dot"></span>
-                        <span>OSR Approved</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">OSR GREENERY &amp; PARKS</span>
                       <h4 class="infra-main-title">{{ prop.masterDetails?.park === 'Yes' ? 'Children Park & OSR
                         Landscaped
                         Greenery' : 'Dedicated Greenery & Park Zone' }}</h4>
-                      <p class="infra-summary-text">
-                        Statutory 10% Open Space Reservation (OSR) handed over and developed with children play zones,
-                        native shade trees, and walking trails.
-                      </p>
                     </div>
                   </div>
 
@@ -643,10 +645,6 @@
                       <div class="infra-icon-emblem">
                         <span class="material-symbols-outlined">home_repair_service</span>
                       </div>
-                      <div class="infra-pill emerald">
-                        <span class="pill-dot"></span>
-                        <span>100% Free Service</span>
-                      </div>
                     </div>
                     <div class="infra-card-details">
                       <span class="infra-category-tag">FREE MAINTENANCE SERVICE</span>
@@ -654,11 +652,6 @@
                         (prop.masterDetails?.developerMaintenanceYears + (prop.masterDetails?.developerMaintenanceYears
                         === 1 ? ' Year Free Maintenance' : ' Years Free Maintenance')) : 'Free
                         Maintenance Support' }}</h4>
-                      <p class="infra-summary-text">
-                        Comprehensive developer caretaker support including road maintenance, avenue tree trimming,
-                        street
-                        light upkeep, and perimeter drainage clearing at zero extra cost.
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -1420,34 +1413,12 @@
     </button>
 
     <div class="lightbox-content" (click)="$event.stopPropagation()">
-      <img [src]="prop.freePhotos[currentPhotoIdx()] || prop.imageUrl" [alt]="prop.title" loading="lazy"
-        decoding="async">
+      <img [src]="displayedPhotoUrl()" [alt]="prop.title" loading="lazy" decoding="async">
     </div>
   </div>
   }
 
-  <!-- FLOOR PLAN MODAL -->
-  @if (isFloorPlanModalOpen() && activeModalFloorPlan(); as modalPlan) {
-  <div class="fullscreen-lightbox-modal" (click)="closeFloorPlanModal()">
-    <button type="button" class="btn-close-lightbox" (click)="closeFloorPlanModal()">
-      <span class="material-symbols-outlined">close</span>
-    </button>
 
-    <div class="lightbox-content floorplan-modal-box" (click)="$event.stopPropagation()">
-      <div class="fp-modal-header">
-        <div>
-          <h3 class="fp-modal-title">{{ modalPlan.name }}</h3>
-          <p class="fp-modal-sub">{{ modalPlan.superArea }} • {{ modalPlan.carpetArea }} • {{ modalPlan.priceEstimate }}
-          </p>
-        </div>
-
-      </div>
-      <div class="fp-modal-img-container">
-        <img [src]="modalPlan.imageUrl" [alt]="modalPlan.name" loading="lazy" decoding="async">
-      </div>
-    </div>
-  </div>
-  }
 
   <!-- 50-SECOND HIGH-INTENT SITE VISIT INVITATION MODAL -->
   @if (isSiteVisitPromptOpen() && !isViewRestricted() && !isBlockedForGuest() && property(); as prop) {

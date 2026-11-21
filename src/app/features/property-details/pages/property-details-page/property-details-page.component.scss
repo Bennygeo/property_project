@@ -61,200 +61,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   2. GUEST PREVIEW SYSTEM, QUOTA MODAL & BLUR OVERLAY
+   2. GUEST PREVIEW SYSTEM & BLUR OVERLAY
    -------------------------------------------------------------------------- */
-.quota-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 2100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
-  background: rgba(15, 59, 74, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  animation: quotaBackdropFadeIn 0.2s ease-out;
-}
-
-@keyframes quotaBackdropFadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes quotaCardPop {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.quota-alert-modal {
-  position: relative;
-  width: 100%;
-  max-width: 440px;
-  background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 59, 74, 0.16);
-  box-shadow: 0 24px 48px -12px rgba(15, 59, 74, 0.3);
-  overflow: hidden;
-  text-align: center;
-  animation: quotaCardPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-
-  .quota-modal-top-accent {
-    height: 4px;
-    background: linear-gradient(90deg, #0f3b4a 0%, #5e8f72 100%);
-    width: 100%;
-  }
-
-  .quota-modal-close-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    z-index: 2;
-
-    .material-symbols-outlined {
-      font-size: 17px;
-    }
-
-    &:hover {
-      background: #f8fafc;
-      color: #0f3b4a;
-      border-color: #cbd5e1;
-    }
-  }
-
-  .quota-modal-content {
-    padding: 2rem 1.75rem 1.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .quota-modal-icon-wrap {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(94, 143, 114, 0.12);
-    border: 1px solid rgba(94, 143, 114, 0.28);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0f3b4a;
-    margin-bottom: 12px;
-
-    .material-symbols-outlined {
-      font-size: 24px;
-      color: #0f3b4a;
-    }
-  }
-
-  .quota-modal-pill {
-    display: inline-flex;
-    align-items: center;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 3px 9px;
-    background: #0f3b4a;
-    color: #ffffff;
-    border-radius: 4px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .quota-modal-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #0f3b4a;
-    margin: 0 0 8px 0;
-    line-height: 1.3;
-  }
-
-  .quota-modal-desc {
-    font-size: 13.5px;
-    line-height: 1.55;
-    color: #475569;
-    margin: 0 0 1.5rem 0;
-  }
-
-  .quota-modal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .btn-quota-upgrade {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    width: 100%;
-    padding: 0.75rem 1.25rem;
-    background: #5e8f72;
-    color: #ffffff;
-    font-size: 13.5px;
-    font-weight: 600;
-    border-radius: 8px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: background 0.15s ease;
-
-    .material-symbols-outlined {
-      font-size: 18px;
-    }
-
-    &:hover {
-      background: #497259;
-    }
-  }
-
-  .btn-quota-ghost {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 0.65rem 1rem;
-    background: transparent;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    color: #0f3b4a;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: #f8fafc;
-      border-color: #0f3b4a;
-    }
-  }
-}
-
 .guest-preview-banner {
   background: #fafaf9;
   border-bottom: 1px solid #e2e8f0;
@@ -883,6 +691,95 @@
     cursor: pointer;
     border: none !important;
     border-radius: 0;
+    transition: filter 0.2s ease, transform 0.2s ease;
+
+    &.photo-upgrade-blurred {
+      filter: blur(12px) brightness(0.45);
+      transform: scale(1.06);
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+
+  .hanu-photo-upgrade-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+
+    .photo-upgrade-lock-icon {
+      font-size: 36px;
+      color: #86efac;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    p {
+      margin: 0 0 18px 0;
+      max-width: 440px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .photo-upgrade-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-photo-upgrade-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 18px;
+      background: #5e8f72;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: #4c7a5f;
+      }
+    }
+
+    .btn-photo-back-preview {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 16px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.22);
+      }
+    }
   }
 
   .hanu-arrow {
@@ -960,6 +857,7 @@
 
   .hanu-thumb-strip {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     background: var(--brand-teal, #0f3b4a);
@@ -969,6 +867,7 @@
   }
 
   .hanu-thumb-box {
+    position: relative;
     width: 80px;
     height: 54px;
     border-radius: 6px !important;
@@ -1000,6 +899,79 @@
       border-radius: 4px !important;
       border: none !important;
       display: block;
+    }
+
+    &.is-locked-thumb {
+      opacity: 0.9;
+
+      img {
+        filter: blur(3px) brightness(0.55);
+        transform: scale(1.08);
+      }
+
+      .locked-thumb-badge {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.35);
+
+        .material-symbols-outlined {
+          font-size: 18px;
+          color: #ffffff;
+        }
+      }
+    }
+  }
+
+  .hanu-thumb-upgrade-prompt {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    flex-shrink: 0;
+
+    .thumb-upgrade-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      line-height: 1.25;
+
+      strong {
+        font-size: 12px;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      span {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.85);
+      }
+    }
+
+    .btn-thumb-upgrade {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      background: #5e8f72;
+      color: #ffffff;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: #4c7a5f;
+      }
     }
   }
 
@@ -1100,157 +1072,11 @@
 }
 
 /* --------------------------------------------------------------------------
-   6. EXECUTIVE SNAPSHOT HORIZON GRID
-   -------------------------------------------------------------------------- */
-.executive-snapshot-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 6px;
-  background: #ffffff;
-  box-shadow: none !important;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media (max-width: 580px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .snapshot-tile {
-    background: transparent;
-    border: none;
-    border-right: 1px solid #e2e8f0;
-    border-radius: 0;
-    padding: 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-start;
-    justify-content: center;
-    box-shadow: none !important;
-    min-width: 0;
-    box-sizing: border-box;
-
-    &:last-child {
-      border-right: none;
-    }
-
-    @media (max-width: 992px) {
-      &:nth-child(3n) {
-        border-right: none;
-      }
-
-      &:nth-child(-n+3) {
-        border-bottom: 1px solid #e2e8f0;
-      }
-    }
-
-    @media (max-width: 580px) {
-      border-bottom: 1px solid #e2e8f0;
-
-      &:nth-child(even) {
-        border-right: none;
-      }
-
-      &:last-child,
-      &:nth-last-child(2) {
-        border-bottom: none;
-      }
-    }
-  }
-
-  .snapshot-icon-wrap {
-    width: auto;
-    height: auto;
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    color: #5e8f72 !important;
-    padding: 0;
-    margin-bottom: 2px;
-
-    span.material-symbols-outlined {
-      font-size: 20px;
-    }
-  }
-
-  .snapshot-text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    width: 100%;
-  }
-
-  .snapshot-label {
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .snapshot-val {
-    font-size: 14px;
-    font-weight: 500;
-    color: #0f172a;
-    line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    &.text-brand {
-      color: #5e8f72;
-    }
-
-    &.text-emerald {
-      color: #2c4938;
-    }
-
-    &.text-cyan {
-      color: #0369a1;
-    }
-  }
-
-  .snapshot-sub {
-    font-size: 11.5px;
-    color: #64748b;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-/* --------------------------------------------------------------------------
    7. DEVELOPMENT READINESS PIPELINE
    -------------------------------------------------------------------------- */
 .readiness-horizon-wrapper {
   margin: 1.25rem 0 0.85rem 0;
   width: 100%;
-
-  .cadastral-hatch-divider {
-    width: 100%;
-    height: 5px;
-    background: repeating-linear-gradient(-45deg,
-        #e2e8f0,
-        #e2e8f0 4px,
-        transparent 4px,
-        transparent 8px);
-    margin: 5px 0;
-    border-radius: 6px;
-    opacity: 0.75;
-    mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
-  }
 
   .readiness-journey-card {
     background: #ffffff;
@@ -1696,10 +1522,10 @@
     border: none;
     border-bottom: 1px solid #e2e8f0;
     border-radius: 0 !important;
-    padding: 1.25rem 0;
+    padding: 1.05rem 0;
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
     box-shadow: none !important;
     box-sizing: border-box;
@@ -1738,10 +1564,10 @@
 
   .infra-card-header-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0;
   }
 
   .infra-icon-emblem {
@@ -1752,7 +1578,7 @@
     border: none !important;
     border-radius: 0 !important;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     flex-shrink: 0;
     transition: none !important;
@@ -1797,11 +1623,6 @@
     color: #0d9488;
   }
 
-  .infra-pill,
-  .pill-dot {
-    display: none !important;
-  }
-
   .infra-card-details {
     flex: 1;
     min-width: 0;
@@ -1829,13 +1650,6 @@
     word-break: break-word;
     overflow-wrap: break-word;
     transition: none !important;
-  }
-
-  .infra-summary-text {
-    font-size: 11.5px;
-    color: #64748b;
-    line-height: 1.4;
-    margin: 0;
   }
 }
 
@@ -2210,173 +2024,6 @@
     word-break: break-word;
     overflow-wrap: break-word;
     line-height: 1.35;
-  }
-}
-
-/* Tab 4: Overview & Highlights */
-.overview-narrative-card {
-  display: flex;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
-
-  .narrative-quote-bar {
-    width: 4px;
-    background: var(--brand-green, #5e8f72);
-    flex-shrink: 0;
-  }
-
-  .narrative-body {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .narrative-badge {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--brand-green, #5e8f72);
-  }
-
-  .narrative-lead {
-    font-size: 13px;
-    line-height: 1.7;
-    color: #334155;
-    margin: 0;
-    font-weight: 400;
-  }
-}
-
-.overview-specs-matrix {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 2rem;
-  row-gap: 0;
-  margin-bottom: 1.75rem;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 0.5rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-
-  .overview-spec-cell {
-    padding: 1rem 0;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-
-    &:nth-last-child(1),
-    &:nth-last-child(2) {
-      border-bottom: none;
-    }
-  }
-
-  .overview-spec-label {
-    font-size: 10.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #64748b;
-  }
-
-  .overview-spec-val {
-    font-size: 13px;
-    font-weight: 500;
-    color: #0f172a;
-
-    &.text-brand {
-      color: var(--brand-green, #5e8f72);
-    }
-  }
-
-  .overview-spec-sub {
-    font-size: 11.5px;
-    color: #64748b;
-  }
-}
-
-.overview-section-title {
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #0f172a;
-  margin: 0 0 0.85rem 0;
-}
-
-.overview-highlights-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-
-  .overview-highlight-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    box-sizing: border-box;
-  }
-
-  .hl-icon-wrap {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    color: var(--brand-green, #5e8f72);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    span {
-      font-size: 15px;
-      font-weight: 700;
-    }
-  }
-
-  .hl-text {
-    font-size: 13px;
-    font-weight: 500;
-    color: #1e293b;
-    line-height: 1.35;
-  }
-}
-
-.overview-amenities-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  .overview-amenity-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 12.5px;
-    font-weight: 500;
-    color: #334155;
-
-    .amenity-chip-icon {
-      font-size: 17px;
-      color: var(--brand-green, #5e8f72);
-    }
   }
 }
 
@@ -3110,21 +2757,6 @@
       text-decoration: underline;
     }
   }
-
-  .sv-guarantee-note {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 11.5px;
-    color: #64748b;
-    margin-top: 8px;
-
-    span.material-symbols-outlined {
-      font-size: 14px;
-      color: #5e8f72;
-    }
-  }
 }
 
 /* Fullscreen Lightbox */
@@ -3497,10 +3129,12 @@
       min-height: 220px !important;
     }
 
-    .hanu-lock-overlay {
+    .hanu-lock-overlay,
+    .hanu-photo-upgrade-overlay {
       padding: 1rem !important;
 
-      .lock-icon-big {
+      .lock-icon-big,
+      .photo-upgrade-lock-icon {
         font-size: 28px !important;
         margin-bottom: 4px !important;
       }
@@ -3515,6 +3149,12 @@
         margin-bottom: 10px !important;
         line-height: 1.35 !important;
       }
+
+      .btn-photo-upgrade-cta,
+      .btn-photo-back-preview {
+        padding: 7px 12px !important;
+        font-size: 11.5px !important;
+      }
     }
 
     .btn-unlock-pts {
@@ -3526,6 +3166,8 @@
     .hanu-thumb-strip {
       padding: 10px !important;
       gap: 8px !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
     }
 
     .hanu-thumb-box {
@@ -3533,61 +3175,25 @@
       height: 42px !important;
       border-radius: 5px !important;
     }
-  }
 
-  /* 4. Executive Snapshot Grid: Symmetrical 2x2 Table */
-  .executive-snapshot-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    background: #ffffff !important;
+    .hanu-thumb-upgrade-prompt {
+      width: 100% !important;
+      margin-left: 0 !important;
+      justify-content: space-between !important;
+      padding: 8px 10px !important;
 
-    .snapshot-tile.theme-tile-price {
-      display: none !important;
-    }
-
-    .snapshot-tile {
-      padding: 15px 16px !important;
-      gap: 5px !important;
-
-      &:nth-child(2) {
-        border-right: 1px solid #e2e8f0 !important;
-        border-bottom: 1px solid #e2e8f0 !important;
+      .thumb-upgrade-text strong {
+        font-size: 11.5px !important;
       }
 
-      &:nth-child(3) {
-        border-right: none !important;
-        border-bottom: 1px solid #e2e8f0 !important;
+      .thumb-upgrade-text span {
+        font-size: 10.5px !important;
       }
 
-      &:nth-child(4) {
-        border-right: 1px solid #e2e8f0 !important;
-        border-bottom: none !important;
+      .btn-thumb-upgrade {
+        padding: 6px 10px !important;
+        font-size: 11.5px !important;
       }
-
-      &:nth-child(5) {
-        border-right: none !important;
-        border-bottom: none !important;
-      }
-    }
-
-    .snapshot-icon-wrap span.material-symbols-outlined {
-      font-size: 18px !important;
-    }
-
-    .snapshot-label {
-      font-size: 9.5px !important;
-    }
-
-    .snapshot-val {
-      font-size: 13px !important;
-      font-weight: 600 !important;
-    }
-
-    .snapshot-sub {
-      font-size: 11px !important;
     }
   }
 
@@ -3770,7 +3376,6 @@
       .hanu-spec-item:nth-last-child(2),
       .hanu-spec-item:last-child,
       .legal-clearance-badge,
-      .cadastral-seal-badge,
       .bank-chip,
       .survey-audit-card,
       .audit-point,
@@ -3778,12 +3383,7 @@
       .transit-card,
       .transit-card.highlight-corridor-card,
       .transit-card:nth-last-child(2),
-      .transit-card:last-child,
-      .overview-narrative-card,
-      .overview-specs-matrix,
-      .overview-spec-cell,
-      .overview-highlight-item,
-      .overview-amenity-chip {
+      .transit-card:last-child {
         border: none !important;
         border-top: none !important;
         border-bottom: none !important;
@@ -3797,14 +3397,10 @@
       .infrastructure-iconic-grid,
       .hanu-specs-grid,
       .legal-clearance-badge,
-      .cadastral-seal-badge,
       .bank-chip,
       .survey-audit-card,
       .audit-point,
-      .transit-matrix-grid,
-      .overview-narrative-card,
-      .overview-specs-matrix,
-      .overview-amenity-chip {
+      .transit-matrix-grid {
         background: transparent !important;
         border-radius: 0 !important;
       }
@@ -3890,10 +3486,6 @@
       font-size: 13px !important;
       font-weight: 500 !important;
       line-height: 1.3 !important;
-    }
-
-    .infra-summary-text {
-      display: none !important;
     }
   }
 
@@ -4083,70 +3675,6 @@
     .transit-badge-sub {
       font-size: 11px !important;
       margin-top: 1px !important;
-    }
-  }
-
-  /* Tab 4: Overview Mobile */
-  .overview-narrative-card {
-    margin: 0 0 1.75rem 0 !important;
-
-    .narrative-quote-bar {
-      display: none !important;
-    }
-
-    .narrative-body {
-      padding: 0 !important;
-      gap: 8px !important;
-    }
-
-    .narrative-lead {
-      font-size: 13px !important;
-      line-height: 1.55 !important;
-    }
-  }
-
-  .overview-specs-matrix {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    padding: 0 !important;
-    margin-bottom: 1.75rem !important;
-  }
-
-  .connected-workspace-window .overview-spec-cell {
-    padding: 12px 12px !important;
-    background: #ffffff !important;
-    border-radius: 6px !important;
-
-    &:nth-child(even) {
-      background: rgba(241, 245, 249, 0.45) !important;
-    }
-  }
-
-  .overview-highlights-grid {
-    gap: 6px !important;
-  }
-
-  .connected-workspace-window .overview-highlight-item {
-    padding: 11px 12px !important;
-    gap: 12px !important;
-    background: #ffffff !important;
-    border-radius: 6px !important;
-
-    &:nth-child(even) {
-      background: rgba(241, 245, 249, 0.45) !important;
-    }
-  }
-
-  .overview-amenities-tags {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px 16px !important;
-    margin-top: 6px !important;
-
-    .overview-amenity-chip {
-      padding: 0 !important;
-      gap: 6px !important;
     }
   }
 

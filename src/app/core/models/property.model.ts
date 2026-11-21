@@ -217,6 +217,7 @@ export interface Property {
   projectViewsUsed?: number;
   projectViewLimit?: number;
   upgradeMessage?: string;
+  totalPhotoCount?: number;
 
   // Exact 2-Table Consolidated Schema Mappings (projects & project_details)
   projectId?: string;

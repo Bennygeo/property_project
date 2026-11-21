@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, effect, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, effect, HostListener, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { validateGpsData, haversineDistanceKm, findSearchCenterCoordinates, extractCoordinates, annotateInterPropertyProximity, GpsCoordinates } from '../../../../core/utils/gps-helper';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -935,20 +935,37 @@ export class SearchPageComponent implements OnInit {
     }
   }
 
-  // Smooth Window Scroll Listener for Infinite Scroll Expansion (Loads next 10 properties on scroll)
-  @HostListener('window:scroll')
+  // Smooth Passive Window Scroll Listener outside Angular Zone for Infinite Scroll Expansion
+  private readonly ngZone = inject(NgZone);
+  private readonly boundScrollHandler = (): void => this.onWindowScroll();
+  private readonly scrollListenerInit = (() => {
+    if (typeof window !== 'undefined') {
+      this.ngZone.runOutsideAngular(() => {
+        window.addEventListener('scroll', this.boundScrollHandler, { passive: true });
+      });
+    }
+  })();
+
   onWindowScroll(): void {
     if (!this.propertyService.hasMoreApiProperties() || this.propertyService.isFetchingApi() || this.isScrollThrottled) return;
     const scrollPosition = window.innerHeight + window.scrollY;
     const threshold = document.documentElement.scrollHeight - 700;
     if (scrollPosition >= threshold) {
       this.isScrollThrottled = true;
-      this.loadMore();
+      this.ngZone.run(() => {
+        this.loadMore();
+      });
       setTimeout(() => {
         this.isScrollThrottled = false;
       }, 400);
     }
-  };
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.boundScrollHandler);
+    }
+  }
 
   ngOnInit(): void {
     // Record current URL for seamless back-navigation from property details
